@@ -96,8 +96,8 @@ flowchart LR
 | 무엇을 남기나요? | 어디에 남기나요? |
 | --- | --- |
 | 회의에서 정한 방향·일정·담당·원자료 | [ARTI Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032) |
-| 개발해야 할 기능·버그 | [GitHub Issues](../../issues) |
-| 코드 변경·검토·병합 | [GitHub Pull Requests](../../pulls) |
+| 개발해야 할 기능·버그 | [GitHub Issues](https://github.com/2026-2-zolp/arti/issues) |
+| 코드 변경·검토·병합 | [GitHub Pull Requests](https://github.com/2026-2-zolp/arti/pulls) |
 | 현재 개발 전 합의가 필요한 인터페이스 | [API 논의사항](docs/API_DECISIONS.md) |
 
 이 저장소에는 **비밀번호, API 키, 개인 연락처, 권리를 확인하지 않은 이미지 원본**을 올리지 않습니다.
