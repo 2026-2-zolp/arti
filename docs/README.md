@@ -1,36 +1,24 @@
-# 📚 Docs — 처음 읽을 문서 길잡이
+# 📚 문서 안내
 
-[← 메인 안내로](../README.md)
+[← ARTI 메인으로](../README.md)
 
-문서가 많아 보여도 **전부 처음부터 읽을 필요는 없습니다.** 아래 순서로 필요한 부분만 보세요.
+개발을 시작하는 데 **모든 문서를 읽을 필요는 없습니다.** 필요한 문서만 순서대로 열어 보세요.
 
-## 무엇부터 읽으면 되나요?
+| 이런 상황이라면 | 읽을 문서 |
+| --- | --- |
+| 저장소에 처음 들어온 팀원 | [처음 시작하기](처음-시작하기.md) |
+| 개인 브랜치와 PR의 관계가 헷갈림 | [개발·PR 흐름](개발-PR-흐름.md) |
+| 커밋·병합·공유 규칙을 확인하려면 | [협업 규칙](협업-규칙.md) |
+| 지금 만들 범위와 실제 진도를 구분하려면 | [프로젝트 범위](프로젝트-범위.md) |
+| 프론트/백엔드가 무엇을 주고받을지 논의하려면 | [API 연동 논의](API-연동-논의.md) |
+| 조직 메인 화면 소개를 준비한다면 | [조직 소개 초안](조직-소개-초안.md) |
 
-| 상황 | 먼저 읽을 문서 | 확인할 내용 |
-| --- | --- | --- |
-| 방금 팀에 초대됨 | [TEAM_ONBOARDING.md](TEAM_ONBOARDING.md) | 내 브랜치 선택, Git 기본 작업, PR |
-| GitHub 협업 방식이 헷갈림 | [WORKFLOW.md](WORKFLOW.md) | 개인 브랜치와 `main` 관계 |
-| 코드 작성·커밋·리뷰 규칙 확인 | [CONTRIBUTING.md](CONTRIBUTING.md) | 한국어 커밋, PR, 병합 주의사항 |
-| 어디까지 만들어야 하는지 확인 | [PROJECT_SCOPE.md](PROJECT_SCOPE.md) | P0/P1, 확정·미확정 범위 |
-| 프론트·백엔드 데이터 연결 | [API_DECISIONS.md](API_DECISIONS.md) | 아직 합의가 필요한 API·ID |
-| GitHub 조직 소개 준비 | [ORG_PROFILE_DRAFT.md](ORG_PROFILE_DRAFT.md) | 아직 실제 조직 프로필에 반영되지 않은 초안 |
+## 코드가 어디 있나요?
 
-## 개발 코드가 있는 곳
+- [frontend/](../frontend/README.md): 모바일 웹 화면
+- [backend/](../backend/README.md): 조회·추천·해설 API
+- [data/](../data/README.md): 작품 정보·출처·검수
+- [scripts/](../scripts/README.md): 데이터 수집·가공
+- [.github/](../.github/README.md): **PR 템플릿** 안내
 
-```text
-frontend/  사용자 화면
-backend/   API·추천 로직
-data/      작품 데이터·출처·검수
-scripts/   자료 수집·변환
-docs/      개발 문서와 결정사항
-.github/   Issue/PR 양식
-```
-
-각 폴더에도 README가 있습니다. **실제 기능을 추가하면 해당 폴더의 실행법·의존성·검증 방법도 함께 갱신**해 주세요.
-
-## Notion과 GitHub의 역할
-- **Notion:** 전체 회의·기획 합의·일정·담당·조사 근거
-- **GitHub docs:** 코드 작업에 바로 필요한 안내·인터페이스·변경 규칙
-- 상충되는 중요한 판단은 팀 회의에서 확정해 Notion과 코드 문서 양쪽에 반영합니다.
-
-> 이 문서들은 팀 개발을 돕기 위한 초기 안내입니다. [ARTI Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032)에 없는 새로운 기술 선택을 이 문서만으로 확정하지 않습니다.
+팀의 공식 합의·담당·일정은 [Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032)에 기록합니다. 이곳은 **코드 개발에 필요한 안내**를 집중해서 관리합니다.
