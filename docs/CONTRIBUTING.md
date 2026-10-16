@@ -21,18 +21,20 @@
 ```bash
 git clone https://github.com/2026-2-zolp/arti.git
 cd arti
-git switch -c dev/<본인-GitHub아이디>
-git push -u origin dev/<본인-GitHub아이디>
+git switch -c dev/your-id
+git push -u origin dev/your-id
 ```
-위 `<본인-GitHub아이디>`는 실제 계정명으로 바꿉니다.
+위 예시의 `your-id`를 **본인 GitHub 아이디**로 바꿉니다. `git add -A` 이전에 `git status`로 비밀 정보나 불필요한 파일이 포함되지 않았는지 확인합니다.
 
 ### 평소 작업
 ```bash
-git switch dev/<본인-GitHub아이디>
+git switch dev/your-id
 git fetch origin
 git merge origin/main
 # 코드 작성·테스트 후
-git add <수정한-파일>
+git status
+# 이번 작업에 필요한 파일만 포함되었는지 확인
+git add -A
 git commit -m "feat: 작품 취향 선택 화면 구현"
 git push
 ```
