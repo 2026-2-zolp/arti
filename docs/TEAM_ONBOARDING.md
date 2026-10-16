@@ -8,11 +8,11 @@
 ```bash
 git clone https://github.com/2026-2-zolp/arti.git
 cd arti
-git switch -c dev/<본인-GitHub아이디>
-git push -u origin dev/<본인-GitHub아이디>
+git switch -c dev/your-id
+git push -u origin dev/your-id
 ```
 
-`<본인-GitHub아이디>`를 자신의 실제 GitHub 아이디로 변경하세요. 다른 사람의 브랜치는 직접 수정하지 않습니다.
+예시의 `your-id`를 본인의 실제 GitHub 아이디로 변경하세요. 다른 사람의 브랜치는 직접 수정하지 않습니다.
 
 5. 기능 작업 전 `git fetch origin` → 개인 브랜치에서 `git merge origin/main`으로 최신 통합본 반영
 6. GitHub Issue 또는 팀에서 정한 범위에 맞춰 작업 후 로컬 검증
