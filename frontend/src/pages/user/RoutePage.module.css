@@ -1,0 +1,139 @@
+.wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.progress {
+  margin: 4px 0 12px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.floors {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.floor {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  font-size: 13px;
+}
+
+.floorOn {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.mapCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #e3dfd8;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-warm);
+}
+
+.nextCard {
+  border: 0;
+}
+
+.nextLabel {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.nextRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.nextTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.nextTime {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.noPos {
+  margin-top: 6px;
+  color: var(--color-accent-strong);
+  font-size: 13px;
+}
+
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--color-border-weak);
+  font-size: 14px;
+}
+
+.orderNo {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f08aa0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.orderTitle {
+  flex: 1;
+}
+
+.orderRoom {
+  color: var(--color-text-weak);
+  font-size: 13px;
+}
+
+.orderCurrent .orderNo {
+  background: var(--color-accent);
+}
+
+.orderCurrent .orderTitle {
+  font-weight: 700;
+}
+
+.orderDone {
+  color: var(--color-text-weak);
+}
+
+.orderDone .orderNo {
+  background: #b9b4ad;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  margin: auto calc(var(--gutter) * -1) -32px;
+  padding: 16px var(--gutter) calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--color-bg) 75%, rgba(255, 253, 249, 0));
+}

@@ -1,0 +1,39 @@
+.option {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.radio {
+  position: relative;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #b5b5b5;
+  border-radius: 50%;
+}
+
+.radioOn {
+  border-color: var(--color-accent);
+}
+
+.radioOn::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.label {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.description {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+}

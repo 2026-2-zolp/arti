@@ -1,0 +1,33 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preview {
+  width: 160px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid var(--color-border-weak);
+  border-radius: var(--radius-sm);
+}
+
+.bottomRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.save {
+  flex-shrink: 0;
+  min-width: 180px;
+  min-height: 52px;
+  background: #22272b;
+}

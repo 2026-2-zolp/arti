@@ -1,0 +1,147 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-width: var(--admin-min);
+  min-height: 100vh;
+  background: var(--admin-bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  padding: 0 40px;
+  background: #fff;
+  border-bottom: 1px solid #eceef0;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.brandSub {
+  color: var(--color-text-sub);
+  font-size: 16px;
+}
+
+.account {
+  position: relative;
+}
+
+.accountButton {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-sub);
+  font-size: 16px;
+}
+
+.accountMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 140px;
+  padding: 6px;
+  border: 1px solid var(--color-border-weak);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.accountMenu button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+}
+
+.accountMenu button:hover {
+  background: var(--color-surface-muted);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 250px;
+  padding: 36px 16px;
+  background: var(--admin-sidebar);
+}
+
+.menu {
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  color: var(--admin-sidebar-text);
+  font-size: 19px;
+  text-decoration: none;
+}
+
+.menu:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 36px 40px 48px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pageDescription {
+  margin-top: 8px;
+  color: var(--color-text-sub);
+  font-size: 16px;
+}
+
+.pageActions {
+  display: flex;
+  gap: 10px;
+}
+
+.panel {
+  padding: 28px;
+  border: 1px solid #e3e5e8;
+  border-radius: var(--radius-xl);
+  background: #fff;
+}
+
+.panelTitle {
+  margin-bottom: 24px;
+  font-size: 22px;
+  font-weight: 700;
+}

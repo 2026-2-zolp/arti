@@ -1,0 +1,43 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.md {
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+
+.sm {
+  min-height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.outline {
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent-border);
+}
+
+.accent {
+  background: var(--color-accent-bg);
+  color: var(--color-accent-strong);
+}
+
+.neutral {
+  background: var(--color-surface-muted);
+  color: var(--color-text-sub);
+}
+
+.success {
+  background: #e8f5ee;
+  color: var(--color-success);
+}
+
+.warning {
+  background: #fff4e0;
+  color: #b26a00;
+}

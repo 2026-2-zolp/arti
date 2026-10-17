@@ -1,0 +1,14 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userIcon {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.cardButton {
+  margin-top: 22px;
+}

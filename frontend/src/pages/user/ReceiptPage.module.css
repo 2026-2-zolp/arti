@@ -1,0 +1,25 @@
+.saveStatus {
+  margin: 20px 12px 0;
+}
+
+.saved {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 24px;
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+}
+
+.loginButton {
+  margin-top: 14px;
+}

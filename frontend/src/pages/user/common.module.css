@@ -1,0 +1,79 @@
+/* 사용자 화면 공통 보조 스타일 (레이아웃 간격·링크 행 등) */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stackSm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.divider {
+  color: var(--color-border);
+}
+
+.caption {
+  color: var(--color-text-sub);
+  font-size: 13px;
+  text-align: center;
+}
+
+.hint {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.cardTitle {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cardText {
+  margin-top: 6px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.formError {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: #fdecec;
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.headerLink:hover {
+  background: var(--color-surface-muted);
+}

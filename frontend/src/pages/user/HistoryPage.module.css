@@ -1,0 +1,51 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.thumb {
+  flex-shrink: 0;
+  width: 112px;
+  height: 94px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.date {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.meta {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+}

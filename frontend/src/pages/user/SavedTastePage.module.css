@@ -1,0 +1,20 @@
+.card {
+  min-height: 300px;
+}
+
+.label {
+  color: var(--color-accent-strong);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.actions {
+  margin-top: 40px;
+}

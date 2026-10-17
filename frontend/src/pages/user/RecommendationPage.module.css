@@ -1,0 +1,77 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.thumb {
+  flex-shrink: 0;
+  width: 108px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.artist {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.reason {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-bg);
+  color: var(--color-accent-strong);
+  font-size: 13px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.detailReason {
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.detailOrder {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}

@@ -1,0 +1,116 @@
+/* 디자인 토큰 — UI 설계서 목업 기준 */
+:root {
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Segoe UI', sans-serif;
+
+  --color-bg: #fffdf9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f6f5f2;
+  --color-surface-warm: #f3f0eb;
+  --color-text: #1c1c1c;
+  --color-text-sub: #6b6b6b;
+  --color-text-weak: #9a9a9a;
+  --color-border: #dcdcdc;
+  --color-border-weak: #ebebeb;
+
+  --color-primary: #1d1d1d;
+  --color-primary-hover: #333333;
+  --color-on-primary: #ffffff;
+
+  --color-accent: #e8536e;
+  --color-accent-strong: #d83f5c;
+  --color-accent-bg: #fff0f2;
+  --color-accent-border: #f3c6cf;
+  --color-info-bg: #eef4ff;
+  --color-danger: #d83f3f;
+  --color-success: #2f8f5b;
+
+  --admin-bg: #f4f5f7;
+  --admin-sidebar: #22272b;
+  --admin-sidebar-text: #c9ced3;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.16);
+
+  /* 합의 8. 모바일 웹 최소 360px / 관리자 1280px 이상 */
+  --mobile-min: 360px;
+  --mobile-max: 480px;
+  --admin-min: 1280px;
+  --gutter: 20px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  word-break: keep-all;
+  line-height: 1.5;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
