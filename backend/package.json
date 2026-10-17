@@ -1,0 +1,28 @@
+{
+  "name": "arti-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "tsx watch --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/index.ts",
+    "build": "tsc",
+    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --disable-warning=ExperimentalWarning --test test/*.test.ts",
+    "db:reset": "node -e \"const f=process.env.DB_PATH||'data/arti.db';for(const s of ['','-wal','-shm'])require('node:fs').rmSync(f+s,{force:true})\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "express": "^5.3.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9"
+  }
+}
