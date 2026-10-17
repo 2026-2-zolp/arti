@@ -19,6 +19,6 @@
 - [backend/](../backend/README.md): 조회·추천·해설 API
 - [data/](../data/README.md): 작품 정보·출처·검수
 - [scripts/](../scripts/README.md): 데이터 수집·가공
-- [.github/](../.github/README.md): **PR 템플릿** 안내
+- [PR 작성 템플릿](../.github/PULL_REQUEST_TEMPLATE.md): 코드 병합 시 사용하는 간단한 양식
 
 팀의 공식 합의·담당·일정은 [Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032)에 기록합니다. 이곳은 **코드 개발에 필요한 안내**를 집중해서 관리합니다.
