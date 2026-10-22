@@ -76,6 +76,22 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
+## 모델 비교 실험 (발표·보고서용)
+
+`evaluation/` 폴더에 **감정 분석 모델 비교 실험** 스크립트가 있습니다. 같은 평가 데이터로 여러 모델·설정을 돌려 "작품의 대표 감정을 얼마나 맞히는지"를 비교합니다.
+
+```bash
+python -m evaluation.evaluate                    # 텍스트 모델 4종 비교 (CPU로 약 10~20분)
+python -m evaluation.evaluate --configs current  # 특정 설정만
+python -m evaluation.evaluate --image            # 이미지(CLIP) 분석도 평가 — eval_set.json에 imageUrl 필요
+```
+
+- **평가 데이터** `evaluation/eval_set.json`: 작품 해설 + 대표 감정 "정답" 1~2개. 지금 들어 있는 정답은 **사람이 판단한 예시 라벨**이므로 팀이 함께 검토해 수정하고, 실제 전시(유영국) 작품으로 바꿔 쓰세요. 여러 사람이 각자 라벨을 달고 다수결로 정하면 근거가 더 탄탄해집니다.
+- **결과** `evaluation/results/report.md`(비교표·작품별 결과), `details.csv`(작품·설정별 점수). 표를 그대로 슬라이드에 쓸 수 있습니다.
+- **지표:** Top-1 정확도(1위 감정이 정답에 포함), Top-2 정확도(1·2위 중 하나라도 정답), 작품당 처리 시간
+- **보정(calibration):** 모든 작품의 평균 점수를 빼서 "어떤 작품에나 특정 감정을 높게 주는" 모델 편향을 줄인 결과입니다(정답은 사용하지 않음).
+- 이미지 평가는 `imageUrl`에 **공개(저작권 만료) 이미지 주소**를 넣어 실행하세요. 예: 위키미디어 공용의 명화 이미지.
+
 ## 환경 변수
 
 | 변수 | 기본값 | 설명 |
