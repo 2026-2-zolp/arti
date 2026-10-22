@@ -12,6 +12,24 @@ export type TasteTag =
   | 'emotion'    // 감정 표현
   | 'light';     // 빛
 
+/** AI 감정 분석 항목 (ai-service/app/emotions.py 와 같은 키) */
+export type EmotionKey = 'calm' | 'joy' | 'sadness' | 'tension' | 'awe' | 'nostalgia';
+
+/** 감정별 상대 점수 0~1 (가장 강한 감정 = 1) */
+export type EmotionScores = Record<EmotionKey, number>;
+
+/** AI 결과 검수 상태: 없음 / AI 제안(관리자 확인 전) / 확정 */
+export type AiStatus = 'none' | 'suggested' | 'confirmed';
+
+/** A-04 「AI 분석」 결과 (감정 분석 서버) */
+export interface ArtworkAnalysis {
+  emotions: EmotionScores;
+  usedImage: boolean;
+  imageError: string | null;
+  models: { image: string; text: string };
+  analyzedAt: string;
+}
+
 /** U-07 관람 시간 옵션 */
 export type VisitDuration = '30m' | '60m' | 'relaxed';
 
@@ -63,6 +81,15 @@ export interface Artwork {
   referenceUrl: string;       // 참고자료 URL
   reviewStatus: ReviewStatus;
   updatedAt: string;
+  /** AI 감정 분석 결과 (분석 전이면 null) */
+  analysis: ArtworkAnalysis | null;
+  /** 추천에는 'confirmed'(관리자가 확인한) 감정 분석만 사용 */
+  emotionStatus: AiStatus;
+  /** AI가 만든 초보자용 해설 요약 (공식 해설 description과 별도 보관) */
+  summary: string;
+  summaryKeywords: string[];
+  /** 사용자 화면에는 'confirmed' 요약만 표시 */
+  summaryStatus: AiStatus;
 }
 
 /** U-08에서 쓰는 추천 결과 한 건 */
@@ -71,6 +98,10 @@ export interface Recommendation {
   order: number;              // 1부터 시작하는 관람 순서
   reason: string;             // 작품별 간단한 추천 이유
   matchedTags: TasteTag[];
+  /** 감정 분석 기반으로 추천됐을 때, 취향과 가장 많이 겹친 감정 (태그 기반이면 빈 배열) */
+  matchedEmotions: EmotionKey[];
+  /** 취향과 작품 감정의 유사도 0~1 (감정 분석이 확정되지 않은 작품은 null) */
+  similarity: number | null;
 }
 
 export type Reaction = 'like' | 'dislike';
@@ -98,6 +129,10 @@ export interface VisitRecord {
   reactions: Record<string, Reaction>;
   longestViewedArtworkId: string | null;
   keywords: string[];
+  /** 아트 영수증의 AI 취향 해석 (없으면 null) */
+  interpretation?: string | null;
+  /** 이번 관람의 감정 프로필 (감정 분석이 확정된 작품 기준) */
+  emotionProfile?: EmotionScores | null;
 }
 
 export interface ChatMessage {

@@ -9,7 +9,17 @@
  * - 사용자: localStorage 'arti.token'  → Authorization: Bearer <token>
  * - 관리자: localStorage 'arti.adminToken' → X-Admin-Token: <token>
  */
-import type { Artwork, Exhibition, Recommendation, TasteTag, User, VisitDuration, VisitRecord } from '../types';
+import type {
+  Artwork,
+  EmotionScores,
+  Exhibition,
+  Reaction,
+  Recommendation,
+  TasteTag,
+  User,
+  VisitDuration,
+  VisitRecord,
+} from '../types';
 import { load, remove, save } from '../lib/storage';
 
 export class ApiError extends Error {
@@ -126,6 +136,14 @@ export const api = {
     return answer;
   },
 
+  /** U-12 아트 영수증의 AI 취향 해석 (오늘 본 작품의 감정 분석 + 반응 + 감상 시간) */
+  interpretVisit: (input: { viewedArtworkIds: string[]; reactions: Record<string, Reaction>; dwell: Record<string, number> }) =>
+    request<{ text: string; source: 'claude' | 'fallback'; emotionProfile: EmotionScores | null }>(
+      'POST',
+      '/visits/interpret',
+      input,
+    ),
+
   // ───────────────────────── 관람 기록 ─────────────────────────
   /** 로그인 상태면 서버에 저장되고, 비회원이면 저장 없이 영수증만 돌려받는다 */
   saveVisit: (v: Omit<VisitRecord, 'id'>) => request<VisitRecord>('POST', '/visits', v),
@@ -145,6 +163,26 @@ export const api = {
     await request<void>('POST', '/admin/logout').catch(() => undefined);
     remove(ADMIN_TOKEN);
   },
+
+  /** A-04 AI 분석: 감정 분석(ai-service) + 해설 요약(Claude) → 「AI 제안」으로 저장 */
+  analyzeArtwork: (id: string, useImage = true) =>
+    request<{
+      artwork: Artwork;
+      emotion: { ok: true } | { ok: false; error: string };
+      summary: { ok: true; source: 'claude' | 'fallback' } | { ok: false; error: string };
+    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),
+
+  /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
+  analyzeExhibition: (exhibitionId: string, useImage = true) =>
+    request<{ total: number; analyzed: number; errors: string[] }>(
+      'POST',
+      `/admin/exhibitions/${enc(exhibitionId)}/analyze`,
+      { useImage },
+    ),
+
+  /** 전시의 「AI 제안」을 모두 확정 */
+  confirmExhibitionAi: (exhibitionId: string) =>
+    request<{ confirmed: number }>('POST', `/admin/exhibitions/${enc(exhibitionId)}/confirm-ai`),
 
   listMembers: (query = '') =>
     request<(User & { visitCount: number; lastVisit: string | null })[]>(

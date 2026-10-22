@@ -2,6 +2,18 @@
 import { z } from 'zod';
 
 export const tasteTag = z.enum(['vivid', 'calm', 'abstract', 'soft', 'emotion', 'light']);
+export const aiStatus = z.enum(['none', 'suggested', 'confirmed']);
+const score = z.number().min(0).max(1);
+export const emotionScores = z.object({
+  calm: score, joy: score, sadness: score, tension: score, awe: score, nostalgia: score,
+});
+const analysis = z.object({
+  emotions: emotionScores,
+  usedImage: z.boolean(),
+  imageError: z.string().max(500).nullable(),
+  models: z.object({ image: z.string().max(200), text: z.string().max(200) }),
+  analyzedAt: z.string().max(40),
+});
 export const visitDuration = z.enum(['30m', '60m', 'relaxed'], { message: '관람 시간을 선택해 주세요.' });
 
 const point = z.object({ x: z.number().min(0).max(100), y: z.number().min(0).max(100) });
@@ -63,6 +75,15 @@ export const artworkInput = z.object({
     .refine((u) => u === '' || /^https?:\/\//.test(u), '참고자료 URL은 http(s)로 시작해야 해요.')
     .default(''),
   reviewStatus: z.enum(['pending', 'source_check', 'approved']),
+  analysis: analysis.nullable().default(null),
+  emotionStatus: aiStatus.default('none'),
+  summary: text(1000).default(''),
+  summaryKeywords: z.array(text(30)).max(5).default([]),
+  summaryStatus: aiStatus.default('none'),
+}).refine((w) => w.emotionStatus === 'none' || w.analysis !== null, {
+  message: '감정 분석 결과가 없으면 확정할 수 없어요.',
+}).refine((w) => w.summaryStatus === 'none' || w.summary.trim() !== '', {
+  message: '요약 내용이 비어 있으면 확정할 수 없어요.',
 });
 
 export const visitInput = z.object({
@@ -76,4 +97,6 @@ export const visitInput = z.object({
   reactions: z.record(z.string().max(64), z.enum(['like', 'dislike'])),
   longestViewedArtworkId: z.string().max(64).nullable(),
   keywords: z.array(text(50)).max(20),
+  interpretation: text(2000).nullable().optional(),
+  emotionProfile: emotionScores.nullable().optional(),
 });

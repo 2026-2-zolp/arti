@@ -11,7 +11,10 @@ import { useAsync } from '../../lib/useAsync';
 import { load, save } from '../../lib/storage';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit, type VisitState } from '../../store/VisitContext';
-import type { Artwork, TasteTag, VisitRecord } from '../../types';
+import { EmotionBars } from '../../components/EmotionBars';
+import type { Artwork, EmotionScores, TasteTag, VisitRecord } from '../../types';
+
+type Interpretation = { text: string; emotionProfile: EmotionScores | null };
 
 export default function U12Receipt() {
   const { visitId } = useParams();
@@ -60,17 +63,39 @@ function LiveReceipt() {
     [data],
   );
 
-  // 로그인 사용자: 관람기록에 한 번만 저장 (새로고침해도 중복 저장 방지)
+  // AI 취향 해석: 관람당 한 번만 요청하고 결과를 세션에 보관 (새로고침해도 다시 호출하지 않음)
+  const interpKey = `arti.receipt.interp.${state.startedAt}`;
+  const [interp, setInterp] = useState<Interpretation | 'failed' | null>(() => load<Interpretation | null>(interpKey, null, 'session'));
   useEffect(() => {
-    if (!record || !state.user || !state.startedAt) return;
+    if (!record || interp) return;
+    let cancelled = false;
+    api
+      .interpretVisit({ viewedArtworkIds: state.viewed, reactions: state.reactions, dwell: state.dwell })
+      .then((r) => {
+        if (cancelled) return;
+        const v = { text: r.text, emotionProfile: r.emotionProfile };
+        save(interpKey, v, 'session');
+        setInterp(v);
+      })
+      .catch(() => !cancelled && setInterp('failed'));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record]);
+
+  // 로그인 사용자: AI 해석까지 받은 뒤 관람기록에 한 번만 저장 (새로고침해도 중복 저장 방지)
+  useEffect(() => {
+    if (!record || !state.user || !state.startedAt || interp === null) return;
     const flag = `arti.receipt.saved.${state.startedAt}`;
     if (load(flag, false, 'session')) {
       setSavedNote('관람기록에 저장되었어요.');
       return;
     }
     save(flag, true, 'session');
-    api.saveVisit(record).then(() => setSavedNote('관람기록에 저장되었어요.'));
-  }, [record, state.user, state.startedAt]);
+    const ai = interp === 'failed' ? { interpretation: null, emotionProfile: null } : { interpretation: interp.text, emotionProfile: interp.emotionProfile };
+    api.saveVisit({ ...record, ...ai }).then(() => setSavedNote('관람기록에 저장되었어요.'));
+  }, [record, state.user, state.startedAt, interp]);
 
   if (state.recommendations.length === 0) return <Navigate to="/" replace />;
 
@@ -101,7 +126,12 @@ function LiveReceipt() {
         <Spinner />
       ) : (
         <>
-          <Receipt record={record} artworks={data[1]} />
+          <Receipt
+            record={record}
+            artworks={data[1]}
+            interpretation={interp === null ? undefined : interp === 'failed' ? null : interp.text}
+            profile={interp && interp !== 'failed' ? interp.emotionProfile : null}
+          />
           {state.user ? (
             <p className="center muted small mt-12">{savedNote ?? '저장 중…'}</p>
           ) : (
@@ -146,14 +176,32 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
               {formatDate(data[0].date)} · 관람 {data[0].durationMin}분
             </p>
           </div>
-          <Receipt record={data[0]} artworks={data[1]} />
+          <Receipt
+            record={data[0]}
+            artworks={data[1]}
+            interpretation={data[0].interpretation ?? null}
+            profile={data[0].emotionProfile ?? null}
+          />
         </>
       )}
     </MobileShell>
   );
 }
 
-function Receipt({ record, artworks }: { record: Omit<VisitRecord, 'id'>; artworks: Artwork[] }) {
+/**
+ * interpretation: undefined = AI 해석 받는 중, null = 없음(실패·과거 기록), 문자열 = 해석
+ */
+function Receipt({
+  record,
+  artworks,
+  interpretation,
+  profile,
+}: {
+  record: Omit<VisitRecord, 'id'>;
+  artworks: Artwork[];
+  interpretation: string | null | undefined;
+  profile: EmotionScores | null;
+}) {
   const title = (id: string | null) => artworks.find((w) => w.id === id)?.title ?? '-';
   const likes = Object.values(record.reactions).filter((r) => r === 'like').length;
 
@@ -192,6 +240,18 @@ function Receipt({ record, artworks }: { record: Omit<VisitRecord, 'id'>; artwor
           ))}
         </ol>
       </div>
+
+      {interpretation !== null && (
+        <div className="receipt-section">
+          <span className="muted small">AI 취향 해석</span>
+          {interpretation === undefined ? (
+            <Spinner label="오늘의 관람을 해석하는 중…" />
+          ) : (
+            <p className="receipt-ai">{interpretation}</p>
+          )}
+          {profile && <EmotionBars scores={profile} />}
+        </div>
+      )}
 
       <div className="receipt-section">
         <span className="muted small">오늘의 취향 키워드</span>

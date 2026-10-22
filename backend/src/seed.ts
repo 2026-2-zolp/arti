@@ -53,9 +53,19 @@ export const seedExhibitions: Exhibition[] = [
   },
 ];
 
-const a = (p: Omit<Artwork, 'exhibitionId' | 'updatedAt'> & { updatedAt?: string }): Artwork => ({
+const a = (
+  p: Omit<Artwork, 'exhibitionId' | 'updatedAt' | 'analysis' | 'emotionStatus' | 'summary' | 'summaryKeywords' | 'summaryStatus'> & {
+    updatedAt?: string;
+  },
+): Artwork => ({
   exhibitionId: 'ex-mvp',
   updatedAt: '2026-10-06',
+  // AI 감정 분석·요약은 비어 있는 상태로 시작한다. 관리자 A-04 「AI 분석」으로 채운 뒤 확정한다.
+  analysis: null,
+  emotionStatus: 'none',
+  summary: '',
+  summaryKeywords: [],
+  summaryStatus: 'none',
   ...p,
 });
 

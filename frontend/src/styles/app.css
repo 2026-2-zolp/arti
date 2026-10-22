@@ -435,3 +435,36 @@ h1, h2, h3, p { margin: 0; }
   .admin-main { padding: 24px 16px; overflow-x: auto; }
   .a-search { width: 100%; }
 }
+
+/* ───────── AI 감정 분석·요약 ───────── */
+.emo-bars { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.emo-bars li { display: grid; grid-template-columns: 52px 1fr 40px; align-items: center; gap: 10px; font-size: 14px; }
+.emo-name { color: var(--ink-2); }
+.emo-track { height: 10px; border-radius: 999px; background: #eef0f2; overflow: hidden; }
+.emo-fill { display: block; height: 100%; border-radius: 999px; background: #b9bec5; transition: width .3s; }
+.emo-bars li.top .emo-name { font-weight: 700; color: var(--ink); }
+.emo-bars li.top .emo-fill { background: var(--accent); }
+.emo-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+
+.badge.ai-none { background: #eef0f2; color: var(--muted); }
+.badge.ai-suggested { background: #fff4e0; color: #b45309; }
+.badge.ai-confirmed { background: #e5f4ec; color: var(--ok); }
+
+.ai-panel { margin-top: 24px; }
+.ai-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.ai-panel-head h2 { margin-bottom: 4px !important; }
+.ai-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+.ai-box { border: 1px solid var(--a-line); border-radius: 12px; padding: 18px; }
+.ai-box-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 14px; }
+.ai-box-head h3 { margin: 0 !important; }
+.ai-meta { margin-top: 12px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.ai-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.ai-check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-2); }
+@media (max-width: 1100px) { .ai-grid { grid-template-columns: 1fr; } }
+
+/* 사용자 화면 */
+.ai-label { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 3px 9px; margin-bottom: 8px; }
+.mood-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+.original-text { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #f6f5f2; font-size: 14.5px; }
+.source-line { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.receipt-ai { font-size: 14.5px; line-height: 1.65; color: var(--ink-2); }

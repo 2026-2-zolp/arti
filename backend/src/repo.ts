@@ -4,7 +4,7 @@
  */
 import type { DB } from './db.js';
 import { newId } from './lib/password.js';
-import type { Artwork, Exhibition, TasteTag, User, VisitRecord } from './types.js';
+import type { AiStatus, Artwork, Exhibition, TasteTag, User, VisitRecord } from './types.js';
 
 type Row = Record<string, unknown>;
 const parse = <T>(v: unknown): T => JSON.parse(String(v)) as T;
@@ -64,6 +64,11 @@ const toArtwork = (r: Row): Artwork => ({
   referenceUrl: String(r.reference_url),
   reviewStatus: r.review_status as Artwork['reviewStatus'],
   updatedAt: String(r.updated_at),
+  analysis: r.analysis == null ? null : parse(r.analysis),
+  emotionStatus: (r.emotion_status ?? 'none') as AiStatus,
+  summary: String(r.summary ?? ''),
+  summaryKeywords: parse(r.summary_keywords ?? '[]'),
+  summaryStatus: (r.summary_status ?? 'none') as AiStatus,
 });
 
 export function listArtworks(db: DB, exhibitionId?: string): Artwork[] {
@@ -82,17 +87,22 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
   const saved: Artwork = { ...w, id: w.id || newId('aw'), updatedAt: today() };
   db.prepare(
     `INSERT INTO artworks (id,exhibition_id,title,artist,year,room_id,position,palette,image_url,tags,
-       description,guided_looking,source,reference_url,review_status,updated_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       description,guided_looking,source,reference_url,review_status,updated_at,
+       analysis,emotion_status,summary,summary_keywords,summary_status)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET exhibition_id=excluded.exhibition_id, title=excluded.title,
        artist=excluded.artist, year=excluded.year, room_id=excluded.room_id, position=excluded.position,
        palette=excluded.palette, image_url=excluded.image_url, tags=excluded.tags,
        description=excluded.description, guided_looking=excluded.guided_looking, source=excluded.source,
-       reference_url=excluded.reference_url, review_status=excluded.review_status, updated_at=excluded.updated_at`,
+       reference_url=excluded.reference_url, review_status=excluded.review_status, updated_at=excluded.updated_at,
+       analysis=excluded.analysis, emotion_status=excluded.emotion_status, summary=excluded.summary,
+       summary_keywords=excluded.summary_keywords, summary_status=excluded.summary_status`,
   ).run(
     saved.id, saved.exhibitionId, saved.title, saved.artist, saved.year, saved.roomId,
     saved.position ? j(saved.position) : null, j(saved.palette), saved.imageUrl || null, j(saved.tags),
     saved.description, j(saved.guidedLooking), saved.source, saved.referenceUrl, saved.reviewStatus, saved.updatedAt,
+    saved.analysis ? j(saved.analysis) : null, saved.emotionStatus, saved.summary, j(saved.summaryKeywords),
+    saved.summaryStatus,
   );
   return saved;
 }
@@ -178,15 +188,19 @@ const toVisit = (r: Row): VisitRecord => ({
   reactions: parse(r.reactions),
   longestViewedArtworkId: r.longest_viewed_artwork_id == null ? null : String(r.longest_viewed_artwork_id),
   keywords: parse(r.keywords),
+  interpretation: r.interpretation == null ? null : String(r.interpretation),
+  emotionProfile: r.emotion_profile == null ? null : parse(r.emotion_profile),
 });
 
 export function insertVisit(db: DB, v: VisitRecord & { userId: string }) {
   db.prepare(
     `INSERT INTO visits (id,user_id,exhibition_id,exhibition_title,venue,date,duration_min,viewed_artwork_ids,
-       recommended_count,reactions,longest_viewed_artwork_id,keywords) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+       recommended_count,reactions,longest_viewed_artwork_id,keywords,interpretation,emotion_profile)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
   ).run(
     v.id, v.userId, v.exhibitionId, v.exhibitionTitle, v.venue, v.date, v.durationMin, j(v.viewedArtworkIds),
     v.recommendedCount, j(v.reactions), v.longestViewedArtworkId, j(v.keywords),
+    v.interpretation ?? null, v.emotionProfile ? j(v.emotionProfile) : null,
   );
 }
 

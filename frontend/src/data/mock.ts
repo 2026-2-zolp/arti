@@ -1,4 +1,4 @@
-import type { TasteTag, VisitDuration } from '../types';
+import type { AiStatus, EmotionKey, TasteTag, VisitDuration } from '../types';
 
 /**
  * 화면 공통 상수 (취향 라벨, 취향 파악 카드, 관람 시간 옵션).
@@ -30,3 +30,20 @@ export const DURATION_OPTIONS: { value: VisitDuration; label: string; desc: stri
   { value: '60m', label: '1시간', desc: '추천 작품 5점을 차분히 감상해요', count: 5 },
   { value: 'relaxed', label: '여유롭게', desc: '추천 작품 7점을 충분히 즐겨요', count: 7 },
 ];
+
+/** AI 감정 분석 항목 (backend/src/lib/emotion.ts, ai-service/app/emotions.py 와 같은 키·순서) */
+export const EMOTION_LABEL: Record<EmotionKey, string> = {
+  calm: '평온',
+  joy: '기쁨',
+  sadness: '슬픔',
+  tension: '긴장',
+  awe: '경외',
+  nostalgia: '그리움',
+};
+export const EMOTION_KEYS = Object.keys(EMOTION_LABEL) as EmotionKey[];
+
+export const AI_STATUS_LABEL: Record<AiStatus, string> = {
+  none: '분석 전',
+  suggested: 'AI 제안',
+  confirmed: '확정',
+};

@@ -102,9 +102,35 @@ export function openDb(file: string): DB {
   const db = new DatabaseSync(file);
   db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
   db.exec(SCHEMA);
+  migrate(db);
   const { n } = db.prepare('SELECT COUNT(*) AS n FROM exhibitions').get() as { n: number };
   if (n === 0) seed(db);
   return db;
+}
+
+/**
+ * 기존 DB 파일에 나중에 추가된 컬럼을 붙인다 (이미 있으면 건너뜀).
+ * 덕분에 db:reset 없이도 새 버전 서버로 바로 실행할 수 있다.
+ */
+const ADDED_COLUMNS: Record<string, [string, string][]> = {
+  artworks: [
+    ['analysis', 'TEXT'], // JSON ArtworkAnalysis | NULL
+    ["emotion_status", "TEXT NOT NULL DEFAULT 'none'"],
+    ['summary', "TEXT NOT NULL DEFAULT ''"],
+    ['summary_keywords', "TEXT NOT NULL DEFAULT '[]'"],
+    ["summary_status", "TEXT NOT NULL DEFAULT 'none'"],
+  ],
+  visits: [
+    ['interpretation', 'TEXT'],
+    ['emotion_profile', 'TEXT'], // JSON EmotionScores | NULL
+  ],
+};
+
+function migrate(db: DB) {
+  for (const [table, cols] of Object.entries(ADDED_COLUMNS)) {
+    const existing = new Set((db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name));
+    for (const [name, def] of cols) if (!existing.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+  }
 }
 
 /** 여러 쿼리를 하나의 트랜잭션으로 실행 */

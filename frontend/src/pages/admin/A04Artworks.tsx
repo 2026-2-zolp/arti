@@ -9,9 +9,10 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
-import { TASTE_LABEL } from '../../data/mock';
+import { AI_STATUS_LABEL, TASTE_LABEL } from '../../data/mock';
 import { ArtImage } from '../../components/ArtImage';
-import type { Artwork, ReviewStatus, TasteTag } from '../../types';
+import { EmotionBars } from '../../components/EmotionBars';
+import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 
 export function ArtworkList() {
@@ -19,7 +20,42 @@ export function ArtworkList() {
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
-  const { data } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const { data, reload } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
+  const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  // 일괄 작업 대상 전시: 필터로 고른 전시, 없으면 운영 중인 전시
+  const targetEx = data?.[0].find((e) => e.id === exFilter) ?? data?.[0].find((e) => e.status === 'running');
+
+  const analyzeAll = async () => {
+    if (!targetEx) return;
+    setBusy('analyze');
+    setAiMsg(null);
+    try {
+      const r = await api.analyzeExhibition(targetEx.id);
+      setAiMsg(
+        r.errors.length
+          ? { type: 'err', text: `${r.analyzed}/${r.total}점 분석 완료 · 실패: ${r.errors.join(' / ')}` }
+          : { type: 'ok', text: `「${targetEx.title}」 작품 ${r.analyzed}점을 분석했어요. 결과를 확인한 뒤 확정해 주세요.` },
+      );
+      reload();
+    } catch (e) {
+      setAiMsg({ type: 'err', text: e instanceof Error ? e.message : '분석에 실패했어요.' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const confirmAll = async () => {
+    if (!targetEx || !confirm(`「${targetEx.title}」의 AI 제안(감정 분석·요약)을 모두 확정할까요?`)) return;
+    setBusy('confirm');
+    try {
+      const r = await api.confirmExhibitionAi(targetEx.id);
+      setAiMsg({ type: 'ok', text: `작품 ${r.confirmed}점의 AI 결과를 확정했어요. 이제 추천·작품 화면에 반영됩니다.` });
+      reload();
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const setFilter = (k: string, v: string) => {
     const next = new URLSearchParams(params);
@@ -42,11 +78,20 @@ export function ArtworkList() {
         title="작품 관리"
         desc="작품 정보와 설명, 출처·참고자료, 검수 상태를 함께 관리합니다."
         actions={
-          <button className="a-btn primary" onClick={() => navigate(`/admin/artworks/new${exFilter ? `?exhibition=${exFilter}` : ''}`)}>
-            + 작품 등록
-          </button>
+          <>
+            <button className="a-btn" disabled={!targetEx || busy !== null} onClick={analyzeAll}>
+              {busy === 'analyze' ? 'AI 분석 중… (작품당 수 초)' : '전시 AI 일괄 분석'}
+            </button>
+            <button className="a-btn" disabled={!targetEx || busy !== null} onClick={confirmAll}>
+              AI 제안 모두 확정
+            </button>
+            <button className="a-btn primary" onClick={() => navigate(`/admin/artworks/new${exFilter ? `?exhibition=${exFilter}` : ''}`)}>
+              + 작품 등록
+            </button>
+          </>
         }
       />
+      {aiMsg && <p className={aiMsg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{aiMsg.text}</p>}
       <div className="a-filters">
         <select value={exFilter} onChange={(e) => setFilter('exhibition', e.target.value)} aria-label="전시 필터">
           <option value="">전체 전시</option>
@@ -78,6 +123,7 @@ export function ArtworkList() {
               <th>전시실</th>
               <th>위치</th>
               <th>검수 상태</th>
+              <th>AI 감정·요약</th>
               <th>수정일</th>
             </tr>
           </thead>
@@ -96,6 +142,10 @@ export function ArtworkList() {
                 <td>{w.position ? '등록' : <span className="text-warn">미등록</span>}</td>
                 <td>
                   <span className={`badge ${w.reviewStatus}`}>{REVIEW_LABEL[w.reviewStatus]}</span>
+                </td>
+                <td>
+                  <span className={`badge ai-${w.emotionStatus}`}>감정 {AI_STATUS_LABEL[w.emotionStatus]}</span>{' '}
+                  <span className={`badge ai-${w.summaryStatus}`}>요약 {AI_STATUS_LABEL[w.summaryStatus]}</span>
                 </td>
                 <td>{w.updatedAt}</td>
               </tr>
@@ -123,6 +173,11 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   referenceUrl: '',
   reviewStatus: 'pending',
   updatedAt: '',
+  analysis: null,
+  emotionStatus: 'none',
+  summary: '',
+  summaryKeywords: [],
+  summaryStatus: 'none',
 });
 
 export function ArtworkEdit() {
@@ -157,11 +212,23 @@ export function ArtworkEdit() {
     if (!w.title.trim() || !w.artist.trim()) return setMsg({ type: 'err', text: '작품명과 작가는 필수입니다.' });
     if (w.reviewStatus === 'approved' && (!w.source.trim() || !w.description.trim()))
       return setMsg({ type: 'err', text: '검수 완료로 저장하려면 작품 해설과 출처가 있어야 해요.' });
-    const saved = await api.saveArtwork({
-      ...w,
-      guidedLooking: guided.split('\n').map((s) => s.trim()).filter(Boolean),
+    let saved: Artwork;
+    try {
+      saved = await api.saveArtwork({
+        ...w,
+        guidedLooking: guided.split('\n').map((s) => s.trim()).filter(Boolean),
+      });
+    } catch (err) {
+      return setMsg({ type: 'err', text: err instanceof Error ? err.message : '저장하지 못했어요.' });
+    }
+    setW(saved);
+    setMsg({
+      type: 'ok',
+      text:
+        saved.emotionStatus !== w.emotionStatus || saved.summaryStatus !== w.summaryStatus
+          ? '저장했습니다. 공식 해설이나 이미지가 바뀌어 AI 결과를 다시 확인해야 해요(「AI 제안」으로 변경).'
+          : '저장했습니다.',
     });
-    setMsg({ type: 'ok', text: '저장했습니다.' });
     if (isNew) navigate(`/admin/artworks/${saved.id}`, { replace: true });
   };
 
@@ -288,6 +355,176 @@ export function ArtworkEdit() {
           <p className="muted small">검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.</p>
         </section>
       </div>
+      {w.id ? (
+        <AiPanel w={w} setW={setW} />
+      ) : (
+        <p className="muted small mt-24">작품을 먼저 저장하면 AI 감정 분석·해설 요약을 실행할 수 있어요.</p>
+      )}
     </form>
+  );
+}
+
+/**
+ * AI 분석·요약 패널
+ * - 「AI 분석 실행」: 저장된 해설(+이미지)로 감정 분석(오픈소스 모델) + 해설 요약(Claude) → 「AI 제안」
+ * - 관리자가 결과를 확인·수정한 뒤 「확정」해야 사용자 화면과 추천에 쓰인다
+ */
+function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => Artwork | null) => void }) {
+  const [useImage, setUseImage] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  const run = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await api.analyzeArtwork(w.id, useImage);
+      // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
+      setW((cur) =>
+        cur && {
+          ...cur,
+          analysis: r.artwork.analysis,
+          emotionStatus: r.artwork.emotionStatus,
+          summary: r.artwork.summary,
+          summaryKeywords: r.artwork.summaryKeywords,
+          summaryStatus: r.artwork.summaryStatus,
+          updatedAt: r.artwork.updatedAt,
+        },
+      );
+      const notes = [
+        r.emotion.ok ? '감정 분석 완료' : `감정 분석 실패: ${r.emotion.error}`,
+        r.summary.ok
+          ? r.summary.source === 'claude'
+            ? '요약 완료(Claude)'
+            : '요약: Claude API 키가 없어 원문 앞부분으로 대신했어요'
+          : `요약 실패: ${r.summary.error}`,
+      ];
+      setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
+    } catch (e) {
+      setMsg({ type: 'err', text: e instanceof Error ? e.message : 'AI 분석에 실패했어요.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** 확정/해제는 바로 서버에 저장 */
+  const setStatus = async (patch: Partial<Pick<Artwork, 'emotionStatus' | 'summaryStatus'>>) => {
+    try {
+      const saved = await api.saveArtwork({ ...w, ...patch });
+      setW(() => saved);
+      const demoted = (Object.keys(patch) as (keyof typeof patch)[]).some((k) => saved[k] !== patch[k]);
+      setMsg(
+        demoted
+          ? { type: 'err', text: '공식 해설·이미지가 분석 때와 달라져 확정할 수 없어요. 「AI 다시 분석」 후 확정해 주세요.' }
+          : { type: 'ok', text: '저장했습니다.' },
+      );
+    } catch (e) {
+      setMsg({ type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
+    }
+  };
+
+  const badge = (s: AiStatus) => <span className={`badge ai-${s}`}>{AI_STATUS_LABEL[s]}</span>;
+  const a = w.analysis;
+
+  return (
+    <section className="a-card pad ai-panel">
+      <div className="ai-panel-head">
+        <div>
+          <h2>AI 분석 · 요약</h2>
+          <p className="muted small">
+            저장된 작품 해설{w.imageUrl ? '과 이미지' : ''}를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후
+            「확정」해야 사용자 화면과 추천에 반영돼요.
+          </p>
+        </div>
+        <div className="a-inline">
+          {w.imageUrl && (
+            <label className="ai-check">
+              <input type="checkbox" checked={useImage} onChange={(e) => setUseImage(e.target.checked)} />
+              이미지도 분석
+            </label>
+          )}
+          <button type="button" className="a-btn primary" disabled={busy} onClick={run}>
+            {busy ? 'AI 분석 중…' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
+          </button>
+        </div>
+      </div>
+      {msg && <p className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{msg.text}</p>}
+
+      <div className="ai-grid">
+        <div className="ai-box">
+          <div className="ai-box-head">
+            <h3>감정 분석</h3>
+            {badge(w.emotionStatus)}
+          </div>
+          {a ? (
+            <>
+              <EmotionBars scores={a.emotions} />
+              <p className="ai-meta">
+                분석 재료: {a.usedImage ? '이미지 + 해설' : '해설 텍스트'}
+                {a.imageError && <> (이미지 실패: {a.imageError})</>}
+                <br />
+                모델: {a.models.image} · {a.models.text}
+                <br />
+                분석 시각: {a.analyzedAt.slice(0, 16).replace('T', ' ')}
+              </p>
+              <div className="ai-actions">
+                {w.emotionStatus !== 'confirmed' ? (
+                  <button type="button" className="a-btn sm primary" onClick={() => setStatus({ emotionStatus: 'confirmed' })}>
+                    감정 분석 확정
+                  </button>
+                ) : (
+                  <button type="button" className="a-btn sm" onClick={() => setStatus({ emotionStatus: 'suggested' })}>
+                    확정 해제
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="muted small">아직 분석하지 않았어요. 「AI 분석 실행」을 눌러 주세요.</p>
+          )}
+        </div>
+
+        <div className="ai-box">
+          <div className="ai-box-head">
+            <h3>초보자용 해설 요약</h3>
+            {badge(w.summaryStatus)}
+          </div>
+          <label className="a-field">
+            <span>요약 (직접 고칠 수 있어요)</span>
+            <textarea
+              rows={5}
+              value={w.summary}
+              onChange={(e) => setW((cur) => cur && { ...cur, summary: e.target.value, summaryStatus: cur.summaryStatus === 'none' ? 'suggested' : cur.summaryStatus })}
+              placeholder="「AI 분석 실행」으로 공식 해설을 요약하거나 직접 입력하세요."
+            />
+          </label>
+          <label className="a-field">
+            <span>키워드 (쉼표로 구분)</span>
+            <input
+              value={w.summaryKeywords.join(', ')}
+              onChange={(e) =>
+                setW((cur) => cur && { ...cur, summaryKeywords: e.target.value.split(',').map((k) => k.trim()).filter(Boolean).slice(0, 5) })
+              }
+            />
+          </label>
+          <div className="ai-actions">
+            {w.summaryStatus !== 'confirmed' ? (
+              <button
+                type="button"
+                className="a-btn sm primary"
+                disabled={!w.summary.trim()}
+                onClick={() => setStatus({ summaryStatus: 'confirmed' })}
+              >
+                요약 확정 (수정 내용 포함 저장)
+              </button>
+            ) : (
+              <button type="button" className="a-btn sm" onClick={() => setStatus({ summaryStatus: 'suggested' })}>
+                확정 해제
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

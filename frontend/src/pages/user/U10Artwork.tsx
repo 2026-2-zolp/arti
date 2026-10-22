@@ -11,6 +11,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
+import { topEmotionLabels } from '../../components/EmotionBars';
 import { useVisit } from '../../store/VisitContext';
 import type { Reaction } from '../../types';
 
@@ -31,6 +32,7 @@ export default function U10Artwork() {
   const [expanded, setExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [aiText, setAiText] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
   const tts = useSpeech();
 
   const { data: w, loading } = useAsync(
@@ -43,6 +45,7 @@ export default function U10Artwork() {
     setTab('desc');
     setAiText(null);
     setExpanded(false);
+    setShowOriginal(false);
   }, [rec?.artworkId]);
 
   // AI 맞춤 설명 탭을 처음 열 때만 요청 (필요할 때 불러오기 = lazy loading)
@@ -79,9 +82,13 @@ export default function U10Artwork() {
     navigate(isLast ? '/receipt' : '/route');
   };
 
+  // 관리자가 확정한 AI 요약이 있으면 요약을 먼저 보여 준다 (공식 해설 원문은 「원문 보기」)
+  const hasSummary = !!w && w.summaryStatus === 'confirmed' && w.summary.trim() !== '';
+  const mood = w?.emotionStatus === 'confirmed' && w.analysis ? topEmotionLabels(w.analysis.emotions) : [];
+
   const tabText = (): string => {
     if (!w) return '';
-    if (tab === 'desc') return w.description;
+    if (tab === 'desc') return hasSummary ? w.summary : w.description;
     if (tab === 'guided') return w.guidedLooking.map((q, i) => `${i + 1}. ${q}`).join(' ');
     return aiText ?? '';
   };
@@ -135,11 +142,23 @@ export default function U10Artwork() {
             {w.year}
           </p>
 
+          {mood.length > 0 && (
+            <div className="mood-row">
+              이 작품의 분위기
+              {mood.map((m) => (
+                <span key={m} className="chip sm accent">
+                  {m}
+                </span>
+              ))}
+              <span className="small">(AI 감정 분석)</span>
+            </div>
+          )}
+
           <div className="reason-box">
             <Icon name="bulb" />
             <div>
               <strong>이 작품이 추천된 이유</strong>
-              <p>{reasonSentence(rec.matchedTags)}</p>
+              <p>{reasonSentence(rec.matchedTags, rec.matchedEmotions ?? [])}</p>
             </div>
           </div>
 
@@ -162,16 +181,36 @@ export default function U10Artwork() {
           </div>
 
           <div className="tab-panel" role="tabpanel">
-            {tab === 'desc' && (
-              <p className={expanded ? '' : 'clamp-3'}>
-                {w.description}{' '}
-                {!expanded && (
-                  <button className="link-btn inline" onClick={() => setExpanded(true)}>
-                    더보기
+            {tab === 'desc' &&
+              (hasSummary ? (
+                <>
+                  <span className="ai-label">AI 요약 · 미술관 해설 기반</span>
+                  <p>{w.summary}</p>
+                  {w.summaryKeywords.length > 0 && (
+                    <div className="chips wrap mt-12">
+                      {w.summaryKeywords.map((k) => (
+                        <span key={k} className="chip sm outline">
+                          #{k}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <button className="link-btn mt-12" onClick={() => setShowOriginal((v) => !v)}>
+                    {showOriginal ? '원문 접기' : '미술관 공식 해설 원문 보기'}
                   </button>
-                )}
-              </p>
-            )}
+                  {showOriginal && <p className="original-text">{w.description}</p>}
+                  <p className="source-line">출처: {w.source || '검수 중인 자료'}</p>
+                </>
+              ) : (
+                <p className={expanded ? '' : 'clamp-3'}>
+                  {w.description}{' '}
+                  {!expanded && (
+                    <button className="link-btn inline" onClick={() => setExpanded(true)}>
+                      더보기
+                    </button>
+                  )}
+                </p>
+              ))}
             {tab === 'guided' && (
               <ol className="guided-list">
                 {w.guidedLooking.map((q) => (

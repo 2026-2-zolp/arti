@@ -14,6 +14,10 @@ export const config = {
   corsOrigin: env.CORS_ORIGIN || '',
   /** 로그인·AI 요청 횟수 제한. 테스트에서만 RATE_LIMIT=off */
   rateLimit: env.RATE_LIMIT !== 'off',
+  /** 감정 분석 서버(ai-service) 주소 */
+  emotionServiceUrl: (env.EMOTION_SERVICE_URL || 'http://localhost:8000').replace(/\/$/, ''),
+  /** 첫 분석 때 모델 로딩까지 기다릴 수 있도록 넉넉하게 */
+  emotionTimeoutMs: Number(env.EMOTION_TIMEOUT_MS ?? 180_000),
   ai: {
     /** API 키가 있으면 Claude, 없으면 규칙 기반 답변 */
     enabled: Boolean(env.ANTHROPIC_API_KEY),
