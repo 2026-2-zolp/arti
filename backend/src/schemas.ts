@@ -75,6 +75,9 @@ export const artworkInput = z.object({
     .refine((u) => u === '' || /^https?:\/\//.test(u), '참고자료 URL은 http(s)로 시작해야 해요.')
     .default(''),
   reviewStatus: z.enum(['pending', 'source_check', 'approved']),
+  // 업로드 파일은 전용 API로만 바꾼다 (PUT에서 보낸 값은 무시)
+  imageFile: z.string().max(100).nullable().default(null),
+  showImage: z.boolean().default(true),
   analysis: analysis.nullable().default(null),
   emotionStatus: aiStatus.default('none'),
   summary: text(1000).default(''),

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from app import main
-from app.analyzer import combine, normalize_sum, scale_to_max
+from app.analyzer import apply_prior, combine, load_calibration, normalize_sum, scale_to_max
 from app.emotions import EMOTION_KEYS
 
 
@@ -74,3 +74,31 @@ def test_empty_input_is_400(client):
 def test_health_and_emotions(client):
     assert client.get("/health").json()["ok"] is True
     assert [e["key"] for e in client.get("/emotions").json()] == EMOTION_KEYS
+
+
+def test_uploaded_image_base64(client):
+    import base64, io
+    buf = io.BytesIO()
+    Image.new("RGB", (16, 16), (200, 50, 50)).save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    body = client.post("/analyze", json={"description": "밝은 축제", "imageBase64": b64}).json()
+    assert body["usedImage"] is True and body["imageError"] is None
+
+
+def test_broken_base64_falls_back_to_text(client):
+    body = client.post("/analyze", json={"description": "고요한 호수", "imageBase64": "!!!not-base64"}).json()
+    assert body["usedImage"] is False and "base64" in body["imageError"]
+
+
+def test_calibration_removes_label_bias(tmp_path):
+    prior = {k: 0.0 for k in EMOTION_KEYS} | {"awe": 0.8}
+    biased = {k: 0.2 for k in EMOTION_KEYS} | {"awe": 0.9, "calm": 0.6}
+    assert max(biased, key=biased.get) == "awe"
+    fixed = apply_prior(biased, prior)
+    assert max(fixed, key=fixed.get) == "calm"  # 어디에나 높게 나오던 '경외'를 빼면 평온이 1위
+    assert apply_prior({k: 0.1 for k in EMOTION_KEYS}, {k: 0.5 for k in EMOTION_KEYS}) == {k: 0.1 for k in EMOTION_KEYS}
+
+    f = tmp_path / "calibration.json"
+    f.write_text('{"prior": {"text": {"calm": 0.1, "joy": 0.1, "sadness": 0.1, "tension": 0.1, "awe": 0.5, "nostalgia": 0.1}}}')
+    assert load_calibration(f)["text"]["awe"] == 0.5
+    assert load_calibration(tmp_path / "missing.json") == {}

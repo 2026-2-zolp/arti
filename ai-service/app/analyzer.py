@@ -10,7 +10,9 @@
 """
 from __future__ import annotations
 
+import json
 import threading
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -20,6 +22,29 @@ from . import config
 from .emotions import EMOTION_KEYS, EMOTIONS, NLI_HYPOTHESIS
 
 Scores = dict[str, float]
+
+
+# ───────────── 라벨 편향 보정 ─────────────
+# 제로샷 모델은 어떤 글이든 특정 감정(예: '경외')에 높은 점수를 주는 편향이 있다.
+# evaluation 실험(python -m evaluation.evaluate --save-calibration)으로 구한 "감정별 평균 점수"를 빼서 줄인다.
+# 실험에서 Top-1 정확도 36% → 45%, Top-2 45% → 73% 로 개선 (evaluation/results/report.md)
+CALIBRATION_FILE = Path(__file__).with_name("calibration.json")
+
+
+def load_calibration(path: Path = CALIBRATION_FILE) -> dict[str, Scores]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return {kind: {k: float(v[k]) for k in EMOTION_KEYS} for kind, v in data.get("prior", {}).items()}
+    except (OSError, ValueError, KeyError, TypeError):
+        return {}
+
+
+def apply_prior(scores: Scores, prior: Scores | None) -> Scores:
+    """감정별 평균 점수(편향)를 빼고 음수는 0으로. 모두 0 이하가 되면 원래 점수를 쓴다."""
+    if not prior:
+        return scores
+    adjusted = {k: max(scores.get(k, 0.0) - prior[k], 0.0) for k in EMOTION_KEYS}
+    return adjusted if any(v > 0 for v in adjusted.values()) else scores
 
 
 class Scorer(Protocol):
@@ -120,10 +145,17 @@ class AnalysisResult:
     image_error: str | None
 
 
-def analyze(scorer: Scorer, text: str, image: Image.Image | None, image_error: str | None = None) -> AnalysisResult:
+def analyze(
+    scorer: Scorer,
+    text: str,
+    image: Image.Image | None,
+    image_error: str | None = None,
+    calibration: dict[str, Scores] | None = None,
+) -> AnalysisResult:
     text = text.strip()
-    img = scale_to_max(normalize_sum(scorer.image_scores(image))) if image is not None else None
-    txt = scale_to_max(normalize_sum(scorer.text_scores(text))) if text else None
+    cal = calibration or {}
+    img = scale_to_max(normalize_sum(apply_prior(scorer.image_scores(image), cal.get("image")))) if image is not None else None
+    txt = scale_to_max(normalize_sum(apply_prior(scorer.text_scores(text), cal.get("text")))) if text else None
     return AnalysisResult(
         emotions=combine(img, txt, config.IMAGE_WEIGHT),
         image_scores=img,

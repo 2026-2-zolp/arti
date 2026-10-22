@@ -21,7 +21,9 @@
 - **감정 6가지:** 평온 · 기쁨 · 슬픔 · 긴장 · 경외 · 그리움 (`app/emotions.py`에서 이름·문장을 바꿀 수 있음)
 - **합치는 방법:** 이미지 60% + 텍스트 40% 가중 평균 → 가장 강한 감정을 1로 맞춘 상대 점수(0~1). 이미지가 없거나 내려받지 못하면 텍스트만 사용
 - **재현성:** 무작위 요소가 없어 같은 입력에는 항상 같은 점수가 나옵니다
-- **한계:** 학습 없이 쓰는 방식이라 "대략적인 경향" 수준입니다. 그래서 결과는 **「AI 제안」**으로만 저장하고 관리자가 확인한 뒤 확정합니다
+- **라벨 편향 보정:** 텍스트 모델은 어떤 해설이든 '경외'에 높은 점수를 주는 편향이 있어(평균 0.53, '평온'은 0.07), 감정별 평균 점수(`app/calibration.json`)를 빼서 보정합니다. `python -m evaluation.evaluate --save-calibration`으로 다시 만들 수 있어요(실제 전시 작품으로 다시 생성 권장).
+- **이미지 입력:** 관리자가 A-04에서 **캡처한 이미지 파일을 올리면** 파일 내용이 그대로(base64) 이 서버로 전달됩니다. 이미지 URL도 지원합니다.
+- **한계 (실험 결과):** 예시 정답 11점 기준 텍스트 분석 정확도는 **Top-1 45%, Top-2 73%**(보정 후)로 "대략적인 경향" 수준입니다. 시험 이미지 1점에서는 이미지 분석(CLIP)이 더 자연스러운 결과를 냈습니다(노을 바다 그림 → 그리움·평온). 그래서 결과는 **「AI 제안」**으로만 저장하고 관리자가 확인한 뒤 확정합니다
 
 ## 실행
 
@@ -53,9 +55,9 @@ cd frontend && npm run dev                          # 3) 화면 :5173
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/health` | `{ ok, modelsLoaded }` |
+| GET | `/health` | `{ ok, modelsLoaded, calibration }` |
 | GET | `/emotions` | 감정 항목 목록 |
-| POST | `/analyze` | `{ title, description, imageUrl? }` → `{ emotions, imageScores, textScores, usedImage, imageError, models }` |
+| POST | `/analyze` | `{ title, description, imageBase64?, imageUrl? }` → `{ emotions, imageScores, textScores, usedImage, imageError, models }` |
 
 ```json
 // POST /analyze 응답 예시
@@ -90,7 +92,20 @@ python -m evaluation.evaluate --image            # 이미지(CLIP) 분석도 평
 - **결과** `evaluation/results/report.md`(비교표·작품별 결과), `details.csv`(작품·설정별 점수). 표를 그대로 슬라이드에 쓸 수 있습니다.
 - **지표:** Top-1 정확도(1위 감정이 정답에 포함), Top-2 정확도(1·2위 중 하나라도 정답), 작품당 처리 시간
 - **보정(calibration):** 모든 작품의 평균 점수를 빼서 "어떤 작품에나 특정 감정을 높게 주는" 모델 편향을 줄인 결과입니다(정답은 사용하지 않음).
-- 이미지 평가는 `imageUrl`에 **공개(저작권 만료) 이미지 주소**를 넣어 실행하세요. 예: 위키미디어 공용의 명화 이미지.
+- **이미지 평가:** 캡처한 이미지를 `evaluation/images/`에 넣고 `eval_set.json`의 `imagePath`에 `"images/파일이름.png"`를 적은 뒤 `--image`로 실행하세요(또는 `imageUrl`에 공개 이미지 주소). 이 폴더의 이미지는 Git에 올라가지 않습니다.
+- **보정값 갱신:** `--save-calibration`을 붙이면 서비스 모델의 감정별 평균 점수를 `app/calibration.json`에 저장합니다. 서버를 다시 켜면 반영돼요.
+
+#### 실험 결과 (2026-10-22, 목업 작품 11점, 예시 정답)
+
+| 설정 | Top-1 | Top-2 | 작품당 시간(CPU 4코어) |
+|---|---|---|---|
+| mDeBERTa-base (서비스 기본) | 36% | 45% | 10.6초 |
+| **mDeBERTa-base + 라벨 편향 보정 (서비스 적용)** | **45%** | **73%** | 10.6초 |
+| mDeBERTa-base 단일 라벨 | 36% | 64% | 10.5초 |
+| mDeBERTa-base 2mil7 | 27% | 55% | 12.8초 |
+| XLM-RoBERTa-large | 27% | 45% | 2.5초 |
+
+더 큰 모델이 더 낫지 않았고, 보정이 가장 효과적이었습니다. 정답 라벨이 1명의 판단·11점뿐이라 **팀이 라벨을 검토하고 실제 전시 작품·캡처 이미지로 다시 실험**하는 것을 권장합니다. 전체 표는 `evaluation/results/report.md`.
 
 ## 환경 변수
 
@@ -100,6 +115,7 @@ python -m evaluation.evaluate --image            # 이미지(CLIP) 분석도 평
 | `ARTI_NLI_MODEL` | MoritzLaurer/mDeBERTa-v3-base-mnli-xnli | 텍스트 모델 |
 | `ARTI_IMAGE_WEIGHT` | 0.6 | 이미지 결과 비중 |
 | `ARTI_PRELOAD` | true | 서버 시작 시 모델 미리 불러오기 |
+| `ARTI_CALIBRATE` | true | `app/calibration.json`으로 라벨 편향 보정 |
 
 ## 더 발전시키려면
 

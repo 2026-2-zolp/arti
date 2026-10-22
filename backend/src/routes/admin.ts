@@ -1,13 +1,16 @@
 /**
  * 관리자 API (A-01 ~ A-06). 로그인을 제외한 모든 요청에 X-Admin-Token 필요.
  */
-import { Router } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+import express, { Router } from 'express';
+import { config } from '../config.js';
 import { z } from 'zod';
 import type { DB } from '../db.js';
 import { createSession, deleteSession, HttpError, parse, rateLimit, requireAdmin } from '../http.js';
 import { summarizeDescription } from '../lib/ai.js';
 import { analyzeEmotions } from '../lib/emotionClient.js';
-import { hashPassword, newToken, verifyPassword } from '../lib/password.js';
+import { hashPassword, newId, newToken, verifyPassword } from '../lib/password.js';
 import type { Artwork } from '../types.js';
 import * as repo from '../repo.js';
 import { artworkInput, exhibitionInput } from '../schemas.js';
@@ -70,6 +73,7 @@ export function adminRoutes(db: DB) {
       repo.upsertArtwork(db, {
         ...body,
         id: req.params.id,
+        imageFile: prev.imageFile,
         updatedAt: '',
         emotionStatus: demote(body.emotionStatus),
         summaryStatus: demote(body.summaryStatus),
@@ -146,6 +150,51 @@ export function adminRoutes(db: DB) {
       confirmed += 1;
     }
     res.json({ confirmed });
+  });
+
+  /**
+   * 작품 이미지 파일 업로드 (캡처한 이미지 등). 요청 본문 = 이미지 파일 그대로, Content-Type = image/png|jpeg|webp
+   * 파일 앞부분(시그니처)으로 실제 이미지인지 확인한다. 이미지가 바뀌면 확정된 AI 결과는 「AI 제안」으로 돌아간다.
+   */
+  const IMAGE_TYPES: Record<string, { ext: string; magic: (b: Buffer) => boolean }> = {
+    'image/png': { ext: 'png', magic: (b) => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) },
+    'image/jpeg': { ext: 'jpg', magic: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+    'image/webp': { ext: 'webp', magic: (b) => b.subarray(0, 4).toString() === 'RIFF' && b.subarray(8, 12).toString() === 'WEBP' },
+  };
+  const removeFile = (file: string | null) => {
+    if (file) fs.rmSync(path.join(config.uploadDir, path.basename(file)), { force: true });
+  };
+  const demoteAi = (w: Artwork): Artwork => ({
+    ...w,
+    emotionStatus: w.emotionStatus === 'confirmed' ? 'suggested' : w.emotionStatus,
+    summaryStatus: w.summaryStatus === 'confirmed' ? 'suggested' : w.summaryStatus,
+  });
+
+  r.post(
+    '/admin/artworks/:id/image',
+    express.raw({ type: Object.keys(IMAGE_TYPES), limit: '10mb' }),
+    (req, res) => {
+      const w = repo.getArtwork(db, String(req.params.id));
+      if (!w) throw new HttpError(404, '작품 정보를 찾을 수 없어요.');
+      const type = IMAGE_TYPES[(req.get('content-type') ?? '').split(';')[0].trim()];
+      const body = req.body as unknown;
+      if (!type || !Buffer.isBuffer(body) || body.length === 0)
+        throw new HttpError(415, 'PNG, JPG, WEBP 이미지 파일만 올릴 수 있어요.');
+      if (!type.magic(body)) throw new HttpError(415, '이미지 파일이 아니거나 손상된 파일이에요.');
+      fs.mkdirSync(config.uploadDir, { recursive: true });
+      const file = `${w.id}-${newId('img').slice(4)}.${type.ext}`;
+      fs.writeFileSync(path.join(config.uploadDir, file), body);
+      removeFile(w.imageFile);
+      res.json(repo.upsertArtwork(db, { ...demoteAi(w), imageFile: file }));
+    },
+  );
+
+  r.delete('/admin/artworks/:id/image', (req, res) => {
+    const w = repo.getArtwork(db, String(req.params.id));
+    if (!w) throw new HttpError(404, '작품 정보를 찾을 수 없어요.');
+    if (!w.imageFile) return void res.json(w);
+    removeFile(w.imageFile);
+    res.json(repo.upsertArtwork(db, { ...demoteAi(w), imageFile: null }));
   });
 
   /** A-06 회원 조회 (이메일·닉네임 검색) */

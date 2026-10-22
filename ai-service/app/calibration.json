@@ -1,0 +1,13 @@
+{
+  "note": "evaluation/evaluate.py --save-calibration 으로 생성 (2026-10-22, 작품 11점). 감정별 평균 점수 = 모델의 라벨 편향. 실제 전시 작품으로 다시 생성하는 것을 권장.",
+  "prior": {
+    "text": {
+      "calm": 0.0686,
+      "joy": 0.1512,
+      "sadness": 0.2298,
+      "tension": 0.3157,
+      "awe": 0.5256,
+      "nostalgia": 0.3177
+    }
+  }
+}

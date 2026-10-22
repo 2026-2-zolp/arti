@@ -7,7 +7,7 @@
 실행 (ai-service 폴더에서, 가상환경 켠 상태):
     python -m evaluation.evaluate                  # 기본 설정 전체 비교
     python -m evaluation.evaluate --configs current large
-    python -m evaluation.evaluate --image          # eval_set의 imageUrl로 CLIP 이미지 분석도 평가
+    python -m evaluation.evaluate --image          # 작품 이미지(imagePath 캡처 파일 또는 imageUrl)로 CLIP 이미지 분석도 평가
 
 결과:
     evaluation/results/report.md    정확도 비교표 + 작품별 결과 (슬라이드에 바로 쓰기 좋은 형식)
@@ -93,9 +93,13 @@ def run_image(items: list[dict]) -> tuple[dict[str, dict[str, float]], float]:
     out: dict[str, dict[str, float]] = {}
     t0 = time.time()
     for it in items:
-        res = httpx.get(it["imageUrl"], timeout=20, follow_redirects=True, headers={"User-Agent": "ARTI-eval/0.1"})
-        res.raise_for_status()
-        out[it["id"]] = scorer.image_scores(Image.open(io.BytesIO(res.content)).convert("RGB"))
+        if it.get("imagePath"):  # 캡처한 이미지 파일 (evaluation 폴더 기준 상대 경로)
+            img = Image.open(HERE / it["imagePath"])
+        else:
+            res = httpx.get(it["imageUrl"], timeout=20, follow_redirects=True, headers={"User-Agent": "ARTI-eval/0.1"})
+            res.raise_for_status()
+            img = Image.open(io.BytesIO(res.content))
+        out[it["id"]] = scorer.image_scores(img.convert("RGB"))
     return out, (time.time() - t0) / max(1, len(items))
 
 
@@ -109,29 +113,57 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="ARTI 감정 분석 모델 비교 실험")
     ap.add_argument("--data", default=str(HERE / "eval_set.json"))
     ap.add_argument("--configs", nargs="*", default=list(CONFIGS), choices=list(CONFIGS))
-    ap.add_argument("--image", action="store_true", help="imageUrl이 있는 작품으로 CLIP 이미지 분석도 평가")
+    ap.add_argument(
+        "--save-calibration",
+        action="store_true",
+        help="current 설정(서비스 모델)의 감정별 평균 점수를 app/calibration.json 에 저장 → 서비스가 라벨 편향 보정에 사용",
+    )
+    ap.add_argument("--image", action="store_true", help="imagePath(캡처 파일)·imageUrl이 있는 작품으로 CLIP 이미지 분석도 평가")
     args = ap.parse_args()
 
     data = json.loads(Path(args.data).read_text(encoding="utf-8"))
     items = data["items"]
     runs: list[tuple[str, str, dict[str, dict[str, float]], float, list[dict]]] = []
+    prior: dict[str, dict[str, float]] = {}
+
+    def mean_scores(raw: dict[str, dict[str, float]]) -> dict[str, float]:
+        return {k: round(sum(s[k] for s in raw.values()) / len(raw), 4) for k in EMOTION_KEYS}
 
     for name in args.configs:
         cfg = CONFIGS[name]
         print(f"▶ {name}: {cfg.desc}", flush=True)
         raw, sec = run_text(cfg, items)
+        if name == "current":
+            prior["text"] = mean_scores(raw)
         runs.append((name, cfg.desc, raw, sec, items))
         runs.append((f"{name}+보정", f"{cfg.desc} + 라벨 편향 보정", calibrate(raw), sec, items))
 
     if args.image:
-        img_items = [i for i in items if i.get("imageUrl")]
+        img_items = [i for i in items if i.get("imagePath") or i.get("imageUrl")]
         if img_items:
             print(f"▶ image: CLIP 이미지 분석 ({len(img_items)}점)", flush=True)
             raw, sec = run_image(img_items)
+            prior["image"] = mean_scores(raw)
             runs.append(("image", "CLIP ViT-B/32 이미지 제로샷", raw, sec, img_items))
             runs.append(("image+보정", "CLIP 이미지 + 라벨 편향 보정", calibrate(raw), sec, img_items))
         else:
-            print("! imageUrl이 있는 작품이 없어 이미지 평가는 건너뜁니다.")
+            print("! imagePath·imageUrl이 있는 작품이 없어 이미지 평가는 건너뜁니다.")
+
+    if args.save_calibration and prior:
+        cal_file = HERE.parent / "app" / "calibration.json"
+        cal_file.write_text(
+            json.dumps(
+                {
+                    "note": f"evaluation/evaluate.py --save-calibration 으로 생성 ({datetime.now():%Y-%m-%d}, 작품 {len(items)}점). "
+                    "감정별 평균 점수 = 모델의 라벨 편향. 실제 전시 작품으로 다시 생성하는 것을 권장.",
+                    "prior": prior,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        print(f"보정값 저장: {cal_file} ({', '.join(prior)})")
 
     out_dir = HERE / "results"
     out_dir.mkdir(exist_ok=True)

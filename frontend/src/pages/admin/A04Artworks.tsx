@@ -10,7 +10,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { AI_STATUS_LABEL, TASTE_LABEL } from '../../data/mock';
-import { ArtImage } from '../../components/ArtImage';
+import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
@@ -131,7 +131,7 @@ export function ArtworkList() {
             {rows.map((w) => (
               <tr key={w.id} className="clickable" onClick={() => navigate(`/admin/artworks/${w.id}`)}>
                 <td>
-                  <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={w.imageUrl} alt="" ratio={1} />
+                  <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w, true)} alt="" ratio={1} />
                 </td>
                 <td>
                   <strong>{w.title}</strong>
@@ -178,6 +178,8 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   summary: '',
   summaryKeywords: [],
   summaryStatus: 'none',
+  imageFile: null,
+  showImage: true,
 });
 
 export function ArtworkEdit() {
@@ -281,14 +283,7 @@ export function ArtworkEdit() {
               </select>
             </label>
           </div>
-          <label className="a-field">
-            <span>작품 이미지 URL</span>
-            <input
-              value={w.imageUrl ?? ''}
-              onChange={(e) => set('imageUrl', e.target.value || undefined)}
-              placeholder="https:// (비우면 자리표시 이미지 사용)"
-            />
-          </label>
+          <ImageField w={w} setW={setW} set={set} />
           <div className="a-field">
             <span>취향 태그 (추천에 사용)</span>
             <div className="chips wrap">
@@ -365,6 +360,113 @@ export function ArtworkEdit() {
 }
 
 /**
+ * 작품 이미지: 캡처한 파일 올리기(클릭 또는 끌어다 놓기) / 이미지 URL / 사용자 화면 표시 여부
+ * 파일은 고르는 즉시 서버에 저장된다. 이미지가 바뀌면 확정된 AI 결과는 「AI 제안」으로 돌아간다.
+ */
+function ImageField({
+  w,
+  setW,
+  set,
+}: {
+  w: Artwork;
+  setW: (f: (cur: Artwork | null) => Artwork | null) => void;
+  set: <K extends keyof Artwork>(k: K, v: Artwork[K]) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [drag, setDrag] = useState(false);
+  const src = artworkImageSrc(w, true);
+
+  // 서버가 바꾼 필드만 반영하고, 화면에서 수정 중인 다른 입력값은 그대로 둔다
+  const applyServer = (saved: Artwork) =>
+    setW((cur) =>
+      cur && {
+        ...cur,
+        imageFile: saved.imageFile,
+        emotionStatus: saved.emotionStatus,
+        summaryStatus: saved.summaryStatus,
+        updatedAt: saved.updatedAt,
+      },
+    );
+
+  const uploadFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return setErr('PNG, JPG, WEBP 이미지만 올릴 수 있어요.');
+    if (file.size > 10 * 1024 * 1024) return setErr('이미지는 10MB 이하로 올려 주세요.');
+    setBusy(true);
+    setErr(null);
+    try {
+      applyServer(await api.uploadArtworkImage(w.id, file));
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : '업로드에 실패했어요.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeFile = async () => {
+    if (!confirm('올린 이미지 파일을 삭제할까요?')) return;
+    applyServer(await api.deleteArtworkImage(w.id));
+  };
+
+  return (
+    <div className="a-field">
+      <span>작품 이미지</span>
+      {w.id ? (
+        <div
+          className={`img-drop ${drag ? 'drag' : ''}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDrag(true);
+          }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDrag(false);
+            uploadFile(e.dataTransfer.files[0]);
+          }}
+        >
+          {src ? <img src={src} alt="작품 이미지 미리보기" /> : <div className="img-empty">이미지 없음</div>}
+          <div className="img-drop-actions">
+            <label className="a-btn sm">
+              {busy ? '올리는 중…' : w.imageFile ? '다른 이미지로 바꾸기' : '이미지 파일 올리기'}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                disabled={busy}
+                onChange={(e) => {
+                  uploadFile(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            {w.imageFile && (
+              <button type="button" className="a-btn sm" onClick={removeFile}>
+                파일 삭제
+              </button>
+            )}
+            <span className="muted small">캡처 이미지를 끌어다 놓아도 돼요 (PNG·JPG·WEBP, 10MB 이하)</span>
+          </div>
+        </div>
+      ) : (
+        <p className="muted small">작품을 먼저 저장하면 이미지 파일을 올릴 수 있어요.</p>
+      )}
+      {err && <p className="error-text">{err}</p>}
+      <input
+        value={w.imageUrl ?? ''}
+        onChange={(e) => set('imageUrl', e.target.value || undefined)}
+        placeholder="또는 이미지 URL https:// (파일을 올리면 파일이 우선)"
+      />
+      <label className="ai-check">
+        <input type="checkbox" checked={w.showImage} onChange={(e) => set('showImage', e.target.checked)} />
+        사용자 화면에 이미지 표시 (끄면 AI 분석에만 사용하고 화면에는 자리표시 그림)
+      </label>
+    </div>
+  );
+}
+
+/**
  * AI 분석·요약 패널
  * - 「AI 분석 실행」: 저장된 해설(+이미지)로 감정 분석(오픈소스 모델) + 해설 요약(Claude) → 「AI 제안」
  * - 관리자가 결과를 확인·수정한 뒤 「확정」해야 사용자 화면과 추천에 쓰인다
@@ -432,12 +534,12 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
         <div>
           <h2>AI 분석 · 요약</h2>
           <p className="muted small">
-            저장된 작품 해설{w.imageUrl ? '과 이미지' : ''}를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후
+            저장된 작품 해설{w.imageFile || w.imageUrl ? '과 이미지' : ''}를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후
             「확정」해야 사용자 화면과 추천에 반영돼요.
           </p>
         </div>
         <div className="a-inline">
-          {w.imageUrl && (
+          {(w.imageFile || w.imageUrl) && (
             <label className="ai-check">
               <input type="checkbox" checked={useImage} onChange={(e) => setUseImage(e.target.checked)} />
               이미지도 분석

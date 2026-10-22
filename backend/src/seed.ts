@@ -54,7 +54,10 @@ export const seedExhibitions: Exhibition[] = [
 ];
 
 const a = (
-  p: Omit<Artwork, 'exhibitionId' | 'updatedAt' | 'analysis' | 'emotionStatus' | 'summary' | 'summaryKeywords' | 'summaryStatus'> & {
+  p: Omit<
+    Artwork,
+    'exhibitionId' | 'updatedAt' | 'analysis' | 'emotionStatus' | 'summary' | 'summaryKeywords' | 'summaryStatus' | 'imageFile' | 'showImage'
+  > & {
     updatedAt?: string;
   },
 ): Artwork => ({
@@ -66,6 +69,8 @@ const a = (
   summary: '',
   summaryKeywords: [],
   summaryStatus: 'none',
+  imageFile: null,
+  showImage: true,
   ...p,
 });
 

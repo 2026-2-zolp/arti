@@ -45,7 +45,7 @@ frontend/ 화면
 - 2D 지도의 좌표는 관람 상태 기준 표시이지 실내 위치 측정이 아닙니다.
 - 검증된 사실과 AI 생성 해석은 별도 취급합니다.
 
-> **현재 상태 (2026-10-17, `dev/김광권`):** 아래 「구현본」의 **TypeScript(Node.js + Express) + SQLite** 백엔드가 이 브랜치에 올라가 있고, 로컬 실행과 통합 테스트 27개 통과까지 확인했습니다. 작품 감정 분석은 오픈소스 모델을 쓰는 [`ai-service/`](../ai-service/README.md)(Python)와 함께 동작합니다. 단, ① 기존 설계 문서의 Django/DRF·PostgreSQL 후보와 **스택이 다르고**, ② 작품 데이터는 **목업**(유영국 전시 아님)이며, ③ API 경로·필드명은 팀 합의 전 **제안안**입니다. 스택·규격은 팀 논의 후 확정합니다.
+> **현재 상태 (2026-10-17, `dev/김광권`):** 아래 「구현본」의 **TypeScript(Node.js + Express) + SQLite** 백엔드가 이 브랜치에 올라가 있고, 로컬 실행과 통합 테스트 29개 통과까지 확인했습니다. 작품 감정 분석은 오픈소스 모델을 쓰는 [`ai-service/`](../ai-service/README.md)(Python)와 함께 동작합니다. 단, ① 기존 설계 문서의 Django/DRF·PostgreSQL 후보와 **스택이 다르고**, ② 작품 데이터는 **목업**(유영국 전시 아님)이며, ③ API 경로·필드명은 팀 합의 전 **제안안**입니다. 스택·규격은 팀 논의 후 확정합니다.
 
 ---
 
@@ -82,7 +82,7 @@ npm run dev              # http://localhost:5173
 |---|---|
 | `npm run dev` | 개발 서버 (tsx watch) |
 | `npm run build` / `npm start` | 컴파일(`dist/`) 후 실행 |
-| `npm test` | 통합 테스트 27개 (메모리 DB, 가짜 감정 분석 서버, 외부 호출 없음) |
+| `npm test` | 통합 테스트 29개 (메모리 DB, 가짜 감정 분석 서버, 외부 호출 없음) |
 | `npm run typecheck` | 타입 검사 |
 | `npm run db:reset` | DB 파일 삭제 → 다음 실행 때 목업 데이터로 다시 생성 |
 
@@ -104,6 +104,7 @@ npm run dev              # http://localhost:5173
 | `SESSION_TTL_DAYS` | 14 | 로그인 유지 기간 |
 | `CORS_ORIGIN` | (비움) | 프론트를 다른 주소에서 띄울 때만 설정 |
 | `EMOTION_SERVICE_URL` | http://localhost:8000 | 감정 분석 서버(`ai-service`) 주소 |
+| `UPLOAD_DIR` | data/uploads | 관리자가 올린 작품 이미지 저장 폴더 (Git 제외) |
 | `ANTHROPIC_API_KEY` | (비움) | 넣으면 해설 요약·맞춤 설명·질문 답변·영수증 해석이 Claude로 동작. 비우면 규칙 기반 결과 |
 | `ARTI_AI_MODEL` | claude-opus-5-5 | 사용할 Claude 모델 |
 
@@ -168,6 +169,8 @@ test/ai.test.ts       AI 기능 통합 테스트 (가짜 감정 분석 서버 �
 | POST / PUT | `/api/admin/exhibitions[/:id]` | 관리자 | A-03 | 전시 등록 / 수정 |
 | POST / PUT | `/api/admin/artworks[/:id]` | 관리자 | A-04, A-05 | 작품 등록 / 수정(위치 지정 포함) |
 | POST | `/api/admin/artworks/:id/analyze` | 관리자 | A-04 | 감정 분석 + 해설 요약 → 「AI 제안」 저장 |
+| POST / DELETE | `/api/admin/artworks/:id/image` | 관리자 | A-04 | 작품 이미지 파일 업로드(본문=파일, PNG·JPG·WEBP 10MB) / 삭제 |
+| GET | `/api/uploads/:file` | - | U-08~U-11 | 업로드한 작품 이미지 |
 | POST | `/api/admin/exhibitions/:id/analyze` | 관리자 | A-04 | 전시 작품 전체 AI 분석 (확정된 작품 제외) |
 | POST | `/api/admin/exhibitions/:id/confirm-ai` | 관리자 | A-04 | 전시의 「AI 제안」 모두 확정 |
 | GET | `/api/admin/members?q=` | 관리자 | A-06 | 회원 검색 + 관람 횟수 |

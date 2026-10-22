@@ -73,7 +73,11 @@ export interface Artwork {
   roomId: string;
   position: MapPoint | null;  // 위치 미등록이면 null
   palette: string[];          // 목업용 이미지 생성 색상 (실제 구현에선 imageUrl 사용)
-  imageUrl?: string;
+  imageUrl?: string;          // 외부 이미지 주소 (선택)
+  /** 관리자가 업로드한 이미지 파일 이름 (/api/uploads/<파일>로 제공). 있으면 imageUrl보다 우선 */
+  imageFile: string | null;
+  /** 사용자 화면에 이미지를 보여 줄지 (false면 AI 분석에만 사용) */
+  showImage: boolean;
   tags: TasteTag[];
   description: string;        // 작품 해설 (출처 확인된 기본 설명)
   guidedLooking: string[];    // 관찰 질문/포인트

@@ -7,6 +7,8 @@ const bool = (v: string | undefined, fallback: boolean) =>
 export const config = {
   port: Number(env.PORT ?? 4000),
   dbPath: env.DB_PATH || 'data/arti.db',
+  /** 관리자가 올린 작품 이미지 저장 폴더 */
+  uploadDir: env.UPLOAD_DIR || 'data/uploads',
   /** 데모 모드: 재설정 링크를 응답으로 돌려준다. 운영(NODE_ENV=production)에서는 기본 false */
   demoMode: bool(env.DEMO_MODE, env.NODE_ENV !== 'production'),
   sessionTtlMs: Number(env.SESSION_TTL_DAYS ?? 14) * 24 * 60 * 60 * 1000,

@@ -31,6 +31,11 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     const issue = err.issues[0];
     const custom = issue && /[가-힣]/.test(issue.message);
     res.status(400).json({ error: custom ? issue.message : `입력값을 확인해 주세요. (${issue?.path.join('.') || '요청'})` });
+  } else if (err?.type === 'entity.too.large') {
+    res.status(413).json({ error: '파일이 너무 커요 (최대 10MB).' });
+  } else if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500 && err.type !== 'entity.parse.failed') {
+    // express.static 등 Express 내장 미들웨어의 4xx (예: 없는 이미지 파일)
+    res.status(err.status).json({ error: err.status === 404 ? '파일을 찾을 수 없어요.' : '요청을 처리할 수 없어요.' });
   } else if (err?.type === 'entity.parse.failed') {
     res.status(400).json({ error: '요청 형식(JSON)이 올바르지 않아요.' });
   } else {

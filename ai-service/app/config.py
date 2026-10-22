@@ -13,3 +13,6 @@ IMAGE_TIMEOUT_SEC = float(os.getenv("ARTI_IMAGE_TIMEOUT_SEC", "10"))
 
 # 서버 시작 시 모델을 미리 불러올지 (false면 첫 분석 요청 때 불러온다)
 PRELOAD = os.getenv("ARTI_PRELOAD", "true").lower() in ("1", "true", "yes")
+
+# 라벨 편향 보정 사용 여부 (app/calibration.json 이 있을 때)
+CALIBRATE = os.getenv("ARTI_CALIBRATE", "true").lower() in ("1", "true", "yes")

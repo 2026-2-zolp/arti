@@ -20,7 +20,7 @@ export function createApp(db: DB) {
       res.set('Access-Control-Allow-Origin', config.corsOrigin);
       res.set('Vary', 'Origin');
       res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
-      res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+      res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       if (req.method === 'OPTIONS') return void res.status(204).end();
       next();
     });
@@ -29,6 +29,9 @@ export function createApp(db: DB) {
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, ai: config.ai.enabled ? config.ai.model : 'rule-based', demoMode: config.demoMode });
   });
+
+  // 관리자가 올린 작품 이미지 (파일 이름은 서버가 만든 값만 존재)
+  app.use('/api/uploads', express.static(config.uploadDir, { fallthrough: false, maxAge: '1h', dotfiles: 'deny' }));
 
   const api = express.Router();
   api.use(authenticate(db));

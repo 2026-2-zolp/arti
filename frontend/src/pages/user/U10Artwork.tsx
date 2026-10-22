@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
-import { ArtImage } from '../../components/ArtImage';
+import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -125,7 +125,7 @@ export default function U10Artwork() {
       ) : (
         <>
           <div className={`art-frame ${fullscreen ? 'fullscreen' : ''}`}>
-            <ArtImage seed={w.id} palette={w.palette} imageUrl={w.imageUrl} alt={w.title} ratio={fullscreen ? 3 / 4 : 3 / 2} />
+            <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={fullscreen ? 3 / 4 : 3 / 2} />
             <button
               className="frame-btn"
               aria-label={fullscreen ? '전체 화면 닫기' : '전체 화면'}

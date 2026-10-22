@@ -4,6 +4,17 @@
  * seed(작품 id)가 같으면 항상 같은 그림이 나오도록 간단한 의사 난수(mulberry32)를 쓴다.
  */
 import { useMemo } from 'react';
+import { uploadedImageUrl } from '../api/client';
+import type { Artwork } from '../types';
+
+/**
+ * 작품에 표시할 이미지 주소: 업로드 파일 > 이미지 URL > (없으면 자리표시 그림)
+ * 관리자가 「사용자 화면에 표시」를 끈 작품은 사용자 화면에서 자리표시 그림을 쓴다(AI 분석에만 사용).
+ */
+export function artworkImageSrc(w: Pick<Artwork, 'imageFile' | 'imageUrl' | 'showImage'>, forAdmin = false) {
+  if (!forAdmin && !w.showImage) return undefined;
+  return w.imageFile ? uploadedImageUrl(w.imageFile) : w.imageUrl || undefined;
+}
 
 function mulberry32(seed: number) {
   return () => {

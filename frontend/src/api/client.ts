@@ -36,9 +36,14 @@ const ADMIN_INFO = 'arti.admin';
 /** 사용자 정보 저장 키 (store/VisitContext.tsx의 USER_KEY와 같은 값) */
 const USER_INFO = 'arti.user';
 
+/** 업로드한 작품 이미지 파일의 주소 */
+export const uploadedImageUrl = (file: string) => `${BASE}/uploads/${encodeURIComponent(file)}`;
+
+/** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isFile = body instanceof Blob;
+  if (body !== undefined) headers['Content-Type'] = isFile ? body.type : 'application/json';
   const userToken = load<string | null>(USER_TOKEN, null);
   const adminToken = load<string | null>(ADMIN_TOKEN, null);
   if (userToken) headers.Authorization = `Bearer ${userToken}`;
@@ -46,7 +51,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   let res: Response;
   try {
-    res = await fetch(BASE + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+    res = await fetch(BASE + path, {
+      method,
+      headers,
+      body: body === undefined ? undefined : isFile ? body : JSON.stringify(body),
+    });
   } catch {
     throw new ApiError('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.');
   }
@@ -171,6 +180,11 @@ export const api = {
       emotion: { ok: true } | { ok: false; error: string };
       summary: { ok: true; source: 'claude' | 'fallback' } | { ok: false; error: string };
     }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),
+
+  /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
+  uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
+
+  deleteArtworkImage: (id: string) => request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`),
 
   /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
   analyzeExhibition: (exhibitionId: string, useImage = true) =>

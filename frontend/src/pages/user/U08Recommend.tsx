@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
-import { ArtImage } from '../../components/ArtImage';
+import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
@@ -63,7 +63,7 @@ export default function U08Recommend() {
             if (!w) return null;
             return (
               <li key={r.artworkId} className="rec-card">
-                <ArtImage className="rec-thumb" seed={w.id} palette={w.palette} imageUrl={w.imageUrl} alt={w.title} ratio={1.1} />
+                <ArtImage className="rec-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1.1} />
                 <div className="rec-info">
                   <strong>
                     {r.order}. {w.title}

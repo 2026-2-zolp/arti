@@ -468,3 +468,13 @@ h1, h2, h3, p { margin: 0; }
 .original-text { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #f6f5f2; font-size: 14.5px; }
 .source-line { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .receipt-ai { font-size: 14.5px; line-height: 1.65; color: var(--ink-2); }
+
+/* A-04 작품 이미지 업로드 */
+.img-drop { display: flex; gap: 14px; align-items: center; padding: 12px; border: 1.5px dashed #d8dadd; border-radius: 12px; background: #fafafa; }
+.img-drop.drag { border-color: var(--accent); background: var(--accent-soft); }
+.img-drop img, .img-empty { width: 96px; height: 96px; border-radius: 8px; object-fit: cover; flex: none; }
+.img-empty { display: grid; place-items: center; background: #eef0f2; color: var(--muted); font-size: 13px; }
+.img-drop-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.img-drop-actions label.a-btn { cursor: pointer; }
+.a-field .ai-check input[type='checkbox'] { width: auto; height: auto; padding: 0; flex: none; }
+.a-field .ai-check { align-items: flex-start; line-height: 1.5; }

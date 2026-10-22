@@ -119,6 +119,8 @@ const ADDED_COLUMNS: Record<string, [string, string][]> = {
     ['summary', "TEXT NOT NULL DEFAULT ''"],
     ['summary_keywords', "TEXT NOT NULL DEFAULT '[]'"],
     ["summary_status", "TEXT NOT NULL DEFAULT 'none'"],
+    ['image_file', 'TEXT'],
+    ['show_image', 'INTEGER NOT NULL DEFAULT 1'],
   ],
   visits: [
     ['interpretation', 'TEXT'],

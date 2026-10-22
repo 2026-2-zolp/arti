@@ -2,6 +2,8 @@
  * 감정 분석 서버(ai-service, Python) 호출
  * CLIP(이미지) + mDeBERTa(한국어 해설) 제로샷 분석 결과를 받아 ArtworkAnalysis 형태로 바꾼다.
  */
+import fs from 'node:fs';
+import path from 'node:path';
 import { config } from '../config.js';
 import { HttpError } from '../http.js';
 import { emotionScores } from '../schemas.js';
@@ -15,17 +17,23 @@ const responseSchema = z.object({
   models: z.object({ image: z.string(), text: z.string() }),
 });
 
+/** 업로드한 이미지 파일이 있으면 파일 내용을 그대로(base64) 보내고, 없으면 이미지 URL을 보낸다 */
+function imageInput(w: Artwork, useImage: boolean): { imageBase64?: string; imageUrl?: string } {
+  if (!useImage) return {};
+  if (w.imageFile) {
+    const file = path.join(config.uploadDir, path.basename(w.imageFile));
+    if (fs.existsSync(file)) return { imageBase64: fs.readFileSync(file).toString('base64') };
+  }
+  return w.imageUrl ? { imageUrl: w.imageUrl } : {};
+}
+
 export async function analyzeEmotions(w: Artwork, useImage: boolean): Promise<ArtworkAnalysis> {
   let res: Response;
   try {
     res = await fetch(`${config.emotionServiceUrl}/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: w.title,
-        description: w.description,
-        imageUrl: useImage && w.imageUrl ? w.imageUrl : null,
-      }),
+      body: JSON.stringify({ title: w.title, description: w.description, ...imageInput(w, useImage) }),
       signal: AbortSignal.timeout(config.emotionTimeoutMs),
     });
   } catch {

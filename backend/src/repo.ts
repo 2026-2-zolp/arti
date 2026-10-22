@@ -57,6 +57,8 @@ const toArtwork = (r: Row): Artwork => ({
   position: r.position == null ? null : parse(r.position),
   palette: parse(r.palette),
   ...(r.image_url ? { imageUrl: String(r.image_url) } : {}),
+  imageFile: r.image_file == null ? null : String(r.image_file),
+  showImage: r.show_image == null ? true : Number(r.show_image) === 1,
   tags: parse(r.tags),
   description: String(r.description),
   guidedLooking: parse(r.guided_looking),
@@ -88,21 +90,22 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
   db.prepare(
     `INSERT INTO artworks (id,exhibition_id,title,artist,year,room_id,position,palette,image_url,tags,
        description,guided_looking,source,reference_url,review_status,updated_at,
-       analysis,emotion_status,summary,summary_keywords,summary_status)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       analysis,emotion_status,summary,summary_keywords,summary_status,image_file,show_image)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET exhibition_id=excluded.exhibition_id, title=excluded.title,
        artist=excluded.artist, year=excluded.year, room_id=excluded.room_id, position=excluded.position,
        palette=excluded.palette, image_url=excluded.image_url, tags=excluded.tags,
        description=excluded.description, guided_looking=excluded.guided_looking, source=excluded.source,
        reference_url=excluded.reference_url, review_status=excluded.review_status, updated_at=excluded.updated_at,
        analysis=excluded.analysis, emotion_status=excluded.emotion_status, summary=excluded.summary,
-       summary_keywords=excluded.summary_keywords, summary_status=excluded.summary_status`,
+       summary_keywords=excluded.summary_keywords, summary_status=excluded.summary_status,
+       image_file=excluded.image_file, show_image=excluded.show_image`,
   ).run(
     saved.id, saved.exhibitionId, saved.title, saved.artist, saved.year, saved.roomId,
     saved.position ? j(saved.position) : null, j(saved.palette), saved.imageUrl || null, j(saved.tags),
     saved.description, j(saved.guidedLooking), saved.source, saved.referenceUrl, saved.reviewStatus, saved.updatedAt,
     saved.analysis ? j(saved.analysis) : null, saved.emotionStatus, saved.summary, j(saved.summaryKeywords),
-    saved.summaryStatus,
+    saved.summaryStatus, saved.imageFile, saved.showImage ? 1 : 0,
   );
   return saved;
 }

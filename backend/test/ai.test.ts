@@ -9,12 +9,14 @@ import { after, before, describe, test } from 'node:test';
 
 // 가짜 감정 분석 서버: 해설 내용에 따라 정해진 점수를 돌려준다 (ai-service /analyze 와 같은 응답 형식)
 let emotionCalls = 0;
+let lastEmotionRequest: { imageBase64?: string; imageUrl?: string } = {};
 const fake = http.createServer((req, res) => {
   let raw = '';
   req.on('data', (c) => (raw += c));
   req.on('end', () => {
     emotionCalls += 1;
-    const { description, imageUrl } = JSON.parse(raw);
+    lastEmotionRequest = JSON.parse(raw);
+    const { description, imageUrl, imageBase64 } = lastEmotionRequest as { description: string; imageUrl?: string; imageBase64?: string };
     const base = { calm: 0.2, joy: 0.2, sadness: 0.1, tension: 0.1, awe: 0.3, nostalgia: 0.2 };
     const emotions = /수면|고요|새벽|조용/.test(description)
       ? { ...base, calm: 1, nostalgia: 0.6 }
@@ -23,7 +25,7 @@ const fake = http.createServer((req, res) => {
         : { ...base, joy: 1 };
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
-      emotions, imageScores: null, textScores: emotions, usedImage: Boolean(imageUrl), imageError: null,
+      emotions, imageScores: null, textScores: emotions, usedImage: Boolean(imageUrl || imageBase64), imageError: null,
       models: { image: 'fake-clip', text: 'fake-nli' },
     }));
   });
@@ -33,6 +35,10 @@ await new Promise<void>((r) => fake.listen(0, '127.0.0.1', r));
 process.env.ANTHROPIC_API_KEY = '';
 process.env.RATE_LIMIT = 'off';
 process.env.EMOTION_SERVICE_URL = `http://127.0.0.1:${(fake.address() as AddressInfo).port}`;
+const fs = await import('node:fs');
+const os = await import('node:os');
+const pathMod = await import('node:path');
+process.env.UPLOAD_DIR = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'arti-uploads-'));
 
 const { createApp } = await import('../src/app.js');
 const { openDb } = await import('../src/db.js');
@@ -163,6 +169,46 @@ describe('아트 영수증 AI 해석 (U-12)', () => {
     const back = await call('GET', `/visits/${saved.body.id}`, undefined, { Authorization: `Bearer ${login.body.token}` });
     assert.equal(back.body.interpretation, r.body.text);
     assert.equal(back.body.emotionProfile.calm, 1);
+  });
+});
+
+describe('작품 이미지 업로드 (캡처 이미지)', () => {
+  // 1×1 PNG
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  const upload = (id: string, body: Buffer, type: string, headers: Record<string, string>) =>
+    fetch(`${base}/admin/artworks/${id}/image`, { method: 'POST', headers: { 'Content-Type': type, ...headers }, body });
+
+  test('올린 이미지를 저장·제공하고, AI 분석 때 파일 내용을 감정 분석 서버로 보낸다', async () => {
+    const h = await admin();
+    const res = await upload('aw-02', PNG, 'image/png', h);
+    assert.equal(res.status, 200);
+    const w = await res.json();
+    assert.match(w.imageFile, /^aw-02-[0-9a-f]+\.png$/);
+    assert.equal(w.emotionStatus, 'suggested', '이미지가 바뀌면 확정 해제');
+
+    const img = await fetch(`${base}/uploads/${w.imageFile}`);
+    assert.equal(img.status, 200);
+    assert.equal(img.headers.get('content-type'), 'image/png');
+
+    const r = await call('POST', '/admin/artworks/aw-02/analyze', { useImage: true }, h);
+    assert.equal(r.body.artwork.analysis.usedImage, true);
+    assert.equal(lastEmotionRequest.imageBase64, PNG.toString('base64'));
+    await call('POST', '/admin/artworks/aw-02/analyze', { useImage: false }, h);
+    assert.equal(lastEmotionRequest.imageBase64, undefined, '「이미지도 분석」을 끄면 보내지 않음');
+
+    const del = await call('DELETE', '/admin/artworks/aw-02/image', undefined, h);
+    assert.equal(del.body.imageFile, null);
+    const gone = await fetch(`${base}/uploads/${w.imageFile}`);
+    assert.equal(gone.status, 404);
+  });
+
+  test('이미지가 아닌 파일·권한 없는 요청은 거절', async () => {
+    const h = await admin();
+    assert.equal((await upload('aw-02', Buffer.from('hello'), 'text/plain', h)).status, 415);
+    assert.equal((await upload('aw-02', Buffer.from('not really a png'), 'image/png', h)).status, 415);
+    assert.equal((await upload('aw-02', PNG, 'image/png', {})).status, 401);
+    const traversal = (await fetch(`${base}/uploads/..%2Farti.db`)).status;
+    assert.ok(traversal === 403 || traversal === 404, `업로드 폴더 밖 파일은 접근 불가 (${traversal})`);
   });
 });
 

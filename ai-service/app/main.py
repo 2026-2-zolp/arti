@@ -4,7 +4,7 @@ ARTI 감정 분석 서버 (FastAPI)
 실행: uvicorn app.main:app --port 8000
 - GET  /health   상태 확인 (모델 로딩 여부)
 - GET  /emotions 감정 항목 목록
-- POST /analyze  작품 해설(+이미지 URL) → 감정 점수
+- POST /analyze  작품 해설(+업로드 이미지 base64 또는 이미지 URL) → 감정 점수
 
 백엔드(backend/)가 관리자 화면의 「AI 분석」 요청을 받으면 이 서버를 호출한다.
 """
@@ -18,12 +18,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from . import config
-from .analyzer import HuggingFaceScorer, Scorer, analyze
+from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration
 from .emotions import EMOTIONS
-from .image_fetch import ImageFetchError, fetch_image
+from .image_fetch import ImageFetchError, decode_base64_image, fetch_image
 
 log = logging.getLogger("arti.ai")
 scorer: Scorer = HuggingFaceScorer()
+# 라벨 편향 보정값 (app/calibration.json). 파일이 없으면 보정 없이 동작
+calibration = load_calibration() if config.CALIBRATE else {}
 
 
 @asynccontextmanager
@@ -47,6 +49,8 @@ class AnalyzeRequest(BaseModel):
     title: str = Field(default="", max_length=200)
     description: str = Field(default="", max_length=5000)
     imageUrl: str | None = Field(default=None, max_length=2000)
+    # 관리자가 업로드한 이미지 파일 내용 (base64). 있으면 imageUrl보다 우선
+    imageBase64: str | None = Field(default=None, max_length=15_000_000)
 
 
 class AnalyzeResponse(BaseModel):
@@ -60,7 +64,7 @@ class AnalyzeResponse(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "modelsLoaded": scorer.loaded}
+    return {"ok": True, "modelsLoaded": scorer.loaded, "calibration": sorted(calibration)}
 
 
 @app.get("/emotions")
@@ -73,15 +77,15 @@ def analyze_artwork(req: AnalyzeRequest):
     # 제목은 해설이 없을 때의 보조 정보로만 쓴다
     text = req.description.strip() or req.title.strip()
     image, image_error = None, None
-    if req.imageUrl:
+    if req.imageBase64 or req.imageUrl:
         try:
-            image = fetch_image(req.imageUrl)
+            image = decode_base64_image(req.imageBase64) if req.imageBase64 else fetch_image(req.imageUrl or "")
         except ImageFetchError as e:
             image_error = str(e)  # 이미지가 실패해도 텍스트만으로 분석을 계속한다
     if not text and image is None:
         raise HTTPException(status_code=400, detail=image_error or "작품 해설이나 이미지가 있어야 분석할 수 있어요.")
     try:
-        result = analyze(scorer, text, image, image_error)
+        result = analyze(scorer, text, image, image_error, calibration)
     except Exception as e:
         log.exception("분석 실패")
         raise HTTPException(status_code=503, detail="감정 분석 모델을 실행하지 못했어요.") from e

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { MobileShell } from '../../components/MobileShell';
-import { ArtImage } from '../../components/ArtImage';
+import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -77,7 +77,7 @@ export default function U11AskAI() {
     >
       {w && (
         <div className="chat-artwork">
-          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={w.imageUrl} alt={w.title} ratio={1} />
+          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1} />
           <div>
             <strong>{w.title}</strong>
             <span className="muted small">
