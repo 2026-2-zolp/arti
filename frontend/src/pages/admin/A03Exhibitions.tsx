@@ -15,6 +15,7 @@ const blank = (): Exhibition => ({
   endDate: '',
   status: 'draft',
   entrance: { x: 50, y: 99 },
+  floorPlan: null,
   rooms: [
     { id: 'r1', name: '1전시실', rect: { x: 3, y: 3, w: 45, h: 43 } },
     { id: 'r2', name: '2전시실', rect: { x: 52, y: 3, w: 45, h: 43 } },

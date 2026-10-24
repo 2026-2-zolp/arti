@@ -210,6 +210,33 @@ describe('작품 이미지 업로드 (캡처 이미지)', () => {
     const traversal = (await fetch(`${base}/uploads/..%2Farti.db`)).status;
     assert.ok(traversal === 403 || traversal === 404, `업로드 폴더 밖 파일은 접근 불가 (${traversal})`);
   });
+
+  test('평면도 이미지를 올리면 전시에 저장되고, 전시 정보 수정으로는 바뀌지 않는다', async () => {
+    const h = await admin();
+    const plan = (q: string, headers = h) =>
+      fetch(`${base}/admin/exhibitions/ex-mvp/floor-plan${q}`, { method: 'POST', headers: { 'Content-Type': 'image/png', ...headers }, body: PNG });
+    assert.equal((await plan('')).status, 400, '이미지 크기(width·height) 필요');
+    assert.equal((await plan('?width=1200&height=800', {})).status, 401);
+
+    const res = await plan('?width=1200&height=800');
+    assert.equal(res.status, 200);
+    const ex = await res.json();
+    assert.match(ex.floorPlan.file, /^ex-mvp-plan-[0-9a-f]+\.png$/);
+    assert.deepEqual([ex.floorPlan.width, ex.floorPlan.height], [1200, 800]);
+    assert.equal((await fetch(`${base}/uploads/${ex.floorPlan.file}`)).status, 200);
+
+    // 전시실 이름만 있는 전시실(사각형 없음)도 저장되고, 평면도는 그대로 유지
+    const rooms = [...ex.rooms, { id: 'r5', name: '야외 조각정원' }];
+    const put = await call('PUT', '/admin/exhibitions/ex-mvp', { ...ex, rooms, floorPlan: null, entrance: { x: 10, y: 90 } }, h);
+    assert.equal(put.status, 200);
+    assert.equal(put.body.floorPlan.file, ex.floorPlan.file);
+    assert.equal(put.body.rooms.at(-1).name, '야외 조각정원');
+    assert.deepEqual((await call('GET', '/exhibitions/ex-mvp')).body.entrance, { x: 10, y: 90 });
+
+    const del = await call('DELETE', '/admin/exhibitions/ex-mvp/floor-plan', undefined, h);
+    assert.equal(del.body.floorPlan, null);
+    assert.equal((await fetch(`${base}/uploads/${ex.floorPlan.file}`)).status, 404);
+  });
 });
 
 describe('감정 분석 서버가 꺼져 있을 때', () => {

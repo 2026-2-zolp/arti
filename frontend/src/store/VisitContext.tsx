@@ -8,6 +8,8 @@
  * 로그인 사용자는 localStorage(다시 방문해도 유지)에 저장한다.
  */
 import { createContext, useContext, useEffect, useMemo, useReducer, type Dispatch, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../api/client';
 import type { Reaction, Recommendation, TasteTag, User, VisitDuration } from '../types';
 import { load, save } from '../lib/storage';
 
@@ -72,7 +74,8 @@ function reducer(s: VisitState, a: Action): VisitState {
     case 'login':
       return { ...s, user: a.user };
     case 'logout':
-      return { ...s, user: null };
+      // 이전 계정의 취향이 다음 사람(다른 계정·비회원)에게 이어지지 않게 비운다
+      return { ...s, user: null, tastes: [] };
     case 'setTastes':
       return { ...s, tastes: a.tastes };
     case 'setDuration':
@@ -125,4 +128,15 @@ export function useVisit(): Ctx {
   const ctx = useContext(VisitCtx);
   if (!ctx) throw new Error('useVisit은 VisitProvider 안에서만 사용할 수 있어요.');
   return ctx;
+}
+
+/** 로그아웃 후 이동. 서버 세션을 먼저 끝내야 바로 다른 계정으로 로그인해도 새 토큰이 지워지지 않는다 */
+export function useLogout() {
+  const { dispatch } = useVisit();
+  const navigate = useNavigate();
+  return async (to = '/') => {
+    await api.logout();
+    dispatch({ type: 'logout' });
+    navigate(to, { replace: true });
+  };
 }

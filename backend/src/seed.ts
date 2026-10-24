@@ -30,6 +30,7 @@ export const seedExhibition: Exhibition = {
   endDate: '2026-12-31',
   status: 'running',
   entrance: { x: 56, y: 99 },
+  floorPlan: null,
   rooms: [
     { id: 'r1', name: '1전시실', rect: { x: 3, y: 3, w: 40, h: 43 } },
     { id: 'r2', name: '2전시실', rect: { x: 50, y: 3, w: 47, h: 43 } },
@@ -49,6 +50,7 @@ export const seedExhibitions: Exhibition[] = [
     endDate: '2027-05-31',
     status: 'draft',
     entrance: { x: 50, y: 99 },
+    floorPlan: null,
     rooms: [],
   },
 ];

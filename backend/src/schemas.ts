@@ -41,7 +41,7 @@ export const exhibitionInput = z.object({
       z.object({
         id: z.string().min(1).max(32),
         name: text(50),
-        rect: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }),
+        rect: z.object({ x: z.number(), y: z.number(), w: z.number().positive(), h: z.number().positive() }).optional(),
       }),
     )
     .max(50)

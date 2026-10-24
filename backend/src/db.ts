@@ -113,6 +113,9 @@ export function openDb(file: string): DB {
  * 덕분에 db:reset 없이도 새 버전 서버로 바로 실행할 수 있다.
  */
 const ADDED_COLUMNS: Record<string, [string, string][]> = {
+  exhibitions: [
+    ['floor_plan', 'TEXT'], // JSON FloorPlan | NULL
+  ],
   artworks: [
     ['analysis', 'TEXT'], // JSON ArtworkAnalysis | NULL
     ["emotion_status", "TEXT NOT NULL DEFAULT 'none'"],

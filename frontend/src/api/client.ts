@@ -36,7 +36,7 @@ const ADMIN_INFO = 'arti.admin';
 /** 사용자 정보 저장 키 (store/VisitContext.tsx의 USER_KEY와 같은 값) */
 const USER_INFO = 'arti.user';
 
-/** 업로드한 작품 이미지 파일의 주소 */
+/** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
 export const uploadedImageUrl = (file: string) => `${BASE}/uploads/${encodeURIComponent(file)}`;
 
 /** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
@@ -185,6 +185,12 @@ export const api = {
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
 
   deleteArtworkImage: (id: string) => request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`),
+
+  /** A-05 미술관 평면도 이미지 업로드 (width·height = 원본 픽셀 크기) */
+  uploadFloorPlan: (exhibitionId: string, file: File, width: number, height: number) =>
+    request<Exhibition>('POST', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan?width=${width}&height=${height}`, file),
+
+  deleteFloorPlan: (exhibitionId: string) => request<Exhibition>('DELETE', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan`),
 
   /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
   analyzeExhibition: (exhibitionId: string, useImage = true) =>

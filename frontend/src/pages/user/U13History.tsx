@@ -4,12 +4,13 @@ import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
-import { useVisit } from '../../store/VisitContext';
+import { useLogout, useVisit } from '../../store/VisitContext';
 import { formatDate } from './U12Receipt';
 
 export default function U13History() {
   const navigate = useNavigate();
-  const { state, dispatch } = useVisit();
+  const { state } = useVisit();
+  const logout = useLogout();
   const user = state.user;
   const { data: visits, loading } = useAsync(
     () => (user ? api.listVisits(user.id) : Promise.resolve([])),
@@ -18,18 +19,12 @@ export default function U13History() {
 
   if (!user) return <Navigate to="/login?redirect=/history" replace />;
 
-  const logout = () => {
-    api.logout(); // 서버 세션 종료 (실패해도 화면은 바로 로그아웃)
-    dispatch({ type: 'logout' });
-    navigate('/', { replace: true });
-  };
-
   return (
     <MobileShell
       screenId="U-13"
       title="관람기록"
       right={
-        <button className="text-btn" onClick={logout}>
+        <button className="text-btn" onClick={() => logout()}>
           로그아웃
         </button>
       }

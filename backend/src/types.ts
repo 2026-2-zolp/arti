@@ -45,11 +45,18 @@ export interface MapPoint {
   y: number;
 }
 
-/** 전시실(평면도 위 사각 영역) */
+/** 전시실. rect는 기본 평면도(사각형)에 그릴 영역 — 평면도 이미지를 쓰면 이름만 있어도 된다 */
 export interface Room {
   id: string;
   name: string;            // 예: "2전시실"
-  rect: { x: number; y: number; w: number; h: number }; // 퍼센트 단위
+  rect?: { x: number; y: number; w: number; h: number }; // 퍼센트 단위
+}
+
+/** 관리자가 올린 미술관 평면도(안내도) 이미지. 좌표는 이미지 기준 퍼센트로 저장한다 */
+export interface FloorPlan {
+  file: string;            // /api/uploads/<file>
+  width: number;           // 원본 픽셀 크기 (화면 비율 계산용)
+  height: number;
 }
 
 export interface Exhibition {
@@ -62,6 +69,7 @@ export interface Exhibition {
   status: ExhibitionStatus;
   rooms: Room[];
   entrance: MapPoint;      // 입구 위치 (경로 시작점)
+  floorPlan: FloorPlan | null; // 없으면 rooms 사각형으로 기본 평면도를 그린다
 }
 
 export interface Artwork {

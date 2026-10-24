@@ -170,6 +170,7 @@ test/ai.test.ts       AI 기능 통합 테스트 (가짜 감정 분석 서버 �
 | POST / PUT | `/api/admin/artworks[/:id]` | 관리자 | A-04, A-05 | 작품 등록 / 수정(위치 지정 포함) |
 | POST | `/api/admin/artworks/:id/analyze` | 관리자 | A-04 | 감정 분석 + 해설 요약 → 「AI 제안」 저장 |
 | POST / DELETE | `/api/admin/artworks/:id/image` | 관리자 | A-04 | 작품 이미지 파일 업로드(본문=파일, PNG·JPG·WEBP 10MB) / 삭제 |
+| POST / DELETE | `/api/admin/exhibitions/:id/floor-plan?width=&height=` | 관리자 | A-05 | 미술관 평면도(안내도) 이미지 업로드(본문=파일, 쿼리=원본 픽셀 크기) / 삭제. 전시 정보 수정(PUT)으로는 바뀌지 않음 |
 | GET | `/api/uploads/:file` | - | U-08~U-11 | 업로드한 작품 이미지 |
 | POST | `/api/admin/exhibitions/:id/analyze` | 관리자 | A-04 | 전시 작품 전체 AI 분석 (확정된 작품 제외) |
 | POST | `/api/admin/exhibitions/:id/confirm-ai` | 관리자 | A-04 | 전시의 「AI 제안」 모두 확정 |

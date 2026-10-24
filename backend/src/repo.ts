@@ -22,6 +22,7 @@ const toExhibition = (r: Row): Exhibition => ({
   status: r.status as Exhibition['status'],
   rooms: parse(r.rooms),
   entrance: parse(r.entrance),
+  floorPlan: r.floor_plan ? parse(r.floor_plan) : null,
 });
 
 export function listExhibitions(db: DB): Exhibition[] {
@@ -36,13 +37,13 @@ export function getExhibition(db: DB, id: string): Exhibition | null {
 export function upsertExhibition(db: DB, e: Exhibition): Exhibition {
   const saved = { ...e, id: e.id || newId('ex') };
   db.prepare(
-    `INSERT INTO exhibitions (id,title,subtitle,venue,start_date,end_date,status,rooms,entrance)
-     VALUES (?,?,?,?,?,?,?,?,?)
+    `INSERT INTO exhibitions (id,title,subtitle,venue,start_date,end_date,status,rooms,entrance,floor_plan)
+     VALUES (?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET title=excluded.title, subtitle=excluded.subtitle, venue=excluded.venue,
        start_date=excluded.start_date, end_date=excluded.end_date, status=excluded.status,
-       rooms=excluded.rooms, entrance=excluded.entrance`,
+       rooms=excluded.rooms, entrance=excluded.entrance, floor_plan=excluded.floor_plan`,
   ).run(saved.id, saved.title, saved.subtitle, saved.venue, saved.startDate, saved.endDate, saved.status,
-    j(saved.rooms), j(saved.entrance));
+    j(saved.rooms), j(saved.entrance), saved.floorPlan ? j(saved.floorPlan) : null);
   return saved;
 }
 

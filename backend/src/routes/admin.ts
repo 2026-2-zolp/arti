@@ -42,12 +42,14 @@ export function adminRoutes(db: DB) {
 
   /** A-03 전시 등록·수정 (id가 비어 있으면 새로 등록) */
   r.post('/admin/exhibitions', (req, res) => {
-    res.status(201).json(repo.upsertExhibition(db, { ...parse(exhibitionInput, req.body), id: '' }));
+    res.status(201).json(repo.upsertExhibition(db, { ...parse(exhibitionInput, req.body), id: '', floorPlan: null }));
   });
 
+  // 평면도 이미지는 전용 API(/floor-plan)로만 바꾼다
   r.put('/admin/exhibitions/:id', (req, res) => {
-    if (!repo.getExhibition(db, req.params.id)) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
-    res.json(repo.upsertExhibition(db, { ...parse(exhibitionInput, req.body), id: req.params.id }));
+    const prev = repo.getExhibition(db, req.params.id);
+    if (!prev) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
+    res.json(repo.upsertExhibition(db, { ...parse(exhibitionInput, req.body), id: prev.id, floorPlan: prev.floorPlan }));
   });
 
   /** A-04 작품 등록·수정, A-05 위치 지정도 이 API로 저장 */
@@ -170,24 +172,27 @@ export function adminRoutes(db: DB) {
     summaryStatus: w.summaryStatus === 'confirmed' ? 'suggested' : w.summaryStatus,
   });
 
-  r.post(
-    '/admin/artworks/:id/image',
-    express.raw({ type: Object.keys(IMAGE_TYPES), limit: '10mb' }),
-    (req, res) => {
-      const w = repo.getArtwork(db, String(req.params.id));
-      if (!w) throw new HttpError(404, '작품 정보를 찾을 수 없어요.');
-      const type = IMAGE_TYPES[(req.get('content-type') ?? '').split(';')[0].trim()];
-      const body = req.body as unknown;
-      if (!type || !Buffer.isBuffer(body) || body.length === 0)
-        throw new HttpError(415, 'PNG, JPG, WEBP 이미지 파일만 올릴 수 있어요.');
-      if (!type.magic(body)) throw new HttpError(415, '이미지 파일이 아니거나 손상된 파일이에요.');
-      fs.mkdirSync(config.uploadDir, { recursive: true });
-      const file = `${w.id}-${newId('img').slice(4)}.${type.ext}`;
-      fs.writeFileSync(path.join(config.uploadDir, file), body);
-      removeFile(w.imageFile);
-      res.json(repo.upsertArtwork(db, { ...demoteAi(w), imageFile: file }));
-    },
-  );
+  /** 요청 본문의 이미지를 검사해 업로드 폴더에 저장하고 파일 이름을 돌려준다 */
+  const saveUpload = (req: express.Request, prefix: string) => {
+    const type = IMAGE_TYPES[(req.get('content-type') ?? '').split(';')[0].trim()];
+    const body = req.body as unknown;
+    if (!type || !Buffer.isBuffer(body) || body.length === 0)
+      throw new HttpError(415, 'PNG, JPG, WEBP 이미지 파일만 올릴 수 있어요.');
+    if (!type.magic(body)) throw new HttpError(415, '이미지 파일이 아니거나 손상된 파일이에요.');
+    fs.mkdirSync(config.uploadDir, { recursive: true });
+    const file = `${prefix}-${newId('img').slice(4)}.${type.ext}`;
+    fs.writeFileSync(path.join(config.uploadDir, file), body);
+    return file;
+  };
+  const rawImage = express.raw({ type: Object.keys(IMAGE_TYPES), limit: '10mb' });
+
+  r.post('/admin/artworks/:id/image', rawImage, (req, res) => {
+    const w = repo.getArtwork(db, String(req.params.id));
+    if (!w) throw new HttpError(404, '작품 정보를 찾을 수 없어요.');
+    const file = saveUpload(req, w.id);
+    removeFile(w.imageFile);
+    res.json(repo.upsertArtwork(db, { ...demoteAi(w), imageFile: file }));
+  });
 
   r.delete('/admin/artworks/:id/image', (req, res) => {
     const w = repo.getArtwork(db, String(req.params.id));
@@ -195,6 +200,27 @@ export function adminRoutes(db: DB) {
     if (!w.imageFile) return void res.json(w);
     removeFile(w.imageFile);
     res.json(repo.upsertArtwork(db, { ...demoteAi(w), imageFile: null }));
+  });
+
+  /**
+   * A-05 미술관 평면도(안내도) 이미지 업로드. 본문 = 이미지 파일, ?width=&height= = 원본 픽셀 크기(화면 비율용)
+   * 작품 위치는 이미지 기준 퍼센트 좌표라 비율이 다른 이미지로 바꾸면 위치를 다시 확인해야 한다.
+   */
+  r.post('/admin/exhibitions/:id/floor-plan', rawImage, (req, res) => {
+    const ex = repo.getExhibition(db, String(req.params.id));
+    if (!ex) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
+    const size = z.coerce.number().int().min(1).max(20_000);
+    const { width, height } = parse(z.object({ width: size, height: size }), req.query);
+    const file = saveUpload(req, `${ex.id}-plan`);
+    removeFile(ex.floorPlan?.file ?? null);
+    res.json(repo.upsertExhibition(db, { ...ex, floorPlan: { file, width, height } }));
+  });
+
+  r.delete('/admin/exhibitions/:id/floor-plan', (req, res) => {
+    const ex = repo.getExhibition(db, String(req.params.id));
+    if (!ex) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
+    removeFile(ex.floorPlan?.file ?? null);
+    res.json(repo.upsertExhibition(db, { ...ex, floorPlan: null }));
   });
 
   /** A-06 회원 조회 (이메일·닉네임 검색) */

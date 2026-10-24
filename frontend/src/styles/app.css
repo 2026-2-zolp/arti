@@ -43,6 +43,7 @@ h1, h2, h3, p { margin: 0; }
 /* ---------- 유틸 ---------- */
 .stack { display: flex; flex-direction: column; }
 .gap-10 { gap: 10px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
 .mt-12 { margin-top: 12px; } .mt-24 { margin-top: 24px; }
 .center { text-align: center; }
 .muted { color: var(--muted); }
@@ -98,6 +99,7 @@ h1, h2, h3, p { margin: 0; }
 .text-btn { border: 0; background: none; color: var(--ink-2); font-size: 14px; padding: 6px 8px; text-decoration: none; }
 .link-btn { border: 0; background: none; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
 .link-btn.inline { color: var(--muted); }
+.dot-sep { margin: 0 8px; color: var(--muted); }
 .pill-btn {
   display: inline-flex; align-items: center; gap: 6px;
   border: 0; background: var(--surface-2); border-radius: 12px; padding: 8px 12px; font-size: 14px;
@@ -227,6 +229,12 @@ h1, h2, h3, p { margin: 0; }
 .fm-marker.selected circle { fill: var(--ink); stroke: none; }
 .fm-marker.selected text { fill: #fff; }
 .fm-marker { cursor: pointer; }
+/* 평면도 이미지 위: 마커·입구 글자가 그림에 묻히지 않게 흰 테두리, 끌기 가능한 요소는 손 모양 커서 */
+.floor-map.has-plan .fm-marker circle { stroke: #fff; stroke-width: 0.7; }
+.floor-map.has-plan .fm-marker.upcoming circle, .floor-map.has-plan .fm-marker.plain circle { stroke: var(--accent); }
+.floor-map.has-plan .fm-entrance text { paint-order: stroke; stroke: #fff; stroke-width: 0.8px; font-weight: 600; }
+.fm-marker.draggable, .fm-entrance.draggable { cursor: grab; touch-action: none; }
+.floor-map.dragging, .floor-map.dragging * { cursor: grabbing; }
 .fm-pulse { fill: var(--accent) !important; opacity: 0.25; animation: pulse 1.6s ease-out infinite; transform-origin: center; transform-box: fill-box; }
 @keyframes pulse { from { transform: scale(0.6); opacity: 0.45; } to { transform: scale(1.4); opacity: 0; } }
 
@@ -407,6 +415,11 @@ h1, h2, h3, p { margin: 0; }
 .a-pos-item.on { border-color: var(--a-side); background: #fff; box-shadow: 0 0 0 1px var(--a-side); }
 .a-pos-num { color: var(--muted); width: 18px; }
 .a-pos-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-map-bar select, .a-room-list input, .a-room-new { height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--a-line); background: #fff; font-size: 14px; }
+.a-room-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.a-room-list li { display: flex; align-items: center; gap: 8px; }
+.a-room-list input, .a-room-new { flex: 1; min-width: 0; }
+
 .a-dl { display: grid; grid-template-columns: 90px 1fr; gap: 10px; margin: 0 0 20px; font-size: 15px; }
 .a-dl dt { color: var(--muted); }
 .a-dl dd { margin: 0; }

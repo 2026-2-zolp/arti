@@ -2,11 +2,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
-import { useVisit } from '../../store/VisitContext';
+import { useLogout, useVisit } from '../../store/VisitContext';
 
 export default function U02Entry() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
+  const logout = useLogout();
 
   const continueAsGuest = () => {
     // 비회원으로 계속: 이번 관람만 쓰는 취향을 새로 받는다
@@ -43,6 +44,18 @@ export default function U02Entry() {
           비회원으로 계속
         </button>
       </div>
+
+      {state.user && (
+        <p className="center muted mt-24">
+          <button className="link-btn" onClick={() => logout('/login')}>
+            다른 계정으로 로그인
+          </button>
+          <span className="dot-sep" aria-hidden="true">·</span>
+          <button className="link-btn" onClick={() => logout('/entry')}>
+            로그아웃
+          </button>
+        </p>
+      )}
 
       {!state.user && (
         <p className="center muted mt-24">
