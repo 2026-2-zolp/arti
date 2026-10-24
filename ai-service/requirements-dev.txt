@@ -1,4 +1,4 @@
-# 테스트 전용: 모델 없이 도는 테스트라 torch/transformers 불필요
+# Test only: tests use a fake model, so torch/transformers are not needed
 fastapi>=0.115
 pydantic>=2.7
 httpx>=0.27
