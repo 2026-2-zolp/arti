@@ -40,11 +40,18 @@ def load_calibration(path: Path = CALIBRATION_FILE) -> dict[str, Scores]:
 
 
 def apply_prior(scores: Scores, prior: Scores | None) -> Scores:
-    """감정별 평균 점수(편향)를 빼고 음수는 0으로. 모두 0 이하가 되면 원래 점수를 쓴다."""
+    """감정별 평균 점수(편향)를 뺀 뒤 가장 낮은 감정이 0이 되게 올린다 (편향을 뺀 순서를 그대로 유지).
+
+    예전에는 음수를 0으로 자르고, 모두 0 이하면 보정 전 점수로 돌아갔다. 그러면 편향이 그대로 남거나
+    (모두 0 이하인 작품) 2위 이하 순서가 사라졌다 → evaluation/ai_validation.ipynb 4장에서 발견해 수정.
+    """
     if not prior:
         return scores
-    adjusted = {k: max(scores.get(k, 0.0) - prior[k], 0.0) for k in EMOTION_KEYS}
-    return adjusted if any(v > 0 for v in adjusted.values()) else scores
+    adjusted = {k: scores.get(k, 0.0) - prior[k] for k in EMOTION_KEYS}
+    low, high = min(adjusted.values()), max(adjusted.values())
+    if high - low <= 0:  # 모든 감정이 똑같으면 보정으로 얻을 정보가 없다
+        return scores
+    return {k: v - low for k, v in adjusted.items()}
 
 
 class Scorer(Protocol):

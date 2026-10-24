@@ -98,6 +98,12 @@ def test_calibration_removes_label_bias(tmp_path):
     assert max(fixed, key=fixed.get) == "calm"  # 어디에나 높게 나오던 '경외'를 빼면 평온이 1위
     assert apply_prior({k: 0.1 for k in EMOTION_KEYS}, {k: 0.5 for k in EMOTION_KEYS}) == {k: 0.1 for k in EMOTION_KEYS}
 
+    # 모든 감정이 평균보다 낮아도 보정 전 점수로 돌아가지 않고, 편향을 뺀 순서를 끝까지 유지
+    prior2 = {"calm": 0.1, "joy": 0.2, "sadness": 0.2, "tension": 0.3, "awe": 0.5, "nostalgia": 0.3}
+    low = {"calm": 0.09, "joy": 0.05, "sadness": 0.0, "tension": 0.1, "awe": 0.45, "nostalgia": 0.2}
+    order = sorted(EMOTION_KEYS, key=apply_prior(low, prior2).get, reverse=True)
+    assert order[:3] == ["calm", "awe", "nostalgia"] and max(low, key=low.get) == "awe"
+
     f = tmp_path / "calibration.json"
     f.write_text('{"prior": {"text": {"calm": 0.1, "joy": 0.1, "sadness": 0.1, "tension": 0.1, "awe": 0.5, "nostalgia": 0.1}}}')
     assert load_calibration(f)["text"]["awe"] == 0.5
