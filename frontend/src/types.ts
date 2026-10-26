@@ -110,6 +110,8 @@ export interface Recommendation {
   order: number;              // 1부터 시작하는 관람 순서
   reason: string;             // 작품별 간단한 추천 이유
   matchedTags: TasteTag[];
+  /** 이 작품과 가장 닮은 사용자의 취향 카드 (취향 카드마다 따로 비교한 결과, 관련 카드가 없으면 null) */
+  matchedCard: TasteTag | null;
   /** 감정 분석 기반으로 추천됐을 때, 취향과 가장 많이 겹친 감정 (태그 기반이면 빈 배열) */
   matchedEmotions: EmotionKey[];
   /** 취향과 작품 감정의 유사도 0~1 (감정 분석이 확정되지 않은 작품은 null) */

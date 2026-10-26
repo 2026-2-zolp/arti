@@ -158,7 +158,7 @@ export default function U10Artwork() {
             <Icon name="bulb" />
             <div>
               <strong>이 작품이 추천된 이유</strong>
-              <p>{reasonSentence(rec.matchedTags, rec.matchedEmotions ?? [])}</p>
+              <p>{reasonSentence(rec.matchedTags, rec.matchedEmotions ?? [], rec.matchedCard ?? null)}</p>
             </div>
           </div>
 

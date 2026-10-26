@@ -123,6 +123,15 @@ describe('전시 일괄 분석·확정 → 감정 기반 추천', () => {
     assert.ok(!rec.body.some((x: { artworkId: string }) => x.artworkId === 'aw-07'));
   });
 
+  test('반대 성격의 취향 카드를 고르면 카드마다 닮은 작품이 섞여 추천된다 (평균 내지 않음)', async () => {
+    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['light', 'emotion'], duration: '30m' });
+    assert.equal(rec.status, 200);
+    const cards = rec.body.map((x: { matchedCard: string | null }) => x.matchedCard);
+    assert.ok(cards.includes('light') && cards.includes('emotion'), `두 카드가 모두 반영되어야 함: ${cards}`);
+    const emo = rec.body.find((x: { matchedCard: string }) => x.matchedCard === 'emotion');
+    assert.match(emo.reason, /^감정 표현 취향/);
+  });
+
   test('확정 후 공식 해설을 바꾸면 다시 「AI 제안」으로 돌아간다', async () => {
     const h = await admin();
     const w = (await call('GET', '/artworks/aw-01')).body;
