@@ -13,6 +13,7 @@ import { z } from 'zod';
 const responseSchema = z.object({
   emotions: emotionScores,
   usedImage: z.boolean(),
+  usedText: z.boolean().optional(),
   imageError: z.string().nullable(),
   models: z.object({ image: z.string(), text: z.string() }),
   tags: tagScores.nullable().optional(),

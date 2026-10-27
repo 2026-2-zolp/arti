@@ -61,6 +61,7 @@ class AnalyzeResponse(BaseModel):
     imageScores: dict[str, float] | None
     textScores: dict[str, float] | None
     usedImage: bool
+    usedText: bool = False  # 해설(또는 그림·해설이 없을 때 제목)을 분석에 썼는지
     imageError: str | None
     models: dict[str, str]
     tags: dict[str, float] | None = None  # 취향 태그 8개 (0~1, 태그마다 독립, 0.5 이상 = 해당함) — 추천에 사용
@@ -85,14 +86,15 @@ def tags():
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze_artwork(req: AnalyzeRequest):
-    # 제목은 해설이 없을 때의 보조 정보로만 쓴다
-    text = req.description.strip() or req.title.strip()
     image, image_error = None, None
     if req.imageBase64 or req.imageUrl:
         try:
             image = decode_base64_image(req.imageBase64) if req.imageBase64 else fetch_image(req.imageUrl or "")
         except ImageFetchError as e:
             image_error = str(e)  # 이미지가 실패해도 텍스트만으로 분석을 계속한다
+    # 제목은 그림도 해설도 없을 때만 쓴다. 제목은 짧아서(「작품」「산」) 분위기를 판단하기 어렵고,
+    # 「…의 추억」 같은 단어 하나가 결과를 크게 바꾼다 (모르트퐁텐의 추억: 그림만 평온 1위 → 제목을 섞으면 그리움 1위)
+    text = req.description.strip() or (req.title.strip() if image is None else "")
     if not text and image is None:
         raise HTTPException(status_code=400, detail=image_error or "작품 해설이나 이미지가 있어야 분석할 수 있어요.")
     try:
@@ -105,6 +107,7 @@ def analyze_artwork(req: AnalyzeRequest):
         imageScores=result.image_scores,
         textScores=result.text_scores,
         usedImage=result.image_scores is not None,
+        usedText=result.text_scores is not None,
         imageError=result.image_error,
         models={"image": config.CLIP_MODEL, "text": config.NLI_MODEL},
         tags=result.tags,

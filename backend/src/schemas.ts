@@ -12,6 +12,7 @@ export const tagScores = z.object({
 });
 const analysis = z.object({
   emotions: emotionScores,
+  usedText: z.boolean().optional(),
   tags: tagScores.nullable().optional(),
   tagSource: z.enum(['image', 'text']).nullable().optional(),
   usedImage: z.boolean(),

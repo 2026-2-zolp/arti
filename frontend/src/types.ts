@@ -33,6 +33,8 @@ export type AiStatus = 'none' | 'suggested' | 'confirmed';
 export interface ArtworkAnalysis {
   emotions: EmotionScores;
   usedImage: boolean;
+  /** 해설을 분석에 썼는지 (예전 분석 결과에는 없음) */
+  usedText?: boolean;
   imageError: string | null;
   models: { image: string; text: string };
   analyzedAt: string;

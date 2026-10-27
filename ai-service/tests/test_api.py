@@ -139,3 +139,11 @@ def test_tag_thresholds_map_to_half(tmp_path, client, monkeypatch):
     assert body["tagsRaw"]["light"] == 0.8 and body["tags"]["light"] < 0.5
     text_only = client.post("/analyze", json={"description": "x"}).json()
     assert text_only["tags"] == text_only["tagsRaw"]
+
+
+def test_title_only_used_without_image_and_description(client, monkeypatch):
+    monkeypatch.setattr(main, "fetch_image", lambda url: Image.new("RGB", (8, 8)))
+    with_image = client.post("/analyze", json={"title": "고요한 추억", "imageUrl": "https://example.com/a.png"}).json()
+    assert with_image["usedImage"] is True and with_image["usedText"] is False and with_image["textScores"] is None
+    title_only = client.post("/analyze", json={"title": "고요한 호수"}).json()
+    assert title_only["usedText"] is True and max(title_only["emotions"], key=title_only["emotions"].get) == "calm"

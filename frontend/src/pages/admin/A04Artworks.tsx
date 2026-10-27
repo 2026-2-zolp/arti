@@ -560,7 +560,8 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             <>
               <EmotionBars scores={a.emotions} />
               <p className="ai-meta">
-                분석 재료: {a.usedImage ? '이미지 + 해설' : '해설 텍스트'} · 추천에는 쓰지 않고 작품 화면·아트 영수증에 표시
+                분석 재료: {a.usedText === undefined ? (a.usedImage ? '이미지 + 해설' : '해설 텍스트') : [a.usedImage && '이미지', a.usedText && '해설'].filter(Boolean).join(' + ')} ·
+                추천에는 쓰지 않고 작품 화면·아트 영수증에 표시
                 {a.imageError && <> (이미지 실패: {a.imageError})</>}
                 <br />
                 모델: {a.models.image} · {a.models.text}
