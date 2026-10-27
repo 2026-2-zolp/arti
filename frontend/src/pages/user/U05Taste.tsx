@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { ArtImage } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
-import { TASTE_LABEL, TASTE_SAMPLES } from '../../data/mock';
+import { TASTE_LABEL, TASTE_SAMPLES, tasteImageUrls } from '../../data/mock';
 import { api } from '../../api/client';
 import { useVisit } from '../../store/VisitContext';
 import type { TasteTag } from '../../types';
@@ -55,7 +55,7 @@ export default function U05Taste() {
               aria-pressed={on}
               onClick={() => toggle(tag)}
             >
-              <ArtImage seed={`taste-${tag}`} palette={palette} alt={TASTE_LABEL[tag]} ratio={4 / 3} />
+              <ArtImage seed={`taste-${tag}`} palette={palette} imageUrl={tasteImageUrls(tag)} alt={TASTE_LABEL[tag]} ratio={4 / 3} />
               <span className="taste-card-foot">
                 <span>{TASTE_LABEL[tag]}</span>
                 <span className="check-circle">{on && <Icon name="check" size={14} />}</span>

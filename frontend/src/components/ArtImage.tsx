@@ -1,9 +1,10 @@
 /**
  * 작품 이미지 자리표시자.
  * imageUrl이 있으면 실제 이미지를, 없으면 palette 색상으로 추상 구성 이미지를 SVG로 그린다.
+ * imageUrl을 여러 개 주면 앞에서부터 차례로 시도하고, 모두 못 불러오면(파일 없음 등) 자리표시 그림을 쓴다.
  * seed(작품 id)가 같으면 항상 같은 그림이 나오도록 간단한 의사 난수(mulberry32)를 쓴다.
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { uploadedImageUrl } from '../api/client';
 import type { Artwork } from '../types';
 
@@ -35,7 +36,7 @@ function hash(s: string): number {
 interface Props {
   seed: string;
   palette: string[];
-  imageUrl?: string;
+  imageUrl?: string | string[];
   alt: string;
   className?: string;
   ratio?: number; // 가로/세로 비율
@@ -52,8 +53,21 @@ export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 
     });
   }, [seed, palette]);
 
-  if (imageUrl) {
-    return <img className={className} src={imageUrl} alt={alt} style={{ aspectRatio: ratio, objectFit: 'cover' }} />;
+  const urls = imageUrl === undefined ? [] : Array.isArray(imageUrl) ? imageUrl : [imageUrl];
+  const urlKey = urls.join('|');
+  const [failed, setFailed] = useState(0); // 불러오지 못한 주소 개수
+  useEffect(() => setFailed(0), [urlKey]);
+
+  if (failed < urls.length) {
+    return (
+      <img
+        className={className}
+        src={urls[failed]}
+        alt={alt}
+        style={{ aspectRatio: ratio, objectFit: 'cover', display: 'block', width: '100%' }}
+        onError={() => setFailed((n) => n + 1)}
+      />
+    );
   }
 
   const h = 100 / ratio;

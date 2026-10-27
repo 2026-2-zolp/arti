@@ -15,7 +15,13 @@ export const TASTE_LABEL: Record<TasteTag, string> = {
   light: '빛',
 };
 
-/** U-05 취향 파악 카드 (현재 4장 + 확장 2장) */
+/**
+ * U-05 취향 파악 카드 (현재 4장 + 확장 2장)
+ * 카드 그림: frontend/public/taste/<tag>.jpg|png|webp 파일이 있으면 그 그림, 없으면 palette 색으로 그린 자리표시 그림.
+ * 그림을 바꾸려면 같은 이름의 파일만 바꿔 넣으면 된다 (public/taste/README.txt).
+ */
+export const tasteImageUrls = (tag: TasteTag) => ['jpg', 'png', 'webp'].map((ext) => `/taste/${tag}.${ext}`);
+
 export const TASTE_SAMPLES: { tag: TasteTag; palette: string[] }[] = [
   { tag: 'vivid', palette: ['#D9EDE6', '#7FB3A3', '#4F7A68', '#E9D9A0', '#C98F6B'] },
   { tag: 'calm', palette: ['#F3D6CD', '#D6544A', '#F0B94A', '#2F4A5C', '#8E1F1F'] },
