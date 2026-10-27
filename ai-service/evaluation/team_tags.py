@@ -5,7 +5,7 @@
     python -m evaluation.team_tags            # 집계만 (tag_eval_set.json은 그대로)
     python -m evaluation.team_tags --apply    # 다수결 정답으로 tag_eval_set.json 의 primary·expected 교체
 
-입력: evaluation/labeling/responses/labels_<이름>.csv (labeling/라벨링.html 에서 내려받은 파일, 2명 이상)
+입력: evaluation/labeling/responses/labels_<이름>.csv (labeling/labeling.html 에서 내려받은 파일, 2명 이상)
 출력:
   - evaluation/results/team_tags_report.md        태그별 일치도(Fleiss' kappa)와 다수결 결과
   - evaluation/results/team_tags_disagreements.csv 의견이 갈린 칸 (회의 4단계에서 다시 볼 목록)
