@@ -5,6 +5,7 @@
    "id": "01",
    "title": "모르트퐁텐의 추억",
    "artist": "카미유 코로",
+   "year": "1864",
    "primary": "landscape",
    "expected": [
     "landscape",
@@ -16,6 +17,7 @@
    "id": "02",
    "title": "시에라네바다 산맥 속에서",
    "artist": "앨버트 비어슈타트",
+   "year": "1868",
    "primary": "landscape",
    "expected": [
     "landscape",
@@ -27,6 +29,7 @@
    "id": "03",
    "title": "미델하르니스의 가로수길",
    "artist": "메인더르트 호베마",
+   "year": "1689",
    "primary": "landscape",
    "expected": [
     "landscape"
@@ -37,6 +40,7 @@
    "id": "04",
    "title": "건초 마차",
    "artist": "존 컨스터블",
+   "year": "1821",
    "primary": "landscape",
    "expected": [
     "landscape"
@@ -47,6 +51,7 @@
    "id": "05",
    "title": "산 (〈산〉 연작 중 1점)",
    "artist": "유영국",
+   "year": "1960~70년대",
    "primary": "landscape",
    "expected": [
     "landscape",
@@ -59,6 +64,7 @@
    "id": "06",
    "title": "우유를 따르는 여인",
    "artist": "요하네스 페르메이르",
+   "year": "1658년경",
    "primary": "people",
    "expected": [
     "people",
@@ -70,6 +76,7 @@
    "id": "07",
    "title": "모나리자",
    "artist": "레오나르도 다빈치",
+   "year": "1503~19년경",
    "primary": "people",
    "expected": [
     "people",
@@ -81,6 +88,7 @@
    "id": "08",
    "title": "야경",
    "artist": "렘브란트",
+   "year": "1642",
    "primary": "people",
    "expected": [
     "people",
@@ -93,6 +101,7 @@
    "id": "09",
    "title": "폴리베르제르의 술집",
    "artist": "에두아르 마네",
+   "year": "1882",
    "primary": "people",
    "expected": [
     "people",
@@ -104,6 +113,7 @@
    "id": "10",
    "title": "빨래터",
    "artist": "박수근",
+   "year": "1950년대",
    "primary": "people",
    "expected": [
     "people",
@@ -115,6 +125,7 @@
    "id": "11",
    "title": "구성 VII",
    "artist": "바실리 칸딘스키",
+   "year": "1913",
    "primary": "abstract",
    "expected": [
     "abstract",
@@ -126,6 +137,7 @@
    "id": "12",
    "title": "브로드웨이 부기우기",
    "artist": "피트 몬드리안",
+   "year": "1942~43",
    "primary": "abstract",
    "expected": [
     "abstract",
@@ -137,6 +149,7 @@
    "id": "13",
    "title": "무제 (오렌지, 빨강, 노랑)",
    "artist": "마크 로스코",
+   "year": "1961",
    "primary": "abstract",
    "expected": [
     "abstract",
@@ -148,6 +161,7 @@
    "id": "14",
    "title": "우주 (05-IV-71 #200)",
    "artist": "김환기",
+   "year": "1971",
    "primary": "abstract",
    "expected": [
     "abstract",
@@ -159,6 +173,7 @@
    "id": "15",
    "title": "가을의 리듬 (넘버 30)",
    "artist": "잭슨 폴록",
+   "year": "1950",
    "primary": "abstract",
    "expected": [
     "abstract"
@@ -169,6 +184,7 @@
    "id": "16",
    "title": "해변 산책",
    "artist": "호아킨 소로야",
+   "year": "1909",
    "primary": "light",
    "expected": [
     "light",
@@ -181,6 +197,7 @@
    "id": "17",
    "title": "루앙 대성당 (햇빛 연작 중 1점)",
    "artist": "클로드 모네",
+   "year": "1894",
    "primary": "light",
    "expected": [
     "light",
@@ -192,6 +209,7 @@
    "id": "18",
    "title": "전함 테메레르",
    "artist": "윌리엄 터너",
+   "year": "1839",
    "primary": "light",
    "expected": [
     "light",
@@ -204,6 +222,7 @@
    "id": "19",
    "title": "목수 성 요셉",
    "artist": "조르주 드 라 투르",
+   "year": "1642년경",
    "primary": "light",
    "expected": [
     "light",
@@ -216,6 +235,7 @@
    "id": "20",
    "title": "드네프르 강의 달밤",
    "artist": "아르히프 쿠인지",
+   "year": "1880",
    "primary": "light",
    "expected": [
     "light",
@@ -228,6 +248,7 @@
    "id": "21",
    "title": "춤",
    "artist": "앙리 마티스",
+   "year": "1910",
    "primary": "vivid",
    "expected": [
     "vivid",
@@ -240,6 +261,7 @@
    "id": "22",
    "title": "채링 크로스 다리",
    "artist": "앙드레 드랭",
+   "year": "1906",
    "primary": "vivid",
    "expected": [
     "vivid",
@@ -251,6 +273,7 @@
    "id": "23",
    "title": "설교 후의 환상",
    "artist": "폴 고갱",
+   "year": "1888",
    "primary": "vivid",
    "expected": [
     "vivid",
@@ -263,6 +286,7 @@
    "id": "24",
    "title": "마릴린 두 폭",
    "artist": "앤디 워홀",
+   "year": "1962",
    "primary": "vivid",
    "expected": [
     "vivid",
@@ -274,6 +298,7 @@
    "id": "25",
    "title": "베를린 거리 풍경",
    "artist": "에른스트 루트비히 키르히너",
+   "year": "1913",
    "primary": "vivid",
    "expected": [
     "vivid",
@@ -285,6 +310,7 @@
    "id": "26",
    "title": "늙은 기타리스트",
    "artist": "파블로 피카소",
+   "year": "1903~04",
    "primary": "cool",
    "expected": [
     "cool",
@@ -296,6 +322,7 @@
    "id": "27",
    "title": "녹턴: 청색과 금색 – 올드 배터시 다리",
    "artist": "제임스 휘슬러",
+   "year": "1872~75",
    "primary": "cool",
    "expected": [
     "cool",
@@ -307,6 +334,7 @@
    "id": "28",
    "title": "가나가와 앞바다의 큰 파도",
    "artist": "가쓰시카 호쿠사이",
+   "year": "1831년경",
    "primary": "cool",
    "expected": [
     "cool",
@@ -318,6 +346,7 @@
    "id": "29",
    "title": "론강의 별이 빛나는 밤",
    "artist": "빈센트 반 고흐",
+   "year": "1888",
    "primary": "cool",
    "expected": [
     "cool",
@@ -330,6 +359,7 @@
    "id": "30",
    "title": "IKB 191",
    "artist": "이브 클랭",
+   "year": "1962",
    "primary": "cool",
    "expected": [
     "cool",
@@ -341,6 +371,7 @@
    "id": "31",
    "title": "타오르는 6월",
    "artist": "프레더릭 레이턴",
+   "year": "1895",
    "primary": "warm",
    "expected": [
     "warm",
@@ -353,6 +384,7 @@
    "id": "32",
    "title": "아델레 블로흐바우어의 초상 I",
    "artist": "구스타프 클림트",
+   "year": "1907",
    "primary": "warm",
    "expected": [
     "warm",
@@ -364,6 +396,7 @@
    "id": "33",
    "title": "노적가리 (여름의 끝)",
    "artist": "클로드 모네",
+   "year": "1891",
    "primary": "warm",
    "expected": [
     "warm",
@@ -376,6 +409,7 @@
    "id": "34",
    "title": "해바라기",
    "artist": "빈센트 반 고흐",
+   "year": "1888",
    "primary": "warm",
    "expected": [
     "warm",
@@ -387,6 +421,7 @@
    "id": "35",
    "title": "황소",
    "artist": "이중섭",
+   "year": "1953년경",
    "primary": "warm",
    "expected": [
     "warm",
@@ -398,6 +433,7 @@
    "id": "36",
    "title": "파라솔을 든 여인",
    "artist": "클로드 모네",
+   "year": "1875",
    "primary": "soft",
    "expected": [
     "soft",
@@ -410,6 +446,7 @@
    "id": "37",
    "title": "피아노 치는 소녀들",
    "artist": "피에르오귀스트 르누아르",
+   "year": "1892",
    "primary": "soft",
    "expected": [
     "soft",
@@ -421,6 +458,7 @@
    "id": "38",
    "title": "아이의 목욕",
    "artist": "메리 커샛",
+   "year": "1893",
    "primary": "soft",
    "expected": [
     "soft",
@@ -432,6 +470,7 @@
    "id": "39",
    "title": "무대 위의 무용수 (에투알)",
    "artist": "에드가 드가",
+   "year": "1878",
    "primary": "soft",
    "expected": [
     "soft",
@@ -443,6 +482,7 @@
    "id": "40",
    "title": "수련 연못 (일본식 다리)",
    "artist": "클로드 모네",
+   "year": "1899",
    "primary": "soft",
    "expected": [
     "soft",

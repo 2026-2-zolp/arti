@@ -85,6 +85,7 @@ npm run dev              # http://localhost:5173
 | `npm test` | 통합 테스트 29개 (메모리 DB, 가짜 감정 분석 서버, 외부 호출 없음) |
 | `npm run typecheck` | 타입 검사 |
 | `npm run db:reset` | DB 파일 삭제 → 다음 실행 때 목업 데이터로 다시 생성 |
+| `npm run seed:captures` | 캡처 40점(`ai-service/evaluation/images`)으로 「캡처 40점 테스트 전시」(`ex-capture`) 만들기 — 검수 완료·위치까지 넣음, 태그는 「전시 AI 일괄 분석」으로. 이미 있는 작품은 유지, `-- --reset`이면 다시 만듦 |
 
 #### 데모 계정 (처음 실행 시 자동 생성)
 | 구분 | ID | 비밀번호 |

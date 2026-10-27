@@ -12,6 +12,7 @@
     "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "tsx --disable-warning=ExperimentalWarning --test test/*.test.ts",
+    "seed:captures": "tsx --disable-warning=ExperimentalWarning --env-file-if-exists=.env scripts/seed-captures.ts",
     "db:reset": "node -e \"const f=process.env.DB_PATH||'data/arti.db';for(const s of ['','-wal','-shm'])require('node:fs').rmSync(f+s,{force:true})\""
   },
   "dependencies": {
