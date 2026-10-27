@@ -9,7 +9,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
-import { AI_STATUS_LABEL, TASTE_LABEL } from '../../data/mock';
+import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
@@ -46,7 +46,7 @@ export function ArtworkList() {
   };
 
   const confirmAll = async () => {
-    if (!targetEx || !confirm(`「${targetEx.title}」의 AI 제안(감정 분석·요약)을 모두 확정할까요?`)) return;
+    if (!targetEx || !confirm(`「${targetEx.title}」의 AI 제안(취향 태그·감정 분석·요약)을 모두 확정할까요? 태그는 AI가 "해당함"으로 본 태그가 켜져요.`)) return;
     setBusy('confirm');
     try {
       const r = await api.confirmExhibitionAi(targetEx.id);
@@ -144,6 +144,7 @@ export function ArtworkList() {
                   <span className={`badge ${w.reviewStatus}`}>{REVIEW_LABEL[w.reviewStatus]}</span>
                 </td>
                 <td>
+                  <span className={`badge ai-${w.tagStatus}`}>태그 {AI_STATUS_LABEL[w.tagStatus]}</span>{' '}
                   <span className={`badge ai-${w.emotionStatus}`}>감정 {AI_STATUS_LABEL[w.emotionStatus]}</span>{' '}
                   <span className={`badge ai-${w.summaryStatus}`}>요약 {AI_STATUS_LABEL[w.summaryStatus]}</span>
                 </td>
@@ -167,6 +168,8 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   position: null,
   palette: ['#EDE6DD', '#8C6A4A', '#2E3A4D', '#C99A55', '#F7F1E8'],
   tags: [],
+  tagScores: null,
+  tagStatus: 'none',
   description: '',
   guidedLooking: [],
   source: '',
@@ -209,6 +212,13 @@ export function ArtworkEdit() {
   const set = <K extends keyof Artwork>(k: K, v: Artwork[K]) => setW((cur) => (cur ? { ...cur, [k]: v } : cur));
   const toggleTag = (t: TasteTag) => set('tags', w.tags.includes(t) ? w.tags.filter((x) => x !== t) : [...w.tags, t]);
 
+  /** 입력 중인 내용과 함께 바로 저장 (태그 확정·해제 버튼용) */
+  const saveWith = async (patch: Partial<Artwork>) => {
+    const saved = await api.saveArtwork({ ...w, ...patch, guidedLooking: guided.split('\n').map((s) => s.trim()).filter(Boolean) });
+    setW(saved);
+    return saved;
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!w.title.trim() || !w.artist.trim()) return setMsg({ type: 'err', text: '작품명과 작가는 필수입니다.' });
@@ -227,7 +237,7 @@ export function ArtworkEdit() {
     setMsg({
       type: 'ok',
       text:
-        saved.emotionStatus !== w.emotionStatus || saved.summaryStatus !== w.summaryStatus
+        saved.emotionStatus !== w.emotionStatus || saved.summaryStatus !== w.summaryStatus || saved.tagStatus !== w.tagStatus
           ? '저장했습니다. 공식 해설이나 이미지가 바뀌어 AI 결과를 다시 확인해야 해요(「AI 제안」으로 변경).'
           : '저장했습니다.',
     });
@@ -284,22 +294,7 @@ export function ArtworkEdit() {
             </label>
           </div>
           <ImageField w={w} setW={setW} set={set} />
-          <div className="a-field">
-            <span>취향 태그 (추천에 사용)</span>
-            <div className="chips wrap">
-              {(Object.keys(TASTE_LABEL) as TasteTag[]).map((t) => (
-                <button
-                  type="button"
-                  key={t}
-                  className={`chip ${w.tags.includes(t) ? 'accent' : 'outline'}`}
-                  aria-pressed={w.tags.includes(t)}
-                  onClick={() => toggleTag(t)}
-                >
-                  {TASTE_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          </div>
+          <TagField w={w} toggleTag={toggleTag} setW={setW} save={saveWith} />
           <div className="a-field">
             <span>평면도 위치</span>
             <div className="a-inline">
@@ -468,8 +463,9 @@ function ImageField({
 
 /**
  * AI 분석·요약 패널
- * - 「AI 분석 실행」: 저장된 해설(+이미지)로 감정 분석(오픈소스 모델) + 해설 요약(Claude) → 「AI 제안」
+ * - 「AI 분석 실행」: 저장된 해설(+이미지)로 취향 태그·감정 분석(오픈소스 모델) + 해설 요약(Claude) → 「AI 제안」
  * - 관리자가 결과를 확인·수정한 뒤 「확정」해야 사용자 화면과 추천에 쓰인다
+ * - 취향 태그 제안은 「기본 정보」의 태그 버튼(TagField)에 표시하고, 여기서는 감정(설명용)·요약을 다룬다
  */
 function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => Artwork | null) => void }) {
   const [useImage, setUseImage] = useState(true);
@@ -486,6 +482,8 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
         cur && {
           ...cur,
           analysis: r.artwork.analysis,
+          tagStatus: r.artwork.tagStatus,
+          tagScores: r.artwork.tagScores,
           emotionStatus: r.artwork.emotionStatus,
           summary: r.artwork.summary,
           summaryKeywords: r.artwork.summaryKeywords,
@@ -494,7 +492,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
         },
       );
       const notes = [
-        r.emotion.ok ? '감정 분석 완료' : `감정 분석 실패: ${r.emotion.error}`,
+        r.emotion.ok ? '취향 태그·감정 분석 완료 (태그 제안은 위 「취향 태그」에서 확인)' : `AI 분석 실패: ${r.emotion.error}`,
         r.summary.ok
           ? r.summary.source === 'claude'
             ? '요약 완료(Claude)'
@@ -555,14 +553,14 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
       <div className="ai-grid">
         <div className="ai-box">
           <div className="ai-box-head">
-            <h3>감정 분석</h3>
+            <h3>감정 분석 (작품 분위기 설명용)</h3>
             {badge(w.emotionStatus)}
           </div>
           {a ? (
             <>
               <EmotionBars scores={a.emotions} />
               <p className="ai-meta">
-                분석 재료: {a.usedImage ? '이미지 + 해설' : '해설 텍스트'}
+                분석 재료: {a.usedImage ? '이미지 + 해설' : '해설 텍스트'} · 추천에는 쓰지 않고 작품 화면·아트 영수증에 표시
                 {a.imageError && <> (이미지 실패: {a.imageError})</>}
                 <br />
                 모델: {a.models.image} · {a.models.text}
@@ -628,5 +626,97 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * 취향 태그 (추천에 사용) — 사용자 취향 카드와 같은 8개
+ * AI 분석을 하면 태그마다 점수를 보여 주고, 관리자가 「AI 제안대로 켜기」 → 고치기 → 「태그 확정」.
+ * 확정하면 그대로 둔 태그는 AI 점수, 관리자가 바꾼 태그는 켬 1 / 끔 0으로 추천에 쓰인다(서버 계산).
+ * 확정 전에는 켠 태그 1, 나머지 0.
+ */
+function TagField({
+  w,
+  toggleTag,
+  setW,
+  save,
+}: {
+  w: Artwork;
+  toggleTag: (t: TasteTag) => void;
+  setW: (f: (cur: Artwork | null) => Artwork | null) => void;
+  save: (patch: Partial<Artwork>) => Promise<Artwork>;
+}) {
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const ai = w.analysis?.tags ?? null;
+  const suggested = ai ? TAG_KEYS.filter((t) => ai[t] >= TAG_THRESHOLD).sort((a, b) => ai[b] - ai[a]) : [];
+
+  const run = async (patch: Partial<Artwork>, ok: string) => {
+    try {
+      const saved = await save(patch);
+      setMsg(
+        patch.tagStatus === 'confirmed' && saved.tagStatus !== 'confirmed'
+          ? { type: 'err', text: '공식 해설·이미지가 분석 때와 달라져 확정할 수 없어요. 「AI 다시 분석」 후 확정해 주세요.' }
+          : { type: 'ok', text: ok },
+      );
+    } catch (e) {
+      setMsg({ type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
+    }
+  };
+
+  return (
+    <div className="a-field">
+      <span className="a-inline">
+        취향 태그 (추천에 사용)
+        {ai && <span className={`badge ai-${w.tagStatus}`}>{AI_STATUS_LABEL[w.tagStatus]}</span>}
+      </span>
+      <div className="chips wrap">
+        {TAG_KEYS.map((t) => (
+          <button
+            type="button"
+            key={t}
+            className={`chip ${w.tags.includes(t) ? 'accent' : 'outline'}`}
+            aria-pressed={w.tags.includes(t)}
+            onClick={() => toggleTag(t)}
+          >
+            {TASTE_LABEL[t]}
+            {ai && <span className={`tag-score ${ai[t] >= TAG_THRESHOLD ? 'on' : ''}`}>{ai[t].toFixed(2)}</span>}
+          </button>
+        ))}
+      </div>
+      {ai ? (
+        <div className="tag-ai">
+          <span className="muted small">
+            AI 제안({w.analysis?.tagSource === 'image' ? '그림으로 판단' : '그림이 없어 해설로 판단 · 참고용'}):{' '}
+            {suggested.length ? suggested.map((t) => TASTE_LABEL[t]).join(' · ') : '0.5 이상인 태그 없음'}
+          </span>
+          {w.tagStatus === 'confirmed' ? (
+            <>
+              <span className="muted small">확정됨 — 추천에 AI 점수가 쓰여요. 태그를 바꾸고 저장하면 바꾼 태그는 켬 1 / 끔 0으로 반영돼요.</span>
+              <span className="a-inline">
+                <button type="button" className="a-btn sm" onClick={() => run({ tagStatus: 'suggested' }, '태그 확정을 해제했어요. 추천에는 켠 태그만 쓰여요.')}>
+                  확정 해제
+                </button>
+              </span>
+            </>
+          ) : (
+            <span className="a-inline">
+              <button type="button" className="a-btn sm" onClick={() => setW((cur) => cur && { ...cur, tags: suggested })}>
+                AI 제안대로 켜기
+              </button>
+              <button
+                type="button"
+                className="a-btn sm primary"
+                onClick={() => run({ tagStatus: 'confirmed' }, '태그를 확정했어요. 이제 추천에 AI 점수가 쓰여요.')}
+              >
+                태그 확정 (켠 태그 기준)
+              </button>
+            </span>
+          )}
+        </div>
+      ) : (
+        <span className="muted small">아래 「AI 분석 실행」을 하면 AI가 태그마다 점수를 매겨 제안해요. 지금은 켠 태그만 추천에 쓰여요.</span>
+      )}
+      {msg && <p className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>{msg.text}</p>}
+    </div>
   );
 }

@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { hashPassword } from './lib/password.js';
+import { migrateTagList } from './lib/tags.js';
 import { seedArtworks, seedExhibitions, seedUsers, seedVisits } from './seed.js';
 
 export type DB = DatabaseSync;
@@ -124,6 +125,8 @@ const ADDED_COLUMNS: Record<string, [string, string][]> = {
     ["summary_status", "TEXT NOT NULL DEFAULT 'none'"],
     ['image_file', 'TEXT'],
     ['show_image', 'INTEGER NOT NULL DEFAULT 1'],
+    ['tag_scores', 'TEXT'], // JSON TagScores | NULL (AI 태그를 확정했을 때)
+    ["tag_status", "TEXT NOT NULL DEFAULT 'none'"],
   ],
   visits: [
     ['interpretation', 'TEXT'],
@@ -135,6 +138,19 @@ function migrate(db: DB) {
   for (const [table, cols] of Object.entries(ADDED_COLUMNS)) {
     const existing = new Set((db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name));
     for (const [name, def] of cols) if (!existing.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+  }
+  migrateLegacyTags(db);
+}
+
+/** 예전 취향 태그 6개(고요한 풍경·감정 표현 …)로 저장된 작품 태그·사용자 취향을 새 8개로 옮긴다 (calm→풍경, emotion은 삭제) */
+function migrateLegacyTags(db: DB) {
+  for (const [table, col] of [['artworks', 'tags'], ['users', 'tastes']] as const) {
+    const rows = db.prepare(`SELECT id, ${col} AS v FROM ${table} WHERE ${col} LIKE '%"calm"%' OR ${col} LIKE '%"emotion"%'`).all() as {
+      id: string;
+      v: string;
+    }[];
+    const update = db.prepare(`UPDATE ${table} SET ${col} = ? WHERE id = ?`);
+    for (const r of rows) update.run(JSON.stringify(migrateTagList(JSON.parse(r.v) as string[])), r.id);
   }
 }
 

@@ -61,6 +61,8 @@ const toArtwork = (r: Row): Artwork => ({
   imageFile: r.image_file == null ? null : String(r.image_file),
   showImage: r.show_image == null ? true : Number(r.show_image) === 1,
   tags: parse(r.tags),
+  tagScores: r.tag_scores == null ? null : parse(r.tag_scores),
+  tagStatus: (r.tag_status ?? 'none') as AiStatus,
   description: String(r.description),
   guidedLooking: parse(r.guided_looking),
   source: String(r.source),
@@ -91,8 +93,8 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
   db.prepare(
     `INSERT INTO artworks (id,exhibition_id,title,artist,year,room_id,position,palette,image_url,tags,
        description,guided_looking,source,reference_url,review_status,updated_at,
-       analysis,emotion_status,summary,summary_keywords,summary_status,image_file,show_image)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       analysis,emotion_status,summary,summary_keywords,summary_status,image_file,show_image,tag_scores,tag_status)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET exhibition_id=excluded.exhibition_id, title=excluded.title,
        artist=excluded.artist, year=excluded.year, room_id=excluded.room_id, position=excluded.position,
        palette=excluded.palette, image_url=excluded.image_url, tags=excluded.tags,
@@ -100,13 +102,15 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
        reference_url=excluded.reference_url, review_status=excluded.review_status, updated_at=excluded.updated_at,
        analysis=excluded.analysis, emotion_status=excluded.emotion_status, summary=excluded.summary,
        summary_keywords=excluded.summary_keywords, summary_status=excluded.summary_status,
-       image_file=excluded.image_file, show_image=excluded.show_image`,
+       image_file=excluded.image_file, show_image=excluded.show_image,
+       tag_scores=excluded.tag_scores, tag_status=excluded.tag_status`,
   ).run(
     saved.id, saved.exhibitionId, saved.title, saved.artist, saved.year, saved.roomId,
     saved.position ? j(saved.position) : null, j(saved.palette), saved.imageUrl || null, j(saved.tags),
     saved.description, j(saved.guidedLooking), saved.source, saved.referenceUrl, saved.reviewStatus, saved.updatedAt,
     saved.analysis ? j(saved.analysis) : null, saved.emotionStatus, saved.summary, j(saved.summaryKeywords),
     saved.summaryStatus, saved.imageFile, saved.showImage ? 1 : 0,
+    saved.tagScores ? j(saved.tagScores) : null, saved.tagStatus,
   );
   return saved;
 }

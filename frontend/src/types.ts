@@ -3,14 +3,22 @@
  * 백엔드 API 응답 형태를 이 타입에 맞춰 두면 화면 코드는 그대로 쓸 수 있다.
  */
 
-/** 취향 태그: U-05 취향 파악 카드 하나가 하나의 태그에 대응한다. */
+/**
+ * 취향 태그 8개: 사용자 취향 카드(U-05) = 관리자 태그(A-04) = AI 태그(ai-service/app/tags.py)
+ * 그림의 겉모습(소재·형태·빛·색)만 나타낸다. 감정(평온·기쁨 …)은 설명용으로 따로 분석한다.
+ */
 export type TasteTag =
-  | 'vivid'      // 강한 색감
-  | 'calm'       // 고요한 풍경
-  | 'abstract'   // 추상적 형태
-  | 'soft'       // 부드러운 색감
-  | 'emotion'    // 감정 표현
-  | 'light';     // 빛
+  | 'landscape'  // 풍경
+  | 'people'     // 인물
+  | 'abstract'   // 추상
+  | 'light'      // 빛
+  | 'vivid'      // 강렬한 색감
+  | 'cool'       // 차가운 색감
+  | 'warm'       // 따뜻한 색감
+  | 'soft';      // 부드러운 색감
+
+/** 태그별 강도 0~1 (태그마다 독립, 한 작품이 여러 태그에 해당할 수 있음) */
+export type TagScores = Record<TasteTag, number>;
 
 /** AI 감정 분석 항목 (ai-service/app/emotions.py 와 같은 키) */
 export type EmotionKey = 'calm' | 'joy' | 'sadness' | 'tension' | 'awe' | 'nostalgia';
@@ -28,6 +36,10 @@ export interface ArtworkAnalysis {
   imageError: string | null;
   models: { image: string; text: string };
   analyzedAt: string;
+  /** AI가 제안한 취향 태그 점수 (예전 분석 결과에는 없음) */
+  tags?: TagScores | null;
+  /** 태그를 그림으로 판단했는지, 그림이 없어 해설로 판단했는지 */
+  tagSource?: 'image' | 'text' | null;
 }
 
 /** U-07 관람 시간 옵션 */
@@ -86,16 +98,21 @@ export interface Artwork {
   imageFile: string | null;
   /** 사용자 화면에 이미지를 보여 줄지 (false면 AI 분석에만 사용) */
   showImage: boolean;
+  /** 관리자가 켠 태그 (AI 태그를 확정하면 AI 제안을 반영해 관리자가 고친 결과) */
   tags: TasteTag[];
+  /** AI 태그 확정 점수 (tagStatus가 'confirmed'일 때만, 서버가 계산) — 추천에 사용 */
+  tagScores: TagScores | null;
+  /** AI 태그 검수 상태. 확정 전에는 관리자가 켠 태그(1/0)로만 추천 */
+  tagStatus: AiStatus;
   description: string;        // 작품 해설 (출처 확인된 기본 설명)
   guidedLooking: string[];    // 관찰 질문/포인트
   source: string;             // 출처
   referenceUrl: string;       // 참고자료 URL
   reviewStatus: ReviewStatus;
   updatedAt: string;
-  /** AI 감정 분석 결과 (분석 전이면 null) */
+  /** AI 분석 결과: 취향 태그 + 감정 (분석 전이면 null) */
   analysis: ArtworkAnalysis | null;
-  /** 추천에는 'confirmed'(관리자가 확인한) 감정 분석만 사용 */
+  /** 감정 분석 검수 상태. 'confirmed'만 작품 분위기 설명·아트 영수증에 사용 (추천에는 쓰지 않음) */
   emotionStatus: AiStatus;
   /** AI가 만든 초보자용 해설 요약 (공식 해설 description과 별도 보관) */
   summary: string;
@@ -109,13 +126,14 @@ export interface Recommendation {
   artworkId: string;
   order: number;              // 1부터 시작하는 관람 순서
   reason: string;             // 작품별 간단한 추천 이유
+  /** 사용자가 고른 카드 중 이 작품에 해당하는 태그 (강한 순) */
   matchedTags: TasteTag[];
-  /** 이 작품과 가장 닮은 사용자의 취향 카드 (취향 카드마다 따로 비교한 결과, 관련 카드가 없으면 null) */
+  /** 이 작품에서 가장 강한, 사용자가 고른 태그 (없으면 null) */
   matchedCard: TasteTag | null;
-  /** 감정 분석 기반으로 추천됐을 때, 취향과 가장 많이 겹친 감정 (태그 기반이면 빈 배열) */
-  matchedEmotions: EmotionKey[];
-  /** 취향과 작품 감정의 유사도 0~1 (감정 분석이 확정되지 않은 작품은 null) */
-  similarity: number | null;
+  /** 추천 점수 0~1 = 고른 카드의 태그 강도 평균 */
+  score: number;
+  /** 태그 강도가 AI 분석(관리자 확정)에서 왔는지, 관리자가 켠 태그(1/0)인지 */
+  aiTags: boolean;
 }
 
 export type Reaction = 'like' | 'dislike';

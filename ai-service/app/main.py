@@ -4,7 +4,7 @@ ARTI 감정 분석 서버 (FastAPI)
 실행: uvicorn app.main:app --port 8000
 - GET  /health   상태 확인 (모델 로딩 여부)
 - GET  /emotions 감정 항목 목록
-- POST /analyze  작품 해설(+업로드 이미지 base64 또는 이미지 URL) → 감정 점수
+- POST /analyze  작품 해설(+업로드 이미지 base64 또는 이미지 URL) → 취향 태그 8개 점수 + 감정 점수
 
 백엔드(backend/)가 관리자 화면의 「AI 분석」 요청을 받으면 이 서버를 호출한다.
 """
@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from . import config
 from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration
 from .emotions import EMOTIONS
+from .tags import TAGS
 from .image_fetch import ImageFetchError, decode_base64_image, fetch_image
 
 log = logging.getLogger("arti.ai")
@@ -60,6 +61,8 @@ class AnalyzeResponse(BaseModel):
     usedImage: bool
     imageError: str | None
     models: dict[str, str]
+    tags: dict[str, float] | None = None  # 취향 태그 8개 (0~1, 태그마다 독립) — 추천에 사용
+    tagSource: str | None = None  # "image" | "text"
 
 
 @app.get("/health")
@@ -70,6 +73,11 @@ def health():
 @app.get("/emotions")
 def emotions():
     return [{"key": e["key"], "label": e["ko"]} for e in EMOTIONS]
+
+
+@app.get("/tags")
+def tags():
+    return [{"key": t["key"], "label": t["ko"]} for t in TAGS]
 
 
 @app.post("/analyze", response_model=AnalyzeResponse)
@@ -96,4 +104,6 @@ def analyze_artwork(req: AnalyzeRequest):
         usedImage=result.image_scores is not None,
         imageError=result.image_error,
         models={"image": config.CLIP_MODEL, "text": config.NLI_MODEL},
+        tags=result.tags,
+        tagSource=result.tag_source,
     )

@@ -38,7 +38,7 @@ export function catalogRoutes(db: DB) {
     const body = parse(
       z.object({
         exhibitionId: z.string().min(1),
-        tastes: z.array(tasteTag).max(6),
+        tastes: z.array(tasteTag).max(8),
         duration: visitDuration,
       }),
       req.body,
@@ -52,7 +52,7 @@ export function catalogRoutes(db: DB) {
 
   /** U-10 AI 맞춤 설명 */
   r.post('/artworks/:id/explanation', aiLimit, async (req, res) => {
-    const { tastes } = parse(z.object({ tastes: z.array(tasteTag).max(6) }), req.body);
+    const { tastes } = parse(z.object({ tastes: z.array(tasteTag).max(8) }), req.body);
     const text = await personalizedExplanation(artworkOr404(String(req.params.id)), tastes);
     res.json({ text });
   });

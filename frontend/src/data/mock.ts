@@ -7,28 +7,38 @@ import type { AiStatus, EmotionKey, TasteTag, VisitDuration } from '../types';
  */
 
 export const TASTE_LABEL: Record<TasteTag, string> = {
-  vivid: '강한 색감',
-  calm: '고요한 풍경',
-  abstract: '추상적 형태',
-  soft: '부드러운 색감',
-  emotion: '감정 표현',
+  landscape: '풍경',
+  people: '인물',
+  abstract: '추상',
   light: '빛',
+  vivid: '강렬한 색감',
+  cool: '차가운 색감',
+  warm: '따뜻한 색감',
+  soft: '부드러운 색감',
 };
 
+/** 취향 태그 순서 (화면 표시용, backend/src/lib/tags.ts 의 TAG_KEYS 와 같다) */
+export const TAG_KEYS = Object.keys(TASTE_LABEL) as TasteTag[];
+
+/** AI 태그 점수가 이 값 이상이면 "해당함" (backend/src/lib/tags.ts 의 TAG_THRESHOLD 와 같다) */
+export const TAG_THRESHOLD = 0.5;
+
 /**
- * U-05 취향 파악 카드 (현재 4장 + 확장 2장)
+ * U-05 취향 파악 카드 8장 (= 관리자 태그 = AI 태그)
  * 카드 그림: frontend/public/taste/<tag>.jpg|png|webp 파일이 있으면 그 그림, 없으면 palette 색으로 그린 자리표시 그림.
  * 그림을 바꾸려면 같은 이름의 파일만 바꿔 넣으면 된다 (public/taste/README.txt).
  */
 export const tasteImageUrls = (tag: TasteTag) => ['jpg', 'png', 'webp'].map((ext) => `/taste/${tag}.${ext}`);
 
 export const TASTE_SAMPLES: { tag: TasteTag; palette: string[] }[] = [
-  { tag: 'vivid', palette: ['#D9EDE6', '#7FB3A3', '#4F7A68', '#E9D9A0', '#C98F6B'] },
-  { tag: 'calm', palette: ['#F3D6CD', '#D6544A', '#F0B94A', '#2F4A5C', '#8E1F1F'] },
+  { tag: 'landscape', palette: ['#DCE8D2', '#7FA36B', '#4F7A5A', '#A9C9E0', '#E9DFC4'] },
+  { tag: 'people', palette: ['#F2E4D8', '#C98F6B', '#7A4E3B', '#2F3A4D', '#E8C9A8'] },
   { tag: 'abstract', palette: ['#EDE6DD', '#8C6A4A', '#2E3A4D', '#C99A55', '#F7F1E8'] },
-  { tag: 'soft', palette: ['#F5EAD8', '#E9585B', '#E2B12F', '#2E3F5C', '#F08A4B'] },
-  { tag: 'emotion', palette: ['#1F2A44', '#E36A3A', '#F2C14E', '#7A2E3B', '#F3E9DC'] },
   { tag: 'light', palette: ['#FFF7E0', '#F6D77A', '#B9D4E8', '#E8B9A4', '#FFFFFF'] },
+  { tag: 'vivid', palette: ['#F3D6CD', '#D6544A', '#F0B94A', '#2F4A5C', '#1E8C7A'] },
+  { tag: 'cool', palette: ['#DDE7F0', '#4F7FA8', '#2E4A6B', '#7FB3A3', '#B9CFE0'] },
+  { tag: 'warm', palette: ['#F8E6CC', '#E36A3A', '#F2C14E', '#B5452F', '#F3D9A8'] },
+  { tag: 'soft', palette: ['#F5EAD8', '#EBC7C9', '#D9E3EC', '#E9D9B8', '#C9D8C5'] },
 ];
 
 export const DURATION_OPTIONS: { value: VisitDuration; label: string; desc: string; count: number }[] = [

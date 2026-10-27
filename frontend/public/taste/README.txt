@@ -3,12 +3,14 @@
 아래 이름으로 그림 파일을 넣으면 해당 카드 그림이 바뀝니다. (jpg, png, webp 중 아무거나)
 파일이 없으면 지금처럼 색으로 그린 임시 그림이 나옵니다.
 
-  vivid.jpg      강한 색감
-  calm.jpg       고요한 풍경
-  abstract.jpg   추상적 형태
-  soft.jpg       부드러운 색감
-  emotion.jpg    감정 표현
+  landscape.jpg  풍경
+  people.jpg     인물
+  abstract.jpg   추상
   light.jpg      빛
+  vivid.jpg      강렬한 색감
+  cool.jpg       차가운 색감
+  warm.jpg       따뜻한 색감
+  soft.jpg       부드러운 색감
 
 - 카드 비율은 가로 4 : 세로 3 입니다. 다른 비율이면 가운데를 기준으로 잘려 보입니다.
 - 가로 600px 정도면 충분합니다. 파일을 바꾼 뒤 브라우저에서 새로고침(Ctrl + F5) 하세요.

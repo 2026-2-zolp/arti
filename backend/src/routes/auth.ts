@@ -58,7 +58,7 @@ export function authRoutes(db: DB) {
 
   r.put('/users/:id/tastes', (req, res) => {
     assertSelfOrAdmin(req, req.params.id);
-    const { tastes } = parse(z.object({ tastes: z.array(tasteTag).max(6) }), req.body);
+    const { tastes } = parse(z.object({ tastes: z.array(tasteTag).max(8) }), req.body);
     repo.updateUserTastes(db, req.params.id, [...new Set(tastes)]);
     res.status(204).end();
   });

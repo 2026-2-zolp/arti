@@ -1,6 +1,11 @@
 """
 감정 분석 로직
 
+[취향 태그 8개 — 추천에 사용] (tags.py)
+- 이미지가 있으면 CLIP: 태그마다 "해당하는 그림" 문장과 "해당하지 않는 그림" 문장 중 어느 쪽에 가까운지 → 0~1 (태그마다 독립)
+- 이미지가 없으면 mDeBERTa NLI: 해설이 "작품의 특징은 자연 풍경이다"를 뒷받침하는 정도 (색감은 글로 판단하기 어려워 참고용)
+
+[감정 6개 — 작품 분위기 설명·아트 영수증에만 사용] (emotions.py)
 1) 이미지  → CLIP 제로샷: 그림과 "a calm and peaceful painting" 같은 문장이 얼마나 닮았는지 감정별로 비교
 2) 텍스트 → mDeBERTa 다국어 NLI 제로샷: 한국어 해설이 "작품의 분위기는 평온함이다"를 얼마나 뒷받침하는지
 3) 두 결과를 가중 평균 → 가장 강한 감정을 1로 맞춘 0~1 상대 점수
@@ -20,6 +25,7 @@ from PIL import Image
 
 from . import config
 from .emotions import EMOTION_KEYS, EMOTIONS, NLI_HYPOTHESIS
+from .tags import TAG_KEYS, TAG_NLI_HYPOTHESIS, TAGS
 
 Scores = dict[str, float]
 
@@ -64,6 +70,10 @@ class Scorer(Protocol):
 
     def text_scores(self, text: str) -> Scores: ...
 
+    def image_tag_scores(self, image: Image.Image) -> Scores: ...
+
+    def text_tag_scores(self, text: str) -> Scores: ...
+
 
 def normalize_sum(scores: Scores) -> Scores:
     """합이 1인 분포로 변환 (이미지·텍스트 결과를 같은 기준으로 섞기 위해)"""
@@ -102,6 +112,7 @@ class HuggingFaceScorer:
         self._clip = None
         self._clip_processor = None
         self._nli = None
+        self._tag_text = None  # 태그 문장들의 CLIP 텍스트 벡터 (한 번만 계산)
 
     @property
     def loaded(self) -> bool:
@@ -143,6 +154,34 @@ class HuggingFaceScorer:
         by_label = dict(zip(out["labels"], out["scores"]))
         return {e["key"]: float(by_label[e["nli"]]) for e in EMOTIONS}
 
+    def image_tag_scores(self, image: Image.Image) -> Scores:
+        """태그마다 '해당하는 그림' 문장 평균과 '해당하지 않는 그림' 문장 평균의 유사도 차이 → 시그모이드 → 0~1"""
+        import torch
+
+        self.load()
+        with torch.no_grad():
+            if self._tag_text is None:
+                prompts = [s for t in TAGS for s in t["pos"] + t["neg"]]
+                feats = self._clip.get_text_features(**self._clip_processor(text=prompts, return_tensors="pt", padding=True))
+                self._tag_text = feats / feats.norm(dim=-1, keepdim=True)
+            img = self._clip.get_image_features(**self._clip_processor(images=image, return_tensors="pt"))
+            img = img / img.norm(dim=-1, keepdim=True)
+            sims = (img @ self._tag_text.T)[0] * self._clip.logit_scale.exp()  # logits_per_image와 같은 척도
+        out, i = {}, 0
+        for t in TAGS:
+            n_pos, n_neg = len(t["pos"]), len(t["neg"])
+            diff = sims[i : i + n_pos].mean() - sims[i + n_pos : i + n_pos + n_neg].mean()
+            out[t["key"]] = round(float(torch.sigmoid(diff)), 3)
+            i += n_pos + n_neg
+        return out
+
+    def text_tag_scores(self, text: str) -> Scores:
+        self.load()
+        labels = [t["nli"] for t in TAGS]
+        res = self._nli(text, candidate_labels=labels, hypothesis_template=TAG_NLI_HYPOTHESIS, multi_label=True)
+        by_label = dict(zip(res["labels"], res["scores"]))
+        return {t["key"]: round(float(by_label[t["nli"]]), 3) for t in TAGS}
+
 
 @dataclass
 class AnalysisResult:
@@ -150,6 +189,8 @@ class AnalysisResult:
     image_scores: Scores | None
     text_scores: Scores | None
     image_error: str | None
+    tags: Scores | None = None  # 취향 태그 8개 점수 (0~1, 태그마다 독립)
+    tag_source: str | None = None  # "image" | "text"
 
 
 def analyze(
@@ -163,9 +204,18 @@ def analyze(
     cal = calibration or {}
     img = scale_to_max(normalize_sum(apply_prior(scorer.image_scores(image), cal.get("image")))) if image is not None else None
     txt = scale_to_max(normalize_sum(apply_prior(scorer.text_scores(text), cal.get("text")))) if text else None
+    # 태그: 그림이 있으면 그림으로만 판단 (색·형태는 글보다 그림이 정확), 없으면 해설로
+    if image is not None:
+        tags, tag_source = scorer.image_tag_scores(image), "image"
+    elif text:
+        tags, tag_source = scorer.text_tag_scores(text), "text"
+    else:
+        tags, tag_source = None, None
     return AnalysisResult(
         emotions=combine(img, txt, config.IMAGE_WEIGHT),
         image_scores=img,
         text_scores=txt,
         image_error=image_error,
+        tags=tags,
+        tag_source=tag_source,
     )

@@ -9,6 +9,7 @@ from PIL import Image
 from app import main
 from app.analyzer import apply_prior, combine, load_calibration, normalize_sum, scale_to_max
 from app.emotions import EMOTION_KEYS
+from app.tags import TAG_KEYS
 
 
 class FakeScorer:
@@ -21,6 +22,12 @@ class FakeScorer:
         # 해설에 '고요'가 있으면 평온이 가장 높게
         calm = 0.9 if "고요" in text else 0.2
         return {"calm": calm, "joy": 0.3, "sadness": 0.1, "tension": 0.1, "awe": 0.5, "nostalgia": 0.4}
+
+    def image_tag_scores(self, image):
+        return {k: 0.1 for k in TAG_KEYS} | {"landscape": 0.9, "light": 0.8}
+
+    def text_tag_scores(self, text):
+        return {k: 0.2 for k in TAG_KEYS} | {"people": 0.7}
 
 
 @pytest.fixture
@@ -46,6 +53,7 @@ def test_text_only(client):
     assert body["usedImage"] is False and body["imageScores"] is None
     assert max(body["emotions"], key=body["emotions"].get) == "calm"
     assert body["emotions"]["calm"] == 1.0
+    assert body["tagSource"] == "text" and body["tags"]["people"] == 0.7 and set(body["tags"]) == set(TAG_KEYS)
 
 
 def test_image_and_text(client, monkeypatch):
@@ -54,6 +62,7 @@ def test_image_and_text(client, monkeypatch):
     body = r.json()
     assert body["usedImage"] is True
     assert max(body["emotions"], key=body["emotions"].get) == "joy"  # 이미지 비중 60%
+    assert body["tagSource"] == "image" and body["tags"]["landscape"] == 0.9  # 그림이 있으면 태그는 그림으로
 
 
 def test_image_failure_falls_back_to_text(client, monkeypatch):
@@ -74,6 +83,7 @@ def test_empty_input_is_400(client):
 def test_health_and_emotions(client):
     assert client.get("/health").json()["ok"] is True
     assert [e["key"] for e in client.get("/emotions").json()] == EMOTION_KEYS
+    assert [t["key"] for t in client.get("/tags").json()] == TAG_KEYS
 
 
 def test_uploaded_image_base64(client):

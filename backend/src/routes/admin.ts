@@ -11,6 +11,7 @@ import { createSession, deleteSession, HttpError, parse, rateLimit, requireAdmin
 import { summarizeDescription } from '../lib/ai.js';
 import { analyzeEmotions } from '../lib/emotionClient.js';
 import { hashPassword, newId, newToken, verifyPassword } from '../lib/password.js';
+import { confirmTagScores, suggestedTags } from '../lib/tags.js';
 import type { Artwork } from '../types.js';
 import * as repo from '../repo.js';
 import { artworkInput, exhibitionInput } from '../schemas.js';
@@ -57,10 +58,16 @@ export function adminRoutes(db: DB) {
     if (!repo.getExhibition(db, id)) throw new HttpError(400, '존재하지 않는 전시예요.');
   };
 
+  /** AI 태그를 확정한 작품은 AI 제안과 관리자가 켠 태그로 확정 점수를 계산 (보낸 tagScores는 쓰지 않음) */
+  const withTagScores = (w: Artwork): Artwork => ({
+    ...w,
+    tagScores: w.tagStatus === 'confirmed' && w.analysis?.tags ? confirmTagScores(w.analysis.tags, w.tags) : null,
+  });
+
   r.post('/admin/artworks', (req, res) => {
     const body = parse(artworkInput, req.body);
     checkExhibition(body.exhibitionId);
-    res.status(201).json(repo.upsertArtwork(db, { ...body, id: '', updatedAt: '' }));
+    res.status(201).json(repo.upsertArtwork(db, withTagScores({ ...body, id: '', updatedAt: '' })));
   });
 
   r.put('/admin/artworks/:id', (req, res) => {
@@ -72,20 +79,25 @@ export function adminRoutes(db: DB) {
     const sourceChanged = prev.description !== body.description || (prev.imageUrl ?? '') !== (body.imageUrl ?? '');
     const demote = (s: typeof body.emotionStatus) => (sourceChanged && s === 'confirmed' ? 'suggested' : s);
     res.json(
-      repo.upsertArtwork(db, {
-        ...body,
-        id: req.params.id,
-        imageFile: prev.imageFile,
-        updatedAt: '',
-        emotionStatus: demote(body.emotionStatus),
-        summaryStatus: demote(body.summaryStatus),
-      }),
+      repo.upsertArtwork(
+        db,
+        withTagScores({
+          ...body,
+          id: req.params.id,
+          imageFile: prev.imageFile,
+          updatedAt: '',
+          emotionStatus: demote(body.emotionStatus),
+          summaryStatus: demote(body.summaryStatus),
+          tagStatus: demote(body.tagStatus),
+        }),
+      ),
     );
   });
 
   /**
-   * AI 분석: 감정 분석(ai-service) + 해설 요약(Claude)을 동시에 실행하고 「AI 제안」 상태로 저장.
-   * 관리자가 A-04에서 확인·수정한 뒤 확정(emotionStatus/summaryStatus = 'confirmed')해야 사용자 화면·추천에 쓰인다.
+   * AI 분석: 취향 태그·감정 분석(ai-service) + 해설 요약(Claude)을 동시에 실행하고 「AI 제안」 상태로 저장.
+   * 관리자가 A-04에서 확인·수정한 뒤 확정(tagStatus/emotionStatus/summaryStatus = 'confirmed')해야 추천·사용자 화면에 쓰인다.
+   * 확정 전 추천에는 관리자가 켠 태그만 쓰인다.
    * 감정 분석 서버가 꺼져 있어도 요약은 저장하고, 실패 이유를 함께 돌려준다.
    */
   async function runAnalysis(w: Artwork, useImage: boolean) {
@@ -94,6 +106,10 @@ export function adminRoutes(db: DB) {
     if (emo.status === 'fulfilled') {
       next.analysis = emo.value;
       next.emotionStatus = 'suggested';
+      if (emo.value.tags) {
+        next.tagStatus = 'suggested';
+        next.tagScores = null;
+      }
     }
     if (sum.status === 'fulfilled' && sum.value.summary) {
       next.summary = sum.value.summary;
@@ -120,7 +136,9 @@ export function adminRoutes(db: DB) {
     const exId = String(req.params.id);
     if (!repo.getExhibition(db, exId)) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
     const { useImage } = parse(z.object({ useImage: z.boolean().default(true) }), req.body ?? {});
-    const targets = repo.listArtworks(db, exId).filter((w) => w.emotionStatus !== 'confirmed' || w.summaryStatus !== 'confirmed');
+    const targets = repo
+      .listArtworks(db, exId)
+      .filter((w) => w.tagStatus !== 'confirmed' || w.emotionStatus !== 'confirmed' || w.summaryStatus !== 'confirmed');
     let analyzed = 0;
     const errors: string[] = [];
     for (const w of targets) {
@@ -135,7 +153,7 @@ export function adminRoutes(db: DB) {
     res.json({ total: targets.length, analyzed, errors });
   });
 
-  /** 전시의 「AI 제안」을 한 번에 확정 (관리자가 결과를 훑어본 뒤 사용) */
+  /** 전시의 「AI 제안」을 한 번에 확정 (관리자가 결과를 훑어본 뒤 사용). 태그는 AI가 "해당함"으로 본 태그를 그대로 켠다 */
   r.post('/admin/exhibitions/:id/confirm-ai', (req, res) => {
     const exId = String(req.params.id);
     if (!repo.getExhibition(db, exId)) throw new HttpError(404, '전시 정보를 찾을 수 없어요.');
@@ -143,12 +161,18 @@ export function adminRoutes(db: DB) {
     for (const w of repo.listArtworks(db, exId)) {
       const emo = w.emotionStatus === 'suggested';
       const sum = w.summaryStatus === 'suggested';
-      if (!emo && !sum) continue;
-      repo.upsertArtwork(db, {
-        ...w,
-        emotionStatus: emo ? 'confirmed' : w.emotionStatus,
-        summaryStatus: sum ? 'confirmed' : w.summaryStatus,
-      });
+      const tag = w.tagStatus === 'suggested' && !!w.analysis?.tags;
+      if (!emo && !sum && !tag) continue;
+      repo.upsertArtwork(
+        db,
+        withTagScores({
+          ...w,
+          emotionStatus: emo ? 'confirmed' : w.emotionStatus,
+          summaryStatus: sum ? 'confirmed' : w.summaryStatus,
+          tagStatus: tag ? 'confirmed' : w.tagStatus,
+          tags: tag ? suggestedTags(w.analysis!.tags!) : w.tags,
+        }),
+      );
       confirmed += 1;
     }
     res.json({ confirmed });
@@ -170,6 +194,8 @@ export function adminRoutes(db: DB) {
     ...w,
     emotionStatus: w.emotionStatus === 'confirmed' ? 'suggested' : w.emotionStatus,
     summaryStatus: w.summaryStatus === 'confirmed' ? 'suggested' : w.summaryStatus,
+    tagStatus: w.tagStatus === 'confirmed' ? 'suggested' : w.tagStatus,
+    tagScores: null,
   });
 
   /** 요청 본문의 이미지를 검사해 업로드 폴더에 저장하고 파일 이름을 돌려준다 */

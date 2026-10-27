@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import type { Reaction, Recommendation, TasteTag, User, VisitDuration } from '../types';
 import { load, save } from '../lib/storage';
+import { TASTE_LABEL } from '../data/mock';
 
 export const DEFAULT_EXHIBITION_ID = 'ex-mvp';
 
@@ -57,13 +58,19 @@ const emptyVisit = {
   startedAt: null,
 };
 
+/** 예전 버전의 취향 태그(고요한 풍경·감정 표현 …)가 브라우저에 남아 있으면 새 8개로 바꾼다 (calm→풍경, 나머지 없는 키는 버림) */
+const cleanTastes = (tags: string[] | undefined): TasteTag[] =>
+  [...new Set((tags ?? []).map((t) => (t === 'calm' ? 'landscape' : t)))].filter((t): t is TasteTag => t in TASTE_LABEL);
+
 function init(): VisitState {
   const stored = load<Partial<VisitState>>(VISIT_KEY, {}, 'session');
+  const user = load<User | null>(USER_KEY, null);
   return {
     exhibitionId: DEFAULT_EXHIBITION_ID,
     ...emptyVisit,
     ...stored,
-    user: load<User | null>(USER_KEY, null),
+    tastes: cleanTastes(stored.tastes),
+    user: user && { ...user, tastes: cleanTastes(user.tastes) },
   };
 }
 

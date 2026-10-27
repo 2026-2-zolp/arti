@@ -1,5 +1,5 @@
-import type { EmotionKey, MapPoint, TasteTag, VisitDuration } from '../types';
-import { DURATION_OPTIONS, EMOTION_LABEL, TASTE_LABEL } from '../data/mock';
+import type { MapPoint, TasteTag, VisitDuration } from '../types';
+import { DURATION_OPTIONS, TASTE_LABEL } from '../data/mock';
 import { josa } from './josa';
 
 /** 관람 시간 → 추천 작품 수 */
@@ -18,15 +18,12 @@ export function walkMinutes(from: MapPoint, to: MapPoint): number {
   return Math.max(1, Math.round(meters / 50 + 0.5)); // 느린 관람 걸음 약 50m/분 + 여유
 }
 
-/** U-10 "이 작품이 추천된 이유" 문장 — 감정 분석 기반이면 닮은 취향 카드와 감정, 아니면 취향 태그로 설명 */
-export function reasonSentence(matched: TasteTag[], emotions: EmotionKey[] = [], card: TasteTag | null = null): string {
-  if (emotions.length) {
-    const names = emotions.map((e) => `'${EMOTION_LABEL[e]}'`);
-    const joined = names.length > 1 ? `${josa(names[0], '와', '과')} ${names[1]}` : names[0];
-    const who = card ? `${josa(`'${TASTE_LABEL[card]}'`, '를', '을')} 고른 당신의 취향` : '당신의 취향';
-    return `AI가 분석한 이 작품의 분위기가 ${who}과 닮았어요. 특히 ${josa(joined, '가', '이')} 느껴지는 작품이에요.`;
-  }
+/** U-10 "이 작품이 추천된 이유" 문장 — 사용자가 고른 취향 카드 중 이 작품에 해당하는 태그로 설명 */
+export function reasonSentence(matched: TasteTag[], aiTags = false): string {
   if (!matched.length) return '평소 취향과 조금 다른 작품이에요. 새로운 감상 포인트를 발견해 보세요.';
-  const parts = matched.map((t) => josa(`'${TASTE_LABEL[t]}'`, '와', '과'));
-  return `당신이 좋아하는 ${parts.join(' ')} 관련된 작품입니다.`;
+  const names = matched.map((t) => `'${TASTE_LABEL[t]}'`);
+  const joined = names.length > 1 ? `${names.slice(0, -1).map((n) => josa(n, '와', '과')).join(' ')} ${names.at(-1)}` : names[0];
+  return aiTags
+    ? `AI가 그림을 분석해 보니 당신이 고른 ${josa(joined, '가', '이')} 잘 드러나는 작품이에요.`
+    : `당신이 고른 ${josa(joined, '가', '이')} 담긴 작품이에요.`;
 }

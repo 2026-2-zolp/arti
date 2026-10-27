@@ -1,5 +1,5 @@
 /**
- * AI 기능 통합 테스트 — 감정 분석 서버는 가짜 HTTP 서버로, Claude는 키 없이(대체 결과) 실행
+ * AI 기능 통합 테스트 — AI 분석 서버는 가짜 HTTP 서버로, Claude는 키 없이(대체 결과) 실행
  * 실행: npm test
  */
 import assert from 'node:assert/strict';
@@ -7,7 +7,7 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { after, before, describe, test } from 'node:test';
 
-// 가짜 감정 분석 서버: 해설 내용에 따라 정해진 점수를 돌려준다 (ai-service /analyze 와 같은 응답 형식)
+// 가짜 AI 분석 서버: 해설 내용에 따라 정해진 감정·태그 점수를 돌려준다 (ai-service /analyze 와 같은 응답 형식)
 let emotionCalls = 0;
 let lastEmotionRequest: { imageBase64?: string; imageUrl?: string } = {};
 const fake = http.createServer((req, res) => {
@@ -23,10 +23,17 @@ const fake = http.createServer((req, res) => {
       : /비명|불안|소용돌이/.test(description)
         ? { ...base, tension: 1, sadness: 0.7 }
         : { ...base, joy: 1 };
+    const t0 = { landscape: 0.1, people: 0.1, abstract: 0.1, light: 0.1, vivid: 0.1, cool: 0.1, warm: 0.1, soft: 0.1 };
+    const tags = /수면|고요|새벽|조용/.test(description)
+      ? { ...t0, landscape: 0.9, cool: 0.8, soft: 0.7, light: 0.6 }
+      : /비명|불안|소용돌이/.test(description)
+        ? { ...t0, people: 0.9, vivid: 0.85, warm: 0.7 }
+        : { ...t0, warm: 0.8, vivid: 0.7, people: 0.6 };
+    const usedImage = Boolean(imageUrl || imageBase64);
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
-      emotions, imageScores: null, textScores: emotions, usedImage: Boolean(imageUrl || imageBase64), imageError: null,
-      models: { image: 'fake-clip', text: 'fake-nli' },
+      emotions, imageScores: null, textScores: emotions, usedImage, imageError: null,
+      models: { image: 'fake-clip', text: 'fake-nli' }, tags, tagSource: usedImage ? 'image' : 'text',
     }));
   });
 });
@@ -71,7 +78,7 @@ async function admin() {
 }
 
 describe('작품 AI 분석 (A-04)', () => {
-  test('분석하면 감정 점수·요약이 「AI 제안」으로 저장되고, 확정 전에는 추천에 쓰이지 않는다', async () => {
+  test('분석하면 태그·감정 점수·요약이 「AI 제안」으로 저장되고, 확정 전에는 추천에 쓰이지 않는다', async () => {
     const h = await admin();
     const r = await call('POST', '/admin/artworks/aw-02/analyze', {}, h);
     assert.equal(r.status, 200);
@@ -82,9 +89,34 @@ describe('작품 AI 분석 (A-04)', () => {
     assert.equal(w.analysis.emotions.calm, 1); // 수련 해설에 '수면'
     assert.equal(w.summaryStatus, 'suggested');
     assert.ok(w.description.startsWith(w.summary.split(' ')[0]));
+    assert.equal(w.tagStatus, 'suggested');
+    assert.equal(w.analysis.tags.landscape, 0.9);
+    assert.equal(w.analysis.tagSource, 'text');
+    assert.deepEqual(w.tags, ['landscape', 'soft', 'light'], '확정 전에는 관리자 태그가 그대로');
 
-    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['calm'], duration: '60m' });
-    assert.ok(rec.body.every((x: { similarity: number | null }) => x.similarity === null), '확정 전에는 태그 기반');
+    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['landscape'], duration: '60m' });
+    assert.ok(rec.body.every((x: { aiTags: boolean }) => !x.aiTags), '확정 전에는 관리자가 켠 태그(1/0)로만 추천');
+  });
+
+  test('AI 태그를 확정하면 관리자가 바꾼 태그는 켬 1 / 끔 0, 그대로 둔 태그는 AI 점수', async () => {
+    const h = await admin();
+    const w = (await call('GET', '/artworks/aw-02')).body;
+    // AI 제안: 풍경 .9 · 차가운 .8 · 부드러운 .7 · 빛 .6 → 관리자가 '인물'을 켜고 '차가운'·'부드러운'을 끔
+    const r = await call('PUT', '/admin/artworks/aw-02', { ...w, tagStatus: 'confirmed', tags: ['landscape', 'light', 'people'], tagScores: null }, h);
+    assert.equal(r.status, 200);
+    const s = r.body.tagScores;
+    assert.deepEqual([s.landscape, s.light, s.people, s.cool, s.soft, s.warm], [0.9, 0.6, 1, 0, 0, 0.1]);
+
+    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['landscape', 'light'], duration: '60m' });
+    const x = rec.body.find((y: { artworkId: string }) => y.artworkId === 'aw-02');
+    assert.equal(x.aiTags, true);
+    assert.equal(x.score, 0.75); // (0.9 + 0.6) / 2
+
+    // AI 태그 분석이 없는 작품은 태그 확정 불가
+    const w5 = (await call('GET', '/artworks/aw-05')).body;
+    const bad = await call('PUT', '/admin/artworks/aw-05', { ...w5, tagStatus: 'confirmed' }, h);
+    assert.equal(bad.status, 400);
+    assert.equal(bad.body.error, 'AI 태그 분석 결과가 없으면 확정할 수 없어요.');
   });
 
   test('관리자 토큰 없이는 분석할 수 없다', async () => {
@@ -100,8 +132,8 @@ describe('작품 AI 분석 (A-04)', () => {
   });
 });
 
-describe('전시 일괄 분석·확정 → 감정 기반 추천', () => {
-  test('일괄 분석 후 확정하면 추천이 감정 유사도로 바뀐다', async () => {
+describe('전시 일괄 분석·확정 → 태그 기반 추천', () => {
+  test('일괄 분석 후 확정하면 추천이 AI 태그 점수로 바뀐다', async () => {
     const h = await admin();
     const all = await call('POST', '/admin/exhibitions/ex-mvp/analyze', {}, h);
     assert.equal(all.status, 200);
@@ -111,25 +143,27 @@ describe('전시 일괄 분석·확정 → 감정 기반 추천', () => {
     const conf = await call('POST', '/admin/exhibitions/ex-mvp/confirm-ai', {}, h);
     assert.ok(conf.body.confirmed >= 10);
 
-    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['calm', 'soft'], duration: '30m' });
+    // 일괄 확정은 AI가 "해당함"으로 본 태그를 그대로 켠다 (aw-05: 해설에 '새벽' → 풍경·차가운·부드러운·빛)
+    const w5 = (await call('GET', '/artworks/aw-05')).body;
+    assert.equal(w5.tagStatus, 'confirmed');
+    assert.deepEqual(w5.tags, ['landscape', 'cool', 'soft', 'light']);
+
+    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['landscape', 'cool'], duration: '30m' });
     assert.equal(rec.status, 200);
     assert.equal(rec.body.length, 3);
-    for (const x of rec.body) {
-      assert.equal(typeof x.similarity, 'number');
-      assert.ok(x.matchedEmotions.includes('calm'), `${x.artworkId}은(는) 평온 기반 추천이어야 함`);
-      assert.match(x.reason, /평온/);
-    }
-    // 평온 취향에 '불안·비명' 작품(절규)은 추천되지 않는다
+    assert.ok(rec.body.every((x: { aiTags: boolean }) => x.aiTags));
+    assert.ok(rec.body.some((x: { artworkId: string }) => x.artworkId === 'aw-05'));
+    // 풍경·차가운 취향에 '불안·비명' 작품(절규: 인물·강렬·따뜻)은 추천되지 않는다
     assert.ok(!rec.body.some((x: { artworkId: string }) => x.artworkId === 'aw-07'));
   });
 
-  test('반대 성격의 취향 카드를 고르면 카드마다 닮은 작품이 섞여 추천된다 (평균 내지 않음)', async () => {
-    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['light', 'emotion'], duration: '30m' });
+  test('성격이 다른 카드를 고르면 카드마다 그 태그가 있는 작품이 최소 1점씩 들어간다', async () => {
+    const rec = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['cool', 'warm'], duration: '30m' });
     assert.equal(rec.status, 200);
     const cards = rec.body.map((x: { matchedCard: string | null }) => x.matchedCard);
-    assert.ok(cards.includes('light') && cards.includes('emotion'), `두 카드가 모두 반영되어야 함: ${cards}`);
-    const emo = rec.body.find((x: { matchedCard: string }) => x.matchedCard === 'emotion');
-    assert.match(emo.reason, /^감정 표현 취향/);
+    assert.ok(cards.includes('cool') && cards.includes('warm'), `두 카드가 모두 반영되어야 함: ${cards}`);
+    const cool = rec.body.find((x: { matchedCard: string }) => x.matchedCard === 'cool');
+    assert.match(cool.reason, /차가운 색감/);
   });
 
   test('확정 후 공식 해설을 바꾸면 다시 「AI 제안」으로 돌아간다', async () => {
@@ -139,6 +173,8 @@ describe('전시 일괄 분석·확정 → 감정 기반 추천', () => {
     const r = await call('PUT', '/admin/artworks/aw-01', { ...w, description: `${w.description} 추가 설명.` }, h);
     assert.equal(r.body.emotionStatus, 'suggested');
     assert.equal(r.body.summaryStatus, 'suggested');
+    assert.equal(r.body.tagStatus, 'suggested');
+    assert.equal(r.body.tagScores, null, '태그 확정이 풀리면 관리자가 켠 태그(1/0)로 추천');
     const same = await call('PUT', '/admin/artworks/aw-02', (await call('GET', '/artworks/aw-02')).body, h);
     assert.equal(same.body.emotionStatus, 'confirmed', '해설이 그대로면 확정 유지');
   });

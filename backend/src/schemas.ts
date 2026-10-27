@@ -1,14 +1,19 @@
 /** 요청 본문 검증 스키마 (zod). 프론트 types.ts와 같은 모양을 강제한다. */
 import { z } from 'zod';
 
-export const tasteTag = z.enum(['vivid', 'calm', 'abstract', 'soft', 'emotion', 'light']);
+export const tasteTag = z.enum(['landscape', 'people', 'abstract', 'light', 'vivid', 'cool', 'warm', 'soft']);
 export const aiStatus = z.enum(['none', 'suggested', 'confirmed']);
 const score = z.number().min(0).max(1);
 export const emotionScores = z.object({
   calm: score, joy: score, sadness: score, tension: score, awe: score, nostalgia: score,
 });
+export const tagScores = z.object({
+  landscape: score, people: score, abstract: score, light: score, vivid: score, cool: score, warm: score, soft: score,
+});
 const analysis = z.object({
   emotions: emotionScores,
+  tags: tagScores.nullable().optional(),
+  tagSource: z.enum(['image', 'text']).nullable().optional(),
   usedImage: z.boolean(),
   imageError: z.string().max(500).nullable(),
   models: z.object({ image: z.string().max(200), text: z.string().max(200) }),
@@ -64,7 +69,10 @@ export const artworkInput = z.object({
     .max(2000)
     .refine((u) => u === '' || /^https?:\/\//.test(u), '이미지 URL은 http(s)로 시작해야 해요.')
     .optional(),
-  tags: z.array(tasteTag).max(6).default([]),
+  tags: z.array(tasteTag).max(8).default([]),
+  // 확정 점수는 서버가 AI 제안과 관리자가 켠 태그로 계산한다 (보낸 값은 무시)
+  tagScores: tagScores.nullable().default(null),
+  tagStatus: aiStatus.default('none'),
   description: text(5000).default(''),
   guidedLooking: z.array(text(500)).max(20).default([]),
   source: text(500).default(''),
@@ -83,6 +91,8 @@ export const artworkInput = z.object({
   summary: text(1000).default(''),
   summaryKeywords: z.array(text(30)).max(5).default([]),
   summaryStatus: aiStatus.default('none'),
+}).refine((w) => w.tagStatus === 'none' || !!w.analysis?.tags, {
+  message: 'AI 태그 분석 결과가 없으면 확정할 수 없어요.',
 }).refine((w) => w.emotionStatus === 'none' || w.analysis !== null, {
   message: '감정 분석 결과가 없으면 확정할 수 없어요.',
 }).refine((w) => w.summaryStatus === 'none' || w.summary.trim() !== '', {

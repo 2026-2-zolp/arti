@@ -59,7 +59,7 @@ describe('전시·작품 조회', () => {
 
 describe('추천', () => {
   test('관람 시간만큼, 검수 완료 + 위치 등록 작품만, 1부터 순서대로', async () => {
-    const r = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['vivid', 'emotion'], duration: '60m' });
+    const r = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['vivid', 'people'], duration: '60m' });
     assert.equal(r.status, 200);
     assert.equal(r.body.length, 5);
     assert.deepEqual(r.body.map((x: { order: number }) => x.order), [1, 2, 3, 4, 5]);
@@ -185,7 +185,7 @@ describe('AI (규칙 기반)', () => {
   });
 
   test('맞춤 설명', async () => {
-    const r = await call('POST', '/artworks/aw-02/explanation', { tastes: ['calm'] });
+    const r = await call('POST', '/artworks/aw-02/explanation', { tastes: ['landscape'] });
     assert.match(r.body.text, /수련/);
   });
 });
@@ -200,7 +200,7 @@ describe('관리자', () => {
     roomId: 'r1',
     position: { x: 10, y: 10 },
     palette: ['#111111'],
-    tags: ['calm'],
+    tags: ['landscape'],
     description: '설명',
     guidedLooking: ['질문'],
     source: '출처',
@@ -244,5 +244,25 @@ describe('관리자', () => {
     assert.ok(demo.visitCount >= 2);
     const found = await call('GET', '/admin/members?q=민지', undefined, admin);
     assert.deepEqual(found.body.map((m: { nickname: string }) => m.nickname), ['민지']);
+  });
+});
+
+describe('예전 태그 옮기기', () => {
+  test('예전 6개 태그로 저장된 DB를 열면 새 8개로 바뀐다 (고요한 풍경→풍경, 감정 표현 삭제)', async () => {
+    const fs = await import('node:fs');
+    const os = await import('node:os');
+    const path = await import('node:path');
+    const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'arti-db-')), 'old.db');
+    const old = openDb(file);
+    old.prepare(`UPDATE artworks SET tags = '["calm","emotion","vivid"]' WHERE id = 'aw-01'`).run();
+    old.prepare(`UPDATE users SET tastes = '["emotion","calm","light"]' WHERE email = 'demo@arti.app'`).run();
+    old.close();
+
+    const db = openDb(file);
+    const tags = (db.prepare(`SELECT tags FROM artworks WHERE id = 'aw-01'`).get() as { tags: string }).tags;
+    const tastes = (db.prepare(`SELECT tastes FROM users WHERE email = 'demo@arti.app'`).get() as { tastes: string }).tastes;
+    assert.deepEqual(JSON.parse(tags), ['landscape', 'vivid']);
+    assert.deepEqual(JSON.parse(tastes), ['landscape', 'light']);
+    db.close();
   });
 });

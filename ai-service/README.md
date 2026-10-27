@@ -1,25 +1,32 @@
-# 🧠 AI Service — 작품 감정 분석 서버 (Python · FastAPI)
+# 🧠 AI Service — 작품 태그·감정 분석 서버 (Python · FastAPI)
 
 [← 메인 안내로](../README.md) · [백엔드](../backend/README.md)
 
-관리자가 작품을 등록하고 **「AI 분석」**을 누르면, 백엔드가 이 서버에 작품 해설(과 이미지 URL)을 보내고 **감정 6가지 점수**를 받아 옵니다.
-이 점수는 관리자가 확인·확정한 뒤 **사용자 취향과 비교하는 추천**(U-08), 작품 화면의 분위기 표시(U-10), 아트 영수증 해석(U-12)에 쓰입니다.
+관리자가 작품을 등록하고 **「AI 분석」**을 누르면, 백엔드가 이 서버에 작품 그림(과 해설)을 보내고 두 가지를 받아 옵니다.
+
+| 결과 | 내용 | 쓰이는 곳 |
+|---|---|---|
+| **취향 태그 8개** (0~1, 태그마다 독립) | 풍경 · 인물 · 추상 · 빛 · 강렬한 색감 · 차가운 색감 · 따뜻한 색감 · 부드러운 색감 (`app/tags.py`) | **추천** — 사용자 취향 카드 = 관리자 태그 = AI 태그 (같은 8개) |
+| 감정 6개 | 평온 · 기쁨 · 슬픔 · 긴장 · 경외 · 그리움 (`app/emotions.py`) | 작품 분위기 설명(U-10), 아트 영수증(U-12) — 추천에는 쓰지 않음 |
 
 ```text
-[A-04 관리자] 「AI 분석」 ──▶ backend ──▶ ai-service /analyze ──▶ 감정 점수
+[A-04 관리자] 「AI 분석」 ──▶ backend ──▶ ai-service /analyze ──▶ 태그 점수 + 감정 점수
                                └──▶ Claude API (해설 요약)
                     「AI 제안」 저장 ──▶ 관리자 확인·수정 ──▶ 「확정」 ──▶ 추천·사용자 화면에 반영
 ```
 
 ## 사용하는 오픈소스 모델 (학습 없이 쓰는 "제로샷")
 
-> **파인튜닝(추가 학습)은 하지 않았습니다.** 사전학습 모델을 그대로 쓰고, ① 감정 문장(프롬프트) 설계 ② 라벨 편향 보정 ③ 모델 비교로 성능을 맞췄습니다.
+> **파인튜닝(추가 학습)은 하지 않았습니다.** 사전학습 모델을 그대로 쓰고, ① 태그·감정 문장(프롬프트) 설계 ② 감정 라벨 편향 보정 ③ 모델 비교로 성능을 맞췄습니다.
 > 동작 원리·추천과의 연결·검증 결과를 한 번에 보려면 [AI·추천 정리](../docs/AI-감정분석-추천-정리.md).
 
 | 대상 | 모델 | 방식 | 라이선스 |
 |---|---|---|---|
-| 작품 이미지 | [`openai/clip-vit-base-patch32`](https://huggingface.co/openai/clip-vit-base-patch32) (CLIP) | 그림과 "a calm and peaceful painting" 같은 감정 문장의 유사도를 비교 | OpenAI CLIP 저장소 MIT |
-| 한국어 해설 | [`MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`](https://huggingface.co/MoritzLaurer/mDeBERTa-v3-base-mnli-xnli) (다국어 NLI) | 해설이 "이 글이 묘사하는 작품의 분위기는 평온함이다"를 얼마나 뒷받침하는지 판단 | MIT |
+| 작품 이미지 | [`openai/clip-vit-base-patch32`](https://huggingface.co/openai/clip-vit-base-patch32) (CLIP) | **태그:** 태그마다 "해당하는 그림"·"해당하지 않는 그림" 문장 중 어느 쪽에 가까운지 → 0~1 / **감정:** "a calm and peaceful painting" 같은 감정 문장과의 유사도 | OpenAI CLIP 저장소 MIT |
+| 한국어 해설 | [`MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`](https://huggingface.co/MoritzLaurer/mDeBERTa-v3-base-mnli-xnli) (다국어 NLI) | **감정:** 해설이 "이 글이 묘사하는 작품의 분위기는 평온함이다"를 얼마나 뒷받침하는지 / **태그:** 그림이 없을 때만 해설로 판단(색은 글로 판단하기 어려워 참고용) | MIT |
+
+- **태그는 그림이 있으면 그림으로만** 판단합니다(그림 없으면 해설로). 0.5 이상이면 "해당함"으로 보고 관리자 화면에서 태그 버튼을 미리 켭니다.
+- **「강렬한 색감」 문장**은 같은 그림의 채도를 낮추고 높여 시험해 골랐습니다(다른 후보는 거의 모든 그림을 0점으로 판단).
 
 - **감정 6가지:** 평온 · 기쁨 · 슬픔 · 긴장 · 경외 · 그리움 (`app/emotions.py`에서 이름·문장을 바꿀 수 있음)
 - **합치는 방법:** 이미지 60% + 텍스트 40% 가중 평균 → 가장 강한 감정을 1로 맞춘 상대 점수(0~1). 이미지가 없거나 내려받지 못하면 텍스트만 사용
@@ -47,26 +54,29 @@ uvicorn app.main:app --port 8000
 ### 전체 실행 순서 (터미널 3개)
 
 ```bash
-cd ai-service && uvicorn app.main:app --port 8000   # 1) 감정 분석 서버
+cd ai-service && uvicorn app.main:app --port 8000   # 1) AI 분석 서버 (태그·감정)
 cd backend && npm run dev                           # 2) API 서버 :4000
 cd frontend && npm run dev                          # 3) 화면 :5173
 ```
 
-감정 분석 서버를 띄우지 않아도 나머지 기능은 모두 동작합니다(「AI 분석」만 "서버에 연결할 수 없어요" 안내, 추천은 취향 태그 방식).
+AI 분석 서버를 띄우지 않아도 나머지 기능은 모두 동작합니다(「AI 분석」만 "서버에 연결할 수 없어요" 안내, 추천은 관리자가 켠 태그로).
 
 ## API
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/health` | `{ ok, modelsLoaded, calibration }` |
+| GET | `/tags` | 취향 태그 8개 목록 |
 | GET | `/emotions` | 감정 항목 목록 |
-| POST | `/analyze` | `{ title, description, imageBase64?, imageUrl? }` → `{ emotions, imageScores, textScores, usedImage, imageError, models }` |
+| POST | `/analyze` | `{ title, description, imageBase64?, imageUrl? }` → `{ tags, tagSource, emotions, imageScores, textScores, usedImage, imageError, models }` |
 
 ```json
 // POST /analyze 응답 예시
 {
+  "tags": { "landscape": 0.87, "people": 0.35, "abstract": 0.08, "light": 0.98, "vivid": 0.89, "cool": 0.02, "warm": 0.98, "soft": 0.95 },
+  "tagSource": "image",
   "emotions": { "calm": 1.0, "joy": 0.41, "sadness": 0.12, "tension": 0.08, "awe": 0.63, "nostalgia": 0.55 },
-  "usedImage": false,
+  "usedImage": true,
   "imageError": null,
   "models": { "image": "openai/clip-vit-base-patch32", "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli" }
 }
@@ -85,22 +95,30 @@ pytest
 
 [`evaluation/ai_validation.ipynb`](evaluation/ai_validation.ipynb) — Colab·VS Code에서 위에서부터 실행하면 서비스와 같은 코드로 모델을 돌려 그래프를 그립니다. 그래프는 `evaluation/results/figures/`에도 PNG로 저장됩니다.
 
-| 장 | 내용 |
+| 부 | 내용 |
 |---|---|
-| 2~3 | 텍스트 원점수 히트맵, **라벨 편향**(감정별 평균 점수) |
-| 4~5 | **정확도**: 무작위 기준 · 보정 전 · 보정 후 · 교차검증(평가 작품을 빼고 보정값 계산), 혼동 행렬 |
-| 6 | 텍스트 모델 4종 비교 |
-| 7~8 | **CLIP 이미지 갤러리**(WikiArt 9점, 정성 확인), 이미지+텍스트 결합 효과 |
-| 9 | 사용자 취향 조합 × 작품 감정 유사도 (추천과의 연결) |
-| 10 | **팀 라벨 일치도**: `evaluation/team_labels.csv`(작품 id, 평가자, 감정1, 감정2)를 만들면 평가자 간 일치도·Fleiss' kappa·다수결 정확도 계산 |
-| 11 | 결론·한계·다음 단계 |
+| **1부 취향 태그** | WikiArt 70점으로 **풍경·인물을 데이터셋의 장르 정답과 비교**, 추상(입체주의), **색·빛 태그를 픽셀 측정값과 비교**, 채도 조절 실험, 태그 갤러리, **캡처한 40점 정확도**(`tag_eval_set.json`), 추천 예시 |
+| 2부 감정 (설명용) | 텍스트 정확도(무작위·보정 전후·교차검증), 라벨 편향, 혼동 행렬, 모델 4종 비교, CLIP 감정 갤러리, 이미지+텍스트 결합 |
+| 3부 팀 라벨 | `evaluation/team_labels.csv`로 평가자 간 일치도·Fleiss' kappa·다수결 정확도 |
+
+**결과 요약 (2026-10-27)**
+
+| 항목 | 결과 |
+|---|---|
+| 태그 「풍경」 (WikiArt 장르 정답 55점) | 정확도 **96%** · AUC 1.00 |
+| 태그 「인물」 | 정확도 **91%** · AUC 0.98 |
+| 「추상」 평균 (입체주의 / 그 외) | 0.44 / 0.19 (경향만 확인) |
+| 색 태그 ↔ 픽셀 순위 상관 | 따뜻한 0.56 · 차가운 0.47 · 강렬한 0.46 · 부드러운 0.30 · **빛 0.11 (가장 불확실)** |
+| 감정 (텍스트, 설명용) | Top-1 45% · Top-2 73% (무작위 27% · 50%) |
+
+**캡처한 그림으로 재기:** 그림을 `evaluation/images/01.png ~ 40.png`로 저장하고(작품 목록과 정답은 `evaluation/tag_eval_set.json`) 노트북 1-8을 실행하면 대표 태그 적중률과 태그별 정밀도·재현율이 나옵니다.
 
 - **로컬(VS Code):** `.venv`에서 `pip install matplotlib pandas ipykernel` → 노트북을 열고 커널로 `.venv` 선택
 - **Colab:** `ai-service` 폴더를 zip으로 압축해 `ai-service.zip`으로 업로드 후 실행 (한글 폰트·패키지 자동 설치)
 
-![정확도](evaluation/results/figures/03_accuracy.png)
+![풍경·인물 vs 장르 정답](evaluation/results/figures/t1_subject_vs_genre.png)
 
-검증 중 **보정 코드의 문제**(모든 감정이 평균보다 낮으면 보정 전 점수로 돌아가 편향이 남음)를 발견해 고쳤습니다. 서비스 방식의 정확도가 36%/64% → 45%/73%가 되었습니다.
+검증 중 감정 **보정 코드의 문제**(모든 감정이 평균보다 낮으면 보정 전 점수로 돌아가 편향이 남음)를 발견해 고쳤습니다. 서비스 방식의 정확도가 36%/64% → 45%/73%가 되었습니다.
 
 ## 모델 비교 실험 (발표·보고서용)
 
