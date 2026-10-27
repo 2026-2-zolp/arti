@@ -45,6 +45,30 @@ def load_calibration(path: Path = CALIBRATION_FILE) -> dict[str, Scores]:
         return {}
 
 
+TAG_CALIBRATION_FILE = Path(__file__).with_name("tag_calibration.json")
+
+
+def load_tag_thresholds(path: Path = TAG_CALIBRATION_FILE) -> Scores:
+    """태그별 '해당함' 기준값 (없으면 빈 dict → 모든 태그 0.5)"""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return {k: float(data["thresholds"][k]) for k in TAG_KEYS}
+    except (OSError, ValueError, KeyError, TypeError):
+        return {}
+
+
+def calibrate_tags(scores: Scores, thresholds: Scores | None) -> Scores:
+    """태그마다 기준값이 0.5가 되도록 다시 매긴다 (0~기준값 → 0~0.5, 기준값~1 → 0.5~1, 순서는 그대로).
+    색 태그처럼 '해당함'을 너무 자주 주는 태그의 기준을 올려도 백엔드·화면은 계속 0.5로 판단하면 된다."""
+    if not thresholds:
+        return scores
+    out = {}
+    for k, s in scores.items():
+        th = min(max(thresholds.get(k, 0.5), 0.01), 0.99)
+        out[k] = round(0.5 * s / th if s < th else 0.5 + 0.5 * (s - th) / (1 - th), 3)
+    return out
+
+
 def apply_prior(scores: Scores, prior: Scores | None) -> Scores:
     """감정별 평균 점수(편향)를 뺀 뒤 가장 낮은 감정이 0이 되게 올린다 (편향을 뺀 순서를 그대로 유지).
 
@@ -189,8 +213,9 @@ class AnalysisResult:
     image_scores: Scores | None
     text_scores: Scores | None
     image_error: str | None
-    tags: Scores | None = None  # 취향 태그 8개 점수 (0~1, 태그마다 독립)
+    tags: Scores | None = None  # 취향 태그 8개 점수 (0~1, 태그마다 독립, 기준값 보정 후 — 0.5 이상 = 해당함)
     tag_source: str | None = None  # "image" | "text"
+    tags_raw: Scores | None = None  # 기준값 보정 전 점수 (검증용)
 
 
 def analyze(
@@ -199,6 +224,7 @@ def analyze(
     image: Image.Image | None,
     image_error: str | None = None,
     calibration: dict[str, Scores] | None = None,
+    tag_thresholds: Scores | None = None,
 ) -> AnalysisResult:
     text = text.strip()
     cal = calibration or {}
@@ -216,6 +242,8 @@ def analyze(
         image_scores=img,
         text_scores=txt,
         image_error=image_error,
-        tags=tags,
+        # 기준값은 그림으로 판단한 점수로 정했으므로, 해설로 판단한 태그에는 적용하지 않는다
+        tags=calibrate_tags(tags, tag_thresholds) if tags and tag_source == "image" else tags,
         tag_source=tag_source,
+        tags_raw=tags,
     )

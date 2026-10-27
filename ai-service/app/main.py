@@ -18,7 +18,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from . import config
-from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration
+from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load_tag_thresholds
 from .emotions import EMOTIONS
 from .tags import TAGS
 from .image_fetch import ImageFetchError, decode_base64_image, fetch_image
@@ -27,6 +27,8 @@ log = logging.getLogger("arti.ai")
 scorer: Scorer = HuggingFaceScorer()
 # 라벨 편향 보정값 (app/calibration.json). 파일이 없으면 보정 없이 동작
 calibration = load_calibration() if config.CALIBRATE else {}
+# 태그별 '해당함' 기준값 (app/tag_calibration.json). 파일이 없으면 모든 태그 0.5
+tag_thresholds = load_tag_thresholds() if config.CALIBRATE else {}
 
 
 @asynccontextmanager
@@ -61,13 +63,14 @@ class AnalyzeResponse(BaseModel):
     usedImage: bool
     imageError: str | None
     models: dict[str, str]
-    tags: dict[str, float] | None = None  # 취향 태그 8개 (0~1, 태그마다 독립) — 추천에 사용
+    tags: dict[str, float] | None = None  # 취향 태그 8개 (0~1, 태그마다 독립, 0.5 이상 = 해당함) — 추천에 사용
     tagSource: str | None = None  # "image" | "text"
+    tagsRaw: dict[str, float] | None = None  # 기준값 보정 전 점수 (검증용)
 
 
 @app.get("/health")
 def health():
-    return {"ok": True, "modelsLoaded": scorer.loaded, "calibration": sorted(calibration)}
+    return {"ok": True, "modelsLoaded": scorer.loaded, "calibration": sorted(calibration), "tagThresholds": tag_thresholds}
 
 
 @app.get("/emotions")
@@ -93,7 +96,7 @@ def analyze_artwork(req: AnalyzeRequest):
     if not text and image is None:
         raise HTTPException(status_code=400, detail=image_error or "작품 해설이나 이미지가 있어야 분석할 수 있어요.")
     try:
-        result = analyze(scorer, text, image, image_error, calibration)
+        result = analyze(scorer, text, image, image_error, calibration, tag_thresholds)
     except Exception as e:
         log.exception("분석 실패")
         raise HTTPException(status_code=503, detail="감정 분석 모델을 실행하지 못했어요.") from e
@@ -106,4 +109,5 @@ def analyze_artwork(req: AnalyzeRequest):
         models={"image": config.CLIP_MODEL, "text": config.NLI_MODEL},
         tags=result.tags,
         tagSource=result.tag_source,
+        tagsRaw=result.tags_raw,
     )

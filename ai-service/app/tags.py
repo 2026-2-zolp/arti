@@ -22,8 +22,10 @@ TAGS = [
      "pos": ["an abstract painting of shapes, lines and colors", "a non-representational geometric artwork"],
      "neg": ["a realistic painting of recognizable things", "a figurative painting of real scenes"]},
     {"key": "light", "ko": "빛", "nli": "빛과 광채",
-     "pos": ["a painting full of bright light and glow", "a luminous painting of sunlight"],
-     "neg": ["a dark, dimly lit painting", "a painting with flat, shadowy light"]},
+     # 어둠 속 광원(촛불·달빛)도 '빛'으로 보도록 고른 문장 (캡처 40점에서 AUC 0.59 → 0.84)
+     "pos": ["a painting with luminous light glowing in the darkness", "a painting of brilliant sunlight and glow",
+             "a painting with dramatic light and shadow"],
+     "neg": ["a painting with flat, even, uninteresting lighting"]},
     {"key": "vivid", "ko": "강렬한 색감", "nli": "강렬한 색채",
      # 채도를 낮추거나 높인 같은 그림으로 시험해 고른 문장 (다른 후보는 거의 모든 그림을 0점으로 판단)
      "pos": ["a vibrant, colorful painting"],

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from app import main
-from app.analyzer import apply_prior, combine, load_calibration, normalize_sum, scale_to_max
+from app.analyzer import apply_prior, calibrate_tags, combine, load_calibration, load_tag_thresholds, normalize_sum, scale_to_max
 from app.emotions import EMOTION_KEYS
 from app.tags import TAG_KEYS
 
@@ -33,6 +33,7 @@ class FakeScorer:
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(main, "scorer", FakeScorer())
+    monkeypatch.setattr(main, "tag_thresholds", {})  # 실제 기준값 파일과 무관하게 테스트
     return TestClient(main.app)
 
 
@@ -118,3 +119,23 @@ def test_calibration_removes_label_bias(tmp_path):
     f.write_text('{"prior": {"text": {"calm": 0.1, "joy": 0.1, "sadness": 0.1, "tension": 0.1, "awe": 0.5, "nostalgia": 0.1}}}')
     assert load_calibration(f)["text"]["awe"] == 0.5
     assert load_calibration(tmp_path / "missing.json") == {}
+
+
+def test_tag_thresholds_map_to_half(tmp_path, client, monkeypatch):
+    th = {k: 0.5 for k in TAG_KEYS} | {"warm": 0.9, "soft": 0.2}
+    out = calibrate_tags({k: 0.6 for k in TAG_KEYS}, th)
+    assert out["warm"] < 0.5 and out["soft"] > 0.5 and out["landscape"] == 0.6  # 기준값보다 낮으면 '해당 안 함'
+    assert calibrate_tags({"warm": 0.9}, th)["warm"] == 0.5 and calibrate_tags({"warm": 1.0}, th)["warm"] == 1.0
+    assert calibrate_tags({"warm": 0.3}, {}) == {"warm": 0.3}
+
+    f = tmp_path / "tag_calibration.json"
+    f.write_text('{"thresholds": ' + str(th).replace("'", '"') + '}')
+    assert load_tag_thresholds(f)["warm"] == 0.9 and load_tag_thresholds(tmp_path / "none.json") == {}
+
+    # 그림으로 판단한 태그에만 기준값 적용, 보정 전 점수는 tagsRaw
+    monkeypatch.setattr(main, "tag_thresholds", {k: 0.5 for k in TAG_KEYS} | {"light": 0.9})
+    monkeypatch.setattr(main, "fetch_image", lambda url: Image.new("RGB", (8, 8)))
+    body = client.post("/analyze", json={"description": "x", "imageUrl": "https://example.com/a.png"}).json()
+    assert body["tagsRaw"]["light"] == 0.8 and body["tags"]["light"] < 0.5
+    text_only = client.post("/analyze", json={"description": "x"}).json()
+    assert text_only["tags"] == text_only["tagsRaw"]
