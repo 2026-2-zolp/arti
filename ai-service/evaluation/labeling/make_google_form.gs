@@ -6,7 +6,7 @@
  *
  * 사용법 (README.md 「구글 폼으로 하기」 참고)
  *  1. 구글 드라이브에 폴더를 만들고 ARTI-labeling/images 의 01.jpg ~ 40.jpg 를 올린다
- *  2. 폴더 주소 https://drive.google.com/drive/folders/<여기> 의 <여기>를 아래 FOLDER_ID 에 붙여 넣는다
+ *  2. 폴더 주소(https://drive.google.com/drive/folders/...)를 통째로, 또는 folders/ 뒤의 ID만 아래 FOLDER_ID 에 붙여 넣는다
  *  3. script.google.com → 새 프로젝트 → 이 파일 내용을 붙여 넣고 → 함수 makeForm 실행 → 권한 허용
  *  4. 실행 로그에 나온 「응답 주소」를 팀원에게 보낸다
  *
@@ -33,7 +33,9 @@ const GUIDE = [
 ].join('\n');
 
 function makeForm() {
-  const folder = DriveApp.getFolderById(FOLDER_ID);
+  // 주소를 통째로 붙여 넣거나 ?hl=ko 같은 꼬리가 붙어도 폴더 ID만 뽑아 쓴다
+  const id = (FOLDER_ID.match(/folders\/([\w-]+)/) || [null, FOLDER_ID.split('?')[0]])[1].trim();
+  const folder = DriveApp.getFolderById(id);
   const form = FormApp.create('ARTI 취향 태그 라벨링 (40점)');
   form.setDescription(
     '그림마다 해당하는 태그를 모두 고르고, 그중 가장 대표적인 태그 1개를 골라 주세요.\n' +
