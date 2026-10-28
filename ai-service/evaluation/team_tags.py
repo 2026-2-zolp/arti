@@ -5,7 +5,9 @@
     python -m evaluation.team_tags            # 집계만 (tag_eval_set.json은 그대로)
     python -m evaluation.team_tags --apply    # 다수결 정답으로 tag_eval_set.json 의 primary·expected 교체
 
-입력: evaluation/labeling/responses/labels_<이름>.csv (labeling/labeling.html 에서 내려받은 파일, 2명 이상)
+입력: evaluation/labeling/responses/ 의 CSV (2명 이상)
+  - labels_<이름>.csv : labeling.html 에서 내려받은 파일
+  - 구글 폼 응답 시트를 CSV로 내려받은 파일 (labeling/make_google_form.gs 로 만든 폼, 이름은 자유)
 출력:
   - evaluation/results/team_tags_report.md        태그별 일치도(Fleiss' kappa)와 다수결 결과
   - evaluation/results/team_tags_disagreements.csv 의견이 갈린 칸 (회의 4단계에서 다시 볼 목록)
@@ -18,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -30,9 +33,46 @@ RESULTS = EVAL_DIR / "results"
 KO = {t["key"]: t["ko"] for t in TAGS}
 
 
-def read_labels(resp_dir: Path = RESP_DIR) -> dict[str, dict[str, dict]]:
-    """{평가자: {작품 id: {"tags": set, "primary": str, "unsure": bool, "note": str}}} — 빈칸(안 한 그림)은 뺀다"""
+KO2KEY = {t["ko"]: t["key"] for t in TAGS}
+FORM_ID = re.compile(r"^\[(\d+)\] (해당하는 태그|대표 태그|확신 없음|메모)")
+
+
+def read_google_form(path: Path) -> dict[str, dict[str, dict]]:
+    """구글 폼 응답 시트(CSV) — 한 줄 = 평가자 1명, 질문 제목 앞의 [01] 번호로 작품을 찾는다 (make_google_form.gs).
+    같은 이름이 여러 번 제출했으면 마지막 응답을 쓴다."""
     out: dict[str, dict[str, dict]] = {}
+    with path.open(encoding="utf-8-sig", newline="") as fh:
+        for r in csv.DictReader(fh):
+            rater = (r.get("이름") or "").strip()
+            if not rater:
+                continue
+            answers: dict[str, dict] = {}
+            for col, val in r.items():
+                m = FORM_ID.match(col or "")
+                if m:
+                    answers.setdefault(m.group(1).zfill(2), {})[m.group(2)] = (val or "").strip()
+            out[rater] = {}
+            for i, a in answers.items():
+                primary = KO2KEY.get(a.get("대표 태그", ""))
+                if not primary:
+                    continue
+                tags = {KO2KEY[t.strip()] for t in a.get("해당하는 태그", "").split(",") if t.strip() in KO2KEY}
+                out[rater][i] = {"tags": tags | {primary}, "primary": primary,
+                                 "unsure": bool(a.get("확신 없음")), "note": a.get("메모", "")}
+    return out
+
+
+def read_labels(resp_dir: Path = RESP_DIR) -> dict[str, dict[str, dict]]:
+    """{평가자: {작품 id: {"tags": set, "primary": str, "unsure": bool, "note": str}}} — 빈칸(안 한 그림)은 뺀다
+    labels_<이름>.csv (labeling.html) 와 구글 폼 응답 CSV(그 밖의 .csv, 첫 줄에 「이름」 열) 둘 다 읽는다."""
+    out: dict[str, dict[str, dict]] = {}
+    for f in sorted(resp_dir.glob("*.csv")):
+        if f.name.startswith("labels_"):
+            continue
+        with f.open(encoding="utf-8-sig", newline="") as fh:
+            head = next(csv.reader(fh), [])
+        if "이름" in head:
+            out.update(read_google_form(f))
     for f in sorted(resp_dir.glob("labels_*.csv")):
         with f.open(encoding="utf-8-sig", newline="") as fh:
             for r in csv.DictReader(fh):
