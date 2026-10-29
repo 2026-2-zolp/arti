@@ -1,5 +1,5 @@
 {
- "note": "취향 태그 평가용 정답 (예시, 개발자 판단). 캡처한 그림을 evaluation/images/01.png ~ 40.png 로 저장하면 ai_validation.ipynb 의 태그 장에서 정확도를 계산한다(.jpg·.webp도 됨). primary = 대표 태그, expected = 해당할 만한 태그 전체. 팀이 검토해 고쳐 쓰세요.",
+ "note": "취향 태그 평가용 정답 — 팀원 6명(김다연, 김동섭, 승혜, 임준억, 지성현, 최수혁) 다수결 — 김동섭은 대표 태그에만 반영 (evaluation/team_tags.py --apply). primaryDev·expectedDev = 예전 개발자 1인 정답. primary = 대표 태그, expected = 해당하는 태그 전체.",
  "items": [
   {
    "id": "01",
@@ -9,9 +9,15 @@
    "primary": "landscape",
    "expected": [
     "landscape",
-    "soft"
+    "people",
+    "light"
    ],
-   "imagePath": "images/01.png"
+   "imagePath": "images/01.png",
+   "primaryDev": "landscape",
+   "expectedDev": [
+    "landscape",
+    "soft"
+   ]
   },
   {
    "id": "02",
@@ -23,7 +29,12 @@
     "landscape",
     "light"
    ],
-   "imagePath": "images/02.png"
+   "imagePath": "images/02.png",
+   "primaryDev": "landscape",
+   "expectedDev": [
+    "landscape",
+    "light"
+   ]
   },
   {
    "id": "03",
@@ -32,9 +43,14 @@
    "year": "1689",
    "primary": "landscape",
    "expected": [
-    "landscape"
+    "landscape",
+    "cool"
    ],
-   "imagePath": "images/03.png"
+   "imagePath": "images/03.png",
+   "primaryDev": "landscape",
+   "expectedDev": [
+    "landscape"
+   ]
   },
   {
    "id": "04",
@@ -45,20 +61,29 @@
    "expected": [
     "landscape"
    ],
-   "imagePath": "images/04.png"
+   "imagePath": "images/04.png",
+   "primaryDev": "landscape",
+   "expectedDev": [
+    "landscape"
+   ]
   },
   {
    "id": "05",
    "title": "산 (〈산〉 연작 중 1점)",
    "artist": "유영국",
    "year": "1960~70년대",
-   "primary": "landscape",
+   "primary": "warm",
    "expected": [
+    "abstract",
+    "warm"
+   ],
+   "imagePath": "images/05.png",
+   "primaryDev": "landscape",
+   "expectedDev": [
     "landscape",
     "abstract",
     "vivid"
-   ],
-   "imagePath": "images/05.png"
+   ]
   },
   {
    "id": "06",
@@ -67,10 +92,14 @@
    "year": "1658년경",
    "primary": "people",
    "expected": [
+    "people"
+   ],
+   "imagePath": "images/06.png",
+   "primaryDev": "people",
+   "expectedDev": [
     "people",
     "light"
-   ],
-   "imagePath": "images/06.png"
+   ]
   },
   {
    "id": "07",
@@ -80,9 +109,15 @@
    "primary": "people",
    "expected": [
     "people",
+    "warm",
     "soft"
    ],
-   "imagePath": "images/07.png"
+   "imagePath": "images/07.png",
+   "primaryDev": "people",
+   "expectedDev": [
+    "people",
+    "soft"
+   ]
   },
   {
    "id": "08",
@@ -95,7 +130,13 @@
     "light",
     "warm"
    ],
-   "imagePath": "images/08.png"
+   "imagePath": "images/08.png",
+   "primaryDev": "people",
+   "expectedDev": [
+    "people",
+    "light",
+    "warm"
+   ]
   },
   {
    "id": "09",
@@ -104,10 +145,14 @@
    "year": "1882",
    "primary": "people",
    "expected": [
+    "people"
+   ],
+   "imagePath": "images/09.png",
+   "primaryDev": "people",
+   "expectedDev": [
     "people",
     "light"
-   ],
-   "imagePath": "images/09.png"
+   ]
   },
   {
    "id": "10",
@@ -116,10 +161,16 @@
    "year": "1950년대",
    "primary": "people",
    "expected": [
+    "landscape",
+    "people",
+    "cool"
+   ],
+   "imagePath": "images/10.png",
+   "primaryDev": "people",
+   "expectedDev": [
     "people",
     "soft"
-   ],
-   "imagePath": "images/10.png"
+   ]
   },
   {
    "id": "11",
@@ -128,10 +179,14 @@
    "year": "1913",
    "primary": "abstract",
    "expected": [
+    "abstract"
+   ],
+   "imagePath": "images/11.png",
+   "primaryDev": "abstract",
+   "expectedDev": [
     "abstract",
     "vivid"
-   ],
-   "imagePath": "images/11.png"
+   ]
   },
   {
    "id": "12",
@@ -140,34 +195,48 @@
    "year": "1942~43",
    "primary": "abstract",
    "expected": [
+    "abstract"
+   ],
+   "imagePath": "images/12.png",
+   "primaryDev": "abstract",
+   "expectedDev": [
     "abstract",
     "vivid"
-   ],
-   "imagePath": "images/12.png"
+   ]
   },
   {
    "id": "13",
    "title": "무제 (오렌지, 빨강, 노랑)",
    "artist": "마크 로스코",
    "year": "1961",
-   "primary": "abstract",
+   "primary": "warm",
    "expected": [
     "abstract",
     "warm"
    ],
-   "imagePath": "images/13.png"
+   "imagePath": "images/13.png",
+   "primaryDev": "abstract",
+   "expectedDev": [
+    "abstract",
+    "warm"
+   ]
   },
   {
    "id": "14",
    "title": "우주 (05-IV-71 #200)",
    "artist": "김환기",
    "year": "1971",
-   "primary": "abstract",
+   "primary": "cool",
    "expected": [
     "abstract",
     "cool"
    ],
-   "imagePath": "images/14.png"
+   "imagePath": "images/14.png",
+   "primaryDev": "abstract",
+   "expectedDev": [
+    "abstract",
+    "cool"
+   ]
   },
   {
    "id": "15",
@@ -178,45 +247,66 @@
    "expected": [
     "abstract"
    ],
-   "imagePath": "images/15.png"
+   "imagePath": "images/15.png",
+   "primaryDev": "abstract",
+   "expectedDev": [
+    "abstract"
+   ]
   },
   {
    "id": "16",
    "title": "해변 산책",
    "artist": "호아킨 소로야",
    "year": "1909",
-   "primary": "light",
+   "primary": "people",
    "expected": [
+    "landscape",
+    "people",
+    "cool"
+   ],
+   "imagePath": "images/16.png",
+   "primaryDev": "light",
+   "expectedDev": [
     "light",
     "people",
     "soft"
-   ],
-   "imagePath": "images/16.png"
+   ]
   },
   {
    "id": "17",
    "title": "루앙 대성당 (햇빛 연작 중 1점)",
    "artist": "클로드 모네",
    "year": "1894",
-   "primary": "light",
+   "primary": "landscape",
    "expected": [
-    "light",
+    "landscape",
     "warm"
    ],
-   "imagePath": "images/17.png"
+   "imagePath": "images/17.png",
+   "primaryDev": "light",
+   "expectedDev": [
+    "light",
+    "warm"
+   ]
   },
   {
    "id": "18",
    "title": "전함 테메레르",
    "artist": "윌리엄 터너",
    "year": "1839",
-   "primary": "light",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "light",
+    "warm"
+   ],
+   "imagePath": "images/18.png",
+   "primaryDev": "light",
+   "expectedDev": [
     "light",
     "landscape",
     "warm"
-   ],
-   "imagePath": "images/18.png"
+   ]
   },
   {
    "id": "19",
@@ -225,11 +315,16 @@
    "year": "1642년경",
    "primary": "light",
    "expected": [
+    "people",
+    "light"
+   ],
+   "imagePath": "images/19.png",
+   "primaryDev": "light",
+   "expectedDev": [
     "light",
     "people",
     "warm"
-   ],
-   "imagePath": "images/19.png"
+   ]
   },
   {
    "id": "20",
@@ -238,11 +333,17 @@
    "year": "1880",
    "primary": "light",
    "expected": [
+    "landscape",
+    "light",
+    "cool"
+   ],
+   "imagePath": "images/20.png",
+   "primaryDev": "light",
+   "expectedDev": [
     "light",
     "landscape",
     "cool"
-   ],
-   "imagePath": "images/20.png"
+   ]
   },
   {
    "id": "21",
@@ -251,60 +352,84 @@
    "year": "1910",
    "primary": "vivid",
    "expected": [
+    "people",
+    "vivid"
+   ],
+   "imagePath": "images/21.png",
+   "primaryDev": "vivid",
+   "expectedDev": [
     "vivid",
     "people",
     "warm"
-   ],
-   "imagePath": "images/21.png"
+   ]
   },
   {
    "id": "22",
    "title": "채링 크로스 다리",
    "artist": "앙드레 드랭",
    "year": "1906",
-   "primary": "vivid",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "vivid"
+   ],
+   "imagePath": "images/22.png",
+   "primaryDev": "vivid",
+   "expectedDev": [
     "vivid",
     "landscape"
-   ],
-   "imagePath": "images/22.png"
+   ]
   },
   {
    "id": "23",
    "title": "설교 후의 환상",
    "artist": "폴 고갱",
    "year": "1888",
-   "primary": "vivid",
+   "primary": "people",
    "expected": [
+    "people"
+   ],
+   "imagePath": "images/23.png",
+   "primaryDev": "vivid",
+   "expectedDev": [
     "vivid",
     "warm",
     "people"
-   ],
-   "imagePath": "images/23.png"
+   ]
   },
   {
    "id": "24",
    "title": "마릴린 두 폭",
    "artist": "앤디 워홀",
    "year": "1962",
-   "primary": "vivid",
+   "primary": "people",
    "expected": [
+    "people",
+    "vivid"
+   ],
+   "imagePath": "images/24.png",
+   "primaryDev": "vivid",
+   "expectedDev": [
     "vivid",
     "people"
-   ],
-   "imagePath": "images/24.png"
+   ]
   },
   {
    "id": "25",
    "title": "베를린 거리 풍경",
    "artist": "에른스트 루트비히 키르히너",
    "year": "1913",
-   "primary": "vivid",
+   "primary": "people",
    "expected": [
+    "people",
+    "vivid"
+   ],
+   "imagePath": "images/25.png",
+   "primaryDev": "vivid",
+   "expectedDev": [
     "vivid",
     "people"
-   ],
-   "imagePath": "images/25.png"
+   ]
   },
   {
    "id": "26",
@@ -313,10 +438,15 @@
    "year": "1903~04",
    "primary": "cool",
    "expected": [
+    "people",
+    "cool"
+   ],
+   "imagePath": "images/26.png",
+   "primaryDev": "cool",
+   "expectedDev": [
     "cool",
     "people"
-   ],
-   "imagePath": "images/26.png"
+   ]
   },
   {
    "id": "27",
@@ -325,35 +455,51 @@
    "year": "1872~75",
    "primary": "cool",
    "expected": [
+    "landscape",
+    "cool"
+   ],
+   "imagePath": "images/27.png",
+   "primaryDev": "cool",
+   "expectedDev": [
     "cool",
     "landscape"
-   ],
-   "imagePath": "images/27.png"
+   ]
   },
   {
    "id": "28",
    "title": "가나가와 앞바다의 큰 파도",
    "artist": "가쓰시카 호쿠사이",
    "year": "1831년경",
-   "primary": "cool",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "cool"
+   ],
+   "imagePath": "images/28.png",
+   "primaryDev": "cool",
+   "expectedDev": [
     "cool",
     "landscape"
-   ],
-   "imagePath": "images/28.png"
+   ]
   },
   {
    "id": "29",
    "title": "론강의 별이 빛나는 밤",
    "artist": "빈센트 반 고흐",
    "year": "1888",
-   "primary": "cool",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "light",
+    "cool"
+   ],
+   "imagePath": "images/29.png",
+   "primaryDev": "cool",
+   "expectedDev": [
     "cool",
     "landscape",
     "light"
-   ],
-   "imagePath": "images/29.png"
+   ]
   },
   {
    "id": "30",
@@ -362,10 +508,15 @@
    "year": "1962",
    "primary": "cool",
    "expected": [
+    "abstract",
+    "cool"
+   ],
+   "imagePath": "images/30.png",
+   "primaryDev": "cool",
+   "expectedDev": [
     "cool",
     "abstract"
-   ],
-   "imagePath": "images/30.png"
+   ]
   },
   {
    "id": "31",
@@ -374,36 +525,52 @@
    "year": "1895",
    "primary": "warm",
    "expected": [
+    "people",
+    "warm"
+   ],
+   "imagePath": "images/31.png",
+   "primaryDev": "warm",
+   "expectedDev": [
     "warm",
     "people",
     "vivid"
-   ],
-   "imagePath": "images/31.png"
+   ]
   },
   {
    "id": "32",
    "title": "아델레 블로흐바우어의 초상 I",
    "artist": "구스타프 클림트",
    "year": "1907",
-   "primary": "warm",
+   "primary": "people",
    "expected": [
+    "people",
+    "vivid",
+    "warm"
+   ],
+   "imagePath": "images/32.png",
+   "primaryDev": "warm",
+   "expectedDev": [
     "warm",
     "people"
-   ],
-   "imagePath": "images/32.png"
+   ]
   },
   {
    "id": "33",
    "title": "노적가리 (여름의 끝)",
    "artist": "클로드 모네",
    "year": "1891",
-   "primary": "warm",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "soft"
+   ],
+   "imagePath": "images/33.png",
+   "primaryDev": "warm",
+   "expectedDev": [
     "warm",
     "landscape",
     "light"
-   ],
-   "imagePath": "images/33.png"
+   ]
   },
   {
    "id": "34",
@@ -412,84 +579,120 @@
    "year": "1888",
    "primary": "warm",
    "expected": [
+    "landscape",
+    "warm"
+   ],
+   "imagePath": "images/34.png",
+   "primaryDev": "warm",
+   "expectedDev": [
     "warm",
     "vivid"
-   ],
-   "imagePath": "images/34.png"
+   ]
   },
   {
    "id": "35",
    "title": "황소",
    "artist": "이중섭",
    "year": "1953년경",
-   "primary": "warm",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "warm"
+   ],
+   "imagePath": "images/35.png",
+   "primaryDev": "warm",
+   "expectedDev": [
     "warm",
     "vivid"
-   ],
-   "imagePath": "images/35.png"
+   ]
   },
   {
    "id": "36",
    "title": "파라솔을 든 여인",
    "artist": "클로드 모네",
    "year": "1875",
-   "primary": "soft",
+   "primary": "people",
    "expected": [
+    "landscape",
+    "people",
+    "soft"
+   ],
+   "imagePath": "images/36.png",
+   "primaryDev": "soft",
+   "expectedDev": [
     "soft",
     "people",
     "light"
-   ],
-   "imagePath": "images/36.png"
+   ]
   },
   {
    "id": "37",
    "title": "피아노 치는 소녀들",
    "artist": "피에르오귀스트 르누아르",
    "year": "1892",
-   "primary": "soft",
+   "primary": "people",
    "expected": [
+    "people",
+    "warm",
+    "soft"
+   ],
+   "imagePath": "images/37.png",
+   "primaryDev": "soft",
+   "expectedDev": [
     "soft",
     "people"
-   ],
-   "imagePath": "images/37.png"
+   ]
   },
   {
    "id": "38",
    "title": "아이의 목욕",
    "artist": "메리 커샛",
    "year": "1893",
-   "primary": "soft",
+   "primary": "people",
    "expected": [
+    "people",
+    "soft"
+   ],
+   "imagePath": "images/38.png",
+   "primaryDev": "soft",
+   "expectedDev": [
     "soft",
     "people"
-   ],
-   "imagePath": "images/38.png"
+   ]
   },
   {
    "id": "39",
    "title": "무대 위의 무용수 (에투알)",
    "artist": "에드가 드가",
    "year": "1878",
-   "primary": "soft",
+   "primary": "people",
    "expected": [
-    "soft",
     "people"
    ],
-   "imagePath": "images/39.png"
+   "imagePath": "images/39.png",
+   "primaryDev": "soft",
+   "expectedDev": [
+    "soft",
+    "people"
+   ]
   },
   {
    "id": "40",
    "title": "수련 연못 (일본식 다리)",
    "artist": "클로드 모네",
    "year": "1899",
-   "primary": "soft",
+   "primary": "landscape",
    "expected": [
+    "landscape",
+    "soft"
+   ],
+   "imagePath": "images/40.png",
+   "primaryDev": "soft",
+   "expectedDev": [
     "soft",
     "landscape",
     "cool"
-   ],
-   "imagePath": "images/40.png"
+   ]
   }
  ]
 }

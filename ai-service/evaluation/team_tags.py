@@ -4,6 +4,7 @@
 실행 (ai-service 폴더에서):
     python -m evaluation.team_tags            # 집계만 (tag_eval_set.json은 그대로)
     python -m evaluation.team_tags --apply    # 다수결 정답으로 tag_eval_set.json 의 primary·expected 교체
+    python -m evaluation.team_tags --apply --primary-only 김동섭   # 이 평가자는 대표 태그에만 반영
 
 입력: evaluation/labeling/responses/ 의 CSV (2명 이상)
   - labels_<이름>.csv : labeling.html 에서 내려받은 파일
@@ -110,22 +111,26 @@ def kappa_label(k: float | None) -> str:
     return "거의 완벽" if k >= 0.8 else "꽤 일치" if k >= 0.6 else "보통" if k >= 0.4 else "약함" if k >= 0.2 else "거의 우연"
 
 
-def aggregate(labels: dict[str, dict[str, dict]], items: list[dict]):
+def aggregate(labels: dict[str, dict[str, dict]], items: list[dict], primary_only: set[str] = frozenset()):
+    """primary_only: 대표 태그만 반영할 평가자 (태그를 그림마다 1개씩만 골라 「해당하는 태그」 다수결을 왜곡하는 경우)"""
     raters = sorted(labels)
     ids = [it["id"] for it in items if all(it["id"] in labels[r] for r in raters)]
     by_id = {it["id"]: it for it in items}
-    n = len(raters)
+    tag_raters = [r for r in raters if r not in primary_only]
+    n = len(tag_raters)
 
     majority, disagreements = {}, []
     tag_counts = {k: [] for k in TAG_KEYS}
     prim_counts = []
     for i in ids:
-        votes = {k: sum(k in labels[r][i]["tags"] for r in raters) for k in TAG_KEYS}
+        votes = {k: sum(k in labels[r][i]["tags"] for r in tag_raters) for k in TAG_KEYS}
         dev = by_id[i]
+        # 동점이면 개발자 정답을 따른다 (이미 --apply 했다면 보관해 둔 예전 정답)
+        dev_expected, dev_primary = dev.get("expectedDev", dev["expected"]), dev.get("primaryDev", dev["primary"])
         expected = []
         for k in TAG_KEYS:
             tag_counts[k].append([votes[k], n - votes[k]])
-            if votes[k] * 2 > n or (votes[k] * 2 == n and k in dev["expected"]):
+            if votes[k] * 2 > n or (votes[k] * 2 == n and k in dev_expected):
                 expected.append(k)
             if 0 < votes[k] < n:
                 disagreements.append({"id": i, "title": dev["title"], "항목": KO[k], "O": votes[k], "X": n - votes[k],
@@ -135,7 +140,7 @@ def aggregate(labels: dict[str, dict[str, dict]], items: list[dict]):
         top = max(pv.values())
         tied = [k for k in TAG_KEYS if pv.get(k, 0) == top]
         # 대표 태그 동점: 기존 정답 → 해당 태그 표가 많은 쪽 순으로 정함
-        primary = dev["primary"] if dev["primary"] in tied else max(tied, key=lambda k: votes[k])
+        primary = dev_primary if dev_primary in tied else max(tied, key=lambda k: votes[k])
         if len(pv) > 1:
             disagreements.append({"id": i, "title": dev["title"], "항목": "대표 태그",
                                   "O": " · ".join(f"{KO[k]} {c}" for k, c in pv.most_common()), "X": "",
@@ -152,18 +157,22 @@ def aggregate(labels: dict[str, dict[str, dict]], items: list[dict]):
             "positive": sum(k in majority[i]["expected"] for i in ids)}
         for k in TAG_KEYS
     }
-    stats["primary"] = {"kappa": fleiss_kappa(prim_counts), "full": sum(max(c) == n for c in prim_counts) / max(len(ids), 1)}
+    stats["primary"] = {"kappa": fleiss_kappa(prim_counts),
+                        "full": sum(max(c) == len(raters) for c in prim_counts) / max(len(ids), 1)}
     return raters, ids, majority, stats, disagreements
 
 
-def report(raters, ids, majority, stats, by_id) -> str:
-    changed_primary = [i for i in ids if majority[i]["primary"] != by_id[i]["primary"]]
-    changed_tags = sum(set(majority[i]["expected"]) ^ set(by_id[i]["expected"]) != set() for i in ids)
+def report(raters, ids, majority, stats, by_id, primary_only=frozenset()) -> str:
+    old = {i: (by_id[i].get("primaryDev", by_id[i]["primary"]), by_id[i].get("expectedDev", by_id[i]["expected"])) for i in ids}
+    changed_primary = [i for i in ids if majority[i]["primary"] != old[i][0]]
+    changed_tags = sum(set(majority[i]["expected"]) ^ set(old[i][1]) != set() for i in ids)
     lines = [
         "# 팀 태그 라벨 집계",
         "",
         f"- 평가자 {len(raters)}명: {', '.join(raters)}",
         f"- 모두가 라벨을 단 작품: {len(ids)}점",
+        *([f"- 대표 태그에만 반영한 평가자: {', '.join(sorted(primary_only))} (그림마다 태그를 1개만 골라 「해당하는 태그」 다수결에서는 뺌)"]
+          if primary_only else []),
         "",
         "## 사람끼리 얼마나 일치했나",
         "",
@@ -187,10 +196,10 @@ def report(raters, ids, majority, stats, by_id) -> str:
         "|---|---|---|---|---|---|",
     ]
     for i in ids:
-        old, new = by_id[i], majority[i]
-        if old["primary"] != new["primary"] or set(old["expected"]) != set(new["expected"]):
-            lines.append(f"| {i} | {old['title']} | {KO[old['primary']]} | {KO[new['primary']]} | "
-                         f"{' · '.join(KO[k] for k in old['expected'])} | {' · '.join(KO[k] for k in new['expected'])} |")
+        (op, oe), new = old[i], majority[i]
+        if op != new["primary"] or set(oe) != set(new["expected"]):
+            lines.append(f"| {i} | {by_id[i]['title']} | {KO[op]} | {KO[new['primary']]} | "
+                         f"{' · '.join(KO[k] for k in oe)} | {' · '.join(KO[k] for k in new['expected'])} |")
     unsure = [(i, majority[i]) for i in ids if majority[i]["unsure"] or majority[i]["notes"]]
     if unsure:
         lines += ["", "## 확신 없음 · 메모", "", "| 번호 | 작품 | 확신 없음 | 메모 |", "|---|---|---|---|"]
@@ -202,7 +211,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="팀원 태그 라벨 집계")
     ap.add_argument("--apply", action="store_true", help="다수결 정답으로 tag_eval_set.json 교체")
     ap.add_argument("--responses", type=Path, default=RESP_DIR)
+    ap.add_argument("--primary-only", default="", help="대표 태그에만 반영할 평가자 이름 (쉼표로 구분)")
     args = ap.parse_args()
+    primary_only = {x.strip() for x in args.primary_only.split(",") if x.strip()}
 
     data = json.loads(SET_FILE.read_text(encoding="utf-8"))
     items = data["items"]
@@ -211,9 +222,17 @@ def main() -> None:
     if len(labels) < 2:
         raise SystemExit(f"평가자가 2명 이상 필요해요 (지금 {len(labels)}명). {args.responses} 에 labels_<이름>.csv 를 넣어 주세요.")
 
-    raters, ids, majority, stats, dis = aggregate(labels, items)
+    unknown = primary_only - set(labels)
+    if unknown:
+        raise SystemExit(f"--primary-only 에 적은 이름이 응답에 없어요: {', '.join(unknown)}")
+    # 태그를 그림마다 1개씩만 고른 평가자는 「대표 태그만」 답한 것으로 보이므로 알려 준다
+    for r in sorted(set(labels) - primary_only):
+        if all(len(v["tags"]) == 1 for v in labels[r].values()):
+            print(f"참고: {r} 님은 모든 그림에 태그를 1개만 골랐어요. 대표 태그만 반영하려면 --primary-only {r}")
+
+    raters, ids, majority, stats, dis = aggregate(labels, items, primary_only)
     RESULTS.mkdir(exist_ok=True)
-    text = report(raters, ids, majority, stats, by_id)
+    text = report(raters, ids, majority, stats, by_id, primary_only)
     (RESULTS / "team_tags_report.md").write_text(text, encoding="utf-8")
     with (RESULTS / "team_tags_disagreements.csv").open("w", encoding="utf-8-sig", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=["id", "title", "항목", "O", "X", "동점", "결과"])
@@ -228,7 +247,8 @@ def main() -> None:
             it.setdefault("primaryDev", it["primary"])  # 처음 적용할 때만 개발자 정답을 남겨 둔다
             it.setdefault("expectedDev", it["expected"])
             it["primary"], it["expected"] = majority[i]["primary"], majority[i]["expected"]
-        data["note"] = (f"취향 태그 평가용 정답 — 팀원 {len(raters)}명({', '.join(raters)}) 다수결 "
+        extra = f" — {', '.join(sorted(primary_only))}은 대표 태그에만 반영" if primary_only else ""
+        data["note"] = (f"취향 태그 평가용 정답 — 팀원 {len(raters)}명({', '.join(raters)}) 다수결{extra} "
                         "(evaluation/team_tags.py --apply). primaryDev·expectedDev = 예전 개발자 1인 정답. "
                         "primary = 대표 태그, expected = 해당하는 태그 전체.")
         SET_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
