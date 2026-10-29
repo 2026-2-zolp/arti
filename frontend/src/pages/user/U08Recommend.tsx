@@ -1,4 +1,10 @@
-/** U-08 개인화 작품 추천 — 취향+시간 기반 추천 목록과 추천 이유 */
+/**
+ * U-08 개인화 작품 추천 — 취향+시간 기반 추천 목록과 추천 이유
+ *
+ * 작품 수는 관람 시간으로 정해지므로(30분 3점 · 1시간 5점 · 여유롭게 7점) 취향에 맞는 작품이 모자라면
+ * 나머지가 섞여 들어온다. 고른 취향 태그가 하나라도 해당하는 작품(matchedTags)을 「내 취향 작품」,
+ * 나머지를 「함께 보면 좋은 작품」으로 나눠 보여 준다. 번호는 지도 경로 순서 그대로.
+ */
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
@@ -6,7 +12,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
-import type { Artwork } from '../../types';
+import type { Artwork, Recommendation } from '../../types';
 
 export default function U08Recommend() {
   const navigate = useNavigate();
@@ -37,6 +43,31 @@ export default function U08Recommend() {
 
   const byId = new Map<string, Artwork>((artworks ?? []).map((w) => [w.id, w]));
   const ready = recommendations.length > 0 && artworks;
+  const mine = recommendations.filter((r) => r.matchedTags?.length);
+  const extra = recommendations.filter((r) => !r.matchedTags?.length);
+
+  const renderList = (recs: Recommendation[]) => (
+    <ol className="rec-list">
+      {recs.map((r) => {
+        const w = byId.get(r.artworkId);
+        if (!w) return null;
+        return (
+          <li key={r.artworkId} className="rec-card">
+            <ArtImage className="rec-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1.1} />
+            <div className="rec-info">
+              <strong>
+                {r.order}. {w.title}
+              </strong>
+              <span className="muted small">
+                {w.artist} · {w.year}
+              </span>
+              <span className={`chip sm ${r.matchedTags?.length ? 'accent' : 'outline'}`}>{r.reason}</span>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
 
   return (
     <MobileShell
@@ -57,26 +88,26 @@ export default function U08Recommend() {
       {!ready && !error && <Spinner label="취향에 맞는 작품을 찾는 중…" />}
 
       {ready && (
-        <ol className="rec-list">
-          {recommendations.map((r) => {
-            const w = byId.get(r.artworkId);
-            if (!w) return null;
-            return (
-              <li key={r.artworkId} className="rec-card">
-                <ArtImage className="rec-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1.1} />
-                <div className="rec-info">
-                  <strong>
-                    {r.order}. {w.title}
-                  </strong>
-                  <span className="muted small">
-                    {w.artist} · {w.year}
-                  </span>
-                  <span className="chip accent sm">{r.reason}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <>
+          {mine.length > 0 && (
+            <section className="rec-group">
+              <h2 className="rec-group-title">✨ 내 취향 작품 {mine.length}점</h2>
+              {renderList(mine)}
+            </section>
+          )}
+          {extra.length > 0 && (
+            <section className="rec-group">
+              <h2 className="rec-group-title">🌱 함께 보면 좋은 작품 {extra.length}점</h2>
+              <p className="muted small rec-group-desc">
+                {mine.length === 0
+                  ? '이 전시에는 고른 취향과 맞는 작품이 없어요. 관람 시간에 맞춰 다른 분위기의 작품을 골랐어요. 취향을 바꿔 다시 골라 볼 수도 있어요.'
+                  : `이 전시에는 고른 취향과 맞는 작품이 ${mine.length}점이라, 관람 시간에 맞춰 새로운 작품을 함께 골랐어요.`}
+              </p>
+              {renderList(extra)}
+            </section>
+          )}
+          <p className="footnote">번호는 지도에서 걷는 순서예요.</p>
+        </>
       )}
     </MobileShell>
   );
