@@ -22,6 +22,22 @@ export const countForDuration = (d: VisitDuration) => DURATION_OPTIONS.find((o) 
 
 const dist = (p: MapPoint, q: MapPoint) => Math.hypot(p.x - q.x, p.y - q.y);
 
+/** 추천 후보: 이 전시의 검수 완료 + 위치 등록 작품 */
+const candidates = (artworks: Artwork[], exhibition: Exhibition) =>
+  artworks.filter((w) => w.exhibitionId === exhibition.id && w.reviewStatus === 'approved' && w.position);
+
+/**
+ * 전시의 태그 분포: 태그마다 "해당함"(0.5 이상)인 추천 후보 작품 수.
+ * 0인 태그는 이 전시에서 추천할 수 없다 → 사용자 화면은 안내하고 다음 순위 취향으로 대신 채우며, 관리자 대시보드에 표시한다.
+ */
+export function tagCoverage(artworks: Artwork[], exhibition: Exhibition): Record<TasteTag, number> {
+  const works = candidates(artworks, exhibition);
+  return Object.fromEntries(TAG_KEYS.map((t) => [t, works.filter((w) => tagStrength(w, t) >= TAG_THRESHOLD).length])) as Record<
+    TasteTag,
+    number
+  >;
+}
+
 function scoreArtwork(w: Artwork, tastes: TasteTag[]) {
   const strength = Object.fromEntries(tastes.map((t) => [t, tagStrength(w, t)])) as Record<TasteTag, number>;
   const score = tastes.length ? tastes.reduce((sum, t) => sum + strength[t], 0) / tastes.length : 0;
@@ -43,8 +59,7 @@ export function buildRecommendations(
   duration: VisitDuration,
 ): Recommendation[] {
   const tastes = TAG_KEYS.filter((t) => pickedTastes.includes(t)); // 고른 순서 무시 + 중복 제거
-  const ranked = artworks
-    .filter((w) => w.exhibitionId === exhibition.id && w.reviewStatus === 'approved' && w.position)
+  const ranked = candidates(artworks, exhibition)
     .map((w) => scoreArtwork(w, tastes))
     .sort((x, y) => y.score - x.score || x.w.id.localeCompare(y.w.id));
 

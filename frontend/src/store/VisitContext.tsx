@@ -20,6 +20,8 @@ export interface VisitState {
   exhibitionId: string;
   user: User | null;
   tastes: TasteTag[];
+  /** 토너먼트에서 정한 태그 순위 전체 (1위, 2위, 4강, 8강 순) — 전시에 없는 취향을 대신 채울 때 씀. 없으면 [] */
+  tasteRanking: TasteTag[];
   duration: VisitDuration | null;
   recommendations: Recommendation[];
   /** 지금 보러 갈(또는 보고 있는) 추천 작품의 인덱스 (0부터) */
@@ -37,7 +39,7 @@ type Action =
   | { type: 'setExhibition'; id: string }
   | { type: 'login'; user: User }
   | { type: 'logout' }
-  | { type: 'setTastes'; tastes: TasteTag[] }
+  | { type: 'setTastes'; tastes: TasteTag[]; ranking?: TasteTag[] }
   | { type: 'setDuration'; duration: VisitDuration }
   | { type: 'setRecommendations'; recs: Recommendation[] }
   | { type: 'startVisit' }
@@ -55,6 +57,7 @@ const USER_KEY = 'arti.user';
 
 const emptyVisit = {
   tastes: [] as TasteTag[],
+  tasteRanking: [] as TasteTag[],
   duration: null,
   recommendations: [] as Recommendation[],
   current: 0,
@@ -77,6 +80,7 @@ function init(): VisitState {
     ...emptyVisit,
     ...stored,
     tastes: cleanTastes(stored.tastes),
+    tasteRanking: cleanTastes(stored.tasteRanking),
     user: user && { ...user, tastes: cleanTastes(user.tastes) },
   };
 }
@@ -89,9 +93,9 @@ function reducer(s: VisitState, a: Action): VisitState {
       return { ...s, user: a.user };
     case 'logout':
       // 이전 계정의 취향이 다음 사람(다른 계정·비회원)에게 이어지지 않게 비운다
-      return { ...s, user: null, tastes: [] };
+      return { ...s, user: null, tastes: [], tasteRanking: [] };
     case 'setTastes':
-      return { ...s, tastes: a.tastes };
+      return { ...s, tastes: a.tastes, tasteRanking: a.ranking ?? [] };
     case 'setDuration':
       return { ...s, duration: a.duration };
     case 'setRecommendations':

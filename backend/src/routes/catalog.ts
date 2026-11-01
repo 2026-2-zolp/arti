@@ -6,7 +6,7 @@ import { z } from 'zod';
 import type { DB } from '../db.js';
 import { notFound, parse, rateLimit } from '../http.js';
 import { answerQuestion, personalizedExplanation } from '../lib/ai.js';
-import { buildRecommendations } from '../lib/recommend.js';
+import { buildRecommendations, tagCoverage } from '../lib/recommend.js';
 import * as repo from '../repo.js';
 import { tasteTag, visitDuration } from '../schemas.js';
 
@@ -22,6 +22,12 @@ export function catalogRoutes(db: DB) {
 
   r.get('/exhibitions/:id', (req, res) => {
     res.json(exhibitionOr404(req.params.id));
+  });
+
+  /** 태그별로 추천할 수 있는 작품 수 — 전시에 없는 취향 안내(U-05·U-08), 관리자 대시보드(A-02) */
+  r.get('/exhibitions/:id/tag-coverage', (req, res) => {
+    const ex = exhibitionOr404(req.params.id);
+    res.json(tagCoverage(repo.listArtworks(db, ex.id), ex));
   });
 
   r.get('/artworks', (req, res) => {

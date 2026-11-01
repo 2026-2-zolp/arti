@@ -222,6 +222,8 @@ h1, h2, h3, p { margin: 0; }
 .tag-pick-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .tag-pick-chip.on small { color: var(--accent); }
 .tag-pick-chip:disabled { opacity: 0.4; }
+.tag-pick-chip small.zero { color: var(--warn); font-weight: 600; }
+.missing-note { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: #fff7e6; color: #8a5a00; font-size: 14px; line-height: 1.5; }
 
 /* ---------- U-06 ---------- */
 .saved-taste-card { padding: 20px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
@@ -538,3 +540,5 @@ h1, h2, h3, p { margin: 0; }
 .a-field .ai-check { align-items: flex-start; line-height: 1.5; }
 .btn-row { display: flex; gap: 10px; }
 .btn-row .btn { flex: 1; }
+.coverage-table td:not(:first-child), .coverage-table th:not(:first-child) { text-align: center; }
+.coverage-table td.zero { color: var(--warn); font-weight: 700; background: #fff4ec; }

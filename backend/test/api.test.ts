@@ -83,6 +83,16 @@ describe('추천', () => {
       }
   });
 
+  test('태그 분포: 태그마다 추천 가능한 작품 수, 없는 전시는 404', async () => {
+    const r = await call('GET', '/exhibitions/ex-mvp/tag-coverage');
+    assert.equal(r.status, 200);
+    assert.deepEqual(Object.keys(r.body), ['landscape', 'people', 'abstract', 'light', 'vivid', 'cool', 'warm', 'soft']);
+    const recs = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: ['abstract'], duration: 'relaxed' });
+    const matched = recs.body.filter((x: { matchedTags: string[] }) => x.matchedTags.includes('abstract')).length;
+    assert.equal(matched, Math.min(r.body.abstract, 7), '분포 수와 실제 추천되는 해당 작품 수가 같음');
+    assert.equal((await call('GET', '/exhibitions/nope/tag-coverage')).status, 404);
+  });
+
   test('잘못된 관람 시간은 400', async () => {
     const r = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: [], duration: '2h' });
     assert.equal(r.status, 400);

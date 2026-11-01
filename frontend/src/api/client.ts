@@ -130,6 +130,9 @@ export const api = {
     request<void>('POST', '/auth/password-reset/confirm', { token, password }),
 
   // ───────────────────────── 추천 / AI ─────────────────────────
+  /** 태그별로 이 전시에서 추천할 수 있는 작품 수 (0이면 그 취향은 이 전시에 없음) */
+  tagCoverage: (exhibitionId: string) => request<Record<TasteTag, number>>('GET', `/exhibitions/${enc(exhibitionId)}/tag-coverage`),
+
   recommend: (exhibitionId: string, tastes: TasteTag[], duration: VisitDuration) =>
     request<Recommendation[]>('POST', '/recommendations', { exhibitionId, tastes, duration }),
 

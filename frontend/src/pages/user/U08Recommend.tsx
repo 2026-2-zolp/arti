@@ -12,23 +12,29 @@ import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { fallbackTastes } from '../../lib/tasteFallback';
+import { MissingNote } from '../../components/MissingNote';
 import { useVisit } from '../../store/VisitContext';
 import type { Artwork, Recommendation } from '../../types';
 
 export default function U08Recommend() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
-  const { exhibitionId, tastes, duration, recommendations } = state;
+  const { exhibitionId, tastes, tasteRanking, duration, recommendations } = state;
   const [error, setError] = useState<string | null>(null);
   const { data: artworks } = useAsync(() => api.listArtworks(exhibitionId), [exhibitionId]);
+  // 이 전시에 없는 취향은 토너먼트 다음 순위 태그로 대신 채워 추천한다 (저장된 취향은 그대로)
+  const { data: coverage, loading: coverageLoading } = useAsync(() => api.tagCoverage(exhibitionId), [exhibitionId]);
+  const fallback = fallbackTastes(tastes, tasteRanking, coverage);
+  const effectiveKey = fallback.effective.join(',');
 
   // 추천 목록이 비어 있을 때만 요청 (U-09에서 뒤로 돌아온 경우 진행 상태 유지)
   const needFetch = recommendations.length === 0;
   useEffect(() => {
-    if (!needFetch || !duration || tastes.length === 0) return;
+    if (!needFetch || !duration || tastes.length === 0 || coverageLoading) return;
     let cancelled = false;
     api
-      .recommend(exhibitionId, tastes, duration)
+      .recommend(exhibitionId, fallback.effective.length ? fallback.effective : tastes, duration)
       .then((recs) => {
         if (cancelled) return;
         if (recs.length === 0) setError('지금 추천할 수 있는 작품이 없어요. 전시 데이터를 확인해 주세요.');
@@ -38,7 +44,8 @@ export default function U08Recommend() {
     return () => {
       cancelled = true;
     };
-  }, [needFetch, exhibitionId, tastes, duration, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needFetch, exhibitionId, tastes, duration, dispatch, coverageLoading, effectiveKey]);
 
   if (!duration) return <Navigate to="/time" replace />;
 
@@ -88,6 +95,7 @@ export default function U08Recommend() {
         desc={ready ? `취향과 관람 시간을 바탕으로 ${recommendations.length}개 작품을 골랐습니다.` : '추천 작품을 고르고 있어요…'}
       />
       {error && <p className="error-text">{error}</p>}
+      <MissingNote fallback={fallback} />
       {!ready && !error && <Spinner label="취향에 맞는 작품을 찾는 중…" />}
 
       {ready && (
