@@ -132,6 +132,31 @@ describe('작품 AI 분석 (A-04)', () => {
   });
 });
 
+describe('초보자 가이드 (관찰 질문·힌트)', () => {
+  test('목업 작품의 관찰 질문은 확정 상태, 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로', async () => {
+    const h = await admin();
+    const w = (await call('GET', '/artworks/aw-03')).body;
+    assert.equal(w.guideStatus, 'confirmed');
+    const empty = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedLooking: [], guideIntro: '' }, h);
+    assert.equal(empty.status, 400);
+    assert.equal(empty.body.error, '초보자 가이드가 비어 있으면 확정할 수 없어요.');
+    const saved = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedHints: ['식탁 위 무늬'], guideIntro: '쉬운 설명' }, h);
+    assert.equal(saved.body.guideStatus, 'confirmed');
+    assert.deepEqual(saved.body.guidedHints, ['식탁 위 무늬']);
+    const changed = await call('PUT', '/admin/artworks/aw-03', { ...saved.body, description: w.description + ' 추가' }, h);
+    assert.equal(changed.body.guideStatus, 'suggested', '원문이 바뀌면 가이드도 다시 확인');
+  });
+
+  test('관찰 질문이 확정되지 않은 작품에 "어디부터" 물으면 기본 관찰 팁으로 답한다', async () => {
+    const h = await admin();
+    const w = (await call('GET', '/artworks/aw-04')).body;
+    await call('PUT', '/admin/artworks/aw-04', { ...w, guideStatus: 'none' }, h);
+    const r = await call('POST', '/artworks/aw-04/ask', { question: '어디부터 보면 좋을까요?' });
+    assert.match(r.body.answer, /가장 밝은 곳/);
+    assert.doesNotMatch(r.body.answer, /•\s*\n/);
+  });
+});
+
 describe('전시 일괄 분석·확정 → 태그 기반 추천', () => {
   test('일괄 분석 후 확정하면 추천이 AI 태그 점수로 바뀐다', async () => {
     const h = await admin();

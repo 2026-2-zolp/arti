@@ -128,6 +128,55 @@ ${DOCENT_RULES}
   };
 }
 
+// ───────────────────────── 1-2) 초보자 가이드 (A-04) ─────────────────────────
+const GuideSchema = z.object({
+  intro: z.string().describe('그림을 보기 전에 읽는 쉬운 설명 2~3문장'),
+  questions: z
+    .array(z.object({ question: z.string().describe('그림에서 직접 찾아볼 수 있는 관찰 질문'), hint: z.string().describe('답을 찾을 곳 힌트 1문장') }))
+    .describe('관찰 질문 3개'),
+});
+
+export interface GuideResult {
+  intro: string;
+  questions: string[];
+  hints: string[];
+}
+
+/**
+ * 초보자 가이드 제안: 쉬운 설명 + 관찰 질문 3개(질문마다 힌트). 관리자가 확정해야 사용자 화면에 보인다.
+ * API 키가 없으면 null (관리자가 직접 쓰거나, 이후 로컬 모델을 이 자리에 붙인다).
+ */
+export async function suggestGuide(w: Artwork): Promise<GuideResult | null> {
+  if (!config.ai.enabled || !w.description.trim()) return null;
+  try {
+    const res = await claude().beta.messages.parse({
+      ...COMMON,
+      model: config.ai.model,
+      output_config: { effort: 'low', format: betaZodOutputFormat(GuideSchema) },
+      system: `당신은 미술 감상 초보자와 함께 그림을 보는 도슨트입니다.
+${DOCENT_RULES}
+- 쉬운 설명은 2~3문장, 어려운 미술 용어는 풀어서 쓰세요.
+- 관찰 질문은 정답을 외우는 질문이 아니라 색·형태·빛·구도·인물의 자세처럼 그림에서 직접 찾아볼 수 있는 질문 3개로 쓰세요.
+- 힌트는 그림의 어디를 보면 되는지 한 문장으로 알려 주세요. 자료에 없는 내용은 힌트에도 쓰지 마세요.`,
+      messages: [{ role: 'user', content: `${artworkContext(w)}\n\n위 작품의 초보자 가이드를 만들어 주세요.` }],
+    });
+    const out = res.stop_reason === 'refusal' ? null : res.parsed_output;
+    const qs = (out?.questions ?? []).filter((q) => q.question.trim()).slice(0, 3);
+    if (!out || !qs.length) return null;
+    return { intro: out.intro.trim(), questions: qs.map((q) => q.question.trim()), hints: qs.map((q) => q.hint.trim()) };
+  } catch (err) {
+    logClaudeError(err);
+    return null;
+  }
+}
+
+/** 관찰 질문이 아직 없을 때 쓰는 기본 관찰 팁 (작품과 상관없이 통하는 것만) */
+export const BASIC_LOOKING_TIPS = [
+  '그림에서 가장 밝은 곳을 먼저 찾아보세요. 눈이 가장 먼저 가는 곳이에요.',
+  '화면에서 가장 넓게 쓰인 색은 무엇인가요?',
+  '조금 떨어져서 한 번, 가까이 다가가서 한 번 보세요. 무엇이 달라 보이나요?',
+];
+
 // ───────────────────────── 2) AI 맞춤 설명 (U-10) ─────────────────────────
 /** 같은 작품·취향 조합은 결과를 재사용 (작품 화면을 열 때마다 API 비용이 나가지 않도록) */
 const explanationCache = new Map<string, string>();
@@ -174,7 +223,7 @@ function ruleBasedExplanation(w: Artwork, matched: TasteTag[]): string {
     w.emotionStatus === 'confirmed' && w.analysis
       ? `\n\n이 작품에서는 특히 '${topEmotions(w.analysis.emotions).map(emotionLabel).join("', '")}'의 분위기가 느껴져요.`
       : '';
-  return `${lead} 「${w.title}」에서는 이런 점을 눈여겨보세요.\n\n${focus ? TIPS[focus] : ''}${emo}\n\n${w.guidedLooking[0] ?? ''}`;
+  return `${lead} 「${w.title}」에서는 이런 점을 눈여겨보세요.\n\n${focus ? TIPS[focus] : ''}${emo}\n\n${w.guideStatus === 'confirmed' ? (w.guidedLooking[0] ?? '') : ''}`;
 }
 
 // ───────────────────────── 3) AI 자유 질문 (U-11) ─────────────────────────
@@ -197,7 +246,7 @@ function ruleBasedAnswer(w: Artwork, question: string): string {
       : '등록된 자료에는 색에 대한 설명이 따로 없어요. 화면에서 가장 넓게 쓰인 색을 먼저 찾아보세요.';
   }
   if (/어디|먼저|보|관찰|포인트/.test(q))
-    return `처음 보신다면 이렇게 시작해 보세요.\n• ${w.guidedLooking.join('\n• ')}`;
+    return `처음 보신다면 이렇게 시작해 보세요.\n• ${(w.guideStatus === 'confirmed' && w.guidedLooking.length ? w.guidedLooking : BASIC_LOOKING_TIPS).join('\n• ')}`;
   if (/의미|왜|이유|뜻/.test(q)) return w.description;
   return `${w.description.split('. ')[0]}. 더 궁금한 점이 있다면 작가, 색, 관찰 포인트에 대해 물어보세요.`;
 }

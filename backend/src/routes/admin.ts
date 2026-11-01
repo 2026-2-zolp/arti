@@ -8,7 +8,7 @@ import { config } from '../config.js';
 import { z } from 'zod';
 import type { DB } from '../db.js';
 import { createSession, deleteSession, HttpError, parse, rateLimit, requireAdmin } from '../http.js';
-import { summarizeDescription } from '../lib/ai.js';
+import { suggestGuide, summarizeDescription } from '../lib/ai.js';
 import { analyzeEmotions } from '../lib/emotionClient.js';
 import { hashPassword, newId, newToken, verifyPassword } from '../lib/password.js';
 import { confirmTagScores, suggestedTags } from '../lib/tags.js';
@@ -88,6 +88,7 @@ export function adminRoutes(db: DB) {
           updatedAt: '',
           emotionStatus: demote(body.emotionStatus),
           summaryStatus: demote(body.summaryStatus),
+          guideStatus: demote(body.guideStatus),
           tagStatus: demote(body.tagStatus),
         }),
       ),
@@ -101,7 +102,7 @@ export function adminRoutes(db: DB) {
    * 감정 분석 서버가 꺼져 있어도 요약은 저장하고, 실패 이유를 함께 돌려준다.
    */
   async function runAnalysis(w: Artwork, useImage: boolean) {
-    const [emo, sum] = await Promise.allSettled([analyzeEmotions(w, useImage), summarizeDescription(w)]);
+    const [emo, sum, guide] = await Promise.allSettled([analyzeEmotions(w, useImage), summarizeDescription(w), suggestGuide(w)]);
     const next: Artwork = { ...w };
     if (emo.status === 'fulfilled') {
       next.analysis = emo.value;
@@ -116,11 +117,20 @@ export function adminRoutes(db: DB) {
       next.summaryKeywords = sum.value.keywords;
       next.summaryStatus = 'suggested';
     }
+    // 초보자 가이드: 확정된 가이드(관리자가 쓴 것 포함)는 덮어쓰지 않는다
+    const g = guide.status === 'fulfilled' ? guide.value : null;
+    if (g && w.guideStatus !== 'confirmed') {
+      next.guideIntro = g.intro;
+      next.guidedLooking = g.questions;
+      next.guidedHints = g.hints;
+      next.guideStatus = 'suggested';
+    }
     const saved = repo.upsertArtwork(db, next);
     return {
       artwork: saved,
       emotion: emo.status === 'fulfilled' ? { ok: true as const } : { ok: false as const, error: (emo.reason as Error).message },
       summary: sum.status === 'fulfilled' ? { ok: true as const, source: sum.value.source } : { ok: false as const, error: '요약에 실패했어요.' },
+      guide: { made: !!g && w.guideStatus !== 'confirmed' },
     };
   }
 
@@ -161,14 +171,16 @@ export function adminRoutes(db: DB) {
     for (const w of repo.listArtworks(db, exId)) {
       const emo = w.emotionStatus === 'suggested';
       const sum = w.summaryStatus === 'suggested';
+      const guide = w.guideStatus === 'suggested' && (w.guidedLooking.length > 0 || !!w.guideIntro.trim());
       const tag = w.tagStatus === 'suggested' && !!w.analysis?.tags;
-      if (!emo && !sum && !tag) continue;
+      if (!emo && !sum && !tag && !guide) continue;
       repo.upsertArtwork(
         db,
         withTagScores({
           ...w,
           emotionStatus: emo ? 'confirmed' : w.emotionStatus,
           summaryStatus: sum ? 'confirmed' : w.summaryStatus,
+          guideStatus: guide ? 'confirmed' : w.guideStatus,
           tagStatus: tag ? 'confirmed' : w.tagStatus,
           tags: tag ? suggestedTags(w.analysis!.tags!) : w.tags,
         }),
@@ -194,6 +206,7 @@ export function adminRoutes(db: DB) {
     ...w,
     emotionStatus: w.emotionStatus === 'confirmed' ? 'suggested' : w.emotionStatus,
     summaryStatus: w.summaryStatus === 'confirmed' ? 'suggested' : w.summaryStatus,
+    guideStatus: w.guideStatus === 'confirmed' ? 'suggested' : w.guideStatus,
     tagStatus: w.tagStatus === 'confirmed' ? 'suggested' : w.tagStatus,
     tagScores: null,
   });

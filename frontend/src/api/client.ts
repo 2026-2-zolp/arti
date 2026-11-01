@@ -182,6 +182,8 @@ export const api = {
       artwork: Artwork;
       emotion: { ok: true } | { ok: false; error: string };
       summary: { ok: true; source: 'claude' | 'fallback' } | { ok: false; error: string };
+      /** 초보자 가이드를 새로 제안했는지 (API 키가 없거나 이미 확정이면 false) */
+      guide?: { made: boolean };
     }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */

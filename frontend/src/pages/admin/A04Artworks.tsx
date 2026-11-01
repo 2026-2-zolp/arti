@@ -5,7 +5,7 @@
  * - /admin/artworks/:id    : 작품 수정
  * 작품 해설과 AI 응답 데이터의 신뢰성을 위해 출처·참고자료·검수 상태를 함께 관리한다.
  */
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -172,6 +172,9 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   tagStatus: 'none',
   description: '',
   guidedLooking: [],
+  guidedHints: [],
+  guideIntro: '',
+  guideStatus: 'none',
   source: '',
   referenceUrl: '',
   reviewStatus: 'pending',
@@ -195,14 +198,12 @@ export function ArtworkEdit() {
     [id],
   );
   const [w, setW] = useState<Artwork | null>(null);
-  const [guided, setGuided] = useState('');
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   useEffect(() => {
     if (!data) return;
     const initial = data[1] ?? emptyArtwork(params.get('exhibition') ?? data[0][0]?.id ?? '');
     setW(initial);
-    setGuided(initial.guidedLooking.join('\n'));
   }, [data, params]);
 
   if (!data || !w) return <PageHead title="작품 등록·수정" desc="불러오는 중…" />;
@@ -214,7 +215,7 @@ export function ArtworkEdit() {
 
   /** 입력 중인 내용과 함께 바로 저장 (태그 확정·해제 버튼용) */
   const saveWith = async (patch: Partial<Artwork>) => {
-    const saved = await api.saveArtwork({ ...w, ...patch, guidedLooking: guided.split('\n').map((s) => s.trim()).filter(Boolean) });
+    const saved = await api.saveArtwork({ ...w, ...patch });
     setW(saved);
     return saved;
   };
@@ -226,10 +227,7 @@ export function ArtworkEdit() {
       return setMsg({ type: 'err', text: '검수 완료로 저장하려면 작품 해설과 출처가 있어야 해요.' });
     let saved: Artwork;
     try {
-      saved = await api.saveArtwork({
-        ...w,
-        guidedLooking: guided.split('\n').map((s) => s.trim()).filter(Boolean),
-      });
+      saved = await api.saveArtwork(w);
     } catch (err) {
       return setMsg({ type: 'err', text: err instanceof Error ? err.message : '저장하지 못했어요.' });
     }
@@ -237,7 +235,8 @@ export function ArtworkEdit() {
     setMsg({
       type: 'ok',
       text:
-        saved.emotionStatus !== w.emotionStatus || saved.summaryStatus !== w.summaryStatus || saved.tagStatus !== w.tagStatus
+        saved.emotionStatus !== w.emotionStatus || saved.summaryStatus !== w.summaryStatus || saved.tagStatus !== w.tagStatus ||
+        saved.guideStatus !== w.guideStatus
           ? '저장했습니다. 공식 해설이나 이미지가 바뀌어 AI 결과를 다시 확인해야 해요(「AI 제안」으로 변경).'
           : '저장했습니다.',
     });
@@ -313,13 +312,12 @@ export function ArtworkEdit() {
         <section className="a-card pad">
           <h2>설명 및 검수</h2>
           <label className="a-field">
-            <span>작품 해설</span>
-            <textarea rows={6} value={w.description} onChange={(e) => set('description', e.target.value)} />
+            <span>작품 해설 (미술관 공식 해설 원문 — 사용자 「작품 해설」 탭에 그대로 표시)</span>
+            <textarea rows={8} value={w.description} onChange={(e) => set('description', e.target.value)} />
           </label>
-          <label className="a-field">
-            <span>Guided Looking 질문 (한 줄에 하나)</span>
-            <textarea rows={4} value={guided} onChange={(e) => setGuided(e.target.value)} />
-          </label>
+          <p className="muted small" style={{ marginTop: -6 }}>
+            요약과 초보자 가이드(쉬운 설명 · 관찰 질문 · 힌트)는 아래 「AI 분석 · 요약 · 가이드」에서 만들고 확정해요.
+          </p>
           <label className="a-field">
             <span>출처</span>
             <input value={w.source} onChange={(e) => set('source', e.target.value)} />
@@ -488,6 +486,10 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
           summary: r.artwork.summary,
           summaryKeywords: r.artwork.summaryKeywords,
           summaryStatus: r.artwork.summaryStatus,
+          guideIntro: r.artwork.guideIntro,
+          guidedLooking: r.artwork.guidedLooking,
+          guidedHints: r.artwork.guidedHints,
+          guideStatus: r.artwork.guideStatus,
           updatedAt: r.artwork.updatedAt,
         },
       );
@@ -498,6 +500,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             ? '요약 완료(Claude)'
             : '요약: Claude API 키가 없어 원문 앞부분으로 대신했어요'
           : `요약 실패: ${r.summary.error}`,
+        r.guide?.made ? '초보자 가이드 제안 완료' : w.guideStatus === 'confirmed' ? '초보자 가이드는 확정되어 있어 그대로 둠' : '초보자 가이드: AI 제안 기능을 쓸 수 없어 직접 입력해 주세요',
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
@@ -508,7 +511,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
   };
 
   /** 확정/해제는 바로 서버에 저장 */
-  const setStatus = async (patch: Partial<Pick<Artwork, 'emotionStatus' | 'summaryStatus'>>) => {
+  const setStatus = async (patch: Partial<Pick<Artwork, 'emotionStatus' | 'summaryStatus' | 'guideStatus'>>) => {
     try {
       const saved = await api.saveArtwork({ ...w, ...patch });
       setW(() => saved);
@@ -530,7 +533,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
     <section className="a-card pad ai-panel">
       <div className="ai-panel-head">
         <div>
-          <h2>AI 분석 · 요약</h2>
+          <h2>AI 분석 · 요약 · 가이드</h2>
           <p className="muted small">
             저장된 작품 해설{w.imageFile || w.imageUrl ? '과 이미지' : ''}를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후
             「확정」해야 사용자 화면과 추천에 반영돼요.
@@ -587,7 +590,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
 
         <div className="ai-box">
           <div className="ai-box-head">
-            <h3>초보자용 해설 요약</h3>
+            <h3>요약 (사용자 「요약」 탭)</h3>
             {badge(w.summaryStatus)}
           </div>
           <label className="a-field">
@@ -625,8 +628,90 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             )}
           </div>
         </div>
+
+        <GuideCard w={w} setW={setW} badge={badge(w.guideStatus)} setStatus={setStatus} />
       </div>
     </section>
+  );
+}
+
+/** 관찰 질문 한 줄 = "질문 | 힌트" (힌트는 없어도 됨) */
+const formatQuestions = (w: Pick<Artwork, 'guidedLooking' | 'guidedHints'>) =>
+  w.guidedLooking.map((q, i) => (w.guidedHints[i] ? `${q} | ${w.guidedHints[i]}` : q)).join('\n');
+const parseQuestions = (text: string) => {
+  const rows = text
+    .split('\n')
+    .map((line) => line.split('|'))
+    .map(([q, ...h]) => [q.trim(), h.join('|').trim()] as const)
+    .filter(([q]) => q);
+  return { guidedLooking: rows.map(([q]) => q), guidedHints: rows.map(([, h]) => h) };
+};
+
+/**
+ * 초보자 가이드 (사용자 「초보자 가이드」 탭) — 쉬운 설명 + 관찰 질문 + 질문마다 힌트
+ * AI 분석이 제안하거나 관리자가 직접 쓰고, 「가이드 확정」해야 사용자 화면에 보인다.
+ */
+function GuideCard({
+  w,
+  setW,
+  badge,
+  setStatus,
+}: {
+  w: Artwork;
+  setW: (f: (cur: Artwork | null) => Artwork | null) => void;
+  badge: ReactNode;
+  setStatus: (patch: Partial<Pick<Artwork, 'guideStatus'>>) => Promise<void>;
+}) {
+  // 입력 중인 글은 그대로 두고(예: "질문 |"까지 쓴 상태), 저장된 값이 밖에서 바뀌었을 때만(AI 제안 등) 다시 채운다
+  const [text, setText] = useState(() => formatQuestions(w));
+  const outside = formatQuestions(w);
+  useEffect(() => {
+    if (formatQuestions(parseQuestions(text)) !== outside) setText(outside);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outside]);
+  const touch = (s: AiStatus) => (s === 'none' ? 'suggested' : s);
+  const empty = !w.guideIntro.trim() && w.guidedLooking.length === 0;
+
+  return (
+    <div className="ai-box">
+      <div className="ai-box-head">
+        <h3>초보자 가이드 (사용자 「초보자 가이드」 탭)</h3>
+        {badge}
+      </div>
+      <label className="a-field">
+        <span>쉬운 설명 (그림을 보기 전에 읽는 2~3문장)</span>
+        <textarea
+          rows={3}
+          value={w.guideIntro}
+          onChange={(e) => setW((cur) => cur && { ...cur, guideIntro: e.target.value, guideStatus: touch(cur.guideStatus) })}
+          placeholder="어려운 용어 없이, 이 그림이 무엇을 그린 것인지 쉽게"
+        />
+      </label>
+      <label className="a-field">
+        <span>관찰 질문 — 한 줄에 하나, 「질문 | 힌트」</span>
+        <textarea
+          rows={5}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const parsed = parseQuestions(e.target.value);
+            setW((cur) => cur && { ...cur, ...parsed, guideStatus: touch(cur.guideStatus) });
+          }}
+          placeholder={'화면에서 가장 밝은 사람은 누구인가요? | 가운데 노란 옷의 인물을 보세요\n하늘의 붓질은 어느 방향으로 흐르나요? | 손가락으로 따라가 보세요'}
+        />
+      </label>
+      <div className="ai-actions">
+        {w.guideStatus !== 'confirmed' ? (
+          <button type="button" className="a-btn sm primary" disabled={empty} onClick={() => setStatus({ guideStatus: 'confirmed' })}>
+            가이드 확정 (수정 내용 포함 저장)
+          </button>
+        ) : (
+          <button type="button" className="a-btn sm" onClick={() => setStatus({ guideStatus: 'suggested' })}>
+            확정 해제
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

@@ -74,6 +74,9 @@ const toArtwork = (r: Row): Artwork => ({
   summary: String(r.summary ?? ''),
   summaryKeywords: parse(r.summary_keywords ?? '[]'),
   summaryStatus: (r.summary_status ?? 'none') as AiStatus,
+  guidedHints: parse(r.guided_hints ?? '[]'),
+  guideIntro: String(r.guide_intro ?? ''),
+  guideStatus: (r.guide_status ?? 'none') as AiStatus,
 });
 
 export function listArtworks(db: DB, exhibitionId?: string): Artwork[] {
@@ -93,8 +96,9 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
   db.prepare(
     `INSERT INTO artworks (id,exhibition_id,title,artist,year,room_id,position,palette,image_url,tags,
        description,guided_looking,source,reference_url,review_status,updated_at,
-       analysis,emotion_status,summary,summary_keywords,summary_status,image_file,show_image,tag_scores,tag_status)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       analysis,emotion_status,summary,summary_keywords,summary_status,image_file,show_image,tag_scores,tag_status,
+       guided_hints,guide_intro,guide_status)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(id) DO UPDATE SET exhibition_id=excluded.exhibition_id, title=excluded.title,
        artist=excluded.artist, year=excluded.year, room_id=excluded.room_id, position=excluded.position,
        palette=excluded.palette, image_url=excluded.image_url, tags=excluded.tags,
@@ -103,7 +107,8 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
        analysis=excluded.analysis, emotion_status=excluded.emotion_status, summary=excluded.summary,
        summary_keywords=excluded.summary_keywords, summary_status=excluded.summary_status,
        image_file=excluded.image_file, show_image=excluded.show_image,
-       tag_scores=excluded.tag_scores, tag_status=excluded.tag_status`,
+       tag_scores=excluded.tag_scores, tag_status=excluded.tag_status,
+       guided_hints=excluded.guided_hints, guide_intro=excluded.guide_intro, guide_status=excluded.guide_status`,
   ).run(
     saved.id, saved.exhibitionId, saved.title, saved.artist, saved.year, saved.roomId,
     saved.position ? j(saved.position) : null, j(saved.palette), saved.imageUrl || null, j(saved.tags),
@@ -111,6 +116,7 @@ export function upsertArtwork(db: DB, w: Artwork): Artwork {
     saved.analysis ? j(saved.analysis) : null, saved.emotionStatus, saved.summary, j(saved.summaryKeywords),
     saved.summaryStatus, saved.imageFile, saved.showImage ? 1 : 0,
     saved.tagScores ? j(saved.tagScores) : null, saved.tagStatus,
+    j(saved.guidedHints), saved.guideIntro, saved.guideStatus,
   );
   return saved;
 }

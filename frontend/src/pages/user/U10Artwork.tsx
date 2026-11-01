@@ -15,11 +15,25 @@ import { topEmotionLabels } from '../../components/EmotionBars';
 import { useVisit } from '../../store/VisitContext';
 import type { Reaction } from '../../types';
 
-type Tab = 'desc' | 'guided' | 'ai';
+/**
+ * 탭: 관찰부터 시작해 필요한 만큼 설명을 더한다 (중간발표 "설명에서 관찰로")
+ * - 초보자 가이드: 쉬운 설명 + 관찰 질문(힌트 보기) — 관리자가 확정한 것만, 없으면 기본 관찰 팁
+ * - 요약: AI 요약 + 키워드 — 관리자가 확정한 것만
+ * - 작품 해설: 미술관 공식 해설 원문 + 출처
+ * - AI 맞춤: 고른 취향에 맞춘 설명
+ */
+type Tab = 'guide' | 'summary' | 'desc' | 'ai';
 const TABS: { id: Tab; label: string }[] = [
+  { id: 'guide', label: '초보자 가이드' },
+  { id: 'summary', label: '요약' },
   { id: 'desc', label: '작품 해설' },
-  { id: 'guided', label: 'Guided Looking' },
-  { id: 'ai', label: 'AI 맞춤 설명' },
+  { id: 'ai', label: 'AI 맞춤' },
+];
+/** 관찰 질문이 아직 없는 작품에 보여 줄 기본 관찰 팁 (백엔드 BASIC_LOOKING_TIPS와 같은 내용) */
+const BASIC_TIPS = [
+  '그림에서 가장 밝은 곳을 먼저 찾아보세요. 눈이 가장 먼저 가는 곳이에요.',
+  '화면에서 가장 넓게 쓰인 색은 무엇인가요?',
+  '조금 떨어져서 한 번, 가까이 다가가서 한 번 보세요. 무엇이 달라 보이나요?',
 ];
 
 export default function U10Artwork() {
@@ -29,11 +43,10 @@ export default function U10Artwork() {
   const free = state.mode === 'free'; // 자유 관람(U-16)에서 들어온 경우: 추천 이유·다음 작품 안내 대신 목록으로
   const rec = recommendations[current];
 
-  const [tab, setTab] = useState<Tab>('desc');
-  const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState<Tab>('guide');
   const [fullscreen, setFullscreen] = useState(false);
   const [aiText, setAiText] = useState<string | null>(null);
-  const [showOriginal, setShowOriginal] = useState(false);
+  const [openHints, setOpenHints] = useState<number[]>([]);
   const tts = useSpeech();
 
   const { data: w, loading } = useAsync(
@@ -43,10 +56,9 @@ export default function U10Artwork() {
 
   // 작품이 바뀌면 탭·AI 설명 초기화
   useEffect(() => {
-    setTab('desc');
+    setTab('guide');
     setAiText(null);
-    setExpanded(false);
-    setShowOriginal(false);
+    setOpenHints([]);
   }, [rec?.artworkId]);
 
   // AI 맞춤 설명 탭을 처음 열 때만 요청 (필요할 때 불러오기 = lazy loading)
@@ -88,14 +100,18 @@ export default function U10Artwork() {
     navigate('/browse');
   };
 
-  // 관리자가 확정한 AI 요약이 있으면 요약을 먼저 보여 준다 (공식 해설 원문은 「원문 보기」)
+  // 사용자 화면에는 관리자가 확정한 요약·가이드만 보여 준다
   const hasSummary = !!w && w.summaryStatus === 'confirmed' && w.summary.trim() !== '';
+  const hasGuide = !!w && w.guideStatus === 'confirmed' && (w.guidedLooking.length > 0 || w.guideIntro.trim() !== '');
+  const questions = hasGuide && w.guidedLooking.length ? w.guidedLooking : BASIC_TIPS;
+  const hints = hasGuide ? w.guidedHints : [];
   const mood = w?.emotionStatus === 'confirmed' && w.analysis ? topEmotionLabels(w.analysis.emotions) : [];
 
   const tabText = (): string => {
     if (!w) return '';
-    if (tab === 'desc') return hasSummary ? w.summary : w.description;
-    if (tab === 'guided') return w.guidedLooking.map((q, i) => `${i + 1}. ${q}`).join(' ');
+    if (tab === 'guide') return [hasGuide ? w.guideIntro : '', ...questions.map((q, i) => `${i + 1}. ${q}`)].join(' ');
+    if (tab === 'summary') return hasSummary ? w.summary : '';
+    if (tab === 'desc') return w.description;
     return aiText ?? '';
   };
 
@@ -203,14 +219,40 @@ export default function U10Artwork() {
                   setTab(t.id);
                 }}
               >
-                {tab === t.id && t.id === 'desc' && <Icon name="eye" size={18} />}
                 {t.label}
               </button>
             ))}
           </div>
 
           <div className="tab-panel" role="tabpanel">
-            {tab === 'desc' &&
+            {tab === 'guide' && (
+              <>
+                {hasGuide && w.guideIntro.trim() && <p className="guide-intro">{w.guideIntro}</p>}
+                {!hasGuide && <p className="muted small">아직 이 작품의 관찰 질문이 없어서, 어느 그림에나 쓸 수 있는 보는 방법을 알려 드려요.</p>}
+                <span className="ai-label">{hasGuide ? '천천히 보며 답해 보세요' : '이렇게 보세요'}</span>
+                <ol className="guided-list">
+                  {questions.map((q, i) => (
+                    <li key={q}>
+                      {q}
+                      {hints[i] && (
+                        <>
+                          {' '}
+                          <button
+                            className="link-btn inline hint-btn"
+                            aria-expanded={openHints.includes(i)}
+                            onClick={() => setOpenHints((o) => (o.includes(i) ? o.filter((x) => x !== i) : [...o, i]))}
+                          >
+                            {openHints.includes(i) ? '힌트 닫기' : '힌트 보기'}
+                          </button>
+                          {openHints.includes(i) && <span className="hint-text">💡 {hints[i]}</span>}
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+            {tab === 'summary' &&
               (hasSummary ? (
                 <>
                   <span className="ai-label">AI 요약 · 미술관 해설 기반</span>
@@ -224,28 +266,21 @@ export default function U10Artwork() {
                       ))}
                     </div>
                   )}
-                  <button className="link-btn mt-12" onClick={() => setShowOriginal((v) => !v)}>
-                    {showOriginal ? '원문 접기' : '미술관 공식 해설 원문 보기'}
-                  </button>
-                  {showOriginal && <p className="original-text">{w.description}</p>}
-                  <p className="source-line">출처: {w.source || '검수 중인 자료'}</p>
                 </>
               ) : (
-                <p className={expanded ? '' : 'clamp-3'}>
-                  {w.description}{' '}
-                  {!expanded && (
-                    <button className="link-btn inline" onClick={() => setExpanded(true)}>
-                      더보기
-                    </button>
-                  )}
+                <p className="muted">
+                  아직 이 작품의 요약이 없어요.{' '}
+                  <button className="link-btn inline" onClick={() => setTab('desc')}>
+                    작품 해설 원문 보기
+                  </button>
                 </p>
               ))}
-            {tab === 'guided' && (
-              <ol className="guided-list">
-                {w.guidedLooking.map((q) => (
-                  <li key={q}>{q}</li>
-                ))}
-              </ol>
+            {tab === 'desc' && (
+              <>
+                <span className="ai-label">미술관 공식 해설</span>
+                <p className="pre-line">{w.description || '등록된 해설이 없어요.'}</p>
+                <p className="source-line">출처: {w.source || '검수 중인 자료'}</p>
+              </>
             )}
             {tab === 'ai' && (aiText ? <p className="pre-line">{aiText}</p> : <Spinner label="취향에 맞춘 설명을 만드는 중…" />)}
           </div>

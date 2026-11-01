@@ -76,6 +76,9 @@ export const artworkInput = z.object({
   tagStatus: aiStatus.default('none'),
   description: text(5000).default(''),
   guidedLooking: z.array(text(500)).max(20).default([]),
+  guidedHints: z.array(z.string().trim().max(500)).max(20).default([]),
+  guideIntro: text(1000).default(''),
+  guideStatus: aiStatus.default('none'),
   source: text(500).default(''),
   referenceUrl: z
     .string()
@@ -98,6 +101,8 @@ export const artworkInput = z.object({
   message: '감정 분석 결과가 없으면 확정할 수 없어요.',
 }).refine((w) => w.summaryStatus === 'none' || w.summary.trim() !== '', {
   message: '요약 내용이 비어 있으면 확정할 수 없어요.',
+}).refine((w) => w.guideStatus !== 'confirmed' || w.guidedLooking.length > 0 || w.guideIntro.trim() !== '', {
+  message: '초보자 가이드가 비어 있으면 확정할 수 없어요.',
 });
 
 export const visitInput = z.object({

@@ -127,6 +127,9 @@ const ADDED_COLUMNS: Record<string, [string, string][]> = {
     ['show_image', 'INTEGER NOT NULL DEFAULT 1'],
     ['tag_scores', 'TEXT'], // JSON TagScores | NULL (AI 태그를 확정했을 때)
     ["tag_status", "TEXT NOT NULL DEFAULT 'none'"],
+    ['guided_hints', "TEXT NOT NULL DEFAULT '[]'"],
+    ['guide_intro', "TEXT NOT NULL DEFAULT ''"],
+    ["guide_status", "TEXT NOT NULL DEFAULT 'none'"],
   ],
   visits: [
     ['interpretation', 'TEXT'],
@@ -137,7 +140,12 @@ const ADDED_COLUMNS: Record<string, [string, string][]> = {
 function migrate(db: DB) {
   for (const [table, cols] of Object.entries(ADDED_COLUMNS)) {
     const existing = new Set((db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name));
-    for (const [name, def] of cols) if (!existing.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+    for (const [name, def] of cols) {
+      if (existing.has(name)) continue;
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+      // 초보자 가이드 상태가 생기기 전에 관리자가 적어 둔 관찰 질문은 그대로 보이도록 「확정」으로 옮긴다
+      if (name === 'guide_status') db.exec(`UPDATE artworks SET guide_status = 'confirmed' WHERE guided_looking <> '[]'`);
+    }
   }
   migrateLegacyTags(db);
 }
@@ -180,14 +188,14 @@ function seed(db: DB) {
 
     const aw = db.prepare(
       `INSERT INTO artworks (id,exhibition_id,title,artist,year,room_id,position,palette,image_url,tags,
-        description,guided_looking,source,reference_url,review_status,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        description,guided_looking,source,reference_url,review_status,updated_at,guided_hints,guide_intro,guide_status)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     );
     for (const w of seedArtworks)
       aw.run(
         w.id, w.exhibitionId, w.title, w.artist, w.year, w.roomId, w.position ? j(w.position) : null,
         j(w.palette), w.imageUrl ?? null, j(w.tags), w.description, j(w.guidedLooking), w.source,
-        w.referenceUrl, w.reviewStatus, w.updatedAt,
+        w.referenceUrl, w.reviewStatus, w.updatedAt, j(w.guidedHints), w.guideIntro, w.guideStatus,
       );
 
     const us = db.prepare(

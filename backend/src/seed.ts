@@ -61,7 +61,7 @@ const a = (
   p: Omit<
     Artwork,
     | 'exhibitionId' | 'updatedAt' | 'analysis' | 'emotionStatus' | 'summary' | 'summaryKeywords' | 'summaryStatus' | 'imageFile'
-    | 'showImage' | 'tagScores' | 'tagStatus'
+    | 'showImage' | 'tagScores' | 'tagStatus' | 'guidedHints' | 'guideIntro' | 'guideStatus'
   > & {
     updatedAt?: string;
   },
@@ -79,6 +79,10 @@ const a = (
   summaryStatus: 'none',
   imageFile: null,
   showImage: true,
+  // 목업 작품의 관찰 질문은 개발자가 써 둔 예시라 바로 보이게 확정 상태로 둔다
+  guidedHints: [],
+  guideIntro: '',
+  guideStatus: p.guidedLooking.length ? 'confirmed' : 'none',
   ...p,
 });
 
