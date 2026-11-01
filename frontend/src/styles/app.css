@@ -168,6 +168,11 @@ h1, h2, h3, p { margin: 0; }
 .hero-illust { width: 100%; height: auto; display: block; margin: 4px 0 28px; }
 .current-ex { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; }
 .current-ex strong { font-size: 20px; }
+.ex-change { align-self: flex-start; padding: 0; margin-top: 2px; }
+.ex-picker { display: flex; flex-direction: column; gap: 8px; }
+.ex-option { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; padding: 12px 14px; border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface); }
+.ex-option strong { font-size: 16px; }
+.ex-option.on { border-color: var(--accent); background: var(--accent-soft); }
 
 /* ---------- U-02 ---------- */
 .benefit-list { list-style: none; padding: 18px; margin: 0; border-radius: var(--radius); background: var(--surface-2); display: flex; flex-direction: column; gap: 12px; font-size: 15px; }
