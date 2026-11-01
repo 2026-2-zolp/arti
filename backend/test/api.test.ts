@@ -67,6 +67,22 @@ describe('추천', () => {
     assert.ok(!ids.includes('aw-11') && !ids.includes('aw-12'), '검수 미완료/위치 미등록 작품 제외');
   });
 
+  test('같은 태그면 고른 순서와 상관없이 같은 추천 (모든 2~3개 조합 × 순서 × 관람 시간)', async () => {
+    const tags = ['landscape', 'people', 'abstract', 'light', 'vivid', 'cool', 'warm', 'soft'];
+    const combos = (k: number, s = 0, cur: string[] = []): string[][] =>
+      cur.length === k ? [cur] : tags.slice(s).flatMap((t, i) => combos(k, s + i + 1, [...cur, t]));
+    const perms = (a: string[]): string[][] =>
+      a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p]));
+    const rec = async (tastes: string[], duration: string) =>
+      JSON.stringify((await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes, duration })).body);
+    for (const duration of ['30m', '60m', 'relaxed'])
+      for (const c of [...combos(2), ...combos(3)]) {
+        const first = await rec(c, duration);
+        assert.equal(await rec(c, duration), first, `같은 선택 반복: ${c}`);
+        for (const p of perms(c).slice(1)) assert.equal(await rec(p, duration), first, `${c} vs ${p} (${duration})`);
+      }
+  });
+
   test('잘못된 관람 시간은 400', async () => {
     const r = await call('POST', '/recommendations', { exhibitionId: 'ex-mvp', tastes: [], duration: '2h' });
     assert.equal(r.status, 400);

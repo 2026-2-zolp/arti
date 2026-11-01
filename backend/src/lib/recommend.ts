@@ -9,11 +9,14 @@
  *    관람 시간에 맞는 개수만큼
  * 4) 입구에서 출발해 가장 가까운 작품을 차례로 고르는 방식(최근접 이웃)으로 관람 순서 결정
  *
+ * 같은 태그를 고르면 고른 순서(토너먼트 1·2위 등)와 상관없이 항상 같은 추천이 나오도록,
+ * 계산 전에 태그를 고정 순서(TAG_KEYS)로 정렬한다. (정렬 전에는 924가지 경우 중 58건이 순서에 따라 달라졌다)
+ *
  * 감정 분석(평온·기쁨 …)은 추천에 쓰지 않고 작품 분위기 설명·아트 영수증에만 쓴다.
  */
 import { DURATION_OPTIONS, TASTE_LABEL } from '../seed.js';
 import type { Artwork, Exhibition, MapPoint, Recommendation, TasteTag, VisitDuration } from '../types.js';
-import { TAG_THRESHOLD, tagStrength } from './tags.js';
+import { TAG_KEYS, TAG_THRESHOLD, tagStrength } from './tags.js';
 
 export const countForDuration = (d: VisitDuration) => DURATION_OPTIONS.find((o) => o.value === d)?.count ?? 5;
 
@@ -36,9 +39,10 @@ function scoreArtwork(w: Artwork, tastes: TasteTag[]) {
 export function buildRecommendations(
   artworks: Artwork[],
   exhibition: Exhibition,
-  tastes: TasteTag[],
+  pickedTastes: TasteTag[],
   duration: VisitDuration,
 ): Recommendation[] {
+  const tastes = TAG_KEYS.filter((t) => pickedTastes.includes(t)); // 고른 순서 무시 + 중복 제거
   const ranked = artworks
     .filter((w) => w.exhibitionId === exhibition.id && w.reviewStatus === 'approved' && w.position)
     .map((w) => scoreArtwork(w, tastes))
