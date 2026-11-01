@@ -40,7 +40,7 @@ function buildRecord(s: VisitState, artworks: Artwork[], exTitle: string, venue:
     date: new Date().toISOString(),
     durationMin: s.startedAt ? Math.max(1, Math.round((Date.now() - s.startedAt) / 60000)) : 0,
     viewedArtworkIds: s.viewed,
-    recommendedCount: s.recommendations.length,
+    recommendedCount: s.mode === 'free' ? 0 : s.recommendations.length, // 0 = 자유 관람 (추천 없음)
     reactions: s.reactions,
     longestViewedArtworkId: longest,
     keywords: tags.map((t) => TASTE_LABEL[t]),
@@ -214,8 +214,8 @@ function Receipt({
           <dd>{record.viewedArtworkIds.length}점</dd>
         </div>
         <div>
-          <dt>추천 작품</dt>
-          <dd>{record.recommendedCount}점</dd>
+          <dt>{record.recommendedCount ? '추천 작품' : '관람 방식'}</dt>
+          <dd>{record.recommendedCount ? `${record.recommendedCount}점` : '자유 관람'}</dd>
         </div>
         <div>
           <dt>선호 표시</dt>

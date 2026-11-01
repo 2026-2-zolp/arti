@@ -29,6 +29,8 @@ export interface VisitState {
   /** 작품별 감상 시간(초) — 아트 영수증의 "가장 오래 본 작품" 계산용 */
   dwell: Record<string, number>;
   startedAt: number | null;
+  /** recommend = 취향 추천 관람, free = 추천 없이 전시 작품 전체를 골라 보는 자유 관람 (U-16) */
+  mode: 'recommend' | 'free';
 }
 
 type Action =
@@ -42,7 +44,11 @@ type Action =
   | { type: 'addDwell'; artworkId: string; seconds: number }
   | { type: 'react'; artworkId: string; reaction: Reaction | null }
   | { type: 'completeCurrent' }
-  | { type: 'resetVisit' };
+  | { type: 'resetVisit' }
+  /** 자유 관람 시작: 전시 작품 전체를 걷는 순서로 (recs의 이유·태그는 비어 있음) */
+  | { type: 'startFree'; recs: Recommendation[] }
+  /** 자유 관람 목록에서 작품 하나를 열기 → 본 작품에 기록 */
+  | { type: 'openArtwork'; index: number };
 
 const VISIT_KEY = 'arti.visit';
 const USER_KEY = 'arti.user';
@@ -56,6 +62,7 @@ const emptyVisit = {
   reactions: {} as Record<string, Reaction>,
   dwell: {} as Record<string, number>,
   startedAt: null,
+  mode: 'recommend' as VisitState['mode'],
 };
 
 /** 예전 버전의 취향 태그(고요한 풍경·감정 표현 …)가 브라우저에 남아 있으면 새 8개로 바꾼다 (calm→풍경, 나머지 없는 키는 버림) */
@@ -88,7 +95,17 @@ function reducer(s: VisitState, a: Action): VisitState {
     case 'setDuration':
       return { ...s, duration: a.duration };
     case 'setRecommendations':
-      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, dwell: {}, startedAt: null };
+      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, dwell: {}, startedAt: null, mode: 'recommend' };
+    case 'startFree':
+      // 이미 자유 관람 중이면(목록으로 돌아온 경우) 본 작품·반응을 그대로 둔다
+      if (s.mode === 'free' && s.recommendations.length === a.recs.length) return s;
+      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, dwell: {}, startedAt: Date.now(), mode: 'free' };
+    case 'openArtwork': {
+      const rec = s.recommendations[a.index];
+      if (!rec) return s;
+      const viewed = s.viewed.includes(rec.artworkId) ? s.viewed : [...s.viewed, rec.artworkId];
+      return { ...s, current: a.index, viewed };
+    }
     case 'startVisit':
       return s.startedAt ? s : { ...s, startedAt: Date.now() };
     case 'addDwell':

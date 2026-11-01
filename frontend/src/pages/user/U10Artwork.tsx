@@ -26,6 +26,7 @@ export default function U10Artwork() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
   const { recommendations, current, reactions, tastes } = state;
+  const free = state.mode === 'free'; // 자유 관람(U-16)에서 들어온 경우: 추천 이유·다음 작품 안내 대신 목록으로
   const rec = recommendations[current];
 
   const [tab, setTab] = useState<Tab>('desc');
@@ -67,7 +68,7 @@ export default function U10Artwork() {
     };
   }, [recId, dispatch]);
 
-  if (!rec) return <Navigate to={recommendations.length ? '/receipt' : '/recommend'} replace />;
+  if (!rec) return <Navigate to={free ? '/browse' : recommendations.length ? '/receipt' : '/recommend'} replace />;
 
   const total = recommendations.length;
   const isLast = current === total - 1;
@@ -80,6 +81,11 @@ export default function U10Artwork() {
     tts.stop();
     dispatch({ type: 'completeCurrent' });
     navigate(isLast ? '/receipt' : '/route');
+  };
+
+  const backToList = () => {
+    tts.stop();
+    navigate('/browse');
   };
 
   // 관리자가 확정한 AI 요약이 있으면 요약을 먼저 보여 준다 (공식 해설 원문은 「원문 보기」)
@@ -98,26 +104,47 @@ export default function U10Artwork() {
   return (
     <MobileShell
       screenId="U-10"
-      back="/route"
+      back={free ? '/browse' : '/route'}
       title={
-        <span className="progress-title">
-          {current + 1} / {total}
-          <span className="progress-bars" aria-hidden="true">
-            {recommendations.map((r, i) => (
-              <span key={r.artworkId} className={i <= current ? 'on' : ''} />
-            ))}
+        free ? (
+          <span className="progress-title">자유 관람 · {state.viewed.length}점 감상</span>
+        ) : (
+          <span className="progress-title">
+            {current + 1} / {total}
+            <span className="progress-bars" aria-hidden="true">
+              {recommendations.map((r, i) => (
+                <span key={r.artworkId} className={i <= current ? 'on' : ''} />
+              ))}
+            </span>
           </span>
-        </span>
+        )
       }
       right={
-        <button className="pill-btn" onClick={() => navigate('/route')}>
-          <Icon name="map" size={18} /> 지도 보기
+        <button className="pill-btn" onClick={() => (free ? backToList() : navigate('/route'))}>
+          <Icon name="map" size={18} /> {free ? '작품 목록' : '지도 보기'}
         </button>
       }
       footer={
-        <button className="btn primary block" onClick={goNext}>
-          {isLast ? '관람 마치기' : '다음 작품 안내'} <Icon name="arrow" size={20} />
-        </button>
+        free ? (
+          <div className="btn-row">
+            <button className="btn outline" onClick={backToList}>
+              목록으로
+            </button>
+            <button
+              className="btn primary"
+              onClick={() => {
+                tts.stop();
+                navigate('/receipt');
+              }}
+            >
+              관람 마치기
+            </button>
+          </div>
+        ) : (
+          <button className="btn primary block" onClick={goNext}>
+            {isLast ? '관람 마치기' : '다음 작품 안내'} <Icon name="arrow" size={20} />
+          </button>
+        )
       }
     >
       {loading || !w ? (
@@ -154,13 +181,15 @@ export default function U10Artwork() {
             </div>
           )}
 
-          <div className="reason-box">
-            <Icon name="bulb" />
-            <div>
-              <strong>이 작품이 추천된 이유</strong>
-              <p>{reasonSentence(rec.matchedTags, rec.aiTags ?? false)}</p>
+          {!free && (
+            <div className="reason-box">
+              <Icon name="bulb" />
+              <div>
+                <strong>이 작품이 추천된 이유</strong>
+                <p>{reasonSentence(rec.matchedTags, rec.aiTags ?? false)}</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="tabs" role="tablist">
             {TABS.map((t) => (

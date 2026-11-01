@@ -19,6 +19,7 @@
  *  /history                    U-13 관람기록              관람기록 URL (미로그인 → U-03 → 복귀)
  *  /password/forgot            U-14 비밀번호 찾기
  *  /password/reset?token=      U-15 새 비밀번호 설정      비밀번호 재설정 링크 URL
+ *  /browse                     U-16 자유 관람             추천 없이 작품 목록에서 골라 보기
  *  /admin/login                A-01 관리자 로그인
  *  /admin                      A-02 관리자 대시보드
  *  /admin/exhibitions          A-03 전시 관리
@@ -44,6 +45,7 @@ import U12Receipt from './pages/user/U12Receipt';
 import U13History from './pages/user/U13History';
 import U14ForgotPassword from './pages/user/U14ForgotPassword';
 import U15ResetPassword from './pages/user/U15ResetPassword';
+import U16Browse from './pages/user/U16Browse';
 
 import AdminLayout from './pages/admin/AdminLayout';
 import A01Login from './pages/admin/A01Login';
@@ -75,6 +77,7 @@ export default function App() {
         <Route path="/history" element={<U13History />} />
         <Route path="/password/forgot" element={<U14ForgotPassword />} />
         <Route path="/password/reset" element={<U15ResetPassword />} />
+        <Route path="/browse" element={<U16Browse />} />
 
         {/* 관리자 (데스크톱 웹) */}
         <Route path="/admin/login" element={<A01Login />} />

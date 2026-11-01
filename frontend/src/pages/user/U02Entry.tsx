@@ -45,6 +45,13 @@ export default function U02Entry() {
         </button>
       </div>
 
+      <div className="free-entry mt-24">
+        <span className="muted small">취향 추천 없이 둘러보고 싶다면</span>
+        <button className="btn outline block" onClick={() => navigate('/browse')}>
+          추천 없이 자유롭게 보기
+        </button>
+      </div>
+
       {state.user && (
         <p className="center muted mt-24">
           <button className="link-btn" onClick={() => logout('/login')}>
