@@ -2,8 +2,9 @@
  * U-08 개인화 작품 추천 — 취향+시간 기반 추천 목록과 추천 이유
  *
  * 작품 수는 관람 시간으로 정해지므로(30분 3점 · 1시간 5점 · 여유롭게 7점) 취향에 맞는 작품이 모자라면
- * 나머지가 섞여 들어온다. 고른 취향 태그가 하나라도 해당하는 작품(matchedTags)을 「내 취향 작품」,
- * 나머지를 「함께 보면 좋은 작품」으로 나눠 보여 준다. 번호는 지도 경로 순서 그대로.
+ * 나머지가 섞여 들어온다. 고른 취향 태그가 하나라도 해당하는 작품(matchedTags)은 「내 취향」,
+ * 나머지는 「함께 보면 좋은」 표시를 붙인다. 목록은 지도에서 걷는 순서(1, 2, 3 …) 그대로 한 줄로 보여 준다
+ * — 묶음으로 나누면 번호가 1, 3, 4처럼 건너뛰어 지도 순서가 틀린 것처럼 보였다.
  */
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -49,6 +50,7 @@ export default function U08Recommend() {
   const renderList = (recs: Recommendation[]) => (
     <ol className="rec-list">
       {recs.map((r) => {
+        const matched = !!r.matchedTags?.length;
         const w = byId.get(r.artworkId);
         if (!w) return null;
         return (
@@ -61,7 +63,8 @@ export default function U08Recommend() {
               <span className="muted small">
                 {w.artist} · {w.year}
               </span>
-              <span className={`chip sm ${r.matchedTags?.length ? 'accent' : 'outline'}`}>{r.reason}</span>
+              <span className={`rec-kind ${matched ? 'mine' : 'extra'}`}>{matched ? '✨ 내 취향' : '🌱 함께 보면 좋은'}</span>
+              <span className={`chip sm ${matched ? 'accent' : 'outline'}`}>{r.reason}</span>
             </div>
           </li>
         );
@@ -89,23 +92,18 @@ export default function U08Recommend() {
 
       {ready && (
         <>
-          {mine.length > 0 && (
-            <section className="rec-group">
-              <h2 className="rec-group-title">✨ 내 취향 작품 {mine.length}점</h2>
-              {renderList(mine)}
-            </section>
-          )}
+          <p className="rec-summary small">
+            <span className="rec-kind mine">✨ 내 취향 {mine.length}점</span>
+            {extra.length > 0 && <span className="rec-kind extra">🌱 함께 보면 좋은 {extra.length}점</span>}
+          </p>
           {extra.length > 0 && (
-            <section className="rec-group">
-              <h2 className="rec-group-title">🌱 함께 보면 좋은 작품 {extra.length}점</h2>
-              <p className="muted small rec-group-desc">
-                {mine.length === 0
-                  ? '이 전시에는 고른 취향과 맞는 작품이 없어요. 관람 시간에 맞춰 다른 분위기의 작품을 골랐어요. 취향을 바꿔 다시 골라 볼 수도 있어요.'
-                  : `이 전시에는 고른 취향과 맞는 작품이 ${mine.length}점이라, 관람 시간에 맞춰 새로운 작품을 함께 골랐어요.`}
-              </p>
-              {renderList(extra)}
-            </section>
+            <p className="muted small rec-group-desc">
+              {mine.length === 0
+                ? '이 전시에는 고른 취향과 맞는 작품이 없어요. 관람 시간에 맞춰 다른 분위기의 작품을 골랐어요. 취향을 바꿔 다시 골라 볼 수도 있어요.'
+                : `이 전시에는 고른 취향과 맞는 작품이 ${mine.length}점이라, 관람 시간에 맞춰 새로운 작품을 함께 골랐어요.`}
+            </p>
           )}
+          {renderList(recommendations)}
           <p className="footnote">번호는 지도에서 걷는 순서예요.</p>
         </>
       )}
