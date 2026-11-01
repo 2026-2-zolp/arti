@@ -194,6 +194,35 @@ h1, h2, h3, p { margin: 0; }
 }
 .taste-card.on .check-circle { background: var(--accent); }
 
+/* U-05 1:1 토너먼트 (대결 카드는 지성현 안 디자인 바탕) */
+.duel-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; }
+.duel-dots { display: flex; gap: 6px; align-items: center; }
+.duel-dots span { width: 8px; height: 8px; border-radius: 99px; background: var(--line); }
+.duel-dots span.done { background: var(--ink); }
+.duel-dots span.on { width: 22px; background: var(--accent); }
+.duel { display: flex; flex-direction: column; }
+.duel-or { margin: 8px 0; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; }
+.duel-card {
+  width: 100%; padding: 6px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.duel-card:disabled { opacity: 1; cursor: default; }
+.duel-card.picked { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); transform: scale(1.02); }
+.duel-card svg[role='img'], .duel-card img { border-radius: 11px; }
+.duel-result { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.duel-result h2 { margin: 0; font-size: 26px; }
+.duel-result-art { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.duel-result-art svg[role='img'], .duel-result-art img { border-radius: 12px; }
+.tag-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-pick-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 1.5px solid var(--line); background: var(--surface); font-size: 15px; font-weight: 600;
+}
+.tag-pick-chip small { font-size: 11px; font-weight: 700; color: var(--muted); }
+.tag-pick-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.tag-pick-chip.on small { color: var(--accent); }
+.tag-pick-chip:disabled { opacity: 0.4; }
+
 /* ---------- U-06 ---------- */
 .saved-taste-card { padding: 20px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
 
