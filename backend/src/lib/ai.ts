@@ -95,7 +95,7 @@ const SummarySchema = z.object({
 export interface SummaryResult {
   summary: string;
   keywords: string[];
-  source: 'claude' | 'fallback';
+  source: 'claude' | 'kanana' | 'fallback';
 }
 
 export async function summarizeDescription(w: Artwork): Promise<SummaryResult> {
@@ -168,6 +168,55 @@ ${DOCENT_RULES}
     logClaudeError(err);
     return null;
   }
+}
+
+// ───────────────────────── 1-3) 요약 + 초보자 가이드를 한 번에 (A-04 「AI 분석」) ─────────────────────────
+const WriteSchema = z.object({
+  summary: z.string(),
+  keywords: z.array(z.string()),
+  intro: z.string(),
+  questions: z.array(z.string()),
+  hints: z.array(z.string()),
+  model: z.string(),
+});
+
+/** ai-service /write: 로컬 모델(Kanana)이 해설로 요약 + 초보자 가이드를 만든다. 서버가 꺼져 있거나 실패하면 null */
+async function localWrite(w: Artwork): Promise<z.infer<typeof WriteSchema> | null> {
+  try {
+    const res = await fetch(`${config.emotionServiceUrl}/write`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: w.title, artist: w.artist, year: w.year, description: w.description }),
+      signal: AbortSignal.timeout(config.writerTimeoutMs),
+    });
+    if (!res.ok) return null;
+    const parsed = WriteSchema.safeParse(await res.json());
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 「AI 분석」 때 요약과 초보자 가이드 제안 만들기
+ * 1) Claude API 키가 있으면 Claude
+ * 2) 없으면 ai-service의 로컬 모델(Kanana) — 무료, 작품 1개에 30~40초
+ * 3) 둘 다 안 되면 요약은 원문 앞 2문장, 가이드는 없음 (관리자가 직접 작성)
+ */
+export async function draftTexts(w: Artwork): Promise<{ summary: SummaryResult; guide: GuideResult | null }> {
+  if (config.ai.enabled) {
+    const [summary, guide] = await Promise.all([summarizeDescription(w), suggestGuide(w)]);
+    return { summary, guide };
+  }
+  const local = w.description.trim() ? await localWrite(w) : null;
+  if (local) {
+    const fallbackKeywords = w.tags.map((t) => TASTE_LABEL[t]).slice(0, 3);
+    return {
+      summary: { summary: local.summary, keywords: local.keywords.length ? local.keywords : fallbackKeywords, source: 'kanana' },
+      guide: local.questions.length ? { intro: local.intro, questions: local.questions, hints: local.hints } : null,
+    };
+  }
+  return { summary: await summarizeDescription(w), guide: null };
 }
 
 /** 관찰 질문이 아직 없을 때 쓰는 기본 관찰 팁 (작품과 상관없이 통하는 것만) */

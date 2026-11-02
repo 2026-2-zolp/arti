@@ -39,7 +39,8 @@ python -m venv .venv
 pip install -r requirements.txt
 uvicorn app.main:app --port 8000
 ```
-- `pip install`은 5~15분, 첫 실행 때 모델 약 1.7GB를 내려받습니다.
+- `pip install`은 5~15분, 첫 실행 때 모델 약 1.7GB를 내려받습니다. 관리자 「AI 분석」을 **처음** 누를 때 요약·초보자 가이드용 모델(Kanana, 약 4GB)을 한 번 더 내려받아요(몇 분). 그 뒤로는 작품 1개에 1분 안팎이에요.
+- 메모리가 8GB 이하라 느리거나 멈추면 `$env:ARTI_WRITER_ENABLED="false"` 후 실행하세요(요약은 원문 앞 문장, 가이드는 직접 입력).
 - http://localhost:8000/health 에서 `"modelsLoaded": true`면 준비 완료.
 
 **터미널 ② 백엔드** (터미널 오른쪽 위 `+`)
@@ -126,5 +127,5 @@ QR은 크롬 주소창의 공유 → 「QR 코드 만들기」 또는 QR 생성 
 
 ## 7. 저장 공간
 
-- AI 모델(약 1.7GB)은 `C:\Users\<사용자>\.cache\huggingface`에 저장되어, `arti` 폴더를 지우거나 새로 받아도 다시 받지 않습니다. 필요 없으면 이 폴더를 지우면 됩니다(다음 실행 때 다시 받음).
+- AI 모델(약 1.7GB, Kanana까지 받으면 약 6GB)은 `C:\Users\<사용자>\.cache\huggingface`에 저장되어, `arti` 폴더를 지우거나 새로 받아도 다시 받지 않습니다. 필요 없으면 이 폴더를 지우면 됩니다(다음 실행 때 다시 받음).
 - `ai-service\.venv`(PyTorch 포함, 수 GB)는 폴더를 옮기면 동작하지 않습니다. 새 위치에서는 `pip install`을 다시 합니다.

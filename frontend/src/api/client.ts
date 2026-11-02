@@ -181,7 +181,8 @@ export const api = {
     request<{
       artwork: Artwork;
       emotion: { ok: true } | { ok: false; error: string };
-      summary: { ok: true; source: 'claude' | 'fallback' } | { ok: false; error: string };
+      /** claude = Claude API, kanana = 로컬 모델(ai-service), fallback = 원문 앞 2문장, kept = 이미 확정이라 그대로 둠 */
+      summary: { ok: true; source: 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string };
       /** 초보자 가이드를 새로 제안했는지 (API 키가 없거나 이미 확정이면 false) */
       guide?: { made: boolean };
     }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),

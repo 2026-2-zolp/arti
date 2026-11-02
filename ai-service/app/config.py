@@ -16,3 +16,8 @@ PRELOAD = os.getenv("ARTI_PRELOAD", "true").lower() in ("1", "true", "yes")
 
 # 라벨 편향 보정 사용 여부 (app/calibration.json 이 있을 때)
 CALIBRATE = os.getenv("ARTI_CALIBRATE", "true").lower() in ("1", "true", "yes")
+
+# 초보자용 글쓰기 모델 (해설 요약 + 초보자 가이드). 처음 /write 요청 때 불러온다 (약 4GB, 서버 시작 시 미리 부르지 않음)
+WRITER_MODEL = os.getenv("ARTI_WRITER_MODEL", "kakaocorp/kanana-1.5-2.1b-instruct-2505")
+# false면 /write 를 끈다 (메모리가 부족한 PC 등). 백엔드는 원문 앞 문장으로 대체한다
+WRITER_ENABLED = os.getenv("ARTI_WRITER_ENABLED", "true").lower() in ("1", "true", "yes")

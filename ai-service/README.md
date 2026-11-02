@@ -11,7 +11,8 @@
 
 ```text
 [A-04 관리자] 「AI 분석」 ──▶ backend ──▶ ai-service /analyze ──▶ 태그 점수 + 감정 점수
-                               └──▶ Claude API (해설 요약)
+                               ├──▶ ai-service /write   ──▶ 요약 + 초보자 가이드 (Kanana, API 키가 없을 때)
+                               └──▶ Claude API         ──▶ 요약 + 초보자 가이드 (API 키가 있을 때)
                     「AI 제안」 저장 ──▶ 관리자 확인·수정 ──▶ 「확정」 ──▶ 추천·사용자 화면에 반영
 ```
 
@@ -24,6 +25,18 @@
 |---|---|---|---|
 | 작품 이미지 | [`openai/clip-vit-base-patch32`](https://huggingface.co/openai/clip-vit-base-patch32) (CLIP) | **태그:** 태그마다 "해당하는 그림"·"해당하지 않는 그림" 문장 중 어느 쪽에 가까운지 → 0~1 / **감정:** "a calm and peaceful painting" 같은 감정 문장과의 유사도 | OpenAI CLIP 저장소 MIT |
 | 한국어 해설 | [`MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`](https://huggingface.co/MoritzLaurer/mDeBERTa-v3-base-mnli-xnli) (다국어 NLI) | **감정:** 해설이 "이 글이 묘사하는 작품의 분위기는 평온함이다"를 얼마나 뒷받침하는지 / **태그:** 그림이 없을 때만 해설로 판단(색은 글로 판단하기 어려워 참고용) | MIT |
+| 초보자용 글쓰기 | [`kakaocorp/kanana-1.5-2.1b-instruct-2505`](https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505) (카카오 한국어 대화형 모델) | **요약 + 키워드 + 초보자 가이드**(쉬운 설명 · 관찰 질문 3개 · 힌트)를 한 번에 작성. 원문에 없는 연도·숫자가 들어간 문장은 버림 (`app/writer.py`) | Apache 2.0 |
+
+**글쓰기 모델을 Kanana로 고른 이유 (2026-11-01 비교, 같은 해설 5개, CPU 4코어):**
+
+| | Kanana 1.5 2.1B | Qwen3 4B | EXAONE 4.0 1.2B | KoBART 요약 |
+|---|---|---|---|---|
+| 작품 1개 (요약 + 질문) | 30~40초 | 60~77초 | 10~13초 | 2~6초 (요약만) |
+| 형식 (요약 + 질문 3개) | ✅ | ✅ | ❌ 질문을 안 만듦 | ❌ 질문 불가 |
+| 사실 · 한국어 | 작은 오류 2~3건, 해요체 가장 자연스러움 | 가장 정확, 말투 섞임 | 지어냄, 영어 섞임 | 지어냄("1999년 서울") |
+| 라이선스 | Apache 2.0 | Apache 2.0 | 연구·비상업 | — |
+
+작은 모델이라 가끔 틀린 내용을 써요(예: 「야경」을 "밤하늘 아래"라고 씀). 그래서 결과는 항상 **「AI 제안」**으로 저장되고 **관리자가 확인·확정**해야 사용자 화면에 보여요.
 
 - **태그는 그림이 있으면 그림으로만** 판단합니다(그림 없으면 해설로). 0.5 이상이면 "해당함"으로 보고 관리자 화면에서 태그 버튼을 미리 켭니다.
 - **「강렬한 색감」 문장**은 같은 그림의 채도를 낮추고 높여 시험해 골랐습니다(다른 후보는 거의 모든 그림을 0점으로 판단). **「빛」 문장**은 캡처 40점에서 후보 4개를 비교해 어둠 속 광원도 찾는 문장으로 골랐습니다.
@@ -66,10 +79,11 @@ AI 분석 서버를 띄우지 않아도 나머지 기능은 모두 동작합니�
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/health` | `{ ok, modelsLoaded, calibration }` |
+| GET | `/health` | `{ ok, modelsLoaded, calibration, tagThresholds, writer: { enabled, model, loaded } }` |
 | GET | `/tags` | 취향 태그 8개 목록 |
 | GET | `/emotions` | 감정 항목 목록 |
 | POST | `/analyze` | `{ title, description, imageBase64?, imageUrl? }` → `{ tags, tagSource, emotions, imageScores, textScores, usedImage, imageError, models }` |
+| POST | `/write` | `{ title, artist, year, description }` → `{ summary, keywords, intro, questions, hints, model, seconds, dropped }` (Kanana, 작품 1개에 30~40초. 처음 요청 때 모델 약 4GB를 내려받고 불러와요) |
 
 ```json
 // POST /analyze 응답 예시
@@ -160,6 +174,8 @@ python -m evaluation.evaluate --image            # 이미지(CLIP) 분석도 평
 | `ARTI_IMAGE_WEIGHT` | 0.6 | 이미지 결과 비중 |
 | `ARTI_PRELOAD` | true | 서버 시작 시 모델 미리 불러오기 |
 | `ARTI_CALIBRATE` | true | `app/calibration.json`으로 라벨 편향 보정 |
+| `ARTI_WRITER_MODEL` | kakaocorp/kanana-1.5-2.1b-instruct-2505 | 초보자용 글쓰기 모델 (`/write`) |
+| `ARTI_WRITER_ENABLED` | true | false면 `/write`를 꺼요 (메모리가 부족한 PC). 백엔드는 원문 앞 문장으로 대체 |
 
 ## 더 발전시키려면
 

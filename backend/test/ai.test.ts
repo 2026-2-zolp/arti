@@ -9,11 +9,23 @@ import { after, before, describe, test } from 'node:test';
 
 // 가짜 AI 분석 서버: 해설 내용에 따라 정해진 감정·태그 점수를 돌려준다 (ai-service /analyze 와 같은 응답 형식)
 let emotionCalls = 0;
+// 가짜 /write (로컬 글쓰기 모델): 'off'면 503 → 백엔드는 원문 앞 2문장으로 대체
+let writerMode: 'off' | 'ok' = 'off';
+const FAKE_WRITE = {
+  summary: '연못과 수련을 여러 번 그린 연작이에요.', keywords: ['수련', '연못'], intro: '물 위에 뜬 꽃을 그렸어요.',
+  questions: ['물에 비친 하늘은 어디 있나요?', '꽃은 몇 송이인가요?', '붓질은 짧나요, 기나요?'], hints: ['위쪽 물빛', '', '가까이서'], model: 'fake-kanana',
+  seconds: 1, dropped: [],
+};
 let lastEmotionRequest: { imageBase64?: string; imageUrl?: string } = {};
 const fake = http.createServer((req, res) => {
   let raw = '';
   req.on('data', (c) => (raw += c));
   req.on('end', () => {
+    if (req.url === '/write') {
+      res.statusCode = writerMode === 'ok' ? 200 : 503;
+      res.setHeader('Content-Type', 'application/json');
+      return res.end(JSON.stringify(writerMode === 'ok' ? FAKE_WRITE : { detail: 'off' }));
+    }
     emotionCalls += 1;
     lastEmotionRequest = JSON.parse(raw);
     const { description, imageUrl, imageBase64 } = lastEmotionRequest as { description: string; imageUrl?: string; imageBase64?: string };
@@ -133,6 +145,28 @@ describe('작품 AI 분석 (A-04)', () => {
 });
 
 describe('초보자 가이드 (관찰 질문·힌트)', () => {
+  test('API 키가 없으면 로컬 모델(/write)로 요약과 가이드를 「AI 제안」, 확정된 가이드는 덮어쓰지 않는다', async () => {
+    const h = await admin();
+    writerMode = 'ok';
+    try {
+      const r = await call('POST', '/admin/artworks/aw-12/analyze', {}, h);
+      assert.equal(r.body.summary.source, 'kanana');
+      const w = r.body.artwork;
+      assert.equal(w.summary, FAKE_WRITE.summary);
+      assert.deepEqual(w.summaryKeywords, ['수련', '연못']);
+      assert.equal(w.guideStatus, 'confirmed', '목업 질문은 확정이라 그대로');
+      const fresh = await call('PUT', '/admin/artworks/aw-12', { ...w, guideStatus: 'none' }, h);
+      const again = await call('POST', '/admin/artworks/aw-12/analyze', {}, h);
+      assert.equal(fresh.status, 200);
+      assert.equal(again.body.artwork.guideStatus, 'suggested');
+      assert.deepEqual(again.body.artwork.guidedLooking, FAKE_WRITE.questions);
+      assert.deepEqual(again.body.artwork.guidedHints, FAKE_WRITE.hints);
+      assert.equal(again.body.artwork.guideIntro, FAKE_WRITE.intro);
+    } finally {
+      writerMode = 'off';
+    }
+  });
+
   test('목업 작품의 관찰 질문은 확정 상태, 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로', async () => {
     const h = await admin();
     const w = (await call('GET', '/artworks/aw-03')).body;

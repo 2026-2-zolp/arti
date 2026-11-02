@@ -496,11 +496,18 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
       const notes = [
         r.emotion.ok ? '취향 태그·감정 분석 완료 (태그 제안은 위 「취향 태그」에서 확인)' : `AI 분석 실패: ${r.emotion.error}`,
         r.summary.ok
-          ? r.summary.source === 'claude'
-            ? '요약 완료(Claude)'
-            : '요약: Claude API 키가 없어 원문 앞부분으로 대신했어요'
+          ? {
+              claude: '요약·가이드: Claude',
+              kanana: '요약·가이드: Kanana(로컬 모델)',
+              fallback: '요약: AI 서버의 글쓰기 모델을 쓸 수 없어 원문 앞부분으로 대신했어요',
+              kept: '요약·가이드는 이미 확정되어 있어 그대로 둠',
+            }[r.summary.source]
           : `요약 실패: ${r.summary.error}`,
-        r.guide?.made ? '초보자 가이드 제안 완료' : w.guideStatus === 'confirmed' ? '초보자 가이드는 확정되어 있어 그대로 둠' : '초보자 가이드: AI 제안 기능을 쓸 수 없어 직접 입력해 주세요',
+        r.guide?.made
+          ? '초보자 가이드 제안 완료 — 확인 후 「가이드 확정」'
+          : w.guideStatus === 'confirmed'
+            ? '초보자 가이드는 확정되어 있어 그대로 둠'
+            : '초보자 가이드를 만들지 못했어요. 직접 입력해 주세요',
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
@@ -547,7 +554,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             </label>
           )}
           <button type="button" className="a-btn primary" disabled={busy} onClick={run}>
-            {busy ? 'AI 분석 중…' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
+            {busy ? 'AI 분석 중… (1분 안팎)' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
           </button>
         </div>
       </div>

@@ -147,3 +147,27 @@ def test_title_only_used_without_image_and_description(client, monkeypatch):
     assert with_image["usedImage"] is True and with_image["usedText"] is False and with_image["textScores"] is None
     title_only = client.post("/analyze", json={"title": "고요한 호수"}).json()
     assert title_only["usedText"] is True and max(title_only["emotions"], key=title_only["emotions"].get) == "calm"
+
+
+class FakeWriter:
+    loaded = True
+
+    def generate(self, system, user):
+        return "요약: 단체 초상화예요.\n키워드: 명암\n쉬운 설명: 빛이 사람을 비춰요.\n관찰 질문:\n1. 가장 밝은 곳은? | 가운데\n"
+
+
+def test_write_returns_summary_and_guide(client, monkeypatch):
+    monkeypatch.setattr(main, "writer", FakeWriter())
+    r = client.post("/write", json={"title": "야경", "artist": "렘브란트", "year": "1642", "description": "단체 초상화예요."})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["summary"] == "단체 초상화예요." and body["questions"] == ["가장 밝은 곳은?"] and body["hints"] == ["가운데"]
+    assert client.post("/write", json={"description": " "}).status_code == 400
+
+
+def test_write_unusable_answer_is_422(client, monkeypatch):
+    class Bad(FakeWriter):
+        def generate(self, system, user):
+            return "모르겠어요"
+    monkeypatch.setattr(main, "writer", Bad())
+    assert client.post("/write", json={"description": "단체 초상화예요."}).status_code == 422

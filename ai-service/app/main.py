@@ -5,6 +5,7 @@ ARTI 감정 분석 서버 (FastAPI)
 - GET  /health   상태 확인 (모델 로딩 여부)
 - GET  /emotions 감정 항목 목록
 - POST /analyze  작품 해설(+업로드 이미지 base64 또는 이미지 URL) → 취향 태그 8개 점수 + 감정 점수
+- POST /write    작품 해설 → 초보자용 요약·키워드 + 초보자 가이드(쉬운 설명 · 관찰 질문 · 힌트) (Kanana)
 
 백엔드(backend/)가 관리자 화면의 「AI 분석」 요청을 받으면 이 서버를 호출한다.
 """
@@ -22,6 +23,7 @@ from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load
 from .emotions import EMOTIONS
 from .tags import TAGS
 from .image_fetch import ImageFetchError, decode_base64_image, fetch_image
+from .writer import KananaWriter, Writer, write
 
 log = logging.getLogger("arti.ai")
 scorer: Scorer = HuggingFaceScorer()
@@ -29,6 +31,8 @@ scorer: Scorer = HuggingFaceScorer()
 calibration = load_calibration() if config.CALIBRATE else {}
 # 태그별 '해당함' 기준값 (app/tag_calibration.json). 파일이 없으면 모든 태그 0.5
 tag_thresholds = load_tag_thresholds() if config.CALIBRATE else {}
+# 초보자용 글쓰기 모델 (처음 /write 요청 때 불러온다)
+writer: Writer = KananaWriter()
 
 
 @asynccontextmanager
@@ -71,7 +75,13 @@ class AnalyzeResponse(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "modelsLoaded": scorer.loaded, "calibration": sorted(calibration), "tagThresholds": tag_thresholds}
+    return {
+        "ok": True,
+        "modelsLoaded": scorer.loaded,
+        "calibration": sorted(calibration),
+        "tagThresholds": tag_thresholds,
+        "writer": {"enabled": config.WRITER_ENABLED, "model": config.WRITER_MODEL, "loaded": writer.loaded},
+    }
 
 
 @app.get("/emotions")
@@ -114,3 +124,38 @@ def analyze_artwork(req: AnalyzeRequest):
         tagSource=result.tag_source,
         tagsRaw=result.tags_raw,
     )
+
+
+class WriteRequest(BaseModel):
+    title: str = Field(default="", max_length=200)
+    artist: str = Field(default="", max_length=200)
+    year: str = Field(default="", max_length=50)
+    description: str = Field(default="", max_length=5000)
+
+
+class WriteResponse(BaseModel):
+    summary: str
+    keywords: list[str]
+    intro: str
+    questions: list[str]
+    hints: list[str]
+    model: str
+    seconds: float
+    dropped: list[str]  # 원문에 없는 숫자가 들어가 버린 문장 (확인용)
+
+
+@app.post("/write", response_model=WriteResponse)
+def write_texts(req: WriteRequest):
+    """관리자 「AI 분석」용: 해설 원문으로 요약 + 초보자 가이드 제안. CPU에서 작품 1개에 30~40초 (처음엔 모델 로딩 추가)"""
+    if not config.WRITER_ENABLED:
+        raise HTTPException(status_code=503, detail="글쓰기 모델이 꺼져 있어요 (ARTI_WRITER_ENABLED=false).")
+    if not req.description.strip():
+        raise HTTPException(status_code=400, detail="작품 해설이 있어야 요약과 가이드를 만들 수 있어요.")
+    try:
+        result = write(writer, req.title, req.artist, req.year, req.description, config.WRITER_MODEL)
+    except Exception as e:
+        log.exception("글쓰기 실패")
+        raise HTTPException(status_code=503, detail="글쓰기 모델을 실행하지 못했어요.") from e
+    if result is None:
+        raise HTTPException(status_code=422, detail="모델 답이 정해진 형식이 아니라 쓰지 않았어요. 다시 시도하거나 직접 입력해 주세요.")
+    return WriteResponse(**result.__dict__)

@@ -105,8 +105,9 @@ npm run dev              # http://localhost:5173
 | `SESSION_TTL_DAYS` | 14 | 로그인 유지 기간 |
 | `CORS_ORIGIN` | (비움) | 프론트를 다른 주소에서 띄울 때만 설정 |
 | `EMOTION_SERVICE_URL` | http://localhost:8000 | 감정 분석 서버(`ai-service`) 주소 |
+| `WRITER_TIMEOUT_MS` | 600000 | `ai-service`의 `/write`(Kanana 요약·초보자 가이드) 응답 대기 시간. 처음엔 모델을 불러오느라 몇 분 걸릴 수 있어요 |
 | `UPLOAD_DIR` | data/uploads | 관리자가 올린 작품 이미지 저장 폴더 (Git 제외) |
-| `ANTHROPIC_API_KEY` | (비움) | 넣으면 해설 요약·맞춤 설명·질문 답변·영수증 해석이 Claude로 동작. 비우면 규칙 기반 결과 |
+| `ANTHROPIC_API_KEY` | (비움) | 넣으면 해설 요약·초보자 가이드·맞춤 설명·질문 답변·영수증 해석이 Claude로 동작. 비우면 요약·초보자 가이드는 `ai-service`의 Kanana(로컬 모델), 나머지는 규칙 기반 결과 |
 | `ARTI_AI_MODEL` | claude-opus-5-5 | 사용할 Claude 모델 |
 
 ### 폴더 구조

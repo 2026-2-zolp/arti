@@ -20,6 +20,8 @@ export const config = {
   emotionServiceUrl: (env.EMOTION_SERVICE_URL || 'http://localhost:8000').replace(/\/$/, ''),
   /** 첫 분석 때 모델 로딩까지 기다릴 수 있도록 넉넉하게 */
   emotionTimeoutMs: Number(env.EMOTION_TIMEOUT_MS ?? 180_000),
+  /** ai-service /write (Kanana 요약·초보자 가이드). 처음엔 모델을 불러오느라 몇 분 걸릴 수 있다 */
+  writerTimeoutMs: Number(env.WRITER_TIMEOUT_MS ?? 600_000),
   ai: {
     /** API 키가 있으면 Claude, 없으면 규칙 기반 답변 */
     enabled: Boolean(env.ANTHROPIC_API_KEY),
