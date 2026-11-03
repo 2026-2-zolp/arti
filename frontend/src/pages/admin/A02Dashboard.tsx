@@ -9,8 +9,9 @@ export default function A02Dashboard() {
   const { data } = useAsync(async () => {
     const [exs, works] = await Promise.all([api.listExhibitions(), api.listArtworks()]);
     const shown = exs.filter((e) => e.status !== 'closed');
-    const coverage = await Promise.all(shown.map((e) => api.tagCoverage(e.id)));
-    return [exs, works, shown.map((e, i) => ({ ex: e, cov: coverage[i] }))] as const;
+    // 백엔드가 예전 버전이라 태그 분포 API가 없으면 표만 빼고 나머지는 보여 준다
+    const coverage = await Promise.all(shown.map((e) => api.tagCoverage(e.id).catch(() => null)));
+    return [exs, works, shown.flatMap((e, i) => (coverage[i] ? [{ ex: e, cov: coverage[i]! }] : []))] as const;
   }, []);
   if (!data) return <PageHead title="대시보드" desc="불러오는 중…" />;
   const [exs, works, coverage] = data;

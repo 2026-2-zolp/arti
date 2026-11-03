@@ -79,6 +79,22 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 const enc = encodeURIComponent;
 
+/**
+ * 백엔드가 아직 예전 버전이라(ZIP만 덮어쓰고 다시 켜지 않은 경우 등) 새 칸이 없어도 화면이 멈추지 않게 기본값을 채운다
+ */
+const withDefaults = (w: Artwork): Artwork => ({
+  ...w,
+  guidedLooking: w.guidedLooking ?? [],
+  guidedHints: w.guidedHints ?? [],
+  guideIntro: w.guideIntro ?? '',
+  guideStatus: w.guideStatus ?? (w.guidedLooking?.length ? 'confirmed' : 'none'),
+  summary: w.summary ?? '',
+  summaryKeywords: w.summaryKeywords ?? [],
+  summaryStatus: w.summaryStatus ?? 'none',
+  tagStatus: w.tagStatus ?? 'none',
+  tagScores: w.tagScores ?? null,
+});
+
 export const api = {
   // ───────────────────────── 전시 ─────────────────────────
   getExhibition: (id: string) => request<Exhibition>('GET', `/exhibitions/${enc(id)}`),
@@ -92,14 +108,15 @@ export const api = {
 
   // ───────────────────────── 작품 ─────────────────────────
   listArtworks: (exhibitionId?: string) =>
-    request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks'),
+    request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks').then((ws) => ws.map(withDefaults)),
 
-  getArtwork: (id: string) => request<Artwork>('GET', `/artworks/${enc(id)}`),
+  getArtwork: (id: string) => request<Artwork>('GET', `/artworks/${enc(id)}`).then(withDefaults),
 
   saveArtwork: (w: Artwork) =>
-    w.id
+    (w.id
       ? request<Artwork>('PUT', `/admin/artworks/${enc(w.id)}`, w)
-      : request<Artwork>('POST', '/admin/artworks', w),
+      : request<Artwork>('POST', '/admin/artworks', w)
+    ).then(withDefaults),
 
   // ───────────────────────── 회원 ─────────────────────────
   async login(email: string, password: string): Promise<User> {
@@ -185,7 +202,7 @@ export const api = {
       summary: { ok: true; source: 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string };
       /** 초보자 가이드를 새로 제안했는지 (API 키가 없거나 이미 확정이면 false) */
       guide?: { made: boolean };
-    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),
+    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }).then((r) => ({ ...r, artwork: withDefaults(r.artwork) })),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
