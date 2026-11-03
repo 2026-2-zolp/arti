@@ -30,7 +30,7 @@ SYSTEM = (
 )
 
 TASK = """아래 형식 그대로, 다른 말 없이 답하세요.
-요약: (해설의 핵심을 3문장 이내로)
+요약: (해설의 핵심을 3~4문장으로. 무엇을 그렸는지, 색·붓질 같은 표현의 특징, 작가나 시대 이야기를 해설에 있는 만큼 담기)
 키워드: (해설에 나오는 짧은 명사 3개, 쉼표로 구분)
 쉬운 설명: (그림을 보기 전에 읽을 쉬운 설명 2문장)
 관찰 질문:
@@ -95,7 +95,7 @@ class KananaWriter:
         log.warning("글쓰기 시작 (요약 + 초보자 가이드)")
         with self._lock, torch.no_grad():  # 한 번에 하나씩 (CPU 메모리·속도)
             out = self._model.generate(
-                ids, attention_mask=torch.ones_like(ids), max_new_tokens=400, do_sample=False, repetition_penalty=1.05
+                ids, attention_mask=torch.ones_like(ids), max_new_tokens=500, do_sample=False, repetition_penalty=1.05
             )
         n = out.shape[1] - ids.shape[1]
         log.warning("글쓰기 완료: %d토큰, %.0f초", n, time.time() - t0)
