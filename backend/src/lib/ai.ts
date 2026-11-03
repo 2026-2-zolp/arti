@@ -180,8 +180,12 @@ const WriteSchema = z.object({
   model: z.string(),
 });
 
+/** 로컬 모델이 시간 초과·연결 실패하면 10분 동안은 부르지 않는다 (일괄 분석 40점이 작품마다 몇 분씩 기다리지 않게) */
+let writerPausedUntil = 0;
+
 /** ai-service /write: 로컬 모델(Kanana)이 해설로 요약 + 초보자 가이드를 만든다. 서버가 꺼져 있거나 실패하면 null */
 async function localWrite(w: Artwork): Promise<z.infer<typeof WriteSchema> | null> {
+  if (Date.now() < writerPausedUntil) return null;
   try {
     const res = await fetch(`${config.emotionServiceUrl}/write`, {
       method: 'POST',
@@ -189,10 +193,12 @@ async function localWrite(w: Artwork): Promise<z.infer<typeof WriteSchema> | nul
       body: JSON.stringify({ title: w.title, artist: w.artist, year: w.year, description: w.description }),
       signal: AbortSignal.timeout(config.writerTimeoutMs),
     });
-    if (!res.ok) return null;
+    if (!res.ok) return null; // 꺼져 있음(503)·형식 오류(422)는 바로 답이 오므로 기다림 문제가 없다
     const parsed = WriteSchema.safeParse(await res.json());
     return parsed.success ? parsed.data : null;
   } catch {
+    writerPausedUntil = Date.now() + 10 * 60_000; // 시간 초과 또는 연결 실패
+    console.warn('글쓰기 모델(/write) 응답이 없어 10분 동안 원문 앞 문장으로 대신해요.');
     return null;
   }
 }

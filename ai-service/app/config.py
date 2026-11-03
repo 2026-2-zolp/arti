@@ -21,3 +21,6 @@ CALIBRATE = os.getenv("ARTI_CALIBRATE", "true").lower() in ("1", "true", "yes")
 WRITER_MODEL = os.getenv("ARTI_WRITER_MODEL", "kakaocorp/kanana-1.5-2.1b-instruct-2505")
 # false면 /write 를 끈다 (메모리가 부족한 PC 등). 백엔드는 원문 앞 문장으로 대체한다
 WRITER_ENABLED = os.getenv("ARTI_WRITER_ENABLED", "true").lower() in ("1", "true", "yes")
+# 모델 숫자 형식. float32가 기본 — 일반 노트북 CPU는 bfloat16을 직접 계산하지 못해 수십 배 느려질 수 있다(Windows 노트북에서 1시간 넘게 멈춘 듯 보인 원인).
+# float32는 메모리 약 9GB(16GB PC 권장), bfloat16은 약 4.5GB(최신 서버 CPU에서만 빠름)
+WRITER_DTYPE = os.getenv("ARTI_WRITER_DTYPE", "float32")

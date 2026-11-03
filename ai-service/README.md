@@ -175,6 +175,7 @@ python -m evaluation.evaluate --image            # 이미지(CLIP) 분석도 평
 | `ARTI_PRELOAD` | true | 서버 시작 시 모델 미리 불러오기 |
 | `ARTI_CALIBRATE` | true | `app/calibration.json`으로 라벨 편향 보정 |
 | `ARTI_WRITER_MODEL` | kakaocorp/kanana-1.5-2.1b-instruct-2505 | 초보자용 글쓰기 모델 (`/write`) |
+| `ARTI_WRITER_DTYPE` | float32 | 글쓰기 모델 숫자 형식. 일반 노트북 CPU는 `bfloat16`을 직접 계산하지 못해 수십 배 느려질 수 있어 float32가 기본 (메모리 약 9GB, 16GB PC 권장) |
 | `ARTI_WRITER_ENABLED` | true | false면 `/write`를 꺼요 (메모리가 부족한 PC). 백엔드는 원문 앞 문장으로 대체 |
 
 ## 더 발전시키려면

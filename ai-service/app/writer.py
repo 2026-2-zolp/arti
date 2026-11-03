@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import logging
 import re
 import threading
 import time
@@ -19,6 +20,8 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 from . import config
+
+log = logging.getLogger("arti.ai")
 
 SYSTEM = (
     "당신은 미술관에서 미술 초보자와 함께 그림을 보는 도슨트입니다. "
@@ -75,8 +78,12 @@ class KananaWriter:
             import torch
             from transformers import AutoModelForCausalLM, AutoTokenizer
 
+            t0 = time.time()
+            log.warning("글쓰기 모델(%s, %s) 불러오는 중… 처음이면 약 4GB를 내려받아요", self.name, config.WRITER_DTYPE)
             self._tok = AutoTokenizer.from_pretrained(self.name)
-            self._model = AutoModelForCausalLM.from_pretrained(self.name, dtype=torch.bfloat16).eval()
+            dtype = getattr(torch, config.WRITER_DTYPE, torch.float32)
+            self._model = AutoModelForCausalLM.from_pretrained(self.name, dtype=dtype).eval()
+            log.warning("글쓰기 모델 준비 완료 (%.0f초)", time.time() - t0)
 
     def generate(self, system: str, user: str) -> str:
         import torch
@@ -84,10 +91,14 @@ class KananaWriter:
         self.load()
         msgs = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         ids = self._tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt")
+        t0 = time.time()
+        log.warning("글쓰기 시작 (요약 + 초보자 가이드)")
         with self._lock, torch.no_grad():  # 한 번에 하나씩 (CPU 메모리·속도)
             out = self._model.generate(
                 ids, attention_mask=torch.ones_like(ids), max_new_tokens=400, do_sample=False, repetition_penalty=1.05
             )
+        n = out.shape[1] - ids.shape[1]
+        log.warning("글쓰기 완료: %d토큰, %.0f초", n, time.time() - t0)
         return self._tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True).strip()
 
 
