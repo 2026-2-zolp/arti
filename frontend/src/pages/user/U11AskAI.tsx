@@ -8,6 +8,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { load, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
+import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { ChatMessage } from '../../types';
 
 const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는 어떤 사람인가요?', '색은 어떤 의미가 있나요?', '왜 유명한 작품인가요?'];
@@ -18,6 +19,7 @@ const chatKey = (artworkId: string) => `arti.chat.${artworkId}`;
 
 export default function U11AskAI() {
   const { state } = useVisit();
+  const to = useExhibitionPath();
   const rec = state.recommendations[state.current];
   const artworkId = rec?.artworkId ?? '';
 
@@ -33,7 +35,7 @@ export default function U11AskAI() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, artworkId]);
 
-  if (!rec) return <Navigate to="/route" replace />;
+  if (!rec) return <Navigate to={to('/route')} replace />;
 
   const ask = async (question: string) => {
     const q = question.trim();
@@ -60,7 +62,7 @@ export default function U11AskAI() {
     <MobileShell
       screenId="U-11"
       title="AI에게 질문하기"
-      back="/artwork"
+      back={to('/artwork')}
       footer={
         <form className="chat-input" onSubmit={onSubmit}>
           <input

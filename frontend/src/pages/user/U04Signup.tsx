@@ -1,15 +1,17 @@
-/** U-04 회원가입 — 가입 완료 후 U-05 취향 파악으로 이동 */
+/** U-04 회원가입 — 가입 완료 후 ?redirect= 로 받은 전시의 U-05 취향 파악으로 이동 */
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { Field, isEmail, isValidPassword } from '../../components/Field';
 import { api } from '../../api/client';
 import { useVisit } from '../../store/VisitContext';
+import { safeRedirect } from '../../store/ExhibitionRoute';
 
 type Errors = Partial<Record<'email' | 'password' | 'confirm' | 'terms' | 'form', string>>;
 
 export default function U04Signup() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { dispatch } = useVisit();
   const [form, setForm] = useState({ email: '', password: '', confirm: '', nickname: '' });
   const [terms, setTerms] = useState({ service: false, privacy: false });
@@ -39,7 +41,9 @@ export default function U04Signup() {
       const user = await api.signup({ email: form.email, password: form.password, nickname: form.nickname });
       dispatch({ type: 'login', user });
       dispatch({ type: 'setTastes', tastes: [] });
-      navigate('/taste', { replace: true });
+      // 새 계정은 저장된 취향이 없으니, 로그인 화면에서 넘어온 「저장 취향 확인」 주소는 취향 파악으로 바꾼다
+      const redirect = safeRedirect(params.get('redirect'))?.replace(/\/taste\/saved$/, '/taste');
+      navigate(redirect ?? '/', { replace: true });
     } catch (err) {
       setErrors({ form: err instanceof Error ? err.message : '가입에 실패했어요.' });
     } finally {

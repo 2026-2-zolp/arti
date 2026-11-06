@@ -6,7 +6,6 @@
  * 전시에 평면도 이미지(floorPlan)가 있으면 그 이미지를 원래 비율대로 바탕에 깔고,
  * 없으면 전시실 사각형(rooms[].rect)으로 기본 평면도를 그린다.
  * onMarkerMove·onEntranceMove를 넘기면 마커와 입구를 끌어서 옮길 수 있다(관리자 화면).
- * 사용자 화면에서는 너무 가까운 마커를 살짝 떨어뜨려 그린다(번호가 겹쳐 순서를 잘못 읽지 않게). 경로 선도 같이 옮긴다.
  */
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { uploadedImageUrl } from '../api/client';
@@ -37,33 +36,6 @@ interface Props {
   /** 입구를 끌어다 놓았을 때 */
   onEntranceMove?: (p: MapPoint) => void;
   showEntrance?: boolean;
-}
-
-const MARKER_R = 3.4;
-const MIN_GAP = MARKER_R * 3; // 번호 원 사이에 선이 보일 만큼 띄운다
-
-/**
- * 겹치는 마커를 떨어뜨린 표시 위치 (SVG 좌표). 앞 번호 마커는 제자리에 두고, 뒤 번호 마커를 겹친 마커 반대쪽으로 민다.
- * 실제 저장된 위치는 바꾸지 않는다 — 그릴 때만 쓴다.
- */
-function spreadMarkers(points: { x: number; y: number }[], height: number) {
-  const placed: { x: number; y: number }[] = [];
-  for (const p of points) {
-    let q = { ...p };
-    for (let tries = 0; tries < 12; tries++) {
-      const hit = placed.find((o) => Math.hypot(q.x - o.x, q.y - o.y) < MIN_GAP);
-      if (!hit) break;
-      const d = Math.hypot(q.x - hit.x, q.y - hit.y);
-      // 같은 자리면 오른쪽 아래로, 아니면 겹친 마커에서 멀어지는 방향으로
-      const [ux, uy] = d < 0.01 ? [Math.SQRT1_2, Math.SQRT1_2] : [(q.x - hit.x) / d, (q.y - hit.y) / d];
-      q = {
-        x: Math.min(100 - MARKER_R, Math.max(MARKER_R, hit.x + ux * MIN_GAP)),
-        y: Math.min(height - MARKER_R, Math.max(MARKER_R, hit.y + uy * MIN_GAP)),
-      };
-    }
-    placed.push(q);
-  }
-  return placed;
 }
 
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
@@ -133,21 +105,6 @@ export function FloorMap({
 
   const entrance = drag?.kind === 'entrance' ? drag.point : exhibition.entrance;
 
-  // 끌어서 옮기는 관리자 지도는 실제 위치 그대로, 사용자 지도는 겹친 마커를 떨어뜨려 그린다
-  const spread = onMarkerMove ? null : spreadMarkers(markers.map((m) => ({ x: m.point.x, y: sy(m.point.y) })), H);
-  const shown = (i: number, p: MapPoint) => (spread ? { x: spread[i].x, y: (spread[i].y * 100) / H } : p);
-  // 경로 점 중 마커 위치와 같은 점은 마커를 따라 옮긴다 (앞에서부터 차례로 짝지음)
-  const moveAlong = (ps: MapPoint[]) => {
-    if (!spread) return ps;
-    const used = new Set<number>();
-    return ps.map((p) => {
-      const i = markers.findIndex((m, j) => !used.has(j) && m.point.x === p.x && m.point.y === p.y);
-      if (i < 0) return p;
-      used.add(i);
-      return shown(i, p);
-    });
-  };
-
   return (
     <svg
       className={`floor-map ${onMapClick ? 'clickable' : ''} ${plan ? 'has-plan' : ''} ${drag?.moved ? 'dragging' : ''}`}
@@ -189,11 +146,11 @@ export function FloorMap({
         </g>
       )}
 
-      {route && route.length > 1 && <polyline className="fm-route" points={toPts(moveAlong(route))} />}
-      {activeLeg && <polyline className="fm-route active" points={toPts(moveAlong(activeLeg))} />}
+      {route && route.length > 1 && <polyline className="fm-route" points={toPts(route)} />}
+      {activeLeg && <polyline className="fm-route active" points={toPts(activeLeg)} />}
 
-      {markers.map((m, i) => {
-        const point = drag?.kind === 'marker' && drag.id === m.id ? drag.point : shown(i, m.point);
+      {markers.map((m) => {
+        const point = drag?.kind === 'marker' && drag.id === m.id ? drag.point : m.point;
         return (
           <g
             key={m.id}
@@ -208,7 +165,7 @@ export function FloorMap({
           >
             {m.title && <title>{m.title}</title>}
             {m.state === 'current' && <circle className="fm-pulse" r={5.5} />}
-            <circle r={MARKER_R} />
+            <circle r={3.4} />
             <text textAnchor="middle" dy="1.25">
               {m.state === 'done' ? '✓' : m.label}
             </text>

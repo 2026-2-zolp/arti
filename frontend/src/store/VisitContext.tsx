@@ -14,58 +14,55 @@ import type { Reaction, Recommendation, TasteTag, User, VisitDuration } from '..
 import { load, save } from '../lib/storage';
 import { TASTE_LABEL } from '../data/mock';
 
-export const DEFAULT_EXHIBITION_ID = 'ex-mvp';
-
 export interface VisitState {
-  exhibitionId: string;
+  /** 관람 중인 전시. 주소(/exhibitions/:exhibitionId)를 따라 맞춘다 — store/ExhibitionRoute.tsx. 아직 없으면 null */
+  exhibitionId: string | null;
   user: User | null;
   tastes: TasteTag[];
-  /** 토너먼트에서 정한 태그 순위 전체 (1위, 2위, 4강, 8강 순) — 전시에 없는 취향을 대신 채울 때 씀. 없으면 [] */
-  tasteRanking: TasteTag[];
   duration: VisitDuration | null;
   recommendations: Recommendation[];
   /** 지금 보러 갈(또는 보고 있는) 추천 작품의 인덱스 (0부터) */
   current: number;
   viewed: string[];
   reactions: Record<string, Reaction>;
+  /** 👍/👎를 누른 뒤 고른 이유 (기타면 직접 적은 문장) */
+  reactionReasons: Record<string, string>;
+  /** U-05 양자택일을 끝냈는지. 취향 태그와는 따로 둔다. */
+  tasteDone: boolean;
   /** 작품별 감상 시간(초) — 아트 영수증의 "가장 오래 본 작품" 계산용 */
   dwell: Record<string, number>;
   startedAt: number | null;
-  /** recommend = 취향 추천 관람, free = 추천 없이 전시 작품 전체를 골라 보는 자유 관람 (U-16) */
-  mode: 'recommend' | 'free';
 }
 
 type Action =
   | { type: 'setExhibition'; id: string }
   | { type: 'login'; user: User }
   | { type: 'logout' }
-  | { type: 'setTastes'; tastes: TasteTag[]; ranking?: TasteTag[] }
+  | { type: 'setUserTastes'; tastes: TasteTag[] }
+  | { type: 'setTastes'; tastes: TasteTag[] }
+  | { type: 'finishTaste'; tastes: TasteTag[] }
   | { type: 'setDuration'; duration: VisitDuration }
   | { type: 'setRecommendations'; recs: Recommendation[] }
   | { type: 'startVisit' }
   | { type: 'addDwell'; artworkId: string; seconds: number }
-  | { type: 'react'; artworkId: string; reaction: Reaction | null }
+  | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | { type: 'completeCurrent' }
-  | { type: 'resetVisit' }
-  /** 자유 관람 시작: 전시 작품 전체를 걷는 순서로 (recs의 이유·태그는 비어 있음) */
-  | { type: 'startFree'; recs: Recommendation[] }
-  /** 자유 관람 목록에서 작품 하나를 열기 → 본 작품에 기록 */
-  | { type: 'openArtwork'; index: number };
+  | { type: 'resetVisit' };
 
 const VISIT_KEY = 'arti.visit';
 const USER_KEY = 'arti.user';
 
 const emptyVisit = {
   tastes: [] as TasteTag[],
-  tasteRanking: [] as TasteTag[],
   duration: null,
   recommendations: [] as Recommendation[],
   current: 0,
   viewed: [] as string[],
   reactions: {} as Record<string, Reaction>,
+  reactionReasons: {} as Record<string, string>,
+  tasteDone: false,
   dwell: {} as Record<string, number>,
   startedAt: null,
-  mode: 'recommend' as VisitState['mode'],
 };
 
 /** 예전 버전의 취향 태그(고요한 풍경·감정 표현 …)가 브라우저에 남아 있으면 새 8개로 바꾼다 (calm→풍경, 나머지 없는 키는 버림) */
@@ -76,11 +73,12 @@ function init(): VisitState {
   const stored = load<Partial<VisitState>>(VISIT_KEY, {}, 'session');
   const user = load<User | null>(USER_KEY, null);
   return {
-    exhibitionId: DEFAULT_EXHIBITION_ID,
+    exhibitionId: null,
     ...emptyVisit,
     ...stored,
     tastes: cleanTastes(stored.tastes),
-    tasteRanking: cleanTastes(stored.tasteRanking),
+    reactionReasons: stored.reactionReasons ?? {},
+    tasteDone: stored.tasteDone === true,
     user: user && { ...user, tastes: cleanTastes(user.tastes) },
   };
 }
@@ -89,36 +87,40 @@ function reducer(s: VisitState, a: Action): VisitState {
   switch (a.type) {
     case 'setExhibition':
       return s.exhibitionId === a.id ? s : { ...s, ...emptyVisit, exhibitionId: a.id };
+    // 관람하는 사람이 바뀌면(비회원→회원, 다른 계정, 로그아웃) 진행 중인 관람을 비운다.
+    // 앞사람의 추천·반응이 다음 사람에게 보이거나 다음 사람의 관람기록에 저장되지 않게 하기 위해서다.
+    // 서버에 저장된 관람기록(마이페이지)은 그대로 둔다.
     case 'login':
-      return { ...s, user: a.user };
+      return s.user?.id === a.user.id ? { ...s, user: a.user } : { ...s, ...emptyVisit, user: a.user };
     case 'logout':
-      // 이전 계정의 취향이 다음 사람(다른 계정·비회원)에게 이어지지 않게 비운다
-      return { ...s, user: null, tastes: [], tasteRanking: [] };
+      return { ...s, ...emptyVisit, user: null };
+    case 'setUserTastes':
+      // 계정에 저장한 취향을 로그인 정보에도 반영 (관람 진행 상태는 건드리지 않음)
+      return s.user ? { ...s, user: { ...s.user, tastes: a.tastes } } : s;
     case 'setTastes':
-      return { ...s, tastes: a.tastes, tasteRanking: a.ranking ?? [] };
+      return { ...s, tastes: a.tastes, tasteDone: a.tastes.length > 0 };
+    case 'finishTaste':
+      // U-05에서 고른 작품의 태그로 만든 취향 (lib/tasteFromPicks.ts). 계정 저장은 U-05에서 따로 한다
+      return { ...s, tastes: a.tastes, tasteDone: true };
     case 'setDuration':
       return { ...s, duration: a.duration };
     case 'setRecommendations':
-      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, dwell: {}, startedAt: null, mode: 'recommend' };
-    case 'startFree':
-      // 이미 자유 관람 중이면(목록으로 돌아온 경우) 본 작품·반응을 그대로 둔다
-      if (s.mode === 'free' && s.recommendations.length === a.recs.length) return s;
-      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, dwell: {}, startedAt: Date.now(), mode: 'free' };
-    case 'openArtwork': {
-      const rec = s.recommendations[a.index];
-      if (!rec) return s;
-      const viewed = s.viewed.includes(rec.artworkId) ? s.viewed : [...s.viewed, rec.artworkId];
-      return { ...s, current: a.index, viewed };
-    }
+      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, reactionReasons: {}, dwell: {}, startedAt: null };
     case 'startVisit':
       return s.startedAt ? s : { ...s, startedAt: Date.now() };
     case 'addDwell':
       return { ...s, dwell: { ...s.dwell, [a.artworkId]: (s.dwell[a.artworkId] ?? 0) + a.seconds } };
     case 'react': {
       const reactions = { ...s.reactions };
-      if (a.reaction) reactions[a.artworkId] = a.reaction;
-      else delete reactions[a.artworkId];
-      return { ...s, reactions };
+      const reactionReasons = { ...s.reactionReasons };
+      if (a.reaction) {
+        reactions[a.artworkId] = a.reaction;
+        reactionReasons[a.artworkId] = a.reason?.trim() ?? '';
+      } else {
+        delete reactions[a.artworkId];
+        delete reactionReasons[a.artworkId];
+      }
+      return { ...s, reactions, reactionReasons };
     }
     case 'completeCurrent': {
       const rec = s.recommendations[s.current];

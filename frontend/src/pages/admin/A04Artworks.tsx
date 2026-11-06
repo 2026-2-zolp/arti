@@ -316,7 +316,7 @@ export function ArtworkEdit() {
             <textarea rows={8} value={w.description} onChange={(e) => set('description', e.target.value)} />
           </label>
           <p className="muted small" style={{ marginTop: -6 }}>
-            요약과 초보자 가이드(쉬운 설명 · 관찰 질문 · 힌트)는 아래 「AI 분석 · 요약 · 가이드」에서 만들고 확정해요.
+            요약과 관람가이드(쉬운 설명 · 관찰 질문 · 힌트)는 아래 「AI 분석 · 요약 · 가이드」에서 만들고 확정해요.
           </p>
           <label className="a-field">
             <span>출처</span>
@@ -504,10 +504,10 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             }[r.summary.source]
           : `요약 실패: ${r.summary.error}`,
         r.guide?.made
-          ? '초보자 가이드 제안 완료 — 확인 후 「가이드 확정」'
+          ? '관람가이드 제안 완료 — 확인 후 「가이드 확정」'
           : w.guideStatus === 'confirmed'
-            ? '초보자 가이드는 확정되어 있어 그대로 둠'
-            : '초보자 가이드를 만들지 못했어요. 직접 입력해 주세요',
+            ? '관람가이드는 확정되어 있어 그대로 둠'
+            : '관람가이드를 만들지 못했어요. 직접 입력해 주세요',
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
@@ -597,7 +597,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
 
         <div className="ai-box">
           <div className="ai-box-head">
-            <h3>요약 (사용자 「요약」 탭)</h3>
+            <h3>요약 (사용자 「작품 해설」 탭의 「AI 요약 보기」)</h3>
             {badge(w.summaryStatus)}
           </div>
           <label className="a-field">
@@ -655,7 +655,7 @@ const parseQuestions = (text: string) => {
 };
 
 /**
- * 초보자 가이드 (사용자 「초보자 가이드」 탭) — 쉬운 설명 + 관찰 질문 + 질문마다 힌트
+ * 관람가이드 (사용자 「관람가이드」 탭) — 쉬운 설명 + 관찰 질문 + 질문마다 힌트
  * AI 분석이 제안하거나 관리자가 직접 쓰고, 「가이드 확정」해야 사용자 화면에 보인다.
  */
 function GuideCard({
@@ -682,7 +682,7 @@ function GuideCard({
   return (
     <div className="ai-box">
       <div className="ai-box-head">
-        <h3>초보자 가이드 (사용자 「초보자 가이드」 탭)</h3>
+        <h3>관람가이드 (사용자 「관람가이드」 탭)</h3>
         {badge}
       </div>
       <label className="a-field">

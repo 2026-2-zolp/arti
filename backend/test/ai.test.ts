@@ -154,27 +154,30 @@ describe('초보자 가이드 (관찰 질문·힌트)', () => {
       const w = r.body.artwork;
       assert.equal(w.summary, FAKE_WRITE.summary);
       assert.deepEqual(w.summaryKeywords, ['수련', '연못']);
-      assert.equal(w.guideStatus, 'confirmed', '목업 질문은 확정이라 그대로');
-      const fresh = await call('PUT', '/admin/artworks/aw-12', { ...w, guideStatus: 'none' }, h);
+      // 시드 작품의 가이드는 확정 전('none')이라 AI가 새로 제안한다
+      assert.equal(w.guideStatus, 'suggested');
+      assert.deepEqual(w.guidedLooking, FAKE_WRITE.questions);
+      assert.deepEqual(w.guidedHints, FAKE_WRITE.hints);
+      assert.equal(w.guideIntro, FAKE_WRITE.intro);
+      // 관리자가 고쳐서 확정한 가이드는 다시 분석해도 덮어쓰지 않는다
+      const mine = await call('PUT', '/admin/artworks/aw-12', { ...w, guidedLooking: ['관리자 질문'], guidedHints: [''], guideStatus: 'confirmed' }, h);
+      assert.equal(mine.status, 200);
       const again = await call('POST', '/admin/artworks/aw-12/analyze', {}, h);
-      assert.equal(fresh.status, 200);
-      assert.equal(again.body.artwork.guideStatus, 'suggested');
-      assert.deepEqual(again.body.artwork.guidedLooking, FAKE_WRITE.questions);
-      assert.deepEqual(again.body.artwork.guidedHints, FAKE_WRITE.hints);
-      assert.equal(again.body.artwork.guideIntro, FAKE_WRITE.intro);
+      assert.equal(again.body.artwork.guideStatus, 'confirmed');
+      assert.deepEqual(again.body.artwork.guidedLooking, ['관리자 질문']);
     } finally {
       writerMode = 'off';
     }
   });
 
-  test('목업 작품의 관찰 질문은 확정 상태, 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로', async () => {
+  test('목업 작품의 관찰 질문은 확정 전(none), 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로', async () => {
     const h = await admin();
     const w = (await call('GET', '/artworks/aw-03')).body;
-    assert.equal(w.guideStatus, 'confirmed');
-    const empty = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedLooking: [], guideIntro: '' }, h);
+    assert.equal(w.guideStatus, 'none', '관찰 질문이 있어도 관리자가 확정해야 보임');
+    const empty = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedLooking: [], guideIntro: '', guideStatus: 'confirmed' }, h);
     assert.equal(empty.status, 400);
     assert.equal(empty.body.error, '초보자 가이드가 비어 있으면 확정할 수 없어요.');
-    const saved = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedHints: ['식탁 위 무늬'], guideIntro: '쉬운 설명' }, h);
+    const saved = await call('PUT', '/admin/artworks/aw-03', { ...w, guidedHints: ['식탁 위 무늬'], guideIntro: '쉬운 설명', guideStatus: 'confirmed' }, h);
     assert.equal(saved.body.guideStatus, 'confirmed');
     assert.deepEqual(saved.body.guidedHints, ['식탁 위 무늬']);
     const changed = await call('PUT', '/admin/artworks/aw-03', { ...saved.body, description: w.description + ' 추가' }, h);

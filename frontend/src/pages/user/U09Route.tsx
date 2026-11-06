@@ -12,12 +12,15 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { walkMinutes } from '../../lib/recommend';
 import { useVisit } from '../../store/VisitContext';
+import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork, MapPoint } from '../../types';
 
 export default function U09Route() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
-  const { exhibitionId, recommendations, current, startedAt } = state;
+  const exhibitionId = useExhibitionId();
+  const to = useExhibitionPath();
+  const { recommendations, current, startedAt } = state;
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const { data, loading } = useAsync(
@@ -25,12 +28,12 @@ export default function U09Route() {
     [exhibitionId],
   );
 
-  if (recommendations.length === 0) return <Navigate to="/recommend" replace />;
-  if (current >= recommendations.length) return <Navigate to="/receipt" replace />;
+  if (recommendations.length === 0) return <Navigate to={to('/recommend')} replace />;
+  if (current >= recommendations.length) return <Navigate to={to('/receipt')} replace />;
 
   if (loading || !data) {
     return (
-      <MobileShell screenId="U-09" title="추천 관람 경로" back="/recommend">
+      <MobileShell screenId="U-09" title="추천 관람 경로" back={to('/recommend')}>
         <Spinner />
       </MobileShell>
     );
@@ -38,33 +41,48 @@ export default function U09Route() {
 
   const [ex, artworks] = data;
   const byId = new Map<string, Artwork>(artworks.map((w) => [w.id, w]));
-  const ordered = recommendations.map((r) => byId.get(r.artworkId)).filter((w): w is Artwork => !!w?.position);
+  // 번호·진행 순서는 추천 목록 순서 그대로 쓴다 (U-10도 recommendations[current]를 보여 줌).
+  // 지도 위치가 없는 작품(관람 도중 위치가 지워진 경우 등)은 마커만 빼고 목록에는 '위치 미등록'으로 남긴다.
+  const target = byId.get(recommendations[current].artworkId);
+  if (!target) {
+    return (
+      <MobileShell screenId="U-09" title="추천 관람 경로" back={to('/recommend')}>
+        <p className="muted">추천 작품 정보를 찾지 못했어요. 추천을 다시 받아 주세요.</p>
+      </MobileShell>
+    );
+  }
 
-  const target = ordered[current];
-  const from: MapPoint = current === 0 ? ex.entrance : ordered[current - 1].position!;
+  // 이동 시간·경로는 바로 앞에서 위치가 있는 작품(없으면 입구)부터
+  const from: MapPoint = (() => {
+    for (let i = current - 1; i >= 0; i--) {
+      const prev = byId.get(recommendations[i].artworkId);
+      if (prev?.position) return prev.position;
+    }
+    return ex.entrance;
+  })();
   const roomName = (w: Artwork) => ex.rooms.find((r) => r.id === w.roomId)?.name ?? '';
+  const orderOf = (id: string) => recommendations.findIndex((r) => r.artworkId === id) + 1;
 
-  const markers: MapMarker[] = ordered.map((w, i) => ({
-    id: w.id,
-    label: String(i + 1),
-    point: w.position!,
-    title: w.title,
-    state: i < current ? 'done' : i === current ? 'current' : focusId === w.id ? 'selected' : 'upcoming',
-  }));
+  const markers: MapMarker[] = recommendations.flatMap((r, i) => {
+    const w = byId.get(r.artworkId);
+    if (!w?.position) return [];
+    const state: MapMarker['state'] = i < current ? 'done' : i === current ? 'current' : focusId === w.id ? 'selected' : 'upcoming';
+    return [{ id: w.id, label: String(i + 1), point: w.position, title: w.title, state }];
+  });
 
   const focus = focusId ? byId.get(focusId) : null;
   const isFirst = current === 0 && !startedAt;
 
   const go = () => {
     dispatch({ type: 'startVisit' });
-    navigate('/artwork');
+    navigate(to('/artwork'));
   };
 
   return (
     <MobileShell
       screenId="U-09"
       title="추천 관람 경로"
-      back="/recommend"
+      back={to('/recommend')}
       footer={
         <button className="btn primary block" onClick={go}>
           {isFirst ? '관람 시작하기' : `${current + 1}번 작품 감상하기`}
@@ -73,11 +91,11 @@ export default function U09Route() {
     >
       <div className="route-head">
         <span className="muted">
-          추천 작품 {current + 1}/{ordered.length}
+          추천 작품 {current + 1}/{recommendations.length}
         </span>
         <div className="progress-dots" aria-hidden="true">
-          {ordered.map((w, i) => (
-            <span key={w.id} className={i < current ? 'done' : i === current ? 'cur' : ''} />
+          {recommendations.map((r, i) => (
+            <span key={r.artworkId} className={i < current ? 'done' : i === current ? 'cur' : ''} />
           ))}
         </div>
       </div>
@@ -86,8 +104,8 @@ export default function U09Route() {
         <FloorMap
           exhibition={ex}
           markers={markers}
-          route={[ex.entrance, ...ordered.map((w) => w.position!)]}
-          activeLeg={[from, target.position!]}
+          route={[ex.entrance, ...markers.map((m) => m.point)]}
+          activeLeg={target.position ? [from, target.position] : null}
           aspect={0.95}
           onMarkerClick={(id) => setFocusId((f) => (f === id ? null : id))}
         />
@@ -95,7 +113,7 @@ export default function U09Route() {
         <div className="next-card">
           {focus && focus.id !== target.id ? (
             <>
-              <span className="eyebrow">{ordered.findIndex((w) => w.id === focus.id) + 1}번 작품</span>
+              <span className="eyebrow">{orderOf(focus.id)}번 작품</span>
               <div className="next-row">
                 <strong>
                   {focus.title} · {roomName(focus)}
@@ -112,7 +130,7 @@ export default function U09Route() {
                 <strong>
                   {target.title} · {roomName(target)}
                 </strong>
-                <span className="muted small">약 {walkMinutes(from, target.position!)}분</span>
+                <span className="muted small">{target.position ? `약 ${walkMinutes(from, target.position)}분` : '위치 미등록'}</span>
               </div>
             </>
           )}
@@ -120,13 +138,16 @@ export default function U09Route() {
       </div>
 
       <ol className="route-list">
-        {ordered.map((w, i) => (
-          <li key={w.id} className={i < current ? 'done' : i === current ? 'cur' : ''}>
-            <span className="route-num">{i < current ? '✓' : i + 1}</span>
-            <span className="route-title">{w.title}</span>
-            <span className="muted small">{roomName(w)}</span>
-          </li>
-        ))}
+        {recommendations.map((r, i) => {
+          const w = byId.get(r.artworkId);
+          return (
+            <li key={r.artworkId} className={i < current ? 'done' : i === current ? 'cur' : ''}>
+              <span className="route-num">{i < current ? '✓' : i + 1}</span>
+              <span className="route-title">{w?.title ?? '작품 정보 없음'}</span>
+              <span className="muted small">{w ? (w.position ? roomName(w) : '위치 미등록') : ''}</span>
+            </li>
+          );
+        })}
       </ol>
     </MobileShell>
   );

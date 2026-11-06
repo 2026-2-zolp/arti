@@ -79,10 +79,10 @@ const a = (
   summaryStatus: 'none',
   imageFile: null,
   showImage: true,
-  // 목업 작품의 관찰 질문은 개발자가 써 둔 예시라 바로 보이게 확정 상태로 둔다
+  // 관찰 질문이 있어도 확정하지 않는다 — 관리자가 A-04에서 AI 분석 → 검토 → 확정해야 사용자 화면에 보임
   guidedHints: [],
   guideIntro: '',
-  guideStatus: p.guidedLooking.length ? 'confirmed' : 'none',
+  guideStatus: 'none',
   ...p,
 });
 

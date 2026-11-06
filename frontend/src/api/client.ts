@@ -79,22 +79,6 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 const enc = encodeURIComponent;
 
-/**
- * 백엔드가 아직 예전 버전이라(ZIP만 덮어쓰고 다시 켜지 않은 경우 등) 새 칸이 없어도 화면이 멈추지 않게 기본값을 채운다
- */
-const withDefaults = (w: Artwork): Artwork => ({
-  ...w,
-  guidedLooking: w.guidedLooking ?? [],
-  guidedHints: w.guidedHints ?? [],
-  guideIntro: w.guideIntro ?? '',
-  guideStatus: w.guideStatus ?? (w.guidedLooking?.length ? 'confirmed' : 'none'),
-  summary: w.summary ?? '',
-  summaryKeywords: w.summaryKeywords ?? [],
-  summaryStatus: w.summaryStatus ?? 'none',
-  tagStatus: w.tagStatus ?? 'none',
-  tagScores: w.tagScores ?? null,
-});
-
 export const api = {
   // ───────────────────────── 전시 ─────────────────────────
   getExhibition: (id: string) => request<Exhibition>('GET', `/exhibitions/${enc(id)}`),
@@ -108,15 +92,14 @@ export const api = {
 
   // ───────────────────────── 작품 ─────────────────────────
   listArtworks: (exhibitionId?: string) =>
-    request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks').then((ws) => ws.map(withDefaults)),
+    request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks'),
 
-  getArtwork: (id: string) => request<Artwork>('GET', `/artworks/${enc(id)}`).then(withDefaults),
+  getArtwork: (id: string) => request<Artwork>('GET', `/artworks/${enc(id)}`),
 
   saveArtwork: (w: Artwork) =>
-    (w.id
+    w.id
       ? request<Artwork>('PUT', `/admin/artworks/${enc(w.id)}`, w)
-      : request<Artwork>('POST', '/admin/artworks', w)
-    ).then(withDefaults),
+      : request<Artwork>('POST', '/admin/artworks', w),
 
   // ───────────────────────── 회원 ─────────────────────────
   async login(email: string, password: string): Promise<User> {
@@ -148,7 +131,8 @@ export const api = {
 
   // ───────────────────────── 추천 / AI ─────────────────────────
   /** 태그별로 이 전시에서 추천할 수 있는 작품 수 (0이면 그 취향은 이 전시에 없음) */
-  tagCoverage: (exhibitionId: string) => request<Record<TasteTag, number>>('GET', `/exhibitions/${enc(exhibitionId)}/tag-coverage`),
+  tagCoverage: (exhibitionId: string) =>
+    request<Record<TasteTag, number>>('GET', `/exhibitions/${enc(exhibitionId)}/tag-coverage`),
 
   recommend: (exhibitionId: string, tastes: TasteTag[], duration: VisitDuration) =>
     request<Recommendation[]>('POST', '/recommendations', { exhibitionId, tastes, duration }),
@@ -193,16 +177,16 @@ export const api = {
     remove(ADMIN_TOKEN);
   },
 
-  /** A-04 AI 분석: 감정 분석(ai-service) + 해설 요약(Claude) → 「AI 제안」으로 저장 */
+  /** A-04 AI 분석: 태그·감정 분석(ai-service) + 해설 요약·관람가이드 초안(Claude 또는 로컬 모델 Kanana) → 「AI 제안」으로 저장 */
   analyzeArtwork: (id: string, useImage = true) =>
     request<{
       artwork: Artwork;
       emotion: { ok: true } | { ok: false; error: string };
       /** claude = Claude API, kanana = 로컬 모델(ai-service), fallback = 원문 앞 2문장, kept = 이미 확정이라 그대로 둠 */
       summary: { ok: true; source: 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string };
-      /** 초보자 가이드를 새로 제안했는지 (API 키가 없거나 이미 확정이면 false) */
+      /** 관람가이드를 새로 제안했는지 (만들 수 없거나 이미 확정이면 false) */
       guide?: { made: boolean };
-    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }).then((r) => ({ ...r, artwork: withDefaults(r.artwork) })),
+    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage }),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),

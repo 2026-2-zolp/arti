@@ -107,12 +107,12 @@ export interface Artwork {
   /** AI 태그 검수 상태. 확정 전에는 관리자가 켠 태그(1/0)로만 추천 */
   tagStatus: AiStatus;
   description: string;        // 작품 해설 (출처 확인된 기본 설명)
-  guidedLooking: string[];    // 초보자 가이드 — 관찰 질문 (보통 3개)
-  /** 초보자 가이드 — 질문마다 답을 찾을 곳 힌트 (guidedLooking과 같은 순서, 없으면 '') */
+  guidedLooking: string[];    // 관람가이드 — 관찰 질문 (보통 3개)
+  /** 관람가이드 — 질문마다 답을 찾을 곳 힌트 (guidedLooking과 같은 순서, 없으면 '') */
   guidedHints: string[];
-  /** 초보자 가이드 — 그림을 보기 전에 읽는 쉬운 설명 (2~3문장) */
+  /** 관람가이드 — 그림을 보기 전에 읽는 쉬운 설명 (2~3문장) */
   guideIntro: string;
-  /** 초보자 가이드 검수 상태. 사용자 화면에는 'confirmed'만 표시 (AI 제안 → 관리자 확정, 직접 써도 확정해야 보임) */
+  /** 관람가이드 검수 상태. 사용자 화면에는 'confirmed'만 표시 (AI 제안 → 관리자 확정, 직접 써도 확정해야 보임) */
   guideStatus: AiStatus;
   source: string;             // 출처
   referenceUrl: string;       // 참고자료 URL

@@ -3,31 +3,33 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
+import { useExhibitionPath, withRedirect } from '../../store/ExhibitionRoute';
 
 export default function U06SavedTaste() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
+  const to = useExhibitionPath();
   const user = state.user;
 
-  if (!user) return <Navigate to="/login?redirect=/taste/saved" replace />;
+  if (!user) return <Navigate to={withRedirect('/login', to('/taste/saved'))} replace />;
 
   const hasTastes = user.tastes.length > 0;
   const name = user.nickname || user.email.split('@')[0];
 
   const useSaved = () => {
     dispatch({ type: 'setTastes', tastes: user.tastes });
-    navigate('/time');
+    navigate(to('/time'));
   };
   const edit = () => {
     dispatch({ type: 'setTastes', tastes: user.tastes });
-    navigate('/taste');
+    navigate(to('/taste'));
   };
 
   return (
     <MobileShell
       screenId="U-06"
       title="저장된 취향"
-      back="/entry"
+      back={to('/entry')}
       footer={
         <div className="stack gap-10">
           {hasTastes && (

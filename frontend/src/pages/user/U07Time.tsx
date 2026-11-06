@@ -5,21 +5,23 @@ import { Lead, MobileShell } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
 import { DURATION_OPTIONS } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
+import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { VisitDuration } from '../../types';
 
 export default function U07Time() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
+  const to = useExhibitionPath();
   const [value, setValue] = useState<VisitDuration | null>(state.duration);
 
-  // 취향 정보 없이 직접 들어온 경우 취향 화면으로 돌려보낸다
-  if (state.tastes.length === 0) return <Navigate to="/taste" replace />;
+  // 취향 선택(양자택일 또는 저장된 태그) 없이 직접 들어온 경우 취향 화면으로 돌려보낸다
+  if (!state.tasteDone && state.tastes.length === 0) return <Navigate to={to('/taste')} replace />;
 
   const next = () => {
     if (!value) return;
     dispatch({ type: 'setDuration', duration: value });
     dispatch({ type: 'setRecommendations', recs: [] }); // 조건이 바뀌었으니 U-08에서 새로 추천
-    navigate('/recommend');
+    navigate(to('/recommend'));
   };
 
   return (

@@ -5,6 +5,7 @@ import { Lead, MobileShell } from '../../components/MobileShell';
 import { Field, isEmail } from '../../components/Field';
 import { api } from '../../api/client';
 import { useVisit } from '../../store/VisitContext';
+import { safeRedirect, withRedirect } from '../../store/ExhibitionRoute';
 
 export default function U03Login() {
   const navigate = useNavigate();
@@ -26,8 +27,8 @@ export default function U03Login() {
     try {
       const user = await api.login(email, password);
       dispatch({ type: 'login', user });
-      // 관람기록 URL 등에서 넘어온 경우 원래 화면으로, 아니면 U-06 저장 취향 확인
-      navigate(redirect && redirect.startsWith('/') ? redirect : '/taste/saved', { replace: true });
+      // 관람 흐름·관람기록 URL 등에서 넘어온 경우 원래 화면으로, 아니면 어느 전시인지 모르니 전시 목록(U-01)으로
+      navigate(safeRedirect(redirect) ?? '/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : '로그인에 실패했어요.');
     } finally {
@@ -36,7 +37,7 @@ export default function U03Login() {
   };
 
   return (
-    <MobileShell screenId="U-03" title="로그인" back="/entry">
+    <MobileShell screenId="U-03" title="로그인">
       <Lead title="다시 오셨군요" desc="로그인은 선택사항이에요. 저장된 취향과 관람기록을 이어서 쓸 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>
@@ -68,7 +69,7 @@ export default function U03Login() {
           비밀번호 찾기
         </button>
         <span className="divider-dot" />
-        <button className="link-btn" onClick={() => navigate('/signup')}>
+        <button className="link-btn" onClick={() => navigate(redirect ? withRedirect('/signup', redirect) : '/signup')}>
           회원가입
         </button>
       </div>

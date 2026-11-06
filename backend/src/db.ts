@@ -142,9 +142,9 @@ function migrate(db: DB) {
     const existing = new Set((db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name));
     for (const [name, def] of cols) {
       if (existing.has(name)) continue;
+      // 초보자 가이드 상태(guide_status)는 기존 관찰 질문이 있어도 확정으로 옮기지 않고 'none'으로 시작한다
+      // (관리자가 A-04에서 AI 분석 → 검토 → 확정해야 사용자 화면에 보임)
       db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
-      // 초보자 가이드 상태가 생기기 전에 관리자가 적어 둔 관찰 질문은 그대로 보이도록 「확정」으로 옮긴다
-      if (name === 'guide_status') db.exec(`UPDATE artworks SET guide_status = 'confirmed' WHERE guided_looking <> '[]'`);
     }
   }
   migrateLegacyTags(db);

@@ -13,6 +13,7 @@ const MENU = [
   { to: '/admin/artworks', label: '작품 관리' },
   { to: '/admin/map', label: '위치·지도 관리' },
   { to: '/admin/members', label: '회원 조회' },
+  { to: '/admin/reactions', label: '평가' },
 ];
 
 export default function AdminLayout() {
