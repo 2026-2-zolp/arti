@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "asOf": "2026-11-08",
-  "scope": "dev/임준억 회고 커밋 정리: W01~W02 증거 포함",
+  "scope": "dev/임준억 회고 커밋 정리: W01~W03 증거 포함",
   "tasks": [
     {
       "id": "W01",
@@ -47,7 +47,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC06"
@@ -277,11 +277,13 @@
       "dependsOn": [
         "G1"
       ],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC06"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W03/gate-review.md"
+      ]
     },
     {
       "id": "G3",
@@ -466,8 +468,17 @@
       "criterion": "현재 통합본에서 요약재생성·미검수/초안전시 노출·추천갱신·저장손실의 회귀 입력/기대/실제 확인. F03은 이미 보완된 필드를 다시 구현하지 않고 저장 round-trip 재검증",
       "evidence": "회귀 검사·실패 로그",
       "reviewer": "기술",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W03/README.md",
+        "records/W03/regression.test.mts",
+        "records/W03/regression.log",
+        "records/W03/results.json",
+        "records/W03/browser-observations.md",
+        "records/W03/browser-http.jsonl",
+        "records/W03/guide-reloaded-ax.txt",
+        "records/W03/gate-review.md"
+      ]
     },
     {
       "id": "AC07",
@@ -779,7 +790,7 @@
       "title": "추천 입력변경 및 경합 검증",
       "check": "입력 무효화·늦은 응답 경합을 API/화면으로 확인",
       "source": "old:F02",
-      "status": "open",
+      "status": "verification_pending",
       "owner": "준억 통합 조율",
       "fixLocation": "VisitContext/U07/U08 정상유지, requestGeneration·관람중변경정책보완; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
