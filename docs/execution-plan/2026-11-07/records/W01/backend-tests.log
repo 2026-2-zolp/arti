@@ -1,0 +1,342 @@
+
+> arti-backend@0.1.0 test
+> tsx --disable-warning=ExperimentalWarning --test test/*.test.ts
+
+TAP version 13
+# Subtest: 작품 AI 분석 (A-04)
+    # Subtest: 분석하면 태그·감정 점수·요약이 「AI 제안」으로 저장되고, 확정 전에는 추천에 쓰이지 않는다
+    ok 1 - 분석하면 태그·감정 점수·요약이 「AI 제안」으로 저장되고, 확정 전에는 추천에 쓰이지 않는다
+      ---
+      duration_ms: 212.6089
+      type: 'test'
+      ...
+    # Subtest: AI 태그를 확정하면 관리자가 바꾼 태그는 켬 1 / 끔 0, 그대로 둔 태그는 AI 점수
+    ok 2 - AI 태그를 확정하면 관리자가 바꾼 태그는 켬 1 / 끔 0, 그대로 둔 태그는 AI 점수
+      ---
+      duration_ms: 150.9881
+      type: 'test'
+      ...
+    # Subtest: 관리자 토큰 없이는 분석할 수 없다
+    ok 3 - 관리자 토큰 없이는 분석할 수 없다
+      ---
+      duration_ms: 16.3476
+      type: 'test'
+      ...
+    # Subtest: 감정 분석 결과 없이 확정하면 400
+    ok 4 - 감정 분석 결과 없이 확정하면 400
+      ---
+      duration_ms: 83.2679
+      type: 'test'
+      ...
+    1..4
+ok 1 - 작품 AI 분석 (A-04)
+  ---
+  duration_ms: 465.1086
+  type: 'suite'
+  ...
+# Subtest: 초보자 가이드 (관찰 질문·힌트)
+    # Subtest: API 키가 없으면 로컬 모델(/write)로 요약과 가이드를 「AI 제안」, 확정된 가이드는 덮어쓰지 않는다
+    ok 1 - API 키가 없으면 로컬 모델(/write)로 요약과 가이드를 「AI 제안」, 확정된 가이드는 덮어쓰지 않는다
+      ---
+      duration_ms: 154.59
+      type: 'test'
+      ...
+    # Subtest: 목업 작품의 관찰 질문은 확정 전(none), 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로
+    ok 2 - 목업 작품의 관찰 질문은 확정 전(none), 비우고 확정하면 400, 해설을 고치면 「AI 제안」으로
+      ---
+      duration_ms: 109.3819
+      type: 'test'
+      ...
+    # Subtest: 관찰 질문이 확정되지 않은 작품에 "어디부터" 물으면 기본 관찰 팁으로 답한다
+    ok 3 - 관찰 질문이 확정되지 않은 작품에 "어디부터" 물으면 기본 관찰 팁으로 답한다
+      ---
+      duration_ms: 119.4457
+      type: 'test'
+      ...
+    1..3
+ok 2 - 초보자 가이드 (관찰 질문·힌트)
+  ---
+  duration_ms: 383.9873
+  type: 'suite'
+  ...
+# Subtest: 전시 일괄 분석·확정 → 태그 기반 추천
+    # Subtest: 일괄 분석 후 확정하면 추천이 AI 태그 점수로 바뀐다
+    ok 1 - 일괄 분석 후 확정하면 추천이 AI 태그 점수로 바뀐다
+      ---
+      duration_ms: 260.4748
+      type: 'test'
+      ...
+    # Subtest: 성격이 다른 카드를 고르면 카드마다 그 태그가 있는 작품이 최소 1점씩 들어간다
+    ok 2 - 성격이 다른 카드를 고르면 카드마다 그 태그가 있는 작품이 최소 1점씩 들어간다
+      ---
+      duration_ms: 16.3906
+      type: 'test'
+      ...
+    # Subtest: 확정 후 공식 해설을 바꾸면 다시 「AI 제안」으로 돌아간다
+    ok 3 - 확정 후 공식 해설을 바꾸면 다시 「AI 제안」으로 돌아간다
+      ---
+      duration_ms: 84.4459
+      type: 'test'
+      ...
+    # Subtest: 확정된 감정은 AI 질문(규칙 기반)에도 쓰인다
+    ok 4 - 확정된 감정은 AI 질문(규칙 기반)에도 쓰인다
+      ---
+      duration_ms: 17.5795
+      type: 'test'
+      ...
+    1..4
+ok 3 - 전시 일괄 분석·확정 → 태그 기반 추천
+  ---
+  duration_ms: 379.5492
+  type: 'suite'
+  ...
+# Subtest: 아트 영수증 AI 해석 (U-12)
+    # Subtest: 본 작품의 감정 프로필과 해석 문장을 돌려주고, 관람기록에 함께 저장된다
+    ok 1 - 본 작품의 감정 프로필과 해석 문장을 돌려주고, 관람기록에 함께 저장된다
+      ---
+      duration_ms: 96.7166
+      type: 'test'
+      ...
+    1..1
+ok 4 - 아트 영수증 AI 해석 (U-12)
+  ---
+  duration_ms: 96.8349
+  type: 'suite'
+  ...
+# Subtest: 작품 이미지 업로드 (캡처 이미지)
+    # Subtest: 올린 이미지를 저장·제공하고, AI 분석 때 파일 내용을 감정 분석 서버로 보낸다
+    ok 1 - 올린 이미지를 저장·제공하고, AI 분석 때 파일 내용을 감정 분석 서버로 보낸다
+      ---
+      duration_ms: 149.9699
+      type: 'test'
+      ...
+    # Subtest: 이미지가 아닌 파일·권한 없는 요청은 거절
+    ok 2 - 이미지가 아닌 파일·권한 없는 요청은 거절
+      ---
+      duration_ms: 85.5418
+      type: 'test'
+      ...
+    # Subtest: 평면도 이미지를 올리면 전시에 저장되고, 전시 정보 수정으로는 바뀌지 않는다
+    ok 3 - 평면도 이미지를 올리면 전시에 저장되고, 전시 정보 수정으로는 바뀌지 않는다
+      ---
+      duration_ms: 150.3292
+      type: 'test'
+      ...
+    1..3
+ok 5 - 작품 이미지 업로드 (캡처 이미지)
+  ---
+  duration_ms: 386.042
+  type: 'suite'
+  ...
+# 글쓰기 모델(/write) 응답이 없어 10분 동안 원문 앞 문장으로 대신해요.
+# Subtest: 감정 분석 서버가 꺼져 있을 때
+    # Subtest: 분석은 실패 이유를 알려 주고, 요약은 그대로 저장된다
+    ok 1 - 분석은 실패 이유를 알려 주고, 요약은 그대로 저장된다
+      ---
+      duration_ms: 84.4429
+      type: 'test'
+      ...
+    1..1
+ok 6 - 감정 분석 서버가 꺼져 있을 때
+  ---
+  duration_ms: 84.5683
+  type: 'suite'
+  ...
+# Subtest: 전시·작품 조회
+    # Subtest: 시드 전시와 작품이 조회된다
+    ok 1 - 시드 전시와 작품이 조회된다
+      ---
+      duration_ms: 85.1203
+      type: 'test'
+      ...
+    1..1
+ok 7 - 전시·작품 조회
+  ---
+  duration_ms: 87.3804
+  type: 'suite'
+  ...
+# Subtest: 추천
+    # Subtest: 관람 시간만큼, 검수 완료 + 위치 등록 작품만, 1부터 순서대로
+    ok 1 - 관람 시간만큼, 검수 완료 + 위치 등록 작품만, 1부터 순서대로
+      ---
+      duration_ms: 50.9961
+      type: 'test'
+      ...
+    # Subtest: 같은 태그면 고른 순서와 상관없이 같은 추천 (모든 2~3개 조합 × 순서 × 관람 시간)
+    ok 2 - 같은 태그면 고른 순서와 상관없이 같은 추천 (모든 2~3개 조합 × 순서 × 관람 시간)
+      ---
+      duration_ms: 19177.0615
+      type: 'test'
+      ...
+    # Subtest: 태그 분포: 태그마다 추천 가능한 작품 수, 없는 전시는 404
+    ok 3 - 태그 분포: 태그마다 추천 가능한 작품 수, 없는 전시는 404
+      ---
+      duration_ms: 47.5678
+      type: 'test'
+      ...
+    # Subtest: 잘못된 관람 시간은 400
+    ok 4 - 잘못된 관람 시간은 400
+      ---
+      duration_ms: 16.668
+      type: 'test'
+      ...
+    1..4
+ok 8 - 추천
+  ---
+  duration_ms: 19292.659
+  type: 'suite'
+  ...
+# Subtest: 회원
+    # Subtest: 회원가입 → 토큰으로 내 정보 조회, 비밀번호는 응답에 없음
+    ok 1 - 회원가입 → 토큰으로 내 정보 조회, 비밀번호는 응답에 없음
+      ---
+      duration_ms: 65.4663
+      type: 'test'
+      ...
+    # Subtest: 약한 비밀번호는 거절
+    ok 2 - 약한 비밀번호는 거절
+      ---
+      duration_ms: 3.5897
+      type: 'test'
+      ...
+    # Subtest: 틀린 비밀번호 / 없는 계정은 같은 메시지
+    ok 3 - 틀린 비밀번호 / 없는 계정은 같은 메시지
+      ---
+      duration_ms: 90.1537
+      type: 'test'
+      ...
+    # Subtest: 취향은 본인만 바꿀 수 있다
+    ok 4 - 취향은 본인만 바꿀 수 있다
+      ---
+      duration_ms: 109.718
+      type: 'test'
+      ...
+    # Subtest: 로그아웃하면 토큰이 무효
+    ok 5 - 로그아웃하면 토큰이 무효
+      ---
+      duration_ms: 64.4393
+      type: 'test'
+      ...
+    1..5
+ok 9 - 회원
+  ---
+  duration_ms: 333.9247
+  type: 'suite'
+  ...
+# [password-reset] minji@example.com → /password/reset?token=BW2fIOiZwEm-KxfMG3J62BBV37tcrrWeSna8fZ8n7nY
+# Subtest: 비밀번호 재설정
+    # Subtest: 요청 → 데모 토큰으로 변경 → 새 비밀번호로 로그인, 토큰 재사용 불가
+    ok 1 - 요청 → 데모 토큰으로 변경 → 새 비밀번호로 로그인, 토큰 재사용 불가
+      ---
+      duration_ms: 167.8531
+      type: 'test'
+      ...
+    # Subtest: 가입되지 않은 이메일도 같은 형태로 응답
+    ok 2 - 가입되지 않은 이메일도 같은 형태로 응답
+      ---
+      duration_ms: 4.7093
+      type: 'test'
+      ...
+    1..2
+ok 10 - 비밀번호 재설정
+  ---
+  duration_ms: 172.7232
+  type: 'suite'
+  ...
+# Subtest: 관람 기록
+    # Subtest: 로그인 사용자는 저장, userId는 토큰 기준(본문 위조 무시)
+    ok 1 - 로그인 사용자는 저장, userId는 토큰 기준(본문 위조 무시)
+      ---
+      duration_ms: 78.0702
+      type: 'test'
+      ...
+    # Subtest: 비회원은 영수증만 받고 저장되지 않음
+    ok 2 - 비회원은 영수증만 받고 저장되지 않음
+      ---
+      duration_ms: 15.4064
+      type: 'test'
+      ...
+    # Subtest: 남의 기록은 볼 수 없고, 관리자는 볼 수 있음
+    ok 3 - 남의 기록은 볼 수 없고, 관리자는 볼 수 있음
+      ---
+      duration_ms: 149.72
+      type: 'test'
+      ...
+    1..3
+ok 11 - 관람 기록
+  ---
+  duration_ms: 243.542
+  type: 'suite'
+  ...
+# Subtest: AI (규칙 기반)
+    # Subtest: 질문에 작품 자료 기반 답 + 출처
+    ok 1 - 질문에 작품 자료 기반 답 + 출처
+      ---
+      duration_ms: 18.5346
+      type: 'test'
+      ...
+    # Subtest: 맞춤 설명
+    ok 2 - 맞춤 설명
+      ---
+      duration_ms: 2.4703
+      type: 'test'
+      ...
+    1..2
+ok 12 - AI (규칙 기반)
+  ---
+  duration_ms: 21.1499
+  type: 'suite'
+  ...
+# Subtest: 관리자
+    # Subtest: 토큰 없이는 수정 불가
+    ok 1 - 토큰 없이는 수정 불가
+      ---
+      duration_ms: 108.0102
+      type: 'test'
+      ...
+    # Subtest: 작품 등록 → 수정(위치 지정) → 조회
+    ok 2 - 작품 등록 → 수정(위치 지정) → 조회
+      ---
+      duration_ms: 118.8667
+      type: 'test'
+      ...
+    # Subtest: 전시 등록, 날짜 검증
+    ok 3 - 전시 등록, 날짜 검증
+      ---
+      duration_ms: 70.1364
+      type: 'test'
+      ...
+    # Subtest: 회원 조회·검색
+    ok 4 - 회원 조회·검색
+      ---
+      duration_ms: 66.5007
+      type: 'test'
+      ...
+    1..4
+ok 13 - 관리자
+  ---
+  duration_ms: 363.7286
+  type: 'suite'
+  ...
+# Subtest: 예전 태그 옮기기
+    # Subtest: 예전 6개 태그로 저장된 DB를 열면 새 8개로 바뀐다 (고요한 풍경→풍경, 감정 표현 삭제)
+    ok 1 - 예전 6개 태그로 저장된 DB를 열면 새 8개로 바뀐다 (고요한 풍경→풍경, 감정 표현 삭제)
+      ---
+      duration_ms: 183.3775
+      type: 'test'
+      ...
+    1..1
+ok 14 - 예전 태그 옮기기
+  ---
+  duration_ms: 183.4696
+  type: 'suite'
+  ...
+1..14
+# tests 38
+# suites 14
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22692.1541

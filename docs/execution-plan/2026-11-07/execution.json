@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "asOf": "2026-11-08",
-  "scope": "dev/임준억 통합 준비·실행 계획 정리; W별 증거는 후속 커밋에 포함",
+  "scope": "dev/임준억 회고 커밋 정리: W01~W01 증거 포함",
   "tasks": [
     {
       "id": "W01",
@@ -10,7 +10,7 @@
       "requiredGates": [],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC01",
@@ -248,12 +248,14 @@
     {
       "id": "G0",
       "dependsOn": [],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC01",
         "AC02"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W01/gate-review.md"
+      ]
     },
     {
       "id": "G1",
@@ -389,8 +391,11 @@
       "criterion": "사용자 확정 통합본 ae0e58e를 정식 격리 Git 작업공간에 확보하고 SHA·인수문서·이후diff 기록, 이전 ZIP/광권 코드는 비교자료로 보존",
       "evidence": "baseline.md 및 소스 diff",
       "reviewer": "정합성",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W01/baseline.md",
+        "records/W01/source-state.json"
+      ]
     },
     {
       "id": "AC02",
@@ -399,8 +404,14 @@
       "criterion": "통합본 전체의 새 작업공간에서 빌드/타입/테스트·주요 회귀를 재실행. 고유DB/파일은 확인완료 또는 회신대기와 원본미변경·비파괴 새개발DB 정책을 기록하면 코드인수 G0 통과 가능. 실제고유데이터 이전 AC17 통과로 승계하지 않음",
       "evidence": "명령·종료코드·로그/재현표",
       "reviewer": "기술",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W01/baseline.md",
+        "records/W01/frontend-build.log",
+        "records/W01/backend-tests.log",
+        "records/W01/ai-unit-tests.log",
+        "records/W01/regression-audit.json"
+      ]
     },
     {
       "id": "AC03",
