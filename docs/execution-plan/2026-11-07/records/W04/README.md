@@ -56,3 +56,9 @@ W02검사기는기존인벤토리/해시를바꾸지않고고정Git기준선을�
 위 원시 로그는 실제 구현/검증 시점의 기록이다. 2026-11-08에 dev/임준억으로 정리했고 로컬 과업별 커밋을 남겼다. 당시 work/jun-eok-refactor/절대경로 표기는 이력이며 현재 브랜치를 뜻하지 않는다. 재실행용 Python/MTS helper의 루트 탐색만 저장소 상대경로로 보완했다. 원래 source-state.json은 검증 당시 증거로 보존하며, 이번 커밋의 코드 동등성/이식 차이는 repository-handoff.json을 별도로 본다.
 
 커밋 전 재확인: commit-recheck-postgres-tests.log의 실제Postgres24건통과, commit-recheck-frontend-typecheck.log/commit-recheck-frontend-build.log의타입·빌드통과. W03상대경로이식9회귀도재실행통과했다. verify_repository_handoff.py는병합원본tree/동섭원문바이트/검증된42파일내용/문서링크를검사한다. capture_source.py는과거증거를덮지않고별도 *-current 파일에현재상태를기록하도록보완했다.
+
+## 재실행과 과거 증거 구분
+
+`verify_compose.py`는 일반 개발의 필수 절차가 아니라 시험 기록 재현용이다. `.env.compose`와 별도 Compose 프로젝트 `arti-w04`, 명시적으로 적재한 `fixture-ex01`이 필요하다. 일반 개발 안내의 `arti-dev`와 다르다. 시험 전시 버전을 7로 바꾸고 marker 파일을 쓰며 컨테이너를 재생성하므로 실제 자료를 넣은 환경에서는 실행하지 않는다. 이번 문서 감사에서는 실행하지 않았다. 재실행 결과는 `compose-check-current.json`/`compose-events-current.json`에 기록하여 최초 G3 증거를 덮지 않는다.
+
+`source-state.json`의 HEAD/로컬 변경 설명은 구현 검증 당시의 상태다. 현재 Git 상태는 누적 작업기록과 Git 로그를 따른다. 인수 검사기는 고정 W04 커밋 `8f46c66`의 42개 파일을 검사하므로 후속 개발 커밋을 기준선 손상으로 오판하지 않는다. `--verify-current-source`는 현재 파일까지 W04와 같은지 비교할 때만 선택한다. `--require-clean`은 작업트리 청결만 요구한다.

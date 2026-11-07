@@ -106,6 +106,7 @@ def cd_before_real_ai(p):
     assert p["operations"]["postgresDeployment"]=="self_managed"
 
 cases=[
+("stale_summary_field",lambda p:p.update(serviceGateState="W02 진행"),False,"Legacy summary field"),
 ("pass_without_evidence",lambda p:lookup(p,"AC01").update(status="pass"),False,"lacks evidence"),
 ("release_closure_cycle",lambda p:lookup(p,"F09")["criteria"].append("AC31"),False,"Release closure cycle"),
 ("release_open_issues",lambda p:pass_ac(p,"AC31"),False,"unresolved release-required issue"),

@@ -59,7 +59,7 @@ Exhibition.objects.filter(pk='fixture-ex01').update(version=7)
 except Exception as error:
     result = {'ok': False, 'error': str(error)}
 finally:
-    (ROOT/'compose-events.json').write_text(json.dumps(events,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    (ROOT/'compose-check.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (ROOT/'compose-events-current.json').write_text(json.dumps(events,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (ROOT/'compose-check-current.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result,ensure_ascii=False,indent=2))
 raise SystemExit(0 if result['ok'] else 1)

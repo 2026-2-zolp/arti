@@ -21,6 +21,11 @@ def git(*args, binary=False):
 
 
 baseline='ae0e58ebc338c17da6d4d17616fd802f03ba3bb6'
+history_start='f0c55aa7288de048b37b5711ed98f8ebb314e645'
+reviewed_commit='8f46c66ec8bac67b3ab4982d7457abe28667ceca'
+expected_commits=['b41adb5','c2612cf','5d9cf5d','b1507cf','63fb575','8f46c66']
+if subprocess.run(['git','-C',str(REPO),'merge-base','--is-ancestor',reviewed_commit,'HEAD'],capture_output=True).returncode:
+    errors.append('Current history does not contain the reviewed W04 commit.')
 if git('rev-parse','b41adb5^{tree}')!=git('rev-parse',baseline+'^{tree}'):
     errors.append('Imported tree is not the original Dongsup integration tree.')
 old='docs/1107_김동섭_(리팩토링전)프론트_백_통합.md'
@@ -29,11 +34,15 @@ if new.read_bytes()!=git('show',baseline+':'+old,binary=True):
     errors.append('Dongsup handoff original bytes changed.')
 snapshot=json.loads((ROOT/'records/W04/source-state.json').read_text(encoding='utf-8'))
 for entry in snapshot['sources']:
-    data=(REPO/entry['path']).read_bytes()
+    # Historical evidence is checked against its immutable commit, not a later W05 worktree.
+    data=git('show',reviewed_commit+':'+entry['path'],binary=True)
     lf=data.replace(b'\r\n',b'\n')
     candidates={hashlib.sha256(x).hexdigest() for x in (data,lf,lf.replace(b'\n',b'\r\n'))}
     if entry['sha256'] not in candidates:
         errors.append('Reviewed product content differs: '+entry['path'])
+    if '--verify-current-source' in sys.argv:
+        current=(REPO/entry['path']).read_bytes().replace(b'\r\n',b'\n')
+        if current!=lf:errors.append('Current source differs from W04: '+entry['path'])
 
 
 def links(text):
@@ -48,7 +57,7 @@ def links(text):
         if depth==0:yield text[start:end-1].strip().strip('<>')
 
 
-files=[REPO/'docs/통합준비문서.md',*(REPO/'docs/작업기록').glob('*.md'),*ROOT.rglob('*.md')]
+files=[REPO/'README.md',REPO/'docs/README.md',REPO/'docs/통합준비문서.md',*(REPO/'docs/작업기록').glob('*.md'),*ROOT.rglob('*.md')]
 link_count=0
 for file in files:
     for target in links(file.read_text(encoding='utf-8')):
@@ -63,9 +72,11 @@ for name in tracked:
 if git('branch','--show-current')!='dev/임준억':errors.append('Wrong development branch.')
 if '--require-clean' in sys.argv and git('status','--porcelain'):
     errors.append('Worktree is not clean.')
-commits=git('log','--first-parent','--format=%h %s','origin/dev/임준억..HEAD').splitlines()
-if '--require-clean' in sys.argv and len(commits)!=6:errors.append('Expected import/plan/W01–W04 six first-parent commits.')
+commits=git('log','--first-parent','--reverse','--format=%h %s',history_start+'..'+reviewed_commit).splitlines()
+if [row.split()[0] for row in commits]!=expected_commits:
+    errors.append('Original import/plan/W01–W04 commit sequence differs.')
 result={'ok':not errors,'branch':git('branch','--show-current'),'reviewedProductFiles':len(snapshot['sources']),
+        'reviewedSourceCommit':reviewed_commit,'currentSourceChecked':'--verify-current-source' in sys.argv,
         'checkedLocalLinks':link_count,'firstParentCommits':commits,'errors':errors,
         'scope':'Git/document/evidence handoff only; no new model/cloud acceptance.'}
 print(json.dumps(result,ensure_ascii=False,indent=2))

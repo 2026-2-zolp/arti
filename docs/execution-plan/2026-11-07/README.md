@@ -10,17 +10,17 @@
 
 | 문서 | 내용 |
 | --- | --- |
-| [01-assignment.md](01-assignment.md) | 과업·검증·이슈·결정·운영 상세 |
-| [02-procedure.md](02-procedure.md) | 과업·검증·이슈·결정·운영 상세 |
-| [03-quality-gates.md](03-quality-gates.md) | 과업·검증·이슈·결정·운영 상세 |
-| [04-issues.md](04-issues.md) | 과업·검증·이슈·결정·운영 상세 |
-| [05-contracts-and-decisions.md](05-contracts-and-decisions.md) | 과업·검증·이슈·결정·운영 상세 |
-| [06-operations.md](06-operations.md) | 과업·검증·이슈·결정·운영 상세 |
-| [07-records-and-handoff.md](07-records-and-handoff.md) | 과업·검증·이슈·결정·운영 상세 |
-| [08-document-review.md](08-document-review.md) | 과업·검증·이슈·결정·운영 상세 |
-| [09-baseline-and-data.md](09-baseline-and-data.md) | 과업·검증·이슈·결정·운영 상세 |
-| [10-persona-review-and-improvements.md](10-persona-review-and-improvements.md) | 과업·검증·이슈·결정·운영 상세 |
-| [11-plan-readiness-review.md](11-plan-readiness-review.md) | 과업·검증·이슈·결정·운영 상세 |
+| [01-assignment.md](01-assignment.md) | 과업 범위·산출물·완료 조건 |
+| [02-procedure.md](02-procedure.md) | 선후 관계와 실행 순서 |
+| [03-quality-gates.md](03-quality-gates.md) | 단계별 통과 기준·재검증 절차 |
+| [04-issues.md](04-issues.md) | 미해결 이슈와 처리 상태 |
+| [05-contracts-and-decisions.md](05-contracts-and-decisions.md) | API·데이터 계약과 결정 근거 |
+| [06-operations.md](06-operations.md) | 실행 환경·배포 운영 방침 |
+| [07-records-and-handoff.md](07-records-and-handoff.md) | 증거 보존과 후속 인수 절차 |
+| [08-document-review.md](08-document-review.md) | 현재 검토 결과와 커밋 연결 |
+| [09-baseline-and-data.md](09-baseline-and-data.md) | 통합 기준선과 데이터 인수 조건 |
+| [10-persona-review-and-improvements.md](10-persona-review-and-improvements.md) | 검증단 관점과 개선 사항 |
+| [11-plan-readiness-review.md](11-plan-readiness-review.md) | 착수 준비도와 잔여 조건 |
 
 ## 단계별 증거
 

@@ -26,6 +26,8 @@ for key, count in expected_counts.items():
 if plan.get("baseline", {}).get("commit") != "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6":
     errors.append("Baseline differs from user-adopted commit; revise explicitly")
 checks.append("Unique IDs, baseline, and expected coverage")
+if 'serviceGateState' in plan:
+    errors.append('Legacy summary field serviceGateState is forbidden; derive status from tasks/gates.')
 
 def evidence(entries, label, required=False):
     if required and not entries:

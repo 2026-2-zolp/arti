@@ -7,6 +7,7 @@
 - 기준: work/arti ae0e58e, 제품 소스 변경 없음.
 - 환경: Node22.23.1, 기존 backend tsx. 실제 Express 앱+각 검사마다 새 :memory: SQLite DB, 로컬 fake model HTTP. 실제 team arti.db/업로드/LLM키는 쓰지 않음.
 - 명령: 프로젝트 루트에서 `work/arti/backend/node_modules/.bin/tsx.cmd --test docs/execution-plan/2026-11-07/records/W03/regression.test.mts`.
+- 현재 저장소 루트의 재실행 명령: `backend/node_modules/.bin/tsx.cmd --test docs/execution-plan/2026-11-07/records/W03/regression.test.mts`. 위 명령의 `work/arti` 접두사는 편입 전 작업공간 기준이다. 먼저 backend 의존성을 설치해야 한다.
 - 최초 제한환경 실행은 localhost fetch가 차단되어 9건 모두 환경오류. 로컬 HTTP 허용 실행에서 종료코드0, **9/9 통과**. 코드 결함이 없다는 뜻이 아니라 아래 현재 동작을 정확히 재현했다는 뜻이다.
 - 결과: results.json, 전체 로그 regression.log. 테스트 fixture의 admin/admin1234는 기준 코드가 자동 생성하는 공개 데모값이며 실제 계정이 아니다. 테스트는 인메모리 DB 밖에 저장하지 않는다.
 

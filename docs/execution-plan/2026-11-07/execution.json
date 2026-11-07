@@ -1642,7 +1642,8 @@
     "branch": "dev/김동섭-1106-merge",
     "commit": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
     "adoption": "사용자 확정",
-    "handoff": "docs/1107_김동섭_(리팩토링전)프론트_백_통합.md"
+    "handoff": "docs/1107_김동섭_(리팩토링전)프론트_백_통합.md",
+    "handoffCurrentPath": "docs/작업기록/1107_김동섭_(리팩토링전)프론트_백_통합.md"
   },
   "operations": {
     "postgresDeployment": "undecided",
@@ -1650,7 +1651,6 @@
     "cloudBudget": "undecided",
     "note": "W12/GOPS에서 확정; 로컬 개발 G1의 선행조건 아님"
   },
-  "serviceGateState": "W01/G0 실제 코드인수·재현 통과, W02 개발계약 진행. G1이후·실제데이터이전·실모델·브라우저·AWS 미실행",
   "personaReview": {
     "asOf": "2026-11-07",
     "type": "evidence-grounded AI role review; not real stakeholder/user approval",

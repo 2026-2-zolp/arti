@@ -2,6 +2,13 @@
   "ok": true,
   "cases": [
     {
+      "case": "stale_summary_field",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Legacy summary field",
+      "actualErrors": []
+    },
+    {
       "case": "pass_without_evidence",
       "expectedAccepted": false,
       "passed": true,
@@ -170,7 +177,7 @@
       "actualErrors": []
     }
   ],
-  "negativeCases": 20,
+  "negativeCases": 21,
   "positiveCases": 4,
   "scope": "In-memory plan-state probes only; execution.json and service gates unchanged"
 }

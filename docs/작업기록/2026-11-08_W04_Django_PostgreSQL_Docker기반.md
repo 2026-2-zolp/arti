@@ -39,9 +39,9 @@
 
 ## 이번 커밋 정리에서 추가로 확인한 것
 
-W04완료작업트리를stash로보존했다가W01~W03커밋뒤복원했다. 검증당시42파일의SHA와복원파일을대조하고,줄바꿈정규화가있으면LF/CRLF변환외내용변경이없음을확인한다. 원래source-state.json은이력으로보존하고repository-handoff.json에이번브랜치/경로·현재코드동등성·소스해시를연결한다.
+W04완료작업트리를stash로보존했다가W01~W03커밋뒤복원했다. 검증당시42파일의SHA와복원파일을대조하고,줄바꿈정규화가있으면LF/CRLF변환외내용변경이없음을확인했다. 원래source-state.json은이력으로보존하고repository-handoff.json에이번 브랜치/경로·복원 코드 동등성·소스 해시를 연결했다.
 
-새문서루트에서경로만이식한검사helper를확인하며,실제Docker/Postgres24검사와frontend타입/빌드를커밋전다시확인한다. 새클라우드/실제자료/외부AI는사용하지않는다. 원문아카이브·동섭기록은바이트동일성을유지한다.
+새문서루트에서경로만이식한검사helper를확인하며,실제Docker/Postgres24검사와frontend타입/빌드를커밋 전 다시 확인해 통과했다. 결과는 W04의 commit-recheck-postgres-tests.log, commit-recheck-frontend-typecheck.log, commit-recheck-frontend-build.log에 보존했다. 새클라우드/실제자료/외부AI는사용하지않는다. 원문아카이브·동섭기록은바이트동일성을유지한다.
 
 ## 남은 일
 
