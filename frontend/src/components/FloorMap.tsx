@@ -9,6 +9,7 @@
  */
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { uploadedImageUrl } from '../api/client';
+import { useProtectedImage } from '../lib/useProtectedImage';
 import type { Exhibition, MapPoint } from '../types';
 
 export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
@@ -36,6 +37,7 @@ interface Props {
   /** 입구를 끌어다 놓았을 때 */
   onEntranceMove?: (p: MapPoint) => void;
   showEntrance?: boolean;
+  forAdmin?: boolean;
 }
 
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
@@ -52,8 +54,10 @@ export function FloorMap({
   onMarkerMove,
   onEntranceMove,
   showEntrance = true,
+  forAdmin = false,
 }: Props) {
   const plan = exhibition.floorPlan;
+  const { src: planSrc } = useProtectedImage(plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
   const ratio = plan ? plan.width / plan.height : aspect;
   const H = 100 / ratio;
   const sy = (y: number) => (y * H) / 100;
@@ -118,7 +122,7 @@ export function FloorMap({
       aria-label={`${exhibition.title} 평면도`}
     >
       {plan ? (
-        <image href={uploadedImageUrl(plan.file)} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
+        <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
       ) : (
         exhibition.rooms.map(
           (r) =>

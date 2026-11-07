@@ -17,7 +17,7 @@ function formatAt(iso: string) {
 }
 
 export default function A07Reactions() {
-  const { data } = useAsync(() => api.listArtworks(), []);
+  const { data } = useAsync(() => api.listAdminArtworks(), []);
   const [filter, setFilter] = useState<Filter>('all');
   const log = readReactionLog();
   const likes = log.filter((item) => item.reaction === 'like').length;

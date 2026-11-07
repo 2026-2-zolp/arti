@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "before": {
+    "exhibitions": 2,
+    "artworks": 13,
+    "accounts": 0,
+    "markerVersion": 7,
+    "fileSha256": "b4a227cf34b40d303587a9e8ed130b93ab522f8a54aad75fe0f70c0abcbc54e5",
+    "postgresVersion": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+  },
+  "after": {
+    "exhibitions": 2,
+    "artworks": 13,
+    "accounts": 0,
+    "markerVersion": 7,
+    "fileSha256": "b4a227cf34b40d303587a9e8ed130b93ab522f8a54aad75fe0f70c0abcbc54e5",
+    "postgresVersion": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+  },
+  "containersRecreated": true,
+  "productionFixtureRejected": true,
+  "scope": "Local W04 Compose/Postgres/file persistence only; not AWS backup/restore."
+}

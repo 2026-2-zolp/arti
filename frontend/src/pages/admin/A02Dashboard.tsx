@@ -5,7 +5,7 @@ import { useAsync } from '../../lib/useAsync';
 import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
 
 export default function A02Dashboard() {
-  const { data } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const { data } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   if (!data) return <PageHead title="대시보드" desc="불러오는 중…" />;
   const [exs, works] = data;
 

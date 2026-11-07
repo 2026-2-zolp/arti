@@ -29,6 +29,8 @@ export class ApiError extends Error {
 }
 
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? '/api';
+// W04: explicit target selection, never retry/fall back to another API automatically.
+const ADMIN_READ = import.meta.env.VITE_API_TARGET === 'django' ? '/admin' : '';
 const USER_TOKEN = 'arti.token';
 const ADMIN_TOKEN = 'arti.adminToken';
 /** 관리자 화면 로그인 여부 표시용 키 (pages/admin/AdminLayout.tsx의 ADMIN_KEY와 같은 값) */
@@ -37,7 +39,21 @@ const ADMIN_INFO = 'arti.admin';
 const USER_INFO = 'arti.user';
 
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
-export const uploadedImageUrl = (file: string) => `${BASE}/uploads/${encodeURIComponent(file)}`;
+export const uploadedImageUrl = (file: string, forAdmin = false) =>
+  `${BASE}${forAdmin ? ADMIN_READ : ''}/uploads/${encodeURIComponent(file)}`;
+
+export const isProtectedImageUrl = (url: string) =>
+  ADMIN_READ === '/admin' && url.startsWith(`${BASE}/admin/uploads/`);
+
+/** Admin tokens stay in request headers, never in image URLs or external-image requests. */
+export async function fetchProtectedImage(url: string, signal: AbortSignal): Promise<Blob> {
+  if (!isProtectedImageUrl(url)) throw new ApiError('허용되지 않은 이미지 경로예요.');
+  const token = load<string | null>(ADMIN_TOKEN, null);
+  if (!token) throw new ApiError('관리자 로그인이 필요해요.', 401);
+  const res = await fetch(url, { headers: { 'X-Admin-Token': token }, signal });
+  if (!res.ok) throw new ApiError('이미지를 불러올 수 없어요.', res.status);
+  return res.blob();
+}
 
 /** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -80,6 +96,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 const enc = encodeURIComponent;
 
 export const api = {
+  // Admin preview must not consume filtered public catalog data on the Django target.
+  listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
+  listAdminArtworks: (exhibitionId?: string) =>
+    request<Artwork[]>('GET', `${ADMIN_READ}/artworks${exhibitionId ? `?exhibitionId=${enc(exhibitionId)}` : ''}`),
+  getAdminArtwork: (id: string) => request<Artwork>('GET', `${ADMIN_READ}/artworks/${enc(id)}`),
   // ───────────────────────── 전시 ─────────────────────────
   getExhibition: (id: string) => request<Exhibition>('GET', `/exhibitions/${enc(id)}`),
 

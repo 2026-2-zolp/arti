@@ -1,0 +1,170 @@
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [migrate internal] load build definition from Dockerfile
+#1 transferring dockerfile: 478B 0.0s done
+#1 DONE 0.0s
+
+#2 [migrate internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 0.9s
+
+#3 [migrate internal] load .dockerignore
+#3 transferring context: 89B done
+#3 DONE 0.0s
+
+#4 [migrate internal] load build context
+#4 DONE 0.0s
+
+#5 [migrate 1/6] FROM docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54
+#5 resolve docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54 0.1s done
+#5 DONE 0.1s
+
+#4 [migrate internal] load build context
+#4 transferring context: 2.22kB 0.0s done
+#4 DONE 0.0s
+
+#6 [migrate 3/6] COPY requirements.lock ./
+#6 CACHED
+
+#7 [migrate 4/6] RUN pip install --no-cache-dir -r requirements.lock && useradd --create-home --uid 10001 arti
+#7 CACHED
+
+#8 [migrate 5/6] COPY --chown=arti:arti . .
+#8 CACHED
+
+#9 [migrate 2/6] WORKDIR /app
+#9 CACHED
+
+#10 [migrate 6/6] RUN mkdir -p /app/media && chown arti:arti /app/media
+#10 CACHED
+
+#11 [migrate] exporting to image
+#11 exporting layers done
+#11 exporting manifest sha256:8295d6f6ba3c33ef901752d4ece675c0b9915a8c8001a385d83c18ad8156a50a done
+#11 exporting config sha256:d2f0ab86224701ca8b29b10dd260b44933ccee0befddc4ed6b50d7ae5372f423 done
+#11 exporting attestation manifest sha256:62c8a5bfe7e69c89a51ffbcc5a655f319a9f7a939059549c36e1684a49da64de
+#11 exporting attestation manifest sha256:62c8a5bfe7e69c89a51ffbcc5a655f319a9f7a939059549c36e1684a49da64de 0.1s done
+#11 exporting manifest list sha256:80e7f53156ea3446ffe14877ec6ea6b29bf0302354e7722151c6fb661def8522
+#11 exporting manifest list sha256:80e7f53156ea3446ffe14877ec6ea6b29bf0302354e7722151c6fb661def8522 0.0s done
+#11 naming to docker.io/library/arti-w04-migrate:latest done
+#11 unpacking to docker.io/library/arti-w04-migrate:latest 0.0s done
+#11 DONE 0.3s
+
+#12 [migrate] resolving provenance for metadata file
+#12 DONE 0.0s
+
+#13 [api internal] load build definition from Dockerfile
+#13 transferring dockerfile: 478B done
+#13 DONE 0.0s
+
+#2 [api internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 1.3s
+
+#14 [api internal] load .dockerignore
+#14 transferring context: 89B done
+#14 DONE 0.0s
+
+#5 [api 1/6] FROM docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54
+#5 resolve docker.io/library/python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54 0.0s done
+#5 DONE 0.1s
+
+#15 [api internal] load build context
+#15 transferring context: 2.22kB 0.0s done
+#15 DONE 0.0s
+
+#16 [api 5/6] COPY --chown=arti:arti . .
+#16 CACHED
+
+#17 [api 4/6] RUN pip install --no-cache-dir -r requirements.lock && useradd --create-home --uid 10001 arti
+#17 CACHED
+
+#9 [api 2/6] WORKDIR /app
+#9 CACHED
+
+#18 [api 3/6] COPY requirements.lock ./
+#18 CACHED
+
+#19 [api 6/6] RUN mkdir -p /app/media && chown arti:arti /app/media
+#19 CACHED
+
+#20 [api] exporting to image
+#20 exporting layers done
+#20 exporting manifest sha256:6223e49220250a05de3a9a35fee30ad5404596e468379b4553c0a5a15e7b7965 done
+#20 exporting config sha256:573acdb2d3a82f8147d1ba3b6599b9e62e87c2dd24750d22d9a26125617a2cbc done
+#20 exporting attestation manifest sha256:3c108a83fe506c0f44efdd2061693d5d4ac2661f4a4a4896a064e9ab4fab70a9 0.0s done
+#20 exporting manifest list sha256:3b35edad496255348c0038a62416ef851891edac93c21d26008ef9855a2567ab 0.0s done
+#20 naming to docker.io/library/arti-w04-api:latest done
+#20 unpacking to docker.io/library/arti-w04-api:latest 0.0s done
+#20 DONE 0.2s
+
+#21 [api] resolving provenance for metadata file
+#21 DONE 0.0s
+
+#22 [frontend internal] load build definition from Dockerfile.dev
+#22 transferring dockerfile: 272B done
+#22 DONE 0.0s
+
+#23 [frontend internal] load metadata for docker.io/library/node:22-alpine
+#23 DONE 1.2s
+
+#24 [frontend internal] load .dockerignore
+#24 transferring context: 64B 0.0s done
+#24 DONE 0.0s
+
+#25 [frontend internal] load build context
+#25 transferring context: 7.79kB 0.0s done
+#25 DONE 0.0s
+
+#26 [frontend 1/5] FROM docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+#26 resolve docker.io/library/node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 0.1s done
+#26 DONE 0.1s
+
+#27 [frontend 3/5] COPY package.json package-lock.json ./
+#27 CACHED
+
+#28 [frontend 2/5] WORKDIR /app
+#28 CACHED
+
+#29 [frontend 4/5] RUN npm ci --ignore-scripts --no-audit --no-fund
+#29 CACHED
+
+#30 [frontend 5/5] COPY . .
+#30 DONE 0.1s
+
+#31 [frontend] exporting to image
+#31 exporting layers 0.1s done
+#31 exporting manifest sha256:5fca6a62238098bc29c194c1a97ce42d6cc09fc5b5f706dfe9731337c0f592a7 0.0s done
+#31 exporting config sha256:f459c32c0a07eee91282540a31ce916fc389daa2182622c51b1900b42d271b8d 0.0s done
+#31 exporting attestation manifest sha256:f47a9499e52e1045a8a68154168dd9c6f45960aab5a0f42e55f0ae115d900dbe 0.0s done
+#31 exporting manifest list sha256:f46d09fb87eaee63835d6b9b2f4c82947b6ce2cce35e5eea16e4c1e6733b5c6a 0.0s done
+#31 naming to docker.io/library/arti-w04-frontend:latest done
+#31 unpacking to docker.io/library/arti-w04-frontend:latest 0.1s done
+#31 DONE 0.4s
+
+#32 [frontend] resolving provenance for metadata file
+#32 DONE 0.0s
+ api  Built
+ frontend  Built
+ migrate  Built
+ Container arti-w04-db-1  Running
+ Container arti-w04-migrate-1  Recreate
+ Container arti-w04-migrate-1  Recreated
+ Container arti-w04-api-1  Recreate
+ Container arti-w04-api-1  Recreated
+ Container arti-w04-frontend-1  Recreate
+ Container arti-w04-frontend-1  Recreated
+ Container arti-w04-db-1  Waiting
+ Container arti-w04-db-1  Healthy
+ Container arti-w04-migrate-1  Starting
+ Container arti-w04-migrate-1  Started
+ Container arti-w04-db-1  Waiting
+ Container arti-w04-migrate-1  Waiting
+ Container arti-w04-db-1  Healthy
+ Container arti-w04-migrate-1  Exited
+ Container arti-w04-api-1  Starting
+ Container arti-w04-api-1  Started
+ Container arti-w04-api-1  Waiting
+ Container arti-w04-api-1  Healthy
+ Container arti-w04-frontend-1  Starting
+ Container arti-w04-frontend-1  Started

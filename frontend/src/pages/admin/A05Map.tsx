@@ -21,10 +21,10 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
 
 export default function A05Map() {
   const [params, setParams] = useSearchParams();
-  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listExhibitions(), []);
+  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listAdminExhibitions(), []);
   const exId = params.get('exhibition') ?? exhibitions?.[0]?.id ?? '';
   const { data: artworks, setData: setArtworks } = useAsync(
-    () => (exId ? api.listArtworks(exId) : Promise.resolve([] as Artwork[])),
+    () => (exId ? api.listAdminArtworks(exId) : Promise.resolve([] as Artwork[])),
     [exId],
   );
   const [selectedId, setSelectedId] = useState<string | null>(params.get('artwork'));
@@ -133,6 +133,7 @@ export default function A05Map() {
 
           <section className="a-card pad">
             <FloorMap
+              forAdmin
               exhibition={ex}
               markers={markers}
               aspect={1.55}

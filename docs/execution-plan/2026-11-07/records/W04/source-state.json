@@ -1,0 +1,187 @@
+{
+  "baseline": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "branch": "work/jun-eok-refactor",
+  "scope": "Local uncommitted W04 product changes; no remote push or real data import.",
+  "sources": [
+    {
+      "path": ".env.compose.example",
+      "sha256": "4d39cf38daeeb04cfc401fe6f40147ea8f6e8421ca22d1c518dc21c808b140ef"
+    },
+    {
+      "path": "backend-django/.dockerignore",
+      "sha256": "0d2ae475472e7362d1a4e28d2b2be8f776ffe16939a84a070bcea61224357d4f"
+    },
+    {
+      "path": "backend-django/Dockerfile",
+      "sha256": "7b6f185e09211842f23accf135c9af7c739c8e00fbf017539cae597357acf10a"
+    },
+    {
+      "path": "backend-django/README.md",
+      "sha256": "2a102f301dc7dbed5714aa5f6613f87f0a6760e5f2b4e79bb140939c86956d65"
+    },
+    {
+      "path": "backend-django/arti/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/arti/authentication.py",
+      "sha256": "449fb5e0890debbea014b2742fca758edbc0d3deb10acb3e71fd1fa347e8b07b"
+    },
+    {
+      "path": "backend-django/arti/constants.py",
+      "sha256": "f931759988c64ce5ca8f9aacfc3e1d2ddb7f5c176b3912273dee2935d9cdbda1"
+    },
+    {
+      "path": "backend-django/arti/http.py",
+      "sha256": "fe2609fa1ca86868ae8fcbec0a573ea4f2a049d4a5b5e387c6767f8f7226cf30"
+    },
+    {
+      "path": "backend-django/arti/management/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/arti/management/commands/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/arti/management/commands/bootstrap_admin.py",
+      "sha256": "d4ae56bba2d16ce837450ebe76e780918b85d52136fff2b66cd47f52b421fca2"
+    },
+    {
+      "path": "backend-django/arti/management/commands/load_test_fixture.py",
+      "sha256": "d0f53ad17f874d75ef067fd3895c76361e23d64cc56eaa11726b142cc3991578"
+    },
+    {
+      "path": "backend-django/arti/migrations/0001_initial.py",
+      "sha256": "0cf7ad14d0e277e4dbe60a1ee28a1506f432d93ea0d06c5246df85baf1729e98"
+    },
+    {
+      "path": "backend-django/arti/migrations/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/arti/models.py",
+      "sha256": "20b5fe142941b7cc0e413b1c8eef6b01e1133c1f7b2a74c0f82ce07ae0eac8af"
+    },
+    {
+      "path": "backend-django/arti/recommendations.py",
+      "sha256": "d1fccbac5749a0d9594a8a5557b6ea3b2999b5e33ad2700298d78e794c43d600"
+    },
+    {
+      "path": "backend-django/arti/serializers.py",
+      "sha256": "9f78de01b73c4842c166db486295a2320aeef0bb411198b20d08c61995c5d2c6"
+    },
+    {
+      "path": "backend-django/arti/tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/arti/tests/test_foundation.py",
+      "sha256": "a93b014f77744785b916a2e4a1f406e9459dcf05ca3d30332e1e9adf4f088f2c"
+    },
+    {
+      "path": "backend-django/arti/views.py",
+      "sha256": "b78dd86bfe673b6e8bcda48ba791e047a984be21c975eb5a27014ebbbf6c1611"
+    },
+    {
+      "path": "backend-django/config/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend-django/config/settings.py",
+      "sha256": "e564f01cbb55ecf12d5c7d1e86914edef3b19b30b1e667c9d7d67de3bdc4f25b"
+    },
+    {
+      "path": "backend-django/config/urls.py",
+      "sha256": "f88eedc3fba4892adbe0924bd382d080095b7238722c4da140dbbbf662e25896"
+    },
+    {
+      "path": "backend-django/config/wsgi.py",
+      "sha256": "c1ed832c2a0786feb5149ed553edb97a0dec3abf91f510bb5ebedf9214833c53"
+    },
+    {
+      "path": "backend-django/development_fixture.json",
+      "sha256": "daafa421960a361e98e96b6e7142e68c20d7ea47b759a98b8e6ee35e0815a44a"
+    },
+    {
+      "path": "backend-django/manage.py",
+      "sha256": "baa6a97954281286b9816b799ff1b99041128f2a50a3a1ed9e42b671477d56ed"
+    },
+    {
+      "path": "backend-django/requirements.in",
+      "sha256": "e9dd22dc38908b2121a84df3c0b7ebef01510e447fd4c2330fa19468f84d705f"
+    },
+    {
+      "path": "backend-django/requirements.lock",
+      "sha256": "112211f6bf55bacab1fabf13551cd7103b41158527e17160bc5040890dca8d39"
+    },
+    {
+      "path": "compose.yaml",
+      "sha256": "788614322499931c9b9bedaa71d8631e6cdba72df2ac639f7a0a1646fcfbb9e7"
+    },
+    {
+      "path": "frontend/.dockerignore",
+      "sha256": "b2b14144c901c47ba035b93d725be73701be46fb69eb9f80c7df8bb6b220cfa6"
+    },
+    {
+      "path": "frontend/Dockerfile.dev",
+      "sha256": "e49c7d4be4042d75966a473cf21c71e52b8f104b66512d478b97d0a980fb1372"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "sha256": "10a64f584f131a0574f7577e41f1222ffa7fd9a8d4cb512ef44a257c8b732b19"
+    },
+    {
+      "path": "frontend/src/components/ArtImage.tsx",
+      "sha256": "0ce9e35368c46471f5feadb7bf8fff1500e66f79d12cedfa123fde352d4b609c"
+    },
+    {
+      "path": "frontend/src/components/FloorMap.tsx",
+      "sha256": "b8736479578226368aa78f01c5aa6a826b207a500ac1f3ec6ab8fd212073e7b5"
+    },
+    {
+      "path": "frontend/src/lib/useProtectedImage.ts",
+      "sha256": "0cd2fc1a76bb9609778d8e0d210556f8717603b7e48858cdc2c0a2e6a667f90b"
+    },
+    {
+      "path": "frontend/src/pages/admin/A01Login.tsx",
+      "sha256": "067fa55560e10e87ac078b688eacc0cc32ffcc372d077f4e5fd550977039d179"
+    },
+    {
+      "path": "frontend/src/pages/admin/A02Dashboard.tsx",
+      "sha256": "2481abb2c62eee262b908d5531baa3614d1cba84668e70e293470a1ce6c8d24f"
+    },
+    {
+      "path": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "sha256": "302fc4f59f78745691352472298c8b764edf670a0ee22cd0e3e4837ab5045b88"
+    },
+    {
+      "path": "frontend/src/pages/admin/A04Artworks.tsx",
+      "sha256": "7a53ff30919cc230548c9d9fed85bf35247a9f0df81de6c31b4f612287a1b136"
+    },
+    {
+      "path": "frontend/src/pages/admin/A05Map.tsx",
+      "sha256": "8896b70dc2c3b217f5cc70ec7cbf90c72e0ae32c5207c189a4151476365ba4a5"
+    },
+    {
+      "path": "frontend/src/pages/admin/A07Reactions.tsx",
+      "sha256": "45e2edee1ae11c293ac14cd8540ee95c72e43d58c2e777d7f5796a205951e788"
+    },
+    {
+      "path": "scripts/init_dev_env.py",
+      "sha256": "571de6088ff5d6406630f5135f0fe18b44b8243c1ed392c2e9a9f6856989389c"
+    }
+  ],
+  "versions": {
+    "python": "3.12.16 (main, Nov  5 2026, 07:58:20) [GCC 14.2.0]",
+    "Django": "5.2.19",
+    "DRF": "3.16.1",
+    "psycopg": "3.3.8",
+    "gunicorn": "23.0.0"
+  },
+  "node": "v22.23.4",
+  "ignoredSettings": ".env.compose",
+  "apiImage": "sha256:3b35edad496255348c0038a62416ef851891edac93c21d26008ef9855a2567ab",
+  "frontendImage": "sha256:f46d09fb87eaee63835d6b9b2f4c82947b6ce2cce35e5eea16e4c1e6733b5c6a",
+  "postgresImage": "sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac"
+}

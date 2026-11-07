@@ -1,0 +1,421 @@
+{
+  "exhibitions": [
+    {
+      "id": "fixture-ex01",
+      "title": "ARTI 개발 검증 전시",
+      "subtitle": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "venue": "가상 전시실",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "status": "running",
+      "rooms": [
+        {
+          "id": "room-1",
+          "name": "검증실"
+        }
+      ],
+      "entrance_x": 0,
+      "entrance_y": 0
+    },
+    {
+      "id": "fixture-draft",
+      "title": "비공개 검증 전시",
+      "subtitle": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "venue": "",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "status": "draft",
+      "rooms": [],
+      "entrance_x": 0,
+      "entrance_y": 0,
+      "floor_plan": {
+        "file": "fixture-private.png",
+        "width": 1,
+        "height": 1
+      }
+    }
+  ],
+  "artworks": [
+    {
+      "id": "fixture-art01",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 01",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 5,
+      "position_y": 3,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "미검수 초안 — 공개금지",
+      "summary_status": "suggested",
+      "guide_intro": "검수 전 가이드",
+      "guided_looking": [
+        "어떤 색이 보이나요?"
+      ],
+      "guided_hints": [
+        "힌트"
+      ],
+      "guide_status": "suggested"
+    },
+    {
+      "id": "fixture-art02",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 02",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 10,
+      "position_y": 6,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art03",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 03",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 15,
+      "position_y": 9,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art04",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 04",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 20,
+      "position_y": 12,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art05",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 05",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 25,
+      "position_y": 15,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art06",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 06",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 30,
+      "position_y": 18,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art07",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 07",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 35,
+      "position_y": 21,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art08",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 08",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 40,
+      "position_y": 24,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art09",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 09",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 45,
+      "position_y": 27,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art10",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 10",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": 50,
+      "position_y": 30,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-public.png",
+      "show_image": true,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art11",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 11",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": null,
+      "position_y": null,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-private.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "pending",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art12",
+      "exhibition_id": "fixture-ex01",
+      "title": "검증용 작품 12",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "room-1",
+      "position_x": null,
+      "position_y": null,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-private.png",
+      "show_image": false,
+      "tags": [
+        "warm"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    },
+    {
+      "id": "fixture-art13",
+      "exhibition_id": "fixture-draft",
+      "title": "검증용 작품 13",
+      "artist": "가상 작가",
+      "year": "연도 미상",
+      "room_id": "",
+      "position_x": null,
+      "position_y": null,
+      "palette": [
+        "#334455",
+        "#c5b39b"
+      ],
+      "image_file": "fixture-private.png",
+      "show_image": true,
+      "tags": [
+        "landscape"
+      ],
+      "description": "실제 전시 자료가 아닌 개발 검증용 원문입니다.",
+      "source": "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION",
+      "reference_url": "",
+      "review_status": "approved",
+      "summary": "",
+      "summary_status": "none",
+      "guide_intro": "",
+      "guided_looking": [],
+      "guided_hints": [],
+      "guide_status": "none"
+    }
+  ]
+}

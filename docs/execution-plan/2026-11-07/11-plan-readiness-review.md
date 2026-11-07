@@ -2,6 +2,7 @@
 
 2026-11-08 KST. 작성자 자체 재검토이며 별도의 독립 검토나 실제 팀·교수 승인이 아니다. 현재 과업/게이트 상태는 execution.json을 따른다.
 
+이후 실행: 여기서 도출한 W02 보강을 실제 코드에 대조해 [개발 계약](records/W02/contracts.md)/[G1](records/W02/gate-review.md)을 확정했고 [W03/G2 회귀기반](records/W03/gate-review.md)까지 인수했다. 아래 준비도 평가는 그 실행 전 진단 이력이며 현재진행상태는 execution.json을 따른다.
 
 ## 계획 수준 판정
 

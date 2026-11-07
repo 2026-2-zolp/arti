@@ -24,7 +24,7 @@ const blank = (): Exhibition => ({
 
 export default function A03Exhibitions() {
   const navigate = useNavigate();
-  const { data, reload } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   const [editing, setEditing] = useState<Exhibition | null>(null);
 
   const save = async (ex: Exhibition) => {

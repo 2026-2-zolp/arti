@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "asOf": "2026-11-08",
-  "scope": "dev/임준억 회고 커밋 정리: W01~W03 증거 포함",
+  "scope": "dev/임준억 회고 커밋 정리: W01~W04 증거 포함",
   "tasks": [
     {
       "id": "W01",
@@ -64,7 +64,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC08",
@@ -290,13 +290,15 @@
       "dependsOn": [
         "G2"
       ],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC08",
         "AC09",
         "AC10"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W04/gate-review.md"
+      ]
     },
     {
       "id": "G4",
@@ -497,8 +499,16 @@
       "criterion": "현 프론트 API계약을 유지한 대상 API fixture 검사와 의도적 결함수정 차이를 기록. frontend 전체 교체나 미검수노출 복제 없음. 외부계약이 바뀌면 영향화면/이전→새요청응답/유지사항/재현법의 짧은 인수요약을 기록",
       "evidence": "계약 검사·차이표",
       "reviewer": "기술",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/contract-delta.md",
+        "records/W04/postgres-tests.log",
+        "records/W04/browser-observations.md",
+        "records/W04/frontend-typecheck.log",
+        "records/W04/frontend-build.log",
+        "records/W04/source-state.json",
+        "records/W04/gate-review.md"
+      ]
     },
     {
       "id": "AC09",
@@ -507,8 +517,15 @@
       "criterion": "Postgres 빈DB migration·동일fixture 재적재·ID/JSON/null/날짜/관계 제약 확인",
       "evidence": "DB 검사 로그·모델/migration",
       "reviewer": "데이터",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/postgres-tests.log",
+        "records/W04/empty-startup.log",
+        "records/W04/fixture.log",
+        "records/W04/migration-drift.log",
+        "records/W04/source-state.json",
+        "records/W04/gate-review.md"
+      ]
     },
     {
       "id": "AC10",
@@ -517,8 +534,16 @@
       "criterion": "Compose 새환경·DB준비·재시작 데이터/파일보존·운영 자동데모시드 차단·안전한 관리자 생성 확인. 개발 테스트 fixture와 실제 전시 적재 경로 분리",
       "evidence": "시작/재시작 로그",
       "reviewer": "운영",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/compose-check.json",
+        "records/W04/compose-events.json",
+        "records/W04/empty-startup.log",
+        "records/W04/bootstrap.log",
+        "records/W04/postgres-tests.log",
+        "records/W04/cleanup.log",
+        "records/W04/gate-review.md"
+      ]
     },
     {
       "id": "AC11",
@@ -767,7 +792,7 @@
       "title": "빈도·선택 원본 소실",
       "check": "풍경2/따뜻함1과 반대 입력의 계산을 계약대로 검증",
       "source": "old:F01",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "backend-django/taste,recommendations + U05/U06/client; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -836,7 +861,7 @@
       "title": "미검수 작품·AI필드 공개",
       "check": "상태 조합별 공개/관리자 API 검사",
       "source": "old:F04",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "catalog/public serializers, admin읽기 + client; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -906,7 +931,7 @@
       "title": "실제 스택과 설계 차이",
       "check": "Django 권장/Express대안 결정을 기록 후 전환",
       "source": "old:F07",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "backend-django/Compose, React계약전환; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -931,7 +956,7 @@
       "title": "5쌍 선택풀·버전·부족 처리",
       "check": "전시앞10개 의존 제거/정당화 및 부족 안내",
       "source": "old:F08",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "taste-pool/profile·U05/06; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -1068,7 +1093,7 @@
       "title": "현 Bearer·scrypt와 목표 인증 차이",
       "check": "JWT로 오기 금지·인증선택·해시이관정책",
       "source": "old:F14",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "auth/session/legacy hasher조건부; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -1113,7 +1138,7 @@
       "title": "SQLiteJSON·수동스키마와 데이터모델 차이",
       "check": "ID/관계/null/날짜·필요 세션/이력만 구현",
       "source": "old:F16",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "models/migrations/import; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -1274,7 +1299,7 @@
       "title": "로컬 업로드와 S3/모델 읽기 경로 차이",
       "check": "제한열람·파일보존·모델입력·URL만료",
       "source": "new:media",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "media permissions/storage adapter; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -1511,7 +1536,7 @@
       "title": "빈DB 자동시드의 알려진 데모/관리자 계정",
       "check": "DEMO_MODE=false와 별개로 seed실행됨. 운영시드 차단·안전한 초기관리자·초기배포 접근제한",
       "source": "new:backend/src/db.ts:99,108,180",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "bootstrap명령/fixture분리; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
@@ -1580,7 +1605,7 @@
       ],
       "check": "테스트시드와 실제자료 적재 분리, pending/source_check에서 사람 검수",
       "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "testfixture실자료import분리; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],

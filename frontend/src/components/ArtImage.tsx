@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { uploadedImageUrl } from '../api/client';
+import { useProtectedImage } from '../lib/useProtectedImage';
 import type { Artwork } from '../types';
 
 /**
@@ -14,7 +15,7 @@ import type { Artwork } from '../types';
  */
 export function artworkImageSrc(w: Pick<Artwork, 'imageFile' | 'imageUrl' | 'showImage'>, forAdmin = false) {
   if (!forAdmin && !w.showImage) return undefined;
-  return w.imageFile ? uploadedImageUrl(w.imageFile) : w.imageUrl || undefined;
+  return w.imageFile ? uploadedImageUrl(w.imageFile, forAdmin) : w.imageUrl || undefined;
 }
 
 function mulberry32(seed: number) {
@@ -57,12 +58,16 @@ export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 
   const urlKey = urls.join('|');
   const [failed, setFailed] = useState(0); // 불러오지 못한 주소 개수
   useEffect(() => setFailed(0), [urlKey]);
+  const resolved = useProtectedImage(urls[failed]);
+  useEffect(() => {
+    if (resolved.failed) setFailed((n) => n + 1);
+  }, [resolved.failed]);
 
-  if (failed < urls.length) {
+  if (failed < urls.length && resolved.src) {
     return (
       <img
         className={className}
-        src={urls[failed]}
+        src={resolved.src}
         alt={alt}
         style={{ aspectRatio: ratio, objectFit: 'cover', display: 'block', width: '100%' }}
         onError={() => setFailed((n) => n + 1)}

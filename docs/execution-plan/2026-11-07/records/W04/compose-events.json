@@ -1,0 +1,62 @@
+[
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T api python -",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T api python -",
+    "exitCode": 0,
+    "stdout": "{\"exhibitions\": 2, \"artworks\": 13, \"accounts\": 0, \"markerVersion\": 7, \"fileSha256\": \"b4a227cf34b40d303587a9e8ed130b93ab522f8a54aad75fe0f70c0abcbc54e5\", \"postgresVersion\": \"PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 ps -q db api",
+    "exitCode": 0,
+    "stdout": "39fbfd79dcbb0e70dc8a782bec98804093ddb515af4c79dd9d560ea2778a70cc\n5dfd9db9fcb32445c00309a30375ea424a3811853154dbcaa106221493606d16\n",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 up -d --force-recreate db api",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": " Container arti-w04-db-1  Recreate\n Container arti-w04-db-1  Recreated\n Container arti-w04-migrate-1  Created\n Container arti-w04-api-1  Recreate\n Container arti-w04-api-1  Recreated\n Container arti-w04-db-1  Starting\n Container arti-w04-db-1  Started\n Container arti-w04-db-1  Waiting\n Container arti-w04-db-1  Healthy\n Container arti-w04-migrate-1  Starting\n Container arti-w04-migrate-1  Started\n Container arti-w04-db-1  Waiting\n Container arti-w04-migrate-1  Waiting\n Container arti-w04-db-1  Healthy\n Container arti-w04-migrate-1  Exited\n Container arti-w04-api-1  Starting\n Container arti-w04-api-1  Started\n"
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 up -d --wait api",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": " Container arti-w04-db-1  Running\n Container arti-w04-migrate-1  Created\n Container arti-w04-api-1  Running\n Container arti-w04-db-1  Waiting\n Container arti-w04-db-1  Healthy\n Container arti-w04-migrate-1  Starting\n Container arti-w04-migrate-1  Started\n Container arti-w04-migrate-1  Waiting\n Container arti-w04-db-1  Waiting\n Container arti-w04-db-1  Healthy\n Container arti-w04-migrate-1  Exited\n Container arti-w04-api-1  Waiting\n Container arti-w04-migrate-1  Waiting\n Container arti-w04-db-1  Waiting\n Container arti-w04-migrate-1  Exited\n Container arti-w04-db-1  Healthy\n Container arti-w04-api-1  Healthy\n"
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T api python -",
+    "exitCode": 0,
+    "stdout": "{\"exhibitions\": 2, \"artworks\": 13, \"accounts\": 0, \"markerVersion\": 7, \"fileSha256\": \"b4a227cf34b40d303587a9e8ed130b93ab522f8a54aad75fe0f70c0abcbc54e5\", \"postgresVersion\": \"PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 ps -q db api",
+    "exitCode": 0,
+    "stdout": "a25b5504ee60df54cabf5561b3c42e8f878fd6db676ed773e360fa8ec74ddb5d\nbc9e5e990e7037f66dbdec15d4c5e0065c3bbb2ef5750525922d2ea01f3d303e\n",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T -e ARTI_ENV=production -e ALLOW_TEST_FIXTURES=true api python manage.py load_test_fixture",
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "CommandError: Test fixtures require development/test AND ALLOW_TEST_FIXTURES=true.\n\n"
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T api python manage.py check",
+    "exitCode": 0,
+    "stdout": "System check identified no issues (0 silenced).\n",
+    "stderr": ""
+  },
+  {
+    "command": "docker compose [ignored env] -p arti-w04 exec -T api python manage.py makemigrations --check --dry-run",
+    "exitCode": 0,
+    "stdout": "No changes detected\n",
+    "stderr": ""
+  }
+]

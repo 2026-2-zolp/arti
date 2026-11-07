@@ -1,5 +1,6 @@
 # 개발·운영 결정과 계약
 
+2026-11-08: W02 개발 계약은 [실제 코드 기반 확정 규격](records/W02/contracts.md), [개발 결정](records/W02/decisions.md), [검토 판정](records/W02/gate-review.md)을 따른다. 아래 표의 W02 결정 항목은 이 기록에서 닫았으며, 팀 최종 UX 합의/운영 미결은 구분해 유지한다.
 
 ## 결정의 범위
 

@@ -11,6 +11,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import { useProtectedImage } from '../../lib/useProtectedImage';
 import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
@@ -20,7 +21,7 @@ export function ArtworkList() {
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
-  const { data, reload } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
   const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   // 일괄 작업 대상 전시: 필터로 고른 전시, 없으면 운영 중인 전시
@@ -194,7 +195,7 @@ export function ArtworkEdit() {
   const navigate = useNavigate();
   const isNew = id === 'new';
   const { data } = useAsync(
-    () => Promise.all([api.listExhibitions(), isNew ? Promise.resolve(null) : api.getArtwork(id!)]),
+    () => Promise.all([api.listAdminExhibitions(), isNew ? Promise.resolve(null) : api.getAdminArtwork(id!)]),
     [id],
   );
   const [w, setW] = useState<Artwork | null>(null);
@@ -368,7 +369,7 @@ function ImageField({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
-  const src = artworkImageSrc(w, true);
+  const { src } = useProtectedImage(artworkImageSrc(w, true));
 
   // 서버가 바꾼 필드만 반영하고, 화면에서 수정 중인 다른 입력값은 그대로 둔다
   const applyServer = (saved: Artwork) =>
