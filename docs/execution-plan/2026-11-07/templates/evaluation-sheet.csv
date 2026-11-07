@@ -1,0 +1,2 @@
+case_id,condition,participant_id,artwork_id,source_ids,input_path,output_path,explanation_depth,factual_support,observation_prompt,level_fit,reported_confusion,helpful_or_failed,latency_ms,judge,verdict,limitations
+

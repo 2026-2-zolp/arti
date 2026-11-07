@@ -1,0 +1,13 @@
+# Preserve historical evidence bytes (including Windows-origin logs and hashes).
+docs/project-baseline/** -text
+docs/execution-plan/** -text
+docs/작업기록/** -text
+docs/통합준비문서.md -text
+# New implementation files use stable line endings across Windows and containers.
+backend-django/** text eol=lf
+frontend/src/** text eol=lf
+frontend/Dockerfile.dev text eol=lf
+frontend/.dockerignore text eol=lf
+scripts/init_dev_env.py text eol=lf
+compose.yaml text eol=lf
+.env.compose.example text eol=lf

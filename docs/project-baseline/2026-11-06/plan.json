@@ -1,0 +1,156 @@
+{
+  "asOf": "2026-11-06",
+  "baselineCommit": "bb83a86cfb1553e89ec48e698e41f845d8ddf043",
+  "tasks": [
+    {
+      "id": "T00",
+      "dependsOn": [],
+      "status": "complete"
+    },
+    {
+      "id": "T01",
+      "dependsOn": [
+        "T00"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T02",
+      "dependsOn": [
+        "T01"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T03",
+      "dependsOn": [
+        "T02"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T04",
+      "dependsOn": [
+        "T03"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T05",
+      "dependsOn": [
+        "T03"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T06",
+      "dependsOn": [
+        "T04",
+        "T05"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T07",
+      "dependsOn": [
+        "T02"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T08",
+      "dependsOn": [
+        "T06",
+        "T07"
+      ],
+      "status": "planned"
+    },
+    {
+      "id": "T09",
+      "dependsOn": [
+        "T08"
+      ],
+      "status": "planned"
+    }
+  ],
+  "notionSources": [
+    {
+      "id": "3e234713f16781029d0cf249818c8196",
+      "title": "🧭 9/23 후속회의 · 핵심 경험·설명 범위·차별화 정리",
+      "url": "https://app.notion.com/p/3e234713f16781029d0cf249818c8196",
+      "file": "sources/3e234713f16781029d0cf249818c8196.md",
+      "page_last_edited_at": "2026-11-05T23:48:33.039Z"
+    },
+    {
+      "id": "3fb34713f1678122bbf9f2c856b50ce8",
+      "title": "📝 10/12 정기회의 · 유영국 전시 선정 및 개발 착수 (회의 결과)",
+      "url": "https://app.notion.com/p/3fb34713f1678122bbf9f2c856b50ce8",
+      "file": "sources/3fb34713f1678122bbf9f2c856b50ce8.md",
+      "page_last_edited_at": "2026-11-05T23:48:35.220Z"
+    },
+    {
+      "id": "40134713f16781128c42daa31409c45b",
+      "title": "🎤 10/20 중간발표 · ARTI 발표 및 교수님 피드백 (복원 기록)",
+      "url": "https://app.notion.com/p/40134713f16781128c42daa31409c45b",
+      "file": "sources/40134713f16781128c42daa31409c45b.md",
+      "page_last_edited_at": "2026-11-05T23:48:37.295Z"
+    },
+    {
+      "id": "40534713f167815ca209e7cb69599407",
+      "title": "📝 10/26 회의 · 취향 조사·AI 추천·개발 연동 논의",
+      "url": "https://app.notion.com/p/40534713f167815ca209e7cb69599407",
+      "file": "sources/40534713f167815ca209e7cb69599407.md",
+      "page_last_edited_at": "2026-11-05T23:48:40.971Z"
+    },
+    {
+      "id": "40f34713f16781b7bae8e16a53b63845",
+      "title": "📝 11/3 회의 · 프론트·AI 설계 조율 및 통합 후속",
+      "url": "https://app.notion.com/p/40f34713f16781b7bae8e16a53b63845",
+      "file": "sources/40f34713f16781b7bae8e16a53b63845.md",
+      "page_last_edited_at": "2026-11-06T00:33:13.114Z"
+    },
+    {
+      "id": "41034713f16781818024c2b48f372311",
+      "title": "🔄 11/3 이후 개발·통합 현황 | 11/4~11/6 후속 기록",
+      "url": "https://app.notion.com/p/41034713f16781818024c2b48f372311",
+      "file": "sources/41034713f16781818024c2b48f372311.md",
+      "page_last_edited_at": "2026-11-06T00:32:47.385Z"
+    },
+    {
+      "id": "3f034713f16780d39decdc6996c7994c",
+      "title": "김광권",
+      "url": "https://app.notion.com/p/3f034713f16780d39decdc6996c7994c",
+      "file": "sources/3f034713f16780d39decdc6996c7994c.md",
+      "page_last_edited_at": "2026-10-15T14:16:08.934Z"
+    },
+    {
+      "id": "3fd34713f16781dfa73cd32ee360112d",
+      "title": "🎤 10/18 중간발표 PPT 제작 기록 · 장표별 구성·검증·발표 스크립트",
+      "url": "https://app.notion.com/p/3fd34713f16781dfa73cd32ee360112d",
+      "file": "sources/3fd34713f16781dfa73cd32ee360112d.md",
+      "page_last_edited_at": "2026-10-18T11:30:41.132Z"
+    },
+    {
+      "id": "3fa34713f16780beb95ec4e5879ba25b",
+      "title": "10/15 궁금점",
+      "url": "https://app.notion.com/p/3fa34713f16780beb95ec4e5879ba25b",
+      "file": "sources/3fa34713f16780beb95ec4e5879ba25b.md",
+      "page_last_edited_at": "2026-10-16T14:25:49.139Z"
+    },
+    {
+      "id": "40d34713f16781feb71ed930090ac9b6",
+      "title": "🧩 임준억 | 11/3 회의 준비 · OAuth·AI·개발 연동 방향",
+      "url": "https://app.notion.com/p/40d34713f16781feb71ed930090ac9b6",
+      "file": "sources/40d34713f16781feb71ed930090ac9b6.md",
+      "page_last_edited_at": "2026-11-03T03:18:11.088Z"
+    },
+    {
+      "id": "3e434713f16780cfa5e9d0b280b3e760",
+      "title": "1차발표",
+      "url": "https://app.notion.com/p/3e434713f16780cfa5e9d0b280b3e760",
+      "file": "sources/3e434713f16780cfa5e9d0b280b3e760.md",
+      "page_last_edited_at": "2026-09-23T04:38:05.401Z"
+    }
+  ]
+}
+

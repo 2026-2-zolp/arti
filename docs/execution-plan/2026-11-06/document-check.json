@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "checks": [
+    "Unique IDs and expected coverage",
+    "Task and gate dependency DAGs",
+    "Task/issue/criterion links and evidence-dependent status rules",
+    "Local links and report/manifest coverage",
+    "Original archive SHA256 and file inventory unchanged"
+  ],
+  "tasks": 10,
+  "gates": 8,
+  "criteria": 32,
+  "issues": 33,
+  "localLinks": 28,
+  "archiveFilesPreserved": 22,
+  "errors": [],
+  "scope": "Document structure/status integrity only; service verification is separate"
+}
