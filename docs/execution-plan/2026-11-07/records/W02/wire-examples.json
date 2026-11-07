@@ -1,0 +1,278 @@
+{
+  "scope": "Synthetic complete request examples for changed endpoints, illustrative response bodies. Tokens/artwork IDs are fixtures; not real credentials or live results.",
+  "examples": [
+    {
+      "name": "recommend-picks",
+      "method": "POST",
+      "path": "/api/recommendations",
+      "request": {
+        "exhibitionId": "e01",
+        "tastes": [
+          "landscape",
+          "warm"
+        ],
+        "duration": "30m",
+        "tasteProfile": {
+          "version": 1,
+          "source": "picks",
+          "poolVersion": "pool-fixture-v1",
+          "picks": [
+            {
+              "pairIndex": 0,
+              "artworkId": "a01"
+            },
+            {
+              "pairIndex": 1,
+              "artworkId": "a03"
+            },
+            {
+              "pairIndex": 2,
+              "artworkId": "a05"
+            },
+            {
+              "pairIndex": 3,
+              "artworkId": "a07"
+            },
+            {
+              "pairIndex": 4,
+              "artworkId": "a09"
+            }
+          ],
+          "counts": {
+            "landscape": 3,
+            "people": 0,
+            "abstract": 0,
+            "light": 0,
+            "vivid": 0,
+            "cool": 0,
+            "warm": 2,
+            "soft": 0
+          },
+          "selectedTags": [
+            "landscape",
+            "warm"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": [
+          {
+            "artworkId": "a01",
+            "order": 1,
+            "reason": "풍경",
+            "matchedTags": [
+              "landscape"
+            ],
+            "matchedCard": "landscape",
+            "score": 0.6,
+            "aiTags": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "ask-with-guide",
+      "method": "POST",
+      "path": "/api/artworks/a01/ask",
+      "request": {
+        "question": "밝은 색이 모인 곳에 먼저 눈이 가는데, 더 어떻게 보면 좋을까요?",
+        "visitId": "11111111-1111-4111-8111-111111111111",
+        "entryContext": {
+          "tab": "guided",
+          "kind": "guide",
+          "contentVersion": 3,
+          "questionIndex": 0
+        },
+        "history": [
+          {
+            "role": "user",
+            "text": "이 질문에서 어디를 보라는 건가요?"
+          },
+          {
+            "role": "assistant",
+            "text": "화면에서 눈이 먼저 가는 색을 찾아보세요."
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "answer": "그 밝은 부분과 주변 색을 번갈아 보며 경계가 어떻게 느껴지는지 이야기해 볼까요?",
+          "mode": "llm",
+          "sourceRefs": [
+            {
+              "artworkId": "a01",
+              "sourceVersion": 2,
+              "kind": "guide",
+              "revision": 1
+            }
+          ],
+          "requestId": "fixture-request-01"
+        }
+      }
+    },
+    {
+      "name": "ask-stale",
+      "method": "POST",
+      "path": "/api/artworks/a01/ask",
+      "request": {
+        "question": "이 부분 더 설명해줘",
+        "visitId": "11111111-1111-4111-8111-111111111111",
+        "entryContext": {
+          "tab": "desc",
+          "kind": "original",
+          "contentVersion": 2
+        },
+        "history": []
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "error": "작품 자료가 변경됐어요. 새 내용을 확인해 주세요.",
+          "code": "CONTENT_CHANGED",
+          "retryable": false,
+          "requestId": "fixture-request-02"
+        }
+      }
+    },
+    {
+      "name": "save-member-or-guest",
+      "method": "POST",
+      "path": "/api/visits",
+      "request": {
+        "visitId": "11111111-1111-4111-8111-111111111111",
+        "exhibitionId": "e01",
+        "exhibitionTitle": "테스트 전시",
+        "venue": "테스트 장소",
+        "date": "2026-11-08T03:00:00Z",
+        "durationMin": 12,
+        "viewedArtworkIds": [
+          "a01"
+        ],
+        "recommendedCount": 3,
+        "reactions": {
+          "a01": "like"
+        },
+        "reactionReasons": {
+          "a01": "색감이 좋아요"
+        },
+        "dwell": {
+          "a01": 80
+        },
+        "longestViewedArtworkId": "a01",
+        "keywords": [
+          "풍경"
+        ],
+        "selectedDuration": "30m",
+        "requestGeneration": 1,
+        "tasteProfile": {
+          "version": 1,
+          "source": "manual",
+          "poolVersion": null,
+          "picks": [],
+          "counts": {
+            "landscape": 0,
+            "people": 0,
+            "abstract": 0,
+            "light": 0,
+            "vivid": 0,
+            "cool": 0,
+            "warm": 0,
+            "soft": 0
+          },
+          "selectedTags": [
+            "landscape"
+          ]
+        }
+      },
+      "responseVariants": [
+        {
+          "when": "valid member Bearer",
+          "status": 201,
+          "extraFields": {
+            "id": "v-fixture01",
+            "userId": "u01",
+            "persisted": true,
+            "visitId": "11111111-1111-4111-8111-111111111111"
+          }
+        },
+        {
+          "when": "same frozen payload retry",
+          "status": 200,
+          "extraFields": {
+            "id": "v-fixture01",
+            "persisted": true
+          }
+        },
+        {
+          "when": "no Bearer guest",
+          "status": 200,
+          "extraFields": {
+            "id": "11111111-1111-4111-8111-111111111111",
+            "userId": null,
+            "persisted": false
+          }
+        },
+        {
+          "when": "expired Bearer",
+          "status": 401,
+          "body": {
+            "error": "다시 로그인해 주세요.",
+            "code": "SESSION_EXPIRED",
+            "retryable": false,
+            "requestId": "fixture-request-03"
+          }
+        }
+      ]
+    },
+    {
+      "name": "interpret-after-save",
+      "method": "POST",
+      "path": "/api/visits/interpret",
+      "request": {
+        "exhibitionId": "e01",
+        "visitId": "11111111-1111-4111-8111-111111111111",
+        "viewedArtworkIds": [
+          "a01"
+        ],
+        "reactions": {
+          "a01": "like"
+        },
+        "dwell": {
+          "a01": 80
+        }
+      },
+      "response": {
+        "status": 503,
+        "body": {
+          "error": "AI 해석을 사용할 수 없어요. 관람 기록은 별도로 저장됩니다.",
+          "code": "AI_UNAVAILABLE",
+          "retryable": true,
+          "requestId": "fixture-request-04"
+        }
+      }
+    },
+    {
+      "name": "analyze-default-protection",
+      "method": "POST",
+      "path": "/api/admin/artworks/a01/analyze",
+      "request": {
+        "version": 5,
+        "useImage": true,
+        "regenerateFields": []
+      },
+      "response": {
+        "status": 200,
+        "summary": {
+          "ok": true,
+          "source": "kept"
+        },
+        "guide": {
+          "made": true
+        },
+        "meaning": "artwork object retains confirmed summary; new guide suggested. Full response includes artwork/emotion per existing DTO."
+      }
+    }
+  ]
+}

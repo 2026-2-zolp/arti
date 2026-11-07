@@ -25,6 +25,7 @@
 ## 단계별 증거
 
 - [W01 / G0 검토](records/W01/gate-review.md)
+- [W02 / G1 검토](records/W02/gate-review.md)
 
 ## 과거 자료
 

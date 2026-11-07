@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "asOf": "2026-11-08",
-  "scope": "dev/임준억 회고 커밋 정리: W01~W01 증거 포함",
+  "scope": "dev/임준억 회고 커밋 정리: W01~W02 증거 포함",
   "tasks": [
     {
       "id": "W01",
@@ -28,7 +28,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC03",
@@ -262,13 +262,15 @@
       "dependsOn": [
         "G0"
       ],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC03",
         "AC04",
         "AC05"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W02/gate-review.md"
+      ]
     },
     {
       "id": "G2",
@@ -420,8 +422,13 @@
       "criterion": "현 U05/06 방식의 임시 유지·최종합의 대기 범위를 구별하고 선택풀/빈도/수정계약, 콘텐츠4종·검수·ID·좌표·도슨트 진입맥락/복귀 상태의 정상·실패 예시 확정. 회원DB저장/guest미저장 기본정책, U05/06 임시흐름·계약변경 경계, 명시적 쉬운/깊은설명 요청 사례와 한작품 추적항목 포함",
       "evidence": "계약 예시·대조표",
       "reviewer": "정합성",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/contracts.md",
+        "records/W02/cases.json",
+        "records/W02/wire-examples.json",
+        "records/W02/gate-review.md"
+      ]
     },
     {
       "id": "AC04",
@@ -430,8 +437,12 @@
       "criterion": "개발에 필요한 API스택·인증 계약·모델 provider 경계·데이터계약을 결정. AWS예산/계정/상세서비스는 W12, 실제모델 지연·평가목표는 W06에서 별도 확정하여 로컬 개발을 막지 않음",
       "evidence": "결정기록·담당·수치/조건",
       "reviewer": "운영",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/decisions.md",
+        "records/W02/contracts.md",
+        "records/W02/gate-review.md"
+      ]
     },
     {
       "id": "AC05",
@@ -440,8 +451,13 @@
       "criterion": "이슈별 현 통합본의 반영/미해결/미검증 구분, 수정 위치·담당·회귀 연결과 Express 이중구현 방지 범위 기록",
       "evidence": "이슈 추적표·작업계획",
       "reviewer": "기술",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/issue-implementation-map.md",
+        "records/W02/source-inventory.json",
+        "records/W02/contract-check.json",
+        "records/W02/gate-review.md"
+      ]
     },
     {
       "id": "AC06",
