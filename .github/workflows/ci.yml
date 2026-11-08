@@ -1,0 +1,121 @@
+name: ARTI CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'dev/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+
+  django:
+    name: Django PostgreSQL checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: arti
+          POSTGRES_USER: arti
+          POSTGRES_PASSWORD: ci-only-disposable-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U arti -d arti"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    env:
+      DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      ARTI_ENV: test
+      ALLOW_TEST_FIXTURES: 'true'
+      ARTI_LLM_PROVIDER: disabled
+      OPENAI_API_KEY: ''
+      PGDATABASE: arti
+      PGUSER: arti
+      PGPASSWORD: ci-only-disposable-password
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      MEDIA_ROOT: /tmp/arti-ci-media
+    defaults:
+      run:
+        working-directory: backend-django
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend-django/requirements.lock
+      - run: python -m pip install -r requirements.lock
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py migrate --noinput
+      - run: python manage.py test arti.tests --noinput -v 2
+
+  model-contracts:
+    name: Model service fake checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      ARTI_PRELOAD: 'false'
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+    defaults:
+      run:
+        working-directory: ai-service
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: ai-service/requirements-dev.txt
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  plan-contracts:
+    name: Plan and contract checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0 # Pinned baseline and protected archive provenance.
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: python docs/execution-plan/2026-11-07/verify_plan.py
+      - run: python docs/execution-plan/2026-11-07/verify_guardrails.py
+      - run: python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py

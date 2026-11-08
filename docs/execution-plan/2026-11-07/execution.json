@@ -220,7 +220,7 @@
         "W04"
       ],
       "completionGates": [],
-      "status": "planned",
+      "status": "in_progress",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC07"
@@ -492,7 +492,10 @@
       "evidence": "Actions run·job 정의",
       "reviewer": "운영",
       "status": "not_run",
-      "evidencePaths": []
+      "evidencePaths": [
+        "records/W11/README.md",
+        "records/W11/validation-summary.json"
+      ]
     },
     {
       "id": "AC08",
@@ -1360,12 +1363,12 @@
       "title": "GitHub Actions CI 미구성",
       "check": "PR빌드·계약·Postgres 검사/실제AI별도",
       "source": "new:CI",
-      "status": "open",
+      "status": "verification_pending",
       "owner": "준억 통합 조율",
-      "fixLocation": ".github/workflows 생성예정; records/W02/issue-implementation-map.md",
+      "fixLocation": ".github/workflows/ci.yml; records/W11/README.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
+      "observation": "CI workflow와 Linux 로컬재현 완료, 실제 Actions/PR run은 push 전이라 대기",
       "resolvedCommit": null
     },
     {

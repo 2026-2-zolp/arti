@@ -1,0 +1,84 @@
+Unable to find image 'python:3.12-slim' locally
+3.12-slim: Pulling from library/python
+Digest: sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54
+Status: Downloaded newer image for python:3.12-slim
+Collecting fastapi>=0.115 (from -r requirements-dev.txt (line 2))
+  Downloading fastapi-0.162.2-py3-none-any.whl.metadata (27 kB)
+Collecting pydantic>=2.7 (from -r requirements-dev.txt (line 3))
+  Downloading pydantic-2.14.3-py3-none-any.whl.metadata (141 kB)
+Collecting httpx>=0.27 (from -r requirements-dev.txt (line 4))
+  Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Collecting pillow>=10.4 (from -r requirements-dev.txt (line 5))
+  Downloading pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+Collecting pytest>=8 (from -r requirements-dev.txt (line 6))
+  Downloading pytest-9.2.0-py3-none-any.whl.metadata (7.9 kB)
+Collecting starlette>=0.46.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+  Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting typing-inspection>=0.4.2 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+  Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+Collecting annotated-doc>=0.0.2 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+  Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+Collecting opentelemetry-api>=1.44.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+  Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+Collecting annotated-types>=0.6.0 (from pydantic>=2.7->-r requirements-dev.txt (line 3))
+  Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.50.4 (from pydantic>=2.7->-r requirements-dev.txt (line 3))
+  Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.6 kB)
+Collecting anyio (from httpx>=0.27->-r requirements-dev.txt (line 4))
+  Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting certifi (from httpx>=0.27->-r requirements-dev.txt (line 4))
+  Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+Collecting httpcore==1.* (from httpx>=0.27->-r requirements-dev.txt (line 4))
+  Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting idna (from httpx>=0.27->-r requirements-dev.txt (line 4))
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx>=0.27->-r requirements-dev.txt (line 4))
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting iniconfig>=2 (from pytest>=8->-r requirements-dev.txt (line 6))
+  Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+Collecting packaging>=24 (from pytest>=8->-r requirements-dev.txt (line 6))
+  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting pluggy<2,>=1.6 (from pytest>=8->-r requirements-dev.txt (line 6))
+  Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+Collecting pygments>=2.15 (from pytest>=8->-r requirements-dev.txt (line 6))
+  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Downloading fastapi-0.162.2-py3-none-any.whl (151 kB)
+Downloading pydantic-2.14.3-py3-none-any.whl (494 kB)
+Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 6.6 MB/s eta 0:00:00
+Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Downloading pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.1/7.1 MB 1.2 MB/s eta 0:00:00
+Downloading pytest-9.2.0-py3-none-any.whl (411 kB)
+Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+Downloading packaging-26.3-py3-none-any.whl (129 kB)
+Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 2.0 MB/s eta 0:00:00
+Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+Downloading idna-3.20-py3-none-any.whl (69 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Installing collected packages: typing-extensions, pygments, pluggy, pillow, packaging, iniconfig, idna, h11, certifi, annotated-types, annotated-doc, typing-inspection, pytest, pydantic-core, opentelemetry-api, httpcore, anyio, starlette, pydantic, httpx, fastapi
+Successfully installed annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 certifi-2026.10.23 fastapi-0.162.2 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 opentelemetry-api-1.45.2 packaging-26.3 pillow-13.0.0 pluggy-1.7.0 pydantic-2.14.3 pydantic-core-2.50.4 pygments-2.21.0 pytest-9.2.0 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.5
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+.................                                                        [100%]
+=============================== warnings summary ===============================
+../../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+17 passed, 1 warning in 0.31s

@@ -1,0 +1,121 @@
+Unable to find image 'node:22-alpine' locally
+22-alpine: Pulling from library/node
+Digest: sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
+Status: Downloaded newer image for node:22-alpine
+
+added 78 packages in 3s
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+
+> arti-frontend@0.1.0 test
+> tsx --test tests/*.test.mts
+
+TAP version 13
+# Subtest: late 401 from previous token cannot erase a newer account token
+ok 1 - late 401 from previous token cannot erase a newer account token
+  ---
+  duration_ms: 189.57078
+  type: 'test'
+  ...
+# Subtest: pending receipt cannot POST when token changes during same-owner verification
+ok 2 - pending receipt cannot POST when token changes during same-owner verification
+  ---
+  duration_ms: 1.122222
+  type: 'test'
+  ...
+# Subtest: same-owner explicit recovery transmits the original frozen payload once
+ok 3 - same-owner explicit recovery transmits the original frozen payload once
+  ---
+  duration_ms: 0.827802
+  type: 'test'
+  ...
+# Subtest: inactive receipt scope stops POST after successful account check
+ok 4 - inactive receipt scope stops POST after successful account check
+  ---
+  duration_ms: 0.526364
+  type: 'test'
+  ...
+# Subtest: late logout completion cannot erase a newer login
+ok 5 - late logout completion cannot erase a newer login
+  ---
+  duration_ms: 0.444332
+  type: 'test'
+  ...
+# Subtest: failed login credentials do not expire an existing valid session
+ok 6 - failed login credentials do not expire an existing valid session
+  ---
+  duration_ms: 0.501869
+  type: 'test'
+  ...
+# Subtest: incomplete artwork dwell/reactions cannot enter a canonical receipt
+ok 7 - incomplete artwork dwell/reactions cannot enter a canonical receipt
+  ---
+  duration_ms: 28.568201
+  type: 'test'
+  ...
+# Subtest: zero completed works form an empty valid receipt instead of claiming a viewed work
+ok 8 - zero completed works form an empty valid receipt instead of claiming a viewed work
+  ---
+  duration_ms: 0.885096
+  type: 'test'
+  ...
+# Subtest: HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+ok 9 - HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+  ---
+  duration_ms: 15.109492
+  type: 'test'
+  ...
+# Subtest: taste/time invalidation rejects a late previous-generation recommendation
+ok 10 - taste/time invalidation rejects a late previous-generation recommendation
+  ---
+  duration_ms: 1.391002
+  type: 'test'
+  ...
+# Subtest: explicit new visit with same duration replaces ID and clears progress
+ok 11 - explicit new visit with same duration replaces ID and clears progress
+  ---
+  duration_ms: 2.00638
+  type: 'test'
+  ...
+# Subtest: same-work navigation refresh preserves state; actor/exhibition changes isolate it
+ok 12 - same-work navigation refresh preserves state; actor/exhibition changes isolate it
+  ---
+  duration_ms: 1.277759
+  type: 'test'
+  ...
+# Subtest: frequency provenance survives selection and recommendation storage
+ok 13 - frequency provenance survives selection and recommendation storage
+  ---
+  duration_ms: 0.495185
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 536.276488
+
+> arti-frontend@0.1.0 typecheck
+> tsc -b --noEmit
+
+
+> arti-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 89 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.85 kB │ gzip:   0.52 kB
+dist/assets/index-BFp8mqBW.css   31.25 kB │ gzip:   6.84 kB
+dist/assets/index-CBupdyC4.js    23.56 kB │ gzip:   9.12 kB
+dist/assets/index-huA25BeV.js   392.77 kB │ gzip: 123.67 kB
+✓ built in 1.95s

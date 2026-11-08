@@ -33,3 +33,7 @@ GitHub Actions는 PostgreSQL 서비스 컨테이너를 지원하며 컨테이너
 4. AWS 인증은 장기 키를 저장하기보다 최소 권한 OIDC role을 검토한다. CI는 contents:read, 배포 job에만 필요한 id-token:write와 제한된 role/environment를 둔다. trust policy는 대상 조직·저장소·환경의 실제 claims로 제한한다. [GitHub 공식 AWS OIDC 안내](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws).
 
 현재 W05에서 workflow/CD까지 확대 구현하지 않았다. 다음 W의 실행 순서와 GCI/GOPS/GDEP 통과는 기존 계획 및 사용자 승인 범위에 따라 관리한다. 브랜치 푸시만으로 production에 자동 배포되도록 만들지 않는다.
+
+## 검토 이후 적용 현황
+
+사용자 후속 요청으로 CI4job을 구현하고 Linux 로컬 재현/actionlint를 통과했다. 프론트 tsx도 자체의존성으로 옮겼다. 위 본문은 도입 전 검토 경위이며 현재는 [W11 도입 기록](../execution-plan/2026-11-07/records/W11/README.md)을 따른다. 실제 Actions run은 push 전이라 없고 GCI not_run, CD 미구현은 유지한다.

@@ -1,0 +1,13 @@
+{
+  "workflowImplemented": true,
+  "remoteActionsRunExecuted": false,
+  "GCI": "not_run",
+  "localLinuxFrontendTests": 13,
+  "localLinuxFrontendTypecheckAndBuild": true,
+  "localLinuxFakeModelTests": 17,
+  "localLinuxPlanContractChecksPassed": true,
+  "actionlintExitCode": 0,
+  "postgresWithProviderPreparationTests": 63,
+  "paidKeysUsed": false,
+  "remotePushPerformed": false
+}
