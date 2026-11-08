@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-09",
+  "branch": "dev/임준억",
+  "headSha": "229f81adf3c806495bbe4854c3c91d0281c769f6",
+  "event": "push",
+  "runId": 42515136073,
+  "url": "https://github.com/2026-2-zolp/arti/actions/runs/42515136073",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "Model service fake checks",
+      "conclusion": "success"
+    },
+    {
+      "name": "Frontend checks",
+      "conclusion": "success"
+    },
+    {
+      "name": "Django PostgreSQL checks",
+      "conclusion": "success"
+    },
+    {
+      "name": "Plan and contract checks",
+      "conclusion": "success"
+    }
+  ],
+  "limits": [
+    "Model service fake checks는 실모델 품질 검증이 아니다.",
+    "PR 이벤트는 이번 검증 범위에 포함하지 않았다.",
+    "W06 사람 검수와 G5 및 GCI/AC07의 미완료 상태를 변경하지 않는다."
+  ]
+}
