@@ -494,7 +494,8 @@
       "status": "not_run",
       "evidencePaths": [
         "records/W11/README.md",
-        "records/W11/validation-summary.json"
+        "records/W11/validation-summary.json",
+        "records/W11/remote-run-1.json"
       ]
     },
     {
@@ -1366,9 +1367,12 @@
       "status": "verification_pending",
       "owner": "준억 통합 조율",
       "fixLocation": ".github/workflows/ci.yml; records/W11/README.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W11/remote-run-1.json",
+        "records/W11/README.md"
+      ],
       "releaseRequired": true,
-      "observation": "CI workflow와 Linux 로컬재현 완료, 실제 Actions/PR run은 push 전이라 대기",
+      "observation": "CI4job 구현·로컬재현과 원격push run42448758269 전부성공. PR이벤트검증/인수 미완료",
       "resolvedCommit": null
     },
     {

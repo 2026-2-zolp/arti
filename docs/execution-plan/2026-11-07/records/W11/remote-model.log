@@ -1,0 +1,300 @@
+﻿2026-11-08T04:56:04.3774579Z Current runner version: '2.338.2'
+2026-11-08T04:56:04.3794942Z ##[group]Runner Image Provisioner
+2026-11-08T04:56:04.3795811Z Hosted Compute Agent
+2026-11-08T04:56:04.3796313Z Version: 20261028.624
+2026-11-08T04:56:04.3796953Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-08T04:56:04.3797647Z Build Date: 2026-10-28T21:51:42Z
+2026-11-08T04:56:04.3798275Z Worker ID: {4eae630c-7760-4a89-bcc9-db8f947e03d9}
+2026-11-08T04:56:04.3798887Z Region: westus3
+2026-11-08T04:56:04.3799366Z Cloud: Azure
+2026-11-08T04:56:04.3799902Z ##[endgroup]
+2026-11-08T04:56:04.3801059Z ##[group]Operating System
+2026-11-08T04:56:04.3801631Z Ubuntu
+2026-11-08T04:56:04.3802112Z 24.04.5
+2026-11-08T04:56:04.3802580Z LTS
+2026-11-08T04:56:04.3803078Z ##[endgroup]
+2026-11-08T04:56:04.3803638Z ##[group]Runner Image
+2026-11-08T04:56:04.3804176Z Image: ubuntu-24.04
+2026-11-08T04:56:04.3804697Z Version: 20261101.360.1
+2026-11-08T04:56:04.3805957Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-08T04:56:04.3807260Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-08T04:56:04.3808091Z ##[endgroup]
+2026-11-08T04:56:04.3809036Z ##[group]GITHUB_TOKEN Permissions
+2026-11-08T04:56:04.3810622Z Contents: read
+2026-11-08T04:56:04.3811199Z Metadata: read
+2026-11-08T04:56:04.3811701Z ##[endgroup]
+2026-11-08T04:56:04.3813392Z Secret source: Actions
+2026-11-08T04:56:04.3814227Z Cache mode: write
+2026-11-08T04:56:04.3814883Z Prepare workflow directory
+2026-11-08T04:56:04.4148884Z Prepare all required actions
+2026-11-08T04:56:04.4204036Z Getting action download info
+2026-11-08T04:56:04.6945996Z Download action repository 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+2026-11-08T04:56:04.7864102Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-08T04:56:05.2630684Z Complete job name: Model service fake checks
+2026-11-08T04:56:05.3389627Z ##[group]Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+2026-11-08T04:56:05.3391077Z with:
+2026-11-08T04:56:05.3391705Z   persist-credentials: false
+2026-11-08T04:56:05.3392456Z   repository: 2026-2-zolp/arti
+2026-11-08T04:56:05.3398990Z   token: ***
+2026-11-08T04:56:05.3399633Z   ssh-strict: true
+2026-11-08T04:56:05.3400226Z   ssh-user: git
+2026-11-08T04:56:05.3400769Z   clean: true
+2026-11-08T04:56:05.3401365Z   sparse-checkout-cone-mode: true
+2026-11-08T04:56:05.3402125Z   fetch-depth: 1
+2026-11-08T04:56:05.3402779Z   fetch-tags: false
+2026-11-08T04:56:05.3403422Z   show-progress: true
+2026-11-08T04:56:05.3404082Z   lfs: false
+2026-11-08T04:56:05.3404686Z   submodules: false
+2026-11-08T04:56:05.3405477Z   set-safe-directory: true
+2026-11-08T04:56:05.3406207Z   allow-unsafe-pr-checkout: false
+2026-11-08T04:56:05.3407362Z env:
+2026-11-08T04:56:05.3407936Z   ARTI_PRELOAD: false
+2026-11-08T04:56:05.3408574Z   HF_HUB_OFFLINE: 1
+2026-11-08T04:56:05.3409257Z   TRANSFORMERS_OFFLINE: 1
+2026-11-08T04:56:05.3409906Z ##[endgroup]
+2026-11-08T04:56:05.5788493Z Syncing repository: 2026-2-zolp/arti
+2026-11-08T04:56:05.5790925Z ##[group]Getting Git version info
+2026-11-08T04:56:05.5791864Z Working directory is '/home/runner/work/arti/arti'
+2026-11-08T04:56:05.5793250Z [command]/usr/bin/git version
+2026-11-08T04:56:05.5849169Z git version 2.56.0
+2026-11-08T04:56:05.5867918Z ##[endgroup]
+2026-11-08T04:56:05.5880791Z Temporarily overriding HOME='/home/runner/work/_temp/a1dd8624-fedc-4c1a-b7c4-ce32672c5d7e' before making global git config changes
+2026-11-08T04:56:05.5882857Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:05.5887277Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:05.5932844Z Deleting the contents of '/home/runner/work/arti/arti'
+2026-11-08T04:56:05.5936499Z ##[group]Determining repository object format
+2026-11-08T04:56:05.5938494Z ##[endgroup]
+2026-11-08T04:56:05.5939736Z ##[group]Initializing the repository
+2026-11-08T04:56:05.5942402Z [command]/usr/bin/git init /home/runner/work/arti/arti
+2026-11-08T04:56:05.6028689Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-08T04:56:05.6030368Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-08T04:56:05.6031890Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-08T04:56:05.6033077Z hint: call:
+2026-11-08T04:56:05.6033769Z hint:
+2026-11-08T04:56:05.6034629Z hint: 	git config --global init.defaultBranch <name>
+2026-11-08T04:56:05.6035941Z hint:
+2026-11-08T04:56:05.6036968Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-08T04:56:05.6038533Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-08T04:56:05.6039884Z hint:
+2026-11-08T04:56:05.6040876Z hint: 	git branch -m <name>
+2026-11-08T04:56:05.6041715Z hint:
+2026-11-08T04:56:05.6042859Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-08T04:56:05.6044485Z Initialized empty Git repository in /home/runner/work/arti/arti/.git/
+2026-11-08T04:56:05.6047468Z [command]/usr/bin/git remote add origin https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:05.6097747Z ##[endgroup]
+2026-11-08T04:56:05.6098886Z ##[group]Disabling automatic garbage collection
+2026-11-08T04:56:05.6102535Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-08T04:56:05.6139120Z ##[endgroup]
+2026-11-08T04:56:05.6140275Z ##[group]Setting up auth
+2026-11-08T04:56:05.6140942Z Removing SSH command configuration
+2026-11-08T04:56:05.6146243Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:05.6190974Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:05.6495027Z Removing HTTP extra header
+2026-11-08T04:56:05.6501880Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:05.6545712Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:05.6760866Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:05.6766408Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:05.6804087Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:05.7015113Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-08T04:56:05.7055966Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:05.7090849Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:05.7133212Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:05.7167723Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:05.7200466Z ##[endgroup]
+2026-11-08T04:56:05.7201118Z ##[group]Fetching the repository
+2026-11-08T04:56:05.7207496Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3750e13215db86c2b437c83ea0e410cbe289ed36:refs/remotes/origin/dev/임준억
+2026-11-08T04:56:06.9769155Z From https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:06.9772114Z  * [new ref]         3750e13215db86c2b437c83ea0e410cbe289ed36 -> origin/dev/임준억
+2026-11-08T04:56:06.9778764Z [command]/usr/bin/git branch --list --remote origin/dev/임준억
+2026-11-08T04:56:06.9808282Z   origin/dev/임준억
+2026-11-08T04:56:06.9814781Z [command]/usr/bin/git rev-parse refs/remotes/origin/dev/임준억
+2026-11-08T04:56:06.9842292Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:06.9847189Z ##[endgroup]
+2026-11-08T04:56:06.9848302Z ##[group]Determining the checkout info
+2026-11-08T04:56:06.9849374Z ##[endgroup]
+2026-11-08T04:56:06.9851441Z [command]/usr/bin/git sparse-checkout disable
+2026-11-08T04:56:06.9902231Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-08T04:56:06.9947853Z ##[group]Checking out the ref
+2026-11-08T04:56:06.9949200Z [command]/usr/bin/git checkout --progress --force -B dev/임준억 refs/remotes/origin/dev/임준억
+2026-11-08T04:56:07.0661760Z Switched to a new branch 'dev/임준억'
+2026-11-08T04:56:07.0664983Z branch 'dev/임준억' set up to track 'origin/dev/임준억'.
+2026-11-08T04:56:07.0675422Z ##[endgroup]
+2026-11-08T04:56:07.0722944Z [command]/usr/bin/git log -1 --format=%H
+2026-11-08T04:56:07.0754951Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:07.0766013Z ##[group]Removing auth
+2026-11-08T04:56:07.0770310Z Removing SSH command configuration
+2026-11-08T04:56:07.0772458Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:07.0811513Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:07.1023639Z Removing HTTP extra header
+2026-11-08T04:56:07.1026434Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:07.1065937Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:07.1272324Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:07.1275106Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:07.2006650Z includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:07.2008844Z includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:07.2010649Z includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:07.2012175Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:07.2017016Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:07.2050165Z /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2060870Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2102047Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:07.2138756Z /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2150102Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2187195Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:07.2214938Z /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2223371Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2262052Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:07.2289756Z /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2297710Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config
+2026-11-08T04:56:07.2333601Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:07.2537338Z Removing credentials config '/home/runner/work/_temp/git-credentials-2d54c9f7-063b-4ae2-8f5a-5c67b2cc41e7.config'
+2026-11-08T04:56:07.2546079Z ##[endgroup]
+2026-11-08T04:56:07.2928464Z ##[group]Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+2026-11-08T04:56:07.2929843Z with:
+2026-11-08T04:56:07.2930584Z   python-version: 3.12
+2026-11-08T04:56:07.2931409Z   cache: pip
+2026-11-08T04:56:07.2932349Z   cache-dependency-path: ai-service/requirements-dev.txt
+2026-11-08T04:56:07.2933522Z   check-latest: false
+2026-11-08T04:56:07.2941577Z   token: ***
+2026-11-08T04:56:07.2942359Z   update-environment: true
+2026-11-08T04:56:07.2943258Z   allow-prereleases: false
+2026-11-08T04:56:07.2944135Z   freethreaded: false
+2026-11-08T04:56:07.2944934Z env:
+2026-11-08T04:56:07.2945726Z   ARTI_PRELOAD: false
+2026-11-08T04:56:07.2946529Z   HF_HUB_OFFLINE: 1
+2026-11-08T04:56:07.2947332Z   TRANSFORMERS_OFFLINE: 1
+2026-11-08T04:56:07.2948172Z ##[endgroup]
+2026-11-08T04:56:07.4629913Z ##[group]Installed versions
+2026-11-08T04:56:07.4700796Z Successfully set up CPython (3.12.16)
+2026-11-08T04:56:07.4703155Z ##[endgroup]
+2026-11-08T04:56:07.4957312Z [command]/opt/hostedtoolcache/Python/3.12.16/x64/bin/pip cache dir
+2026-11-08T04:56:08.3262497Z /home/runner/.cache/pip
+2026-11-08T04:56:08.7096324Z pip cache is not found
+2026-11-08T04:56:08.7226547Z ##[group]Run python -m pip install -r requirements-dev.txt
+2026-11-08T04:56:08.7226945Z [36;1mpython -m pip install -r requirements-dev.txt[0m
+2026-11-08T04:56:08.7250949Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:08.7251159Z env:
+2026-11-08T04:56:08.7251326Z   ARTI_PRELOAD: false
+2026-11-08T04:56:08.7251503Z   HF_HUB_OFFLINE: 1
+2026-11-08T04:56:08.7251681Z   TRANSFORMERS_OFFLINE: 1
+2026-11-08T04:56:08.7251916Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:08.7252265Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:08.7252594Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:08.7252885Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:08.7253173Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:08.7253460Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:08.7253712Z ##[endgroup]
+2026-11-08T04:56:09.7584050Z Collecting fastapi>=0.115 (from -r requirements-dev.txt (line 2))
+2026-11-08T04:56:09.8327654Z   Downloading fastapi-0.162.2-py3-none-any.whl.metadata (27 kB)
+2026-11-08T04:56:09.9248847Z Collecting pydantic>=2.7 (from -r requirements-dev.txt (line 3))
+2026-11-08T04:56:09.9350332Z   Downloading pydantic-2.14.3-py3-none-any.whl.metadata (141 kB)
+2026-11-08T04:56:09.9650685Z Collecting httpx>=0.27 (from -r requirements-dev.txt (line 4))
+2026-11-08T04:56:09.9753386Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-11-08T04:56:10.0945953Z Collecting pillow>=10.4 (from -r requirements-dev.txt (line 5))
+2026-11-08T04:56:10.1050205Z   Downloading pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+2026-11-08T04:56:10.1358804Z Collecting pytest>=8 (from -r requirements-dev.txt (line 6))
+2026-11-08T04:56:10.1460984Z   Downloading pytest-9.2.0-py3-none-any.whl.metadata (7.9 kB)
+2026-11-08T04:56:10.1641531Z Collecting starlette>=0.46.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+2026-11-08T04:56:10.1741527Z   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-11-08T04:56:10.1884984Z Collecting typing-extensions>=4.8.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+2026-11-08T04:56:10.1986432Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-08T04:56:10.2071379Z Collecting typing-inspection>=0.4.2 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+2026-11-08T04:56:10.2172852Z   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+2026-11-08T04:56:10.2255346Z Collecting annotated-doc>=0.0.2 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+2026-11-08T04:56:10.2355054Z   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+2026-11-08T04:56:10.2499399Z Collecting opentelemetry-api>=1.44.0 (from fastapi>=0.115->-r requirements-dev.txt (line 2))
+2026-11-08T04:56:10.2598312Z   Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+2026-11-08T04:56:10.3957826Z Collecting annotated-types>=0.6.0 (from pydantic>=2.7->-r requirements-dev.txt (line 3))
+2026-11-08T04:56:10.4056414Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-11-08T04:56:10.8984999Z Collecting pydantic-core==2.50.4 (from pydantic>=2.7->-r requirements-dev.txt (line 3))
+2026-11-08T04:56:10.9088293Z   Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.6 kB)
+2026-11-08T04:56:10.9244508Z Collecting anyio (from httpx>=0.27->-r requirements-dev.txt (line 4))
+2026-11-08T04:56:10.9345115Z   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+2026-11-08T04:56:10.9516022Z Collecting certifi (from httpx>=0.27->-r requirements-dev.txt (line 4))
+2026-11-08T04:56:10.9619354Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-11-08T04:56:10.9750571Z Collecting httpcore==1.* (from httpx>=0.27->-r requirements-dev.txt (line 4))
+2026-11-08T04:56:10.9851649Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-11-08T04:56:10.9974101Z Collecting idna (from httpx>=0.27->-r requirements-dev.txt (line 4))
+2026-11-08T04:56:11.0074929Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-11-08T04:56:11.0370694Z Collecting h11>=0.16 (from httpcore==1.*->httpx>=0.27->-r requirements-dev.txt (line 4))
+2026-11-08T04:56:11.0470929Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-11-08T04:56:11.0604129Z Collecting iniconfig>=2 (from pytest>=8->-r requirements-dev.txt (line 6))
+2026-11-08T04:56:11.0702580Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-11-08T04:56:11.1574462Z Collecting packaging>=24 (from pytest>=8->-r requirements-dev.txt (line 6))
+2026-11-08T04:56:11.1672630Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-11-08T04:56:11.1806944Z Collecting pluggy<2,>=1.6 (from pytest>=8->-r requirements-dev.txt (line 6))
+2026-11-08T04:56:11.1905462Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-11-08T04:56:11.2038556Z Collecting pygments>=2.15 (from pytest>=8->-r requirements-dev.txt (line 6))
+2026-11-08T04:56:11.2138844Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-11-08T04:56:11.2336783Z Downloading fastapi-0.162.2-py3-none-any.whl (151 kB)
+2026-11-08T04:56:11.2475974Z Downloading pydantic-2.14.3-py3-none-any.whl (494 kB)
+2026-11-08T04:56:11.2724775Z Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.3 MB)
+2026-11-08T04:56:11.3058426Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 64.3 MB/s  0:00:00
+2026-11-08T04:56:11.3159565Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-11-08T04:56:11.3275475Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-11-08T04:56:11.3389994Z Downloading pillow-13.0.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
+2026-11-08T04:56:11.4024697Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.1/7.1 MB 111.8 MB/s  0:00:00
+2026-11-08T04:56:11.4128298Z Downloading pytest-9.2.0-py3-none-any.whl (411 kB)
+2026-11-08T04:56:11.4263331Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-11-08T04:56:11.4378566Z Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+2026-11-08T04:56:11.4643256Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-11-08T04:56:11.4756286Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-11-08T04:56:11.4872841Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-11-08T04:56:11.4988003Z Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+2026-11-08T04:56:11.5137182Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-11-08T04:56:11.5255871Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-11-08T04:56:11.5477545Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 48.9 MB/s  0:00:00
+2026-11-08T04:56:11.5581913Z Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-11-08T04:56:11.5724126Z Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+2026-11-08T04:56:11.5847568Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-11-08T04:56:11.5999391Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-11-08T04:56:11.6167270Z Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+2026-11-08T04:56:11.6282364Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-11-08T04:56:11.8496154Z Installing collected packages: typing-extensions, pygments, pluggy, pillow, packaging, iniconfig, idna, h11, certifi, annotated-types, annotated-doc, typing-inspection, pytest, pydantic-core, opentelemetry-api, httpcore, anyio, starlette, pydantic, httpx, fastapi
+2026-11-08T04:56:14.0362679Z 
+2026-11-08T04:56:14.0382124Z Successfully installed annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 certifi-2026.10.23 fastapi-0.162.2 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 opentelemetry-api-1.45.2 packaging-26.3 pillow-13.0.0 pluggy-1.7.0 pydantic-2.14.3 pydantic-core-2.50.4 pygments-2.21.0 pytest-9.2.0 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.5
+2026-11-08T04:56:14.0389812Z 
+2026-11-08T04:56:14.0390049Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-08T04:56:14.0390507Z [notice] To update, run: pip install --upgrade pip
+2026-11-08T04:56:14.1371930Z ##[group]Run python -m pytest -q
+2026-11-08T04:56:14.1372207Z [36;1mpython -m pytest -q[0m
+2026-11-08T04:56:14.1390857Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:14.1391063Z env:
+2026-11-08T04:56:14.1391225Z   ARTI_PRELOAD: false
+2026-11-08T04:56:14.1391404Z   HF_HUB_OFFLINE: 1
+2026-11-08T04:56:14.1391577Z   TRANSFORMERS_OFFLINE: 1
+2026-11-08T04:56:14.1391820Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:14.1392183Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:14.1392512Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:14.1392813Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:14.1393101Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:14.1393424Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:14.1393680Z ##[endgroup]
+2026-11-08T04:56:14.9851573Z .................                                                        [100%]
+2026-11-08T04:56:14.9852117Z =============================== warnings summary ===============================
+2026-11-08T04:56:14.9852775Z ../../../../../../opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/fastapi/testclient.py:1
+2026-11-08T04:56:14.9854103Z   /opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+2026-11-08T04:56:14.9855426Z     from starlette.testclient import TestClient as TestClient  # noqa
+2026-11-08T04:56:14.9855768Z 
+2026-11-08T04:56:14.9856023Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2026-11-08T04:56:14.9856475Z 17 passed, 1 warning in 0.35s
+2026-11-08T04:56:15.0449981Z Post job cleanup.
+2026-11-08T04:56:15.1623189Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/arti/arti --files-from manifest.txt --use-compress-program zstdmt
+2026-11-08T04:56:16.3346085Z Sent 15318992 of 15318992 (100.0%), 16.5 MBs/sec
+2026-11-08T04:56:16.5688463Z Cache saved with the key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.16-pip-7235225cfd6f854e12f6302cd3354d44e2daf1744191662f3daa9b0f57dfe32b
+2026-11-08T04:56:16.5837328Z Post job cleanup.
+2026-11-08T04:56:16.6546394Z [command]/usr/bin/git version
+2026-11-08T04:56:16.6581214Z git version 2.56.0
+2026-11-08T04:56:16.6612268Z Temporarily overriding HOME='/home/runner/work/_temp/c5f0c8ab-2d22-44a9-9a16-bd5e8f7d4ce7' before making global git config changes
+2026-11-08T04:56:16.6613272Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:16.6616445Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:16.6643863Z Removing SSH command configuration
+2026-11-08T04:56:16.6649137Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:16.6679882Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:16.6908162Z Removing HTTP extra header
+2026-11-08T04:56:16.6913844Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:16.6947686Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:16.7181035Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:16.7189260Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:16.7243502Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:16.7585028Z Cleaning up orphan processes

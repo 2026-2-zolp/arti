@@ -1,6 +1,6 @@
-# W11 CI 도입 — 로컬 구현 검증 완료, 원격 실행 대기
+# W11 CI 도입 — 원격 push 성공, PR 인수 대기
 
-2026-11-08 KST / 출발25c027d / dev/임준억. 사용자가 CI 도입을 요청해 기존 검토를 실행으로 옮겼다. **W11 in_progress / AC07·GCI not_run**: 원격 push를 하지 않아 Actions run/PR 성공 증거는 아직 없다.
+2026-11-08 KST / 출발25c027d / dev/임준억. 사용자가 CI 도입을 요청해 기존 검토를 실행으로 옮겼다. **W11 in_progress / AC07·GCI not_run**: 원격 push의4job 성공은 확인했다. AC07이 요구한 PR 이벤트 실행은 아직 없어 전체 게이트 완료로 올리지 않는다.
 
 ## 왜·어디를·어떻게 바꿨는가
 
@@ -25,8 +25,12 @@ actionlint 첫 검사에서 job env의 runner.temp context 사용 오류를 발�
 
 독립 기술 검토에서 CI 범위·격리·키 제외·history 조건을 확인했으며 필수 추가 지적은 없다. 실제 GitHub runner/조직 정책/토큰/branch rule까지 로컬에서 확인했다고 주장하지 않는다.
 
-## 푸시 이후 남은 확인
+## 실제 원격 실행과 남은 PR 확인
 
-사용자 확인 후 dev/임준억에 push하면 push trigger가 실행된다. Actions 허용 여부·4job 성공·실제 run URL/SHA를 확보하고, PR 검사도 확인한 뒤 AC07/GCI/W11 종결 여부를 판단한다. 수동 workflow_dispatch는 저장소 기본브랜치의 workflow 등록 조건도 확인해야 한다. 필수 브랜치 검사 지정은 첫 실제 성공 이후 별도 결정한다. 실제 모델 시험은 일반 CI에 키를 넣지 않고 W07에서 진행한다.
+사용자 최종 승인 후 dev/임준억에 일반 push했다. 첫 실행 SHA는 `3750e13215db86c2b437c83ea0e410cbe289ed36`, event=push, run `42448758269`이며 [실제 Actions](https://github.com/2026-2-zolp/arti/actions/runs/42448758269)의4job이 모두 success다. 프론트13·타입/빌드, Django 실제PG63·migration, fake모델17, 계획/guardrail/계약 모두 원격 로그로 확인했다. 첫 원격 실행 실패는 없고 실패 job 숨김/skip/테스트 약화/재시도 없이 통과했다.
 
-이는 로컬 Docker로 job 명령을 재현한 결과이며 GitHub Actions 실행 기록은 아니다. [검사 요약](validation-summary.json), [CI/CD 검토](../../../../operations/CI-CD_적용검토.md).
+[원격 run/job 증거](remote-run-1.json), remote-frontend/model/django/plan.log는 연결 GitHub API로 받은 해당 job 로그다. key는 disabled/빈값, 실제유료AI/AWS배포는 없다. 이후 결과 기록만 추가한 최종 문서 커밋도 별도 push하고 해당 최신 SHA의4job까지 확인한다. 이 문서 자체의 포함 커밋과 증거 run SHA를 혼동하지 않는다.
+
+현재 열린 대상 PR은 없다. 이번 요청대로 브랜치 push와 실제 Actions를 검증했고, PR 생성·main 병합·브랜치 보호 변경은 하지 않았다. AC07이 요구한 PR 이벤트와 required-check 적용 여부는 별도 확인 대상으로 남긴다. 따라서 W11 in_progress·AC07/GCI not_run을 유지하되 원격 push실행 성공은 별도 사실로 기록한다. GPT 키 삽입/실검증·확장·하네스는 사용자 결정에 따라 추후 함께 논의한다.
+
+[검사 요약](validation-summary.json), [CI/CD 검토](../../../../operations/CI-CD_적용검토.md), [최종 검토/원격 기록](../../../../작업기록/2026-11-08_최종검토와원격CI검증.md).

@@ -37,3 +37,7 @@ GitHub Actions는 PostgreSQL 서비스 컨테이너를 지원하며 컨테이너
 ## 검토 이후 적용 현황
 
 사용자 후속 요청으로 CI4job을 구현하고 Linux 로컬 재현/actionlint를 통과했다. 프론트 tsx도 자체의존성으로 옮겼다. 위 본문은 도입 전 검토 경위이며 현재는 [W11 도입 기록](../execution-plan/2026-11-07/records/W11/README.md)을 따른다. 실제 Actions run은 push 전이라 없고 GCI not_run, CD 미구현은 유지한다.
+
+## 실제 원격 검증 후 갱신
+
+후속 사용자 승인으로 dev/임준억 push의 [첫 실제 Actions4job](https://github.com/2026-2-zolp/arti/actions/runs/42448758269)이 모두 성공했다. 도입 전/로컬검사 단계의 미실행 표현은 당시 기록이다. PR 이벤트/required checks 확인과 AWS/CD는 남아 있으며 [W11현재기록](../execution-plan/2026-11-07/records/W11/README.md)을 따른다.

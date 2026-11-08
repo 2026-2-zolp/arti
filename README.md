@@ -8,16 +8,16 @@ ARTI는 **미술 감상 초보자**가 자신의 취향에 맞는 작품을 찾�
 
 ## 현재 개발 상태 — 2026-11-08
 
-작업 브랜치는 `dev/임준억`, 통합 기준은 동섭님 통합본 `ae0e58e`입니다. W01~W04와 G0~G3를 완료하고 로컬 과업별 커밋으로 정리했습니다. 원격에는 아직 푸시하지 않았습니다.
+작업 브랜치는 `dev/임준억`, 통합 기준은 동섭님 통합본 `ae0e58e`입니다. W01~W04와 G0~G3를 완료하고 로컬 과업별 커밋으로 정리했습니다. 후속 사용자 승인으로 원격 dev/임준억에 푸시했습니다.
 
-[W05 핵심 통합 구현·검증](docs/execution-plan/2026-11-07/records/W05/README.md)과 G4를 통과했습니다. 관리자 쓰기·회원·관람 저장·도슨트 맥락 및 Git 기준 자료 인수를 검증했습니다. 실제 모델·AWS·CI/CD 실행·실기기 검증은 후속 단계입니다. 원격 푸시는 하지 않았습니다.
+[W05 핵심 통합 구현·검증](docs/execution-plan/2026-11-07/records/W05/README.md)과 G4를 통과했습니다. 관리자 쓰기·회원·관람 저장·도슨트 맥락 및 Git 기준 자료 인수를 검증했습니다. 실제 모델·AWS/CD·실기기 검증은 후속 단계입니다. 원격 CI push4job은 실제 성공했고 PR 이벤트 검증은 남아 있습니다.
 
 | 구분 | 검증한 범위 | 남은 범위 |
 | --- | --- | --- |
 | 기존 코드 | React·Express/SQLite·FastAPI 인수, 계약 확정과 회귀 9건 | 기존 결함의 후속 수정 |
 | 새 백엔드 | Django/DRF·PostgreSQL·Docker, 조회·추천·관리자 검수 쓰기·회원·관람 저장·도슨트 맥락 | 실제 모델/작품 품질 및 후속 운영 인수 |
 | 실제 연결 | React → Django → PostgreSQL, 회원/비회원·만료 복구·검수 충돌·비공개 제한 | 유영국 실제 자료·실기기 전체 여정 |
-| 배포·AI | CI4job과 OpenAI 호환 텍스트 adapter의 로컬 검증, 기본 AI 비활성 | 실제 Actions 실행·PR 확인, 실제 AI API·AWS/CD |
+| 배포·AI | CI4job과 OpenAI 호환 텍스트 adapter의 로컬 검증, 기본 AI 비활성 | PR 이벤트 확인, 실제 AI API·AWS/CD |
 
 W05 당시 PostgreSQL51건, 이후 provider 준비 회귀를 포함한 전체63건과 프론트13건·타입·빌드, 모델 서비스 fake17건을 통과했습니다. 시험 fixture/로컬 HTTP로 검증했으며 실제 작품 검수나 모델 품질 평가를 대신하지 않습니다.
 
@@ -156,4 +156,6 @@ flowchart LR
 
 **기획 참고:** [ARTI 전체 Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032) · [10/12 구현 착수안](https://app.notion.com/p/3f734713f16781dda4fef887384ac17d) · [개발 1단계](https://app.notion.com/p/3fa34713f167804ebb23c251498f3c5a)
 
-후속: [CI workflow](.github/workflows/ci.yml)를 도입했고 실제 Actions 실행은 push 이후 확인합니다. [서버 AI 설정](docs/operations/AI_설정과모델선택.md)은 기본 비활성·키 미설정이며 실제 모델 품질 검증은 남아 있습니다.
+후속: [CI workflow](.github/workflows/ci.yml)를 도입했고 실제 push 실행4job 성공을 확인했습니다. [서버 AI 설정](docs/operations/AI_설정과모델선택.md)은 기본 비활성·키 미설정이며 실제 모델 품질 검증은 남아 있습니다.
+
+원격 CI 첫 성공: [3750e13 / ARTI CI](https://github.com/2026-2-zolp/arti/actions/runs/42448758269). 프론트13·Django/PG63·fake모델17·계획계약 모두 통과했습니다. [원격 실행 기록](docs/작업기록/2026-11-08_최종검토와원격CI검증.md).

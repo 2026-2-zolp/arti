@@ -1,0 +1,636 @@
+﻿2026-11-08T04:56:04.6387303Z Current runner version: '2.338.2'
+2026-11-08T04:56:04.6417089Z ##[group]Runner Image Provisioner
+2026-11-08T04:56:04.6419492Z Hosted Compute Agent
+2026-11-08T04:56:04.6420554Z Version: 20261028.624
+2026-11-08T04:56:04.6421899Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-08T04:56:04.6423626Z Build Date: 2026-10-28T21:51:42Z
+2026-11-08T04:56:04.6424856Z Worker ID: {669cf10c-63ef-4e5e-ba6c-1c75c612f43e}
+2026-11-08T04:56:04.6426373Z Region: canadaeast
+2026-11-08T04:56:04.6427415Z Cloud: Azure
+2026-11-08T04:56:04.6428460Z ##[endgroup]
+2026-11-08T04:56:04.6430963Z ##[group]Operating System
+2026-11-08T04:56:04.6432079Z Ubuntu
+2026-11-08T04:56:04.6433181Z 24.04.5
+2026-11-08T04:56:04.6434456Z LTS
+2026-11-08T04:56:04.6435493Z ##[endgroup]
+2026-11-08T04:56:04.6436564Z ##[group]Runner Image
+2026-11-08T04:56:04.6437684Z Image: ubuntu-24.04
+2026-11-08T04:56:04.6438816Z Version: 20261101.360.1
+2026-11-08T04:56:04.6440967Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-08T04:56:04.6444203Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-08T04:56:04.6446056Z ##[endgroup]
+2026-11-08T04:56:04.6448128Z ##[group]GITHUB_TOKEN Permissions
+2026-11-08T04:56:04.6451227Z Contents: read
+2026-11-08T04:56:04.6452415Z Metadata: read
+2026-11-08T04:56:04.6453688Z ##[endgroup]
+2026-11-08T04:56:04.6456700Z Secret source: Actions
+2026-11-08T04:56:04.6458202Z Cache mode: write
+2026-11-08T04:56:04.6459797Z Prepare workflow directory
+2026-11-08T04:56:04.7034281Z Prepare all required actions
+2026-11-08T04:56:04.7105006Z Getting action download info
+2026-11-08T04:56:04.9585199Z Download action repository 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+2026-11-08T04:56:05.0489999Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-08T04:56:05.2356519Z Complete job name: Django PostgreSQL checks
+2026-11-08T04:56:05.2980620Z ##[group]Checking docker version
+2026-11-08T04:56:05.2994114Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-11-08T04:56:05.3871705Z '1.48'
+2026-11-08T04:56:05.3891219Z Docker daemon API version: '1.48'
+2026-11-08T04:56:05.3891993Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-11-08T04:56:05.4075074Z '1.48'
+2026-11-08T04:56:05.4090325Z Docker client API version: '1.48'
+2026-11-08T04:56:05.4097388Z ##[endgroup]
+2026-11-08T04:56:05.4101272Z ##[group]Clean up resources from previous jobs
+2026-11-08T04:56:05.4107710Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=e56721"
+2026-11-08T04:56:05.4280072Z ##[command]/usr/bin/docker network prune --force --filter "label=e56721"
+2026-11-08T04:56:05.4431116Z ##[endgroup]
+2026-11-08T04:56:05.4431637Z ##[group]Create local container network
+2026-11-08T04:56:05.4441786Z ##[command]/usr/bin/docker network create --label e56721 github_network_1a45e5a96fb94809a1074599a6ce3b15
+2026-11-08T04:56:05.4986646Z 39127e973edaa164ce863a7ffdc121a7232d1a894aee4bf7c3355173117763f6
+2026-11-08T04:56:05.5008210Z ##[endgroup]
+2026-11-08T04:56:05.5032776Z ##[group]Starting postgres service container
+2026-11-08T04:56:05.5056411Z ##[command]/usr/bin/docker pull postgres:17-alpine
+2026-11-08T04:56:05.9472134Z 17-alpine: Pulling from library/postgres
+2026-11-08T04:56:06.0889392Z 881fc932939e: Pulling fs layer
+2026-11-08T04:56:06.0890634Z 4af2f594366f: Pulling fs layer
+2026-11-08T04:56:06.0891682Z a6e011ae4b07: Pulling fs layer
+2026-11-08T04:56:06.0892313Z 80bf5832b7b5: Pulling fs layer
+2026-11-08T04:56:06.0892888Z 06b8a748e903: Pulling fs layer
+2026-11-08T04:56:06.0893696Z 5c816eed2102: Pulling fs layer
+2026-11-08T04:56:06.0894276Z 0465fcfe7974: Pulling fs layer
+2026-11-08T04:56:06.0894849Z e0de8084b760: Pulling fs layer
+2026-11-08T04:56:06.0895411Z bdfe5a2c0729: Pulling fs layer
+2026-11-08T04:56:06.0895964Z 253db6c496ed: Pulling fs layer
+2026-11-08T04:56:06.0896850Z 80bf5832b7b5: Waiting
+2026-11-08T04:56:06.0897364Z 0465fcfe7974: Waiting
+2026-11-08T04:56:06.0897857Z 06b8a748e903: Waiting
+2026-11-08T04:56:06.0898350Z bdfe5a2c0729: Waiting
+2026-11-08T04:56:06.0898864Z 5c816eed2102: Waiting
+2026-11-08T04:56:06.0899389Z 253db6c496ed: Waiting
+2026-11-08T04:56:06.0899875Z e0de8084b760: Waiting
+2026-11-08T04:56:06.2362854Z 4af2f594366f: Verifying Checksum
+2026-11-08T04:56:06.2364933Z 4af2f594366f: Download complete
+2026-11-08T04:56:06.2875718Z a6e011ae4b07: Verifying Checksum
+2026-11-08T04:56:06.2877386Z a6e011ae4b07: Download complete
+2026-11-08T04:56:06.3119444Z 881fc932939e: Download complete
+2026-11-08T04:56:06.3475744Z 80bf5832b7b5: Verifying Checksum
+2026-11-08T04:56:06.3477231Z 80bf5832b7b5: Download complete
+2026-11-08T04:56:06.4200443Z 5c816eed2102: Download complete
+2026-11-08T04:56:06.4244235Z 881fc932939e: Pull complete
+2026-11-08T04:56:06.4632722Z 0465fcfe7974: Verifying Checksum
+2026-11-08T04:56:06.4635092Z 0465fcfe7974: Download complete
+2026-11-08T04:56:06.5306764Z e0de8084b760: Verifying Checksum
+2026-11-08T04:56:06.5308946Z e0de8084b760: Download complete
+2026-11-08T04:56:06.5730316Z bdfe5a2c0729: Verifying Checksum
+2026-11-08T04:56:06.5731297Z bdfe5a2c0729: Download complete
+2026-11-08T04:56:06.6419254Z 253db6c496ed: Verifying Checksum
+2026-11-08T04:56:06.6420009Z 253db6c496ed: Download complete
+2026-11-08T04:56:06.7156759Z 4af2f594366f: Pull complete
+2026-11-08T04:56:06.8484809Z a6e011ae4b07: Pull complete
+2026-11-08T04:56:06.9426287Z 80bf5832b7b5: Pull complete
+2026-11-08T04:56:07.0275022Z 06b8a748e903: Verifying Checksum
+2026-11-08T04:56:07.0280747Z 06b8a748e903: Download complete
+2026-11-08T04:56:09.4575105Z 06b8a748e903: Pull complete
+2026-11-08T04:56:09.4686679Z 5c816eed2102: Pull complete
+2026-11-08T04:56:09.4788254Z 0465fcfe7974: Pull complete
+2026-11-08T04:56:09.4874447Z e0de8084b760: Pull complete
+2026-11-08T04:56:09.4984528Z bdfe5a2c0729: Pull complete
+2026-11-08T04:56:09.5066177Z 253db6c496ed: Pull complete
+2026-11-08T04:56:09.5106397Z Digest: sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac
+2026-11-08T04:56:09.5121599Z Status: Downloaded newer image for postgres:17-alpine
+2026-11-08T04:56:09.5130417Z docker.io/library/postgres:17-alpine
+2026-11-08T04:56:09.5194839Z ##[command]/usr/bin/docker create --name 49317ac41b024a5b8852aa029bc46b15_postgres17alpine_c8933f --label e56721 --network github_network_1a45e5a96fb94809a1074599a6ce3b15 --network-alias postgres -p 5432:5432 --health-cmd "pg_isready -U arti -d arti" --health-interval 5s --health-timeout 5s --health-retries 15 -e "POSTGRES_DB=arti" -e "POSTGRES_USER=arti" -e "POSTGRES_PASSWORD=ci-only-disposable-password" -e GITHUB_ACTIONS=true -e CI=true postgres:17-alpine
+2026-11-08T04:56:09.5469339Z 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:09.5494758Z ##[command]/usr/bin/docker start 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:09.7594591Z 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:09.7624758Z ##[command]/usr/bin/docker ps --all --filter id=65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-11-08T04:56:09.7788514Z 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80 Up Less than a second (health: starting)
+2026-11-08T04:56:09.7813560Z ##[command]/usr/bin/docker port 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:09.7989139Z 5432/tcp -> 0.0.0.0:5432
+2026-11-08T04:56:09.7989872Z 5432/tcp -> [::]:5432
+2026-11-08T04:56:09.8040442Z ##[endgroup]
+2026-11-08T04:56:09.8049619Z ##[group]Waiting for all services to be ready
+2026-11-08T04:56:09.8063978Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:09.8226506Z starting
+2026-11-08T04:56:09.8258942Z postgres service is starting, waiting 2 seconds before checking again.
+2026-11-08T04:56:11.8258889Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:11.8404789Z starting
+2026-11-08T04:56:11.8421413Z postgres service is starting, waiting 4 seconds before checking again.
+2026-11-08T04:56:15.8631265Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:56:15.8781701Z healthy
+2026-11-08T04:56:15.8800383Z postgres service is healthy.
+2026-11-08T04:56:15.8801050Z ##[endgroup]
+2026-11-08T04:56:15.9172721Z ##[group]Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+2026-11-08T04:56:15.9173848Z with:
+2026-11-08T04:56:15.9174119Z   persist-credentials: false
+2026-11-08T04:56:15.9174387Z   repository: 2026-2-zolp/arti
+2026-11-08T04:56:15.9176844Z   token: ***
+2026-11-08T04:56:15.9177054Z   ssh-strict: true
+2026-11-08T04:56:15.9177271Z   ssh-user: git
+2026-11-08T04:56:15.9177460Z   clean: true
+2026-11-08T04:56:15.9177663Z   sparse-checkout-cone-mode: true
+2026-11-08T04:56:15.9177915Z   fetch-depth: 1
+2026-11-08T04:56:15.9178115Z   fetch-tags: false
+2026-11-08T04:56:15.9178321Z   show-progress: true
+2026-11-08T04:56:15.9178521Z   lfs: false
+2026-11-08T04:56:15.9178698Z   submodules: false
+2026-11-08T04:56:15.9178902Z   set-safe-directory: true
+2026-11-08T04:56:15.9179138Z   allow-unsafe-pr-checkout: false
+2026-11-08T04:56:15.9179653Z env:
+2026-11-08T04:56:15.9179974Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:15.9180457Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:15.9180754Z   ARTI_ENV: test
+2026-11-08T04:56:15.9180956Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:15.9181189Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:15.9181422Z   OPENAI_API_KEY: 
+2026-11-08T04:56:15.9181620Z   PGDATABASE: arti
+2026-11-08T04:56:15.9181821Z   PGUSER: arti
+2026-11-08T04:56:15.9182046Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:15.9182336Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:15.9182531Z   PGPORT: 5432
+2026-11-08T04:56:15.9182736Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:15.9182975Z ##[endgroup]
+2026-11-08T04:56:16.1873055Z Syncing repository: 2026-2-zolp/arti
+2026-11-08T04:56:16.1874759Z ##[group]Getting Git version info
+2026-11-08T04:56:16.1875299Z Working directory is '/home/runner/work/arti/arti'
+2026-11-08T04:56:16.1876231Z [command]/usr/bin/git version
+2026-11-08T04:56:16.1962409Z git version 2.56.0
+2026-11-08T04:56:16.1989817Z ##[endgroup]
+2026-11-08T04:56:16.2005469Z Temporarily overriding HOME='/home/runner/work/_temp/339f0bd9-d7c2-4f5a-9539-840d4ce38e0e' before making global git config changes
+2026-11-08T04:56:16.2006855Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:16.2012521Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:16.2068041Z Deleting the contents of '/home/runner/work/arti/arti'
+2026-11-08T04:56:16.2083227Z ##[group]Determining repository object format
+2026-11-08T04:56:16.2084730Z ##[endgroup]
+2026-11-08T04:56:16.2085701Z ##[group]Initializing the repository
+2026-11-08T04:56:16.2086575Z [command]/usr/bin/git init /home/runner/work/arti/arti
+2026-11-08T04:56:16.2206623Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-08T04:56:16.2207579Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-08T04:56:16.2208149Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-08T04:56:16.2208614Z hint: call:
+2026-11-08T04:56:16.2208840Z hint:
+2026-11-08T04:56:16.2209178Z hint: 	git config --global init.defaultBranch <name>
+2026-11-08T04:56:16.2209541Z hint:
+2026-11-08T04:56:16.2209877Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-08T04:56:16.2210398Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-08T04:56:16.2211041Z hint:
+2026-11-08T04:56:16.2211275Z hint: 	git branch -m <name>
+2026-11-08T04:56:16.2211531Z hint:
+2026-11-08T04:56:16.2211873Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-08T04:56:16.2222145Z Initialized empty Git repository in /home/runner/work/arti/arti/.git/
+2026-11-08T04:56:16.2235568Z [command]/usr/bin/git remote add origin https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:16.2285256Z ##[endgroup]
+2026-11-08T04:56:16.2285906Z ##[group]Disabling automatic garbage collection
+2026-11-08T04:56:16.2290670Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-08T04:56:16.2326852Z ##[endgroup]
+2026-11-08T04:56:16.2327738Z ##[group]Setting up auth
+2026-11-08T04:56:16.2328408Z Removing SSH command configuration
+2026-11-08T04:56:16.2337732Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:16.2380327Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:16.2801704Z Removing HTTP extra header
+2026-11-08T04:56:16.2809287Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:16.2857606Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:16.3105820Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:16.3114575Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:16.3160637Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:16.3407457Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-08T04:56:16.3457130Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:16.3504550Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:16.3547733Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:16.3589073Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:16.3626601Z ##[endgroup]
+2026-11-08T04:56:16.3627018Z ##[group]Fetching the repository
+2026-11-08T04:56:16.3637381Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3750e13215db86c2b437c83ea0e410cbe289ed36:refs/remotes/origin/dev/임준억
+2026-11-08T04:56:17.2320008Z From https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:17.2321138Z  * [new ref]         3750e13215db86c2b437c83ea0e410cbe289ed36 -> origin/dev/임준억
+2026-11-08T04:56:17.2331508Z [command]/usr/bin/git branch --list --remote origin/dev/임준억
+2026-11-08T04:56:17.2368053Z   origin/dev/임준억
+2026-11-08T04:56:17.2377799Z [command]/usr/bin/git rev-parse refs/remotes/origin/dev/임준억
+2026-11-08T04:56:17.2410029Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:17.2414906Z ##[endgroup]
+2026-11-08T04:56:17.2415487Z ##[group]Determining the checkout info
+2026-11-08T04:56:17.2416305Z ##[endgroup]
+2026-11-08T04:56:17.2421243Z [command]/usr/bin/git sparse-checkout disable
+2026-11-08T04:56:17.2481026Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-08T04:56:17.2538701Z ##[group]Checking out the ref
+2026-11-08T04:56:17.2542855Z [command]/usr/bin/git checkout --progress --force -B dev/임준억 refs/remotes/origin/dev/임준억
+2026-11-08T04:56:17.3411434Z Switched to a new branch 'dev/임준억'
+2026-11-08T04:56:17.3416841Z branch 'dev/임준억' set up to track 'origin/dev/임준억'.
+2026-11-08T04:56:17.3426760Z ##[endgroup]
+2026-11-08T04:56:17.3486647Z [command]/usr/bin/git log -1 --format=%H
+2026-11-08T04:56:17.3522705Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:17.3534512Z ##[group]Removing auth
+2026-11-08T04:56:17.3535013Z Removing SSH command configuration
+2026-11-08T04:56:17.3540488Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:17.3585118Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:17.3827526Z Removing HTTP extra header
+2026-11-08T04:56:17.3832965Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:17.3877168Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:17.4119761Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:17.4126434Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:17.4169222Z includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:17.4170045Z includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:17.4170717Z includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:17.4171094Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:17.4180136Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:17.4217683Z /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4230020Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4277940Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:17.4310278Z /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4318498Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4362597Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:17.4395458Z /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4404101Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4446279Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:17.4478002Z /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4487114Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config
+2026-11-08T04:56:17.4529499Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:17.4770636Z Removing credentials config '/home/runner/work/_temp/git-credentials-0a4f1c26-7c29-4e9b-bc18-cfef5d928689.config'
+2026-11-08T04:56:17.4781184Z ##[endgroup]
+2026-11-08T04:56:17.5040940Z ##[group]Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+2026-11-08T04:56:17.5041364Z with:
+2026-11-08T04:56:17.5041564Z   python-version: 3.12
+2026-11-08T04:56:17.5041784Z   cache: pip
+2026-11-08T04:56:17.5042059Z   cache-dependency-path: backend-django/requirements.lock
+2026-11-08T04:56:17.5042397Z   check-latest: false
+2026-11-08T04:56:17.5045185Z   token: ***
+2026-11-08T04:56:17.5045410Z   update-environment: true
+2026-11-08T04:56:17.5045657Z   allow-prereleases: false
+2026-11-08T04:56:17.5045886Z   freethreaded: false
+2026-11-08T04:56:17.5046091Z env:
+2026-11-08T04:56:17.5046412Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:17.5046880Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:17.5047195Z   ARTI_ENV: test
+2026-11-08T04:56:17.5047402Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:17.5047645Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:17.5047877Z   OPENAI_API_KEY: 
+2026-11-08T04:56:17.5048119Z   PGDATABASE: arti
+2026-11-08T04:56:17.5048324Z   PGUSER: arti
+2026-11-08T04:56:17.5048551Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:17.5048831Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:17.5049030Z   PGPORT: 5432
+2026-11-08T04:56:17.5049235Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:17.5049474Z ##[endgroup]
+2026-11-08T04:56:17.6488601Z ##[group]Installed versions
+2026-11-08T04:56:17.6592783Z Successfully set up CPython (3.12.16)
+2026-11-08T04:56:17.6593777Z ##[endgroup]
+2026-11-08T04:56:17.6916680Z [command]/opt/hostedtoolcache/Python/3.12.16/x64/bin/pip cache dir
+2026-11-08T04:56:17.9914776Z /home/runner/.cache/pip
+2026-11-08T04:56:18.1434423Z Cache hit for restore-key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.16-pip-7235225cfd6f854e12f6302cd3354d44e2daf1744191662f3daa9b0f57dfe32b
+2026-11-08T04:56:18.6785139Z Received 15318992 of 15318992 (100.0%), 36.3 MBs/sec
+2026-11-08T04:56:18.6785861Z Cache Size: ~15 MB (15318992 B)
+2026-11-08T04:56:18.6812337Z [command]/usr/bin/tar -xf /home/runner/work/_temp/d08202b2-9575-4237-b742-05e3a4ed0452/cache.tzst -P -C /home/runner/work/arti/arti --use-compress-program unzstd
+2026-11-08T04:56:18.7366803Z Cache restored successfully
+2026-11-08T04:56:18.7379285Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.16-pip-7235225cfd6f854e12f6302cd3354d44e2daf1744191662f3daa9b0f57dfe32b
+2026-11-08T04:56:18.7556869Z ##[group]Run python -m pip install -r requirements.lock
+2026-11-08T04:56:18.7557361Z [36;1mpython -m pip install -r requirements.lock[0m
+2026-11-08T04:56:18.7584237Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:18.7584522Z env:
+2026-11-08T04:56:18.7584869Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:18.7585360Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:18.7585700Z   ARTI_ENV: test
+2026-11-08T04:56:18.7585919Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:18.7586167Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:18.7586426Z   OPENAI_API_KEY: 
+2026-11-08T04:56:18.7586631Z   PGDATABASE: arti
+2026-11-08T04:56:18.7586839Z   PGUSER: arti
+2026-11-08T04:56:18.7587074Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:18.7587373Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:18.7587582Z   PGPORT: 5432
+2026-11-08T04:56:18.7587804Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:18.7588157Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:18.7588608Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:18.7589050Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:18.7589432Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:18.7589820Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:18.7590210Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:18.7590537Z ##[endgroup]
+2026-11-08T04:56:19.4294499Z Collecting asgiref==3.13.0 (from -r requirements.lock (line 1))
+2026-11-08T04:56:19.5512643Z   Downloading asgiref-3.13.0-py3-none-any.whl.metadata (12 kB)
+2026-11-08T04:56:19.6551640Z Collecting Django==5.2.19 (from -r requirements.lock (line 2))
+2026-11-08T04:56:19.6820442Z   Downloading django-5.2.19-py3-none-any.whl.metadata (4.1 kB)
+2026-11-08T04:56:19.7280979Z Collecting djangorestframework==3.16.1 (from -r requirements.lock (line 3))
+2026-11-08T04:56:19.7548457Z   Downloading djangorestframework-3.16.1-py3-none-any.whl.metadata (11 kB)
+2026-11-08T04:56:19.7963147Z Collecting gunicorn==23.0.0 (from -r requirements.lock (line 4))
+2026-11-08T04:56:19.8253588Z   Downloading gunicorn-23.0.0-py3-none-any.whl.metadata (4.4 kB)
+2026-11-08T04:56:19.8375534Z Collecting packaging==26.3 (from -r requirements.lock (line 5))
+2026-11-08T04:56:19.8388397Z   Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-11-08T04:56:19.8749053Z Collecting psycopg==3.3.8 (from -r requirements.lock (line 6))
+2026-11-08T04:56:19.9030014Z   Downloading psycopg-3.3.8-py3-none-any.whl.metadata (4.4 kB)
+2026-11-08T04:56:20.1206837Z Collecting psycopg-binary==3.3.8 (from -r requirements.lock (line 7))
+2026-11-08T04:56:20.1481845Z   Downloading psycopg_binary-3.3.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.7 kB)
+2026-11-08T04:56:20.1852903Z Collecting sqlparse==0.6.1 (from -r requirements.lock (line 8))
+2026-11-08T04:56:20.2118374Z   Downloading sqlparse-0.6.1-py3-none-any.whl.metadata (6.9 kB)
+2026-11-08T04:56:20.2242852Z Collecting typing_extensions==4.16.0 (from -r requirements.lock (line 9))
+2026-11-08T04:56:20.2255196Z   Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-11-08T04:56:20.2587576Z Collecting tzdata==2026.6 (from -r requirements.lock (line 10))
+2026-11-08T04:56:20.2852644Z   Downloading tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
+2026-11-08T04:56:20.3220072Z Downloading asgiref-3.13.0-py3-none-any.whl (27 kB)
+2026-11-08T04:56:20.3643258Z Downloading django-5.2.19-py3-none-any.whl (8.3 MB)
+2026-11-08T04:56:20.5496331Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.3/8.3 MB 62.6 MB/s  0:00:00
+2026-11-08T04:56:20.5784990Z Downloading djangorestframework-3.16.1-py3-none-any.whl (1.1 MB)
+2026-11-08T04:56:20.5854562Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 201.2 MB/s  0:00:00
+2026-11-08T04:56:20.6124932Z Downloading gunicorn-23.0.0-py3-none-any.whl (85 kB)
+2026-11-08T04:56:20.6157411Z Using cached packaging-26.3-py3-none-any.whl (129 kB)
+2026-11-08T04:56:20.6424931Z Downloading psycopg-3.3.8-py3-none-any.whl (216 kB)
+2026-11-08T04:56:20.6722557Z Downloading psycopg_binary-3.3.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.2 MB)
+2026-11-08T04:56:20.6988804Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 212.1 MB/s  0:00:00
+2026-11-08T04:56:20.7280283Z Downloading sqlparse-0.6.1-py3-none-any.whl (51 kB)
+2026-11-08T04:56:20.7314968Z Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-11-08T04:56:20.7587537Z Downloading tzdata-2026.6-py2.py3-none-any.whl (348 kB)
+2026-11-08T04:56:20.8807018Z Installing collected packages: tzdata, typing_extensions, sqlparse, psycopg-binary, packaging, asgiref, psycopg, gunicorn, Django, djangorestframework
+2026-11-08T04:56:23.3502582Z 
+2026-11-08T04:56:23.3519827Z Successfully installed Django-5.2.19 asgiref-3.13.0 djangorestframework-3.16.1 gunicorn-23.0.0 packaging-26.3 psycopg-3.3.8 psycopg-binary-3.3.8 sqlparse-0.6.1 typing_extensions-4.16.0 tzdata-2026.6
+2026-11-08T04:56:23.3529132Z 
+2026-11-08T04:56:23.3529681Z [notice] A new release of pip is available: 26.2.2 -> 26.3
+2026-11-08T04:56:23.3530359Z [notice] To update, run: pip install --upgrade pip
+2026-11-08T04:56:23.4108801Z ##[group]Run python manage.py check
+2026-11-08T04:56:23.4109157Z [36;1mpython manage.py check[0m
+2026-11-08T04:56:23.4130253Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:23.4130518Z env:
+2026-11-08T04:56:23.4130861Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:23.4131327Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:23.4131820Z   ARTI_ENV: test
+2026-11-08T04:56:23.4132035Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:23.4132278Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:23.4132518Z   OPENAI_API_KEY: 
+2026-11-08T04:56:23.4132735Z   PGDATABASE: arti
+2026-11-08T04:56:23.4132935Z   PGUSER: arti
+2026-11-08T04:56:23.4133170Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:23.4133674Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:23.4133888Z   PGPORT: 5432
+2026-11-08T04:56:23.4134106Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:23.4134427Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:23.4134913Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:23.4135357Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:23.4135745Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:23.4136121Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:23.4136517Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:23.4136845Z ##[endgroup]
+2026-11-08T04:56:24.2238156Z System check identified no issues (0 silenced).
+2026-11-08T04:56:24.2810925Z ##[group]Run python manage.py makemigrations --check --dry-run
+2026-11-08T04:56:24.2811412Z [36;1mpython manage.py makemigrations --check --dry-run[0m
+2026-11-08T04:56:24.2832404Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:24.2832659Z env:
+2026-11-08T04:56:24.2832996Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:24.2833755Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:24.2834068Z   ARTI_ENV: test
+2026-11-08T04:56:24.2834279Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:24.2834524Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:24.2834769Z   OPENAI_API_KEY: 
+2026-11-08T04:56:24.2834974Z   PGDATABASE: arti
+2026-11-08T04:56:24.2835172Z   PGUSER: arti
+2026-11-08T04:56:24.2835403Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:24.2835705Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:24.2835916Z   PGPORT: 5432
+2026-11-08T04:56:24.2836131Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:24.2836485Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:24.2836917Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:24.2837351Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:24.2837740Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:24.2838124Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:24.2838506Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:24.2838833Z ##[endgroup]
+2026-11-08T04:56:24.9674534Z No changes detected
+2026-11-08T04:56:25.0266103Z ##[group]Run python manage.py migrate --noinput
+2026-11-08T04:56:25.0266535Z [36;1mpython manage.py migrate --noinput[0m
+2026-11-08T04:56:25.0287134Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:25.0287442Z env:
+2026-11-08T04:56:25.0287821Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:25.0288330Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:25.0288672Z   ARTI_ENV: test
+2026-11-08T04:56:25.0288918Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:25.0289191Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:25.0289467Z   OPENAI_API_KEY: 
+2026-11-08T04:56:25.0289710Z   PGDATABASE: arti
+2026-11-08T04:56:25.0289944Z   PGUSER: arti
+2026-11-08T04:56:25.0290207Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:25.0290525Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:25.0290768Z   PGPORT: 5432
+2026-11-08T04:56:25.0291020Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:25.0291396Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.0291860Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:25.0292317Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.0292913Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.0293627Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.0294098Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:25.0294498Z ##[endgroup]
+2026-11-08T04:56:25.6778694Z Operations to perform:
+2026-11-08T04:56:25.6779183Z   Apply all migrations: arti, contenttypes
+2026-11-08T04:56:25.6779551Z Running migrations:
+2026-11-08T04:56:25.8227470Z   Applying arti.0001_initial... OK
+2026-11-08T04:56:25.8290469Z   Applying contenttypes.0001_initial... OK
+2026-11-08T04:56:25.8486458Z   Applying contenttypes.0002_remove_content_type_name... OK
+2026-11-08T04:56:25.9110538Z ##[group]Run python manage.py test arti.tests --noinput -v 2
+2026-11-08T04:56:25.9111021Z [36;1mpython manage.py test arti.tests --noinput -v 2[0m
+2026-11-08T04:56:25.9130865Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:25.9131113Z env:
+2026-11-08T04:56:25.9131445Z   DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+2026-11-08T04:56:25.9131921Z   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+2026-11-08T04:56:25.9132226Z   ARTI_ENV: test
+2026-11-08T04:56:25.9132433Z   ALLOW_TEST_FIXTURES: true
+2026-11-08T04:56:25.9132674Z   ARTI_LLM_PROVIDER: disabled
+2026-11-08T04:56:25.9132920Z   OPENAI_API_KEY: 
+2026-11-08T04:56:25.9133124Z   PGDATABASE: arti
+2026-11-08T04:56:25.9133465Z   PGUSER: arti
+2026-11-08T04:56:25.9133693Z   PGPASSWORD: ci-only-disposable-password
+2026-11-08T04:56:25.9133977Z   PGHOST: 127.0.0.1
+2026-11-08T04:56:25.9134183Z   PGPORT: 5432
+2026-11-08T04:56:25.9134396Z   MEDIA_ROOT: /tmp/arti-ci-media
+2026-11-08T04:56:25.9134748Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.9135182Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:25.9135615Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.9136002Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.9136385Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:25.9136767Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:25.9137093Z ##[endgroup]
+2026-11-08T04:56:26.4029957Z Creating test database for alias 'default' ('test_arti')...
+2026-11-08T04:56:26.4968158Z Found 63 test(s).
+2026-11-08T04:56:26.4968621Z Operations to perform:
+2026-11-08T04:56:26.4969082Z   Synchronize unmigrated apps: rest_framework
+2026-11-08T04:56:26.4969609Z   Apply all migrations: arti, contenttypes
+2026-11-08T04:56:26.4970115Z Synchronizing apps without migrations:
+2026-11-08T04:56:26.4970554Z   Creating tables...
+2026-11-08T04:56:26.4970924Z     Running deferred SQL...
+2026-11-08T04:56:26.4971334Z Running migrations:
+2026-11-08T04:56:26.6398563Z   Applying arti.0001_initial... OK
+2026-11-08T04:56:26.6457563Z   Applying contenttypes.0001_initial... OK
+2026-11-08T04:56:27.6031184Z test_admin_reads_retain_drafts_and_suggested_text (arti.tests.test_foundation.FoundationTests.test_admin_reads_retain_drafts_and_suggested_text) ... ok
+2026-11-08T04:56:27.9035670Z test_bootstrap_hashes_and_never_overwrites (arti.tests.test_foundation.FoundationTests.test_bootstrap_hashes_and_never_overwrites) ... ok
+2026-11-08T04:56:27.9080800Z test_bootstrap_rejects_weak_password (arti.tests.test_foundation.FoundationTests.test_bootstrap_rejects_weak_password) ... ok
+2026-11-08T04:56:27.9286284Z test_counts_computed_from_server_not_client_and_weighted (arti.tests.test_foundation.FoundationTests.test_counts_computed_from_server_not_client_and_weighted) ... ok
+2026-11-08T04:56:27.9342717Z test_coverage_counts_positioned_approved_only (arti.tests.test_foundation.FoundationTests.test_coverage_counts_positioned_approved_only) ... ok
+2026-11-08T04:56:27.9431984Z test_database_constraints_enforce_coordinates_status_and_dates (arti.tests.test_foundation.FoundationTests.test_database_constraints_enforce_coordinates_status_and_dates) ... ok
+2026-11-08T04:56:27.9450313Z test_database_is_actual_postgres (arti.tests.test_foundation.FoundationTests.test_database_is_actual_postgres) ... ok
+2026-11-08T04:56:28.2381774Z test_fixture_is_repeatable_without_accounts (arti.tests.test_foundation.FoundationTests.test_fixture_is_repeatable_without_accounts) ... ok
+2026-11-08T04:56:28.2429079Z test_fk_json_null_and_timezone_round_trip (arti.tests.test_foundation.FoundationTests.test_fk_json_null_and_timezone_round_trip) ... ok
+2026-11-08T04:56:28.2459045Z test_flag_is_required_for_development_fixture (arti.tests.test_foundation.FoundationTests.test_flag_is_required_for_development_fixture) ... ok
+2026-11-08T04:56:28.2543699Z test_health_readiness_and_unimplemented_are_honest (arti.tests.test_foundation.FoundationTests.test_health_readiness_and_unimplemented_are_honest) ... ok
+2026-11-08T04:56:28.2602407Z test_invalid_profile_returns_400_not_500 (arti.tests.test_foundation.FoundationTests.test_invalid_profile_returns_400_not_500) ... ok
+2026-11-08T04:56:28.5696687Z test_media_permissions_and_public_show_image (arti.tests.test_foundation.FoundationTests.test_media_permissions_and_public_show_image) ... ok
+2026-11-08T04:56:28.6067127Z test_model_clean_rejects_foreign_room_and_mismatched_hints (arti.tests.test_foundation.FoundationTests.test_model_clean_rejects_foreign_room_and_mismatched_hints) ... ok
+2026-11-08T04:56:28.6096430Z test_no_default_accounts_or_sessions (arti.tests.test_foundation.FoundationTests.test_no_default_accounts_or_sessions) ... ok
+2026-11-08T04:56:28.6244813Z test_pending_and_draft_artwork_hidden_in_all_public_reads (arti.tests.test_foundation.FoundationTests.test_pending_and_draft_artwork_hidden_in_all_public_reads) ... ok
+2026-11-08T04:56:28.6346452Z test_pool_exact_ten_or_explicit_not_ready (arti.tests.test_foundation.FoundationTests.test_pool_exact_ten_or_explicit_not_ready) ... ok
+2026-11-08T04:56:28.6378261Z test_production_refuses_test_fixture_even_with_flag (arti.tests.test_foundation.FoundationTests.test_production_refuses_test_fixture_even_with_flag) ... ok
+2026-11-08T04:56:28.6445134Z test_public_dto_removes_suggested_content_with_ui_safe_defaults (arti.tests.test_foundation.FoundationTests.test_public_dto_removes_suggested_content_with_ui_safe_defaults) ... ok
+2026-11-08T04:56:28.6516046Z test_public_exhibition_policy_and_camel_case (arti.tests.test_foundation.FoundationTests.test_public_exhibition_policy_and_camel_case) ... ok
+2026-11-08T04:56:28.6655479Z test_recommendation_response_shape_duration_and_exclusions (arti.tests.test_foundation.FoundationTests.test_recommendation_response_shape_duration_and_exclusions) ... ok
+2026-11-08T04:56:29.2565877Z test_role_specific_opaque_token_and_logout (arti.tests.test_foundation.FoundationTests.test_role_specific_opaque_token_and_logout) ... ok
+2026-11-08T04:56:29.2630527Z test_saved_profile_requires_authenticated_owner (arti.tests.test_foundation.FoundationTests.test_saved_profile_requires_authenticated_owner) ... ok
+2026-11-08T04:56:29.2684840Z test_visit_identity_has_real_database_unique_constraint (arti.tests.test_foundation.FoundationTests.test_visit_identity_has_real_database_unique_constraint) ... ok
+2026-11-08T04:56:31.0444743Z test_actual_provider_429_preserves_api_retry_after (arti.tests.test_integration.IntegrationTests.test_actual_provider_429_preserves_api_retry_after) ... ok
+2026-11-08T04:56:32.2559419Z test_analysis_preserves_confirmed_independently_and_conflicts (arti.tests.test_integration.IntegrationTests.test_analysis_preserves_confirmed_independently_and_conflicts) ... ok
+2026-11-08T04:56:33.4415240Z test_analysis_timeout_remains_504 (arti.tests.test_integration.IntegrationTests.test_analysis_timeout_remains_504) ... ok
+2026-11-08T04:56:34.7063780Z test_authenticated_ai_rate_limit_and_timeout (arti.tests.test_integration.IntegrationTests.test_authenticated_ai_rate_limit_and_timeout) ... ok
+2026-11-08T04:56:36.6526753Z test_capture_import_hash_draft_and_no_overwrite (arti.tests.test_integration.IntegrationTests.test_capture_import_hash_draft_and_no_overwrite) ... ok
+2026-11-08T04:56:37.8357018Z test_confirm_batch_is_atomic_and_explicit (arti.tests.test_integration.IntegrationTests.test_confirm_batch_is_atomic_and_explicit) ... ok
+2026-11-08T04:56:39.0224207Z test_docent_context_is_server_reconstructed_and_history_bounded (arti.tests.test_integration.IntegrationTests.test_docent_context_is_server_reconstructed_and_history_bounded) ... ok
+2026-11-08T04:56:40.2216519Z test_docent_hidden_content_and_generic_tip (arti.tests.test_integration.IntegrationTests.test_docent_hidden_content_and_generic_tip) ... ok
+2026-11-08T04:56:41.3949679Z test_explicit_cors_origin_supports_version_headers_not_auth_bypass (arti.tests.test_integration.IntegrationTests.test_explicit_cors_origin_supports_version_headers_not_auth_bypass) ... ok
+2026-11-08T04:56:42.5983953Z test_explicit_regeneration_only_selected (arti.tests.test_integration.IntegrationTests.test_explicit_regeneration_only_selected) ... ok
+2026-11-08T04:56:43.7781242Z test_guest_interpret_validation_precedes_provider (arti.tests.test_integration.IntegrationTests.test_guest_interpret_validation_precedes_provider) ... ok
+2026-11-08T04:56:44.9837367Z test_guest_member_and_invalid_token_are_distinct (arti.tests.test_integration.IntegrationTests.test_guest_member_and_invalid_token_are_distinct) ... ok
+2026-11-08T04:56:46.2077110Z test_idempotency_reasons_snapshot_and_ai_independence (arti.tests.test_integration.IntegrationTests.test_idempotency_reasons_snapshot_and_ai_independence) ... ok
+2026-11-08T04:56:47.4201733Z test_image_version_checked_before_write_and_source_stales (arti.tests.test_integration.IntegrationTests.test_image_version_checked_before_write_and_source_stales) ... ok
+2026-11-08T04:56:48.6082673Z test_invalid_provider_output_does_not_write (arti.tests.test_integration.IntegrationTests.test_invalid_provider_output_does_not_write) ... ok
+2026-11-08T04:56:49.8146043Z test_malformed_payloads_return_400_without_writes (arti.tests.test_integration.IntegrationTests.test_malformed_payloads_return_400_without_writes) ... ok
+2026-11-08T04:56:51.0395590Z test_member_other_owner_logout_and_dormant (arti.tests.test_integration.IntegrationTests.test_member_other_owner_logout_and_dormant) ... ok
+2026-11-08T04:56:52.2318145Z test_member_reactions_are_central_and_guest_not_collected (arti.tests.test_integration.IntegrationTests.test_member_reactions_are_central_and_guest_not_collected) ... ok
+2026-11-08T04:56:53.4307469Z test_missing_version_and_full_edit_fields (arti.tests.test_integration.IntegrationTests.test_missing_version_and_full_edit_fields) ... ok
+2026-11-08T04:56:54.6072562Z test_postgres_is_real (arti.tests.test_integration.IntegrationTests.test_postgres_is_real) ... ok
+2026-11-08T04:56:55.8033544Z test_profile_only_same_request_retry_and_admin_receipt (arti.tests.test_integration.IntegrationTests.test_profile_only_same_request_retry_and_admin_receipt) ... ok
+2026-11-08T04:56:57.0339733Z test_roundtrip_guide_and_independent_confirmation (arti.tests.test_integration.IntegrationTests.test_roundtrip_guide_and_independent_confirmation) ... ok
+2026-11-08T04:56:58.2325142Z test_saved_profile_provenance_and_server_counts_cross_pool (arti.tests.test_integration.IntegrationTests.test_saved_profile_provenance_and_server_counts_cross_pool) ... ok
+2026-11-08T04:57:00.0184062Z test_signup_login_no_plaintext_and_reset_disabled (arti.tests.test_integration.IntegrationTests.test_signup_login_no_plaintext_and_reset_disabled) ... ok
+2026-11-08T04:57:01.2650744Z test_source_change_forces_separate_approval_and_stale (arti.tests.test_integration.IntegrationTests.test_source_change_forces_separate_approval_and_stale) ... ok
+2026-11-08T04:57:02.4659944Z test_visit_scope_validation (arti.tests.test_integration.IntegrationTests.test_visit_scope_validation) ... ok
+2026-11-08T04:57:02.4846856Z test_analysis_slot_is_cross_connection_exclusive (arti.tests.test_integration.ConcurrentVisitTests.test_analysis_slot_is_cross_connection_exclusive) ... ok
+2026-11-08T04:57:03.7567734Z test_simultaneous_same_visit_is_one_row (arti.tests.test_integration.ConcurrentVisitTests.test_simultaneous_same_visit_is_one_row) ... ok
+2026-11-08T04:57:04.3147015Z test_actual_http_wire_context_and_data_minimization (arti.tests.test_provider.ProviderTests.test_actual_http_wire_context_and_data_minimization) ... ok
+2026-11-08T04:57:06.3958827Z test_all_text_tasks_validate_structured_outputs (arti.tests.test_provider.ProviderTests.test_all_text_tasks_validate_structured_outputs) ... ok
+2026-11-08T04:57:06.3964623Z test_classifier_is_not_replaced_by_text_llm (arti.tests.test_provider.ProviderTests.test_classifier_is_not_replaced_by_text_llm) ... ok
+2026-11-08T04:57:06.9175621Z test_compatible_options_and_task_model (arti.tests.test_provider.ProviderTests.test_compatible_options_and_task_model) ... ok
+2026-11-08T04:57:06.9183226Z test_disabled_missing_key_and_model_do_not_send (arti.tests.test_provider.ProviderTests.test_disabled_missing_key_and_model_do_not_send) ... ok
+2026-11-08T04:57:11.0845239Z test_malformed_refusal_truncated_and_oversized_responses (arti.tests.test_provider.ProviderTests.test_malformed_refusal_truncated_and_oversized_responses) ... ok
+2026-11-08T04:57:11.0857542Z test_oversized_prompt_does_not_send (arti.tests.test_provider.ProviderTests.test_oversized_prompt_does_not_send) ... ok
+2026-11-08T04:57:11.1052491Z test_redirect_is_not_followed (arti.tests.test_provider.ProviderTests.test_redirect_is_not_followed) ... ok
+2026-11-08T04:57:11.1134759Z test_timeout_and_network_failure (arti.tests.test_provider.ProviderTests.test_timeout_and_network_failure) ... ok
+2026-11-08T04:57:11.1143971Z test_unsafe_or_malformed_configuration_does_not_send (arti.tests.test_provider.ProviderTests.test_unsafe_or_malformed_configuration_does_not_send) ... ok
+2026-11-08T04:57:11.6968317Z test_upstream_errors_are_sanitized_without_fallback (arti.tests.test_provider.ProviderTests.test_upstream_errors_are_sanitized_without_fallback) ... ok
+2026-11-08T04:57:11.6969183Z 
+2026-11-08T04:57:11.6969477Z ----------------------------------------------------------------------
+2026-11-08T04:57:11.6970063Z Ran 63 tests in 44.712s
+2026-11-08T04:57:11.6970303Z 
+2026-11-08T04:57:11.6970445Z OK
+2026-11-08T04:57:11.6970878Z Destroying test database for alias 'default' ('test_arti')...
+2026-11-08T04:57:11.7504932Z   Applying contenttypes.0002_remove_content_type_name... OK
+2026-11-08T04:57:11.7505853Z System check identified no issues (0 silenced).
+2026-11-08T04:57:11.8394745Z Post job cleanup.
+2026-11-08T04:57:11.9937245Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/arti/arti --files-from manifest.txt --use-compress-program zstdmt
+2026-11-08T04:57:12.9623678Z Sent 30609123 of 30609123 (100.0%), 40.9 MBs/sec
+2026-11-08T04:57:13.0909509Z Cache saved with the key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.16-pip-0c057f453aef46647ead34a262f48dc173e1aafee42875e9e50ff667f6a1568b
+2026-11-08T04:57:13.1077454Z Post job cleanup.
+2026-11-08T04:57:13.1995668Z [command]/usr/bin/git version
+2026-11-08T04:57:13.2041960Z git version 2.56.0
+2026-11-08T04:57:13.2084418Z Temporarily overriding HOME='/home/runner/work/_temp/52ae0b48-0429-4140-a6db-6cd988e399f6' before making global git config changes
+2026-11-08T04:57:13.2085805Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:57:13.2089659Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:57:13.2127283Z Removing SSH command configuration
+2026-11-08T04:57:13.2134699Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:57:13.2192135Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:57:13.2456068Z Removing HTTP extra header
+2026-11-08T04:57:13.2463735Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:57:13.2505270Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:57:13.2784922Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:57:13.2796483Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:57:13.2847846Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:57:13.3252363Z Print service container logs: 49317ac41b024a5b8852aa029bc46b15_postgres17alpine_c8933f
+2026-11-08T04:57:13.3257310Z ##[command]/usr/bin/docker logs --details 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:57:13.3412583Z  The files belonging to this database system will be owned by user "postgres".
+2026-11-08T04:57:13.3414687Z  sh: locale: not found
+2026-11-08T04:57:13.3415375Z  This user must also own the server process.
+2026-11-08T04:57:13.3416088Z  
+2026-11-08T04:57:13.3417086Z  2026-11-08 04:56:10.215 UTC [35] WARNING:  no usable system locales were found
+2026-11-08T04:57:13.3418005Z  The database cluster will be initialized with locale "en_US.utf8".
+2026-11-08T04:57:13.3418829Z  initdb: warning: enabling "trust" authentication for local connections
+2026-11-08T04:57:13.3419807Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-11-08T04:57:13.3420781Z  2026-11-08 04:56:11.036 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-11-08T04:57:13.3421448Z  2026-11-08 04:56:11.036 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-11-08T04:57:13.3421938Z  2026-11-08 04:56:11.036 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-11-08T04:57:13.3422460Z  2026-11-08 04:56:11.037 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-11-08T04:57:13.3423056Z  2026-11-08 04:56:11.040 UTC [57] LOG:  database system was shut down at 2026-11-08 04:56:10 UTC
+2026-11-08T04:57:13.3424082Z  2026-11-08 04:56:11.044 UTC [1] LOG:  database system is ready to accept connections
+2026-11-08T04:57:13.3424732Z  2026-11-08 04:56:27.936 UTC [86] ERROR:  new row for relation "arti_artwork" violates check constraint "art_position_bounds"
+2026-11-08T04:57:13.3426372Z  2026-11-08 04:56:27.936 UTC [86] DETAIL:  Failing row contains (fixture-art01, 검증용 작품 01, 가상 작가, 연도 미상, room-1, 101, 3, ["#334455", "#c5b39b"], , fixture-public.png, t, ["landscape"], null, 실제 전시 자료가 아닌 개발 검증용 원문입니다., ["어떤 색이 보이나요?"], ["힌트"], 검수 전 가이드, ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION, , approved, null, 미검수 초안 — 공개금지, [], none, none, suggested, suggested, 1, 1, 1, 1, 1, 2026-11-08 04:56:27.031485+00, fixture-ex01).
+2026-11-08T04:57:13.3428004Z  2026-11-08 04:56:27.936 UTC [86] STATEMENT:  UPDATE "arti_artwork" SET "position_x" = 101.0 WHERE "arti_artwork"."id" = 'fixture-art01'
+2026-11-08T04:57:13.3428790Z  2026-11-08 04:56:27.938 UTC [86] ERROR:  new row for relation "arti_artwork" violates check constraint "art_position_bounds"
+2026-11-08T04:57:13.3430385Z  2026-11-08 04:56:27.938 UTC [86] DETAIL:  Failing row contains (fixture-art01, 검증용 작품 01, 가상 작가, 연도 미상, room-1, null, 3, ["#334455", "#c5b39b"], , fixture-public.png, t, ["landscape"], null, 실제 전시 자료가 아닌 개발 검증용 원문입니다., ["어떤 색이 보이나요?"], ["힌트"], 검수 전 가이드, ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION, , approved, null, 미검수 초안 — 공개금지, [], none, none, suggested, suggested, 1, 1, 1, 1, 1, 2026-11-08 04:56:27.031485+00, fixture-ex01).
+2026-11-08T04:57:13.3432038Z  2026-11-08 04:56:27.938 UTC [86] STATEMENT:  UPDATE "arti_artwork" SET "position_x" = NULL, "position_y" = 3.0 WHERE "arti_artwork"."id" = 'fixture-art01'
+2026-11-08T04:57:13.3432874Z  2026-11-08 04:56:27.939 UTC [86] ERROR:  new row for relation "arti_artwork" violates check constraint "art_review_valid"
+2026-11-08T04:57:13.3435414Z  2026-11-08 04:56:27.939 UTC [86] DETAIL:  Failing row contains (fixture-art01, 검증용 작품 01, 가상 작가, 연도 미상, room-1, 5, 3, ["#334455", "#c5b39b"], , fixture-public.png, t, ["landscape"], null, 실제 전시 자료가 아닌 개발 검증용 원문입니다., ["어떤 색이 보이나요?"], ["힌트"], 검수 전 가이드, ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION, , fake, null, 미검수 초안 — 공개금지, [], none, none, suggested, suggested, 1, 1, 1, 1, 1, 2026-11-08 04:56:27.031485+00, fixture-ex01).
+2026-11-08T04:57:13.3438809Z  2026-11-08 04:56:27.939 UTC [86] STATEMENT:  UPDATE "arti_artwork" SET "review_status" = 'fake' WHERE "arti_artwork"."id" = 'fixture-art01'
+2026-11-08T04:57:13.3440209Z  2026-11-08 04:56:27.940 UTC [86] ERROR:  new row for relation "arti_artwork" violates check constraint "art_version_positive"
+2026-11-08T04:57:13.3442804Z  2026-11-08 04:56:27.940 UTC [86] DETAIL:  Failing row contains (fixture-art01, 검증용 작품 01, 가상 작가, 연도 미상, room-1, 5, 3, ["#334455", "#c5b39b"], , fixture-public.png, t, ["landscape"], null, 실제 전시 자료가 아닌 개발 검증용 원문입니다., ["어떤 색이 보이나요?"], ["힌트"], 검수 전 가이드, ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION, , approved, null, 미검수 초안 — 공개금지, [], none, none, suggested, suggested, 0, 1, 1, 1, 1, 2026-11-08 04:56:27.031485+00, fixture-ex01).
+2026-11-08T04:57:13.3445685Z  2026-11-08 04:56:27.940 UTC [86] STATEMENT:  UPDATE "arti_artwork" SET "version" = 0 WHERE "arti_artwork"."id" = 'fixture-art01'
+2026-11-08T04:57:13.3447042Z  2026-11-08 04:56:27.942 UTC [86] ERROR:  new row for relation "arti_exhibition" violates check constraint "ex_dates_ordered"
+2026-11-08T04:57:13.3449006Z  2026-11-08 04:56:27.942 UTC [86] DETAIL:  Failing row contains (fixture-ex01, ARTI 개발 검증 전시, ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION, 가상 전시실, 2026-01-01, 2025-01-01, running, [{"id": "room-1", "name": "검증실"}], 0, 0, null, 1, 2026-11-08 04:56:27.000148+00).
+2026-11-08T04:57:13.3451054Z  2026-11-08 04:56:27.942 UTC [86] STATEMENT:  UPDATE "arti_exhibition" SET "end_date" = '2025-01-01'::date WHERE "arti_exhibition"."id" = 'fixture-ex01'
+2026-11-08T04:57:13.3452929Z  2026-11-08 04:56:28.242 UTC [86] ERROR:  insert or update on table "arti_artwork" violates foreign key constraint "arti_artwork_exhibition_id_306c29f9_fk_arti_exhibition_id"
+2026-11-08T04:57:13.3454758Z  2026-11-08 04:56:28.242 UTC [86] DETAIL:  Key (exhibition_id)=(missing-exhibition) is not present in table "arti_exhibition".
+2026-11-08T04:57:13.3455395Z  2026-11-08 04:56:28.242 UTC [86] STATEMENT:  SET CONSTRAINTS ALL IMMEDIATE
+2026-11-08T04:57:13.3456000Z  2026-11-08 04:56:29.267 UTC [86] ERROR:  duplicate key value violates unique constraint "visit_actor_id_unique"
+2026-11-08T04:57:13.3456816Z  2026-11-08 04:56:29.267 UTC [86] DETAIL:  Key (user_id, visit_id)=(6ebce4349ab74d5bb30f080b, 7109acb2-c8de-4fc2-9d87-fdf9bcf39bb2) already exists.
+2026-11-08T04:57:13.3458539Z  2026-11-08 04:56:29.267 UTC [86] STATEMENT:  INSERT INTO "arti_visit" ("id", "user_id", "visit_id", "exhibition_id", "canonical_payload", "artwork_snapshots", "interpretation", "emotion_profile", "created_at") VALUES ('1867f8d4c579a96fd115ede0', '6ebce4349ab74d5bb30f080b', '7109acb2c8de4fc29d87fdf9bcf39bb2'::uuid, 'fixture-ex01', '{}'::jsonb, '[]'::jsonb, NULL, NULL, '2026-11-08 04:56:29.267191+00:00'::timestamptz)
+2026-11-08T04:57:13.3460068Z  2026-11-08 04:57:11.707 UTC [55] LOG:  checkpoint starting: immediate force wait
+2026-11-08T04:57:13.3461198Z  2026-11-08 04:57:11.723 UTC [55] LOG:  checkpoint complete: wrote 143 buffers (0.9%); 1 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.002 s, total=0.017 s; sync files=108, longest=0.001 s, average=0.001 s; distance=5857 kB, estimate=5857 kB; lsn=0/1ED6CC8, redo lsn=0/1ED6C70
+2026-11-08T04:57:13.3462322Z  The default database encoding has accordingly been set to "UTF8".
+2026-11-08T04:57:13.3462762Z  The default text search configuration will be set to "english".
+2026-11-08T04:57:13.3463110Z  
+2026-11-08T04:57:13.3463602Z  Data page checksums are disabled.
+2026-11-08T04:57:13.3463895Z  
+2026-11-08T04:57:13.3464210Z  fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-11-08T04:57:13.3464624Z  creating subdirectories ... ok
+2026-11-08T04:57:13.3464959Z  selecting dynamic shared memory implementation ... posix
+2026-11-08T04:57:13.3465516Z  selecting default "max_connections" ... 100
+2026-11-08T04:57:13.3465849Z  selecting default "shared_buffers" ... 128MB
+2026-11-08T04:57:13.3466155Z  selecting default time zone ... UTC
+2026-11-08T04:57:13.3466460Z  creating configuration files ... ok
+2026-11-08T04:57:13.3466737Z  running bootstrap script ... ok
+2026-11-08T04:57:13.3467173Z  performing post-bootstrap initialization ... ok
+2026-11-08T04:57:13.3467495Z  syncing data to disk ... ok
+2026-11-08T04:57:13.3467730Z  
+2026-11-08T04:57:13.3467909Z  
+2026-11-08T04:57:13.3468142Z  Success. You can now start the database server using:
+2026-11-08T04:57:13.3468450Z  
+2026-11-08T04:57:13.3468775Z      pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-11-08T04:57:13.3469092Z  
+2026-11-08T04:57:13.3469658Z  waiting for server to start....2026-11-08 04:56:10.764 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-11-08T04:57:13.3470490Z  2026-11-08 04:56:10.765 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-11-08T04:57:13.3471070Z  2026-11-08 04:56:10.767 UTC [44] LOG:  database system was shut down at 2026-11-08 04:56:10 UTC
+2026-11-08T04:57:13.3471599Z  2026-11-08 04:56:10.771 UTC [41] LOG:  database system is ready to accept connections
+2026-11-08T04:57:13.3471986Z   done
+2026-11-08T04:57:13.3472181Z  server started
+2026-11-08T04:57:13.3472394Z  CREATE DATABASE
+2026-11-08T04:57:13.3472592Z  
+2026-11-08T04:57:13.3472767Z  
+2026-11-08T04:57:13.3473089Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-11-08T04:57:13.3473767Z  
+2026-11-08T04:57:13.3474147Z  waiting for server to shut down...2026-11-08 04:56:10.915 UTC [41] LOG:  received fast shutdown request
+2026-11-08T04:57:13.3474690Z  .2026-11-08 04:56:10.915 UTC [41] LOG:  aborting any active transactions
+2026-11-08T04:57:13.3475278Z  2026-11-08 04:56:10.919 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+2026-11-08T04:57:13.3475840Z  2026-11-08 04:56:10.919 UTC [42] LOG:  shutting down
+2026-11-08T04:57:13.3476246Z  2026-11-08 04:56:10.919 UTC [42] LOG:  checkpoint starting: shutdown immediate
+2026-11-08T04:57:13.3477356Z  2026-11-08 04:56:10.937 UTC [42] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.014 s, sync=0.003 s, total=0.019 s; sync files=301, longest=0.001 s, average=0.001 s; distance=4266 kB, estimate=4266 kB; lsn=0/191E810, redo lsn=0/191E810
+2026-11-08T04:57:13.3478413Z  2026-11-08 04:56:10.945 UTC [41] LOG:  database system is shut down
+2026-11-08T04:57:13.3478752Z   done
+2026-11-08T04:57:13.3478943Z  server stopped
+2026-11-08T04:57:13.3479140Z  
+2026-11-08T04:57:13.3479390Z  PostgreSQL init process complete; ready for start up.
+2026-11-08T04:57:13.3479699Z  
+2026-11-08T04:57:13.3485643Z Stop and remove container: 49317ac41b024a5b8852aa029bc46b15_postgres17alpine_c8933f
+2026-11-08T04:57:13.3491021Z ##[command]/usr/bin/docker rm --force 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:57:13.4834030Z 65d9d8761fbdb0f57aa0cd21425dc76a6015b1c77e736d28d264d13155be8e80
+2026-11-08T04:57:13.4864989Z Remove container network: github_network_1a45e5a96fb94809a1074599a6ce3b15
+2026-11-08T04:57:13.4869914Z ##[command]/usr/bin/docker network rm github_network_1a45e5a96fb94809a1074599a6ce3b15
+2026-11-08T04:57:13.5880038Z github_network_1a45e5a96fb94809a1074599a6ce3b15
+2026-11-08T04:57:13.5957927Z Cleaning up orphan processes
