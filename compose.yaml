@@ -21,6 +21,7 @@ services:
       DJANGO_DEBUG: "false"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
       ARTI_ALLOWED_ORIGINS: ${ARTI_ALLOWED_ORIGINS:-}
+      ARTI_MODEL_SERVICE_URL: ${ARTI_MODEL_SERVICE_URL:-}
       ARTI_LLM_PROVIDER: ${ARTI_LLM_PROVIDER:-disabled}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}

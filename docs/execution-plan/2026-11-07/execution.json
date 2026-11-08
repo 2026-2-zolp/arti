@@ -2,6 +2,30 @@
   "version": "2.1",
   "asOf": "2026-11-09",
   "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
+  "preparatoryWork": {
+  "W07Preparation": {
+    "scope": [
+      "Django–FastAPI 분석 연동",
+      "가상 응답 기반 계약·저장 보호 회귀",
+      "실모델 기동·자원 측정 준비"
+    ],
+    "startRequires": [
+      "W05 complete",
+      "G4 pass"
+    ],
+    "doesNotRequire": "W06 전체 완료는 선행 기술 구현의 조건이 아님",
+    "completionStillRequires": [
+      "W06 complete",
+      "AC20/AC21/AC22 정식 평가",
+      "G5 검토"
+    ],
+    "limits": [
+      "사람 검수·공개 승인 자동 변경 없음",
+      "가상 응답 결과를 실모델 정확도/성능으로 주장하지 않음",
+      "모델 확장·정식 하네스는 별도 논의"
+    ]
+  }
+},
   "tasks": [
     {
       "id": "W01",

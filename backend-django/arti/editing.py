@@ -234,13 +234,14 @@ def analyze(request,artwork_id):
     regenerate=request.data.get('regenerateFields',[])
     if not isinstance(regenerate,list) or any(f not in STATES for f in regenerate):fail()
     if w.review_status!='approved' or not w.description.strip():fail('승인된 원문을 먼저 준비해 주세요.')
-    results={};updates={}
+    results={};updates={};model_cache={}
     with analysis_slot():
         for kind,field in STATES.items():
             if getattr(w,field)=='confirmed' and kind not in regenerate:
                 results[kind]={'ok':True,'source':'kept','made':False};continue
             try:
-                value=providers.generate(kind,artwork_dto(w,True))
+                context = {'analysis_cache': model_cache} if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL else {}
+                value=providers.generate(kind,artwork_dto(w,True),**context)
                 providers.validate(kind,value)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}

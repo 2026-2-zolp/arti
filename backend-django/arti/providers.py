@@ -5,6 +5,15 @@ from .http import ContractError
 
 
 def generate(kind, snapshot, **context):
+    if kind in ('tag', 'emotion'):
+        if not settings.ARTI_MODEL_SERVICE_URL:
+            raise ContractError(503, 'AI_UNAVAILABLE', '분석 모델 연결을 준비 중이에요.', retryable=True)
+        from .model_service import analyze
+        cache = context.get('analysis_cache', {})
+        if 'result' not in cache:
+            cache['result'] = analyze(snapshot)
+        result = cache['result']
+        return {'scores': result['tags']} if kind == 'tag' else result
     if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
         from .llm import generate_text
         return generate_text(kind, snapshot, **context)
