@@ -26,6 +26,26 @@
     ]
   }
 },
+  "biasMitigation": {
+  "evaluationBiasMitigation": {
+    "status": "planned feedback design; baseline measurement recorded separately",
+    "workLinks": [
+      "W06 independent labels and uncertainty",
+      "W07 fixed baseline/rater sensitivity",
+      "W05 feedback followup design",
+      "W10 user usefulness evaluation"
+    ],
+    "rules": [
+      "operational generated tags differ from independent evaluation references",
+      "individual votes/uncertainty retained; ties masked in sensitivity analysis",
+      "like/dislike artwork preference is not tag correctness or answer helpfulness",
+      "optional versioned feedback is review evidence, not automatic truth/training input",
+      "no response is not negative; exposure/rating denominators separate",
+      "no automatic approval/retraining/production threshold update"
+    ],
+    "record": "records/W07-preparation/tag-baseline-2026-11-09/feedback-plan.md"
+  }
+},
   "tasks": [
     {
       "id": "W01",

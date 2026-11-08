@@ -1,0 +1,26 @@
+{
+  "scope": "40 known development examples; no holdout/generalization claim",
+  "baselineCommit": "06aaa95",
+  "modes": [
+    "raw_half",
+    "current",
+    "all_positive_sanity"
+  ],
+  "fitThresholds": false,
+  "raterProtocol": "saved labels vs strict majority5 vs each of6 (one primary-only) vs leave-one-out4 ties masked; >=4/5 consensus vs disputed",
+  "metrics": [
+    "macroF1 supported tags",
+    "microF1",
+    "per-tag precision recall F1",
+    "mean predicted tags",
+    "primary inclusion not top1",
+    "raw score argmax primary accuracy"
+  ],
+  "failureRules": [
+    "all40 images unique and present",
+    "scores finite0..1 all8keys",
+    "no model/label/calibration/DB modification",
+    "inference completed40 before reporting"
+  ],
+  "scriptSha256": "56f3250120067890555c33e73fb1ad70d70d984200e07f25c3d1e9fbda20a047"
+}
