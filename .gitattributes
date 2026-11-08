@@ -14,3 +14,6 @@ compose.yaml text eol=lf
 data/reference/git-captures/** -text
 scripts/*.py text eol=lf
 scripts/tests/*.py text eol=lf
+
+# Preserve independent-review HTML/JSON bytes referenced by recorded hashes.
+docs/review/** -text
