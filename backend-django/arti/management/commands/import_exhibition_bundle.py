@@ -58,7 +58,7 @@ def local_image(root, row):
     return raw
 
 
-def read_bundle(root):
+def read_bundle(root, allow_http_reference=False):
     path = root / 'manifest.json'
     if path.is_symlink() or not path.is_file() or path.stat().st_size > 1024 * 1024:
         raise CommandError('Missing or oversized manifest.')
@@ -89,8 +89,9 @@ def read_bundle(root):
         url = text(row['referenceUrl'], 2000)
         from urllib.parse import urlsplit
         parsed = urlsplit(url)
-        if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password:
-            raise CommandError('Expected an HTTPS source reference without credentials.')
+        allowed_schemes = ('http', 'https') if allow_http_reference else ('https',)
+        if parsed.scheme not in allowed_schemes or not parsed.hostname or parsed.username or parsed.password or any(c.isspace() for c in url):
+            raise CommandError('Expected an allowed HTTP(S) metadata reference without credentials or whitespace.')
         if row['contentOrigin'] != 'team_draft' or row['identityStatus'] != 'candidate' or row['rightsStatus'] != 'unverified':
             raise CommandError('Intake v1 accepts candidate identity and unreviewed team draft only.')
         guide = row['guide']
@@ -123,6 +124,8 @@ class Command(BaseCommand):
         parser.add_argument('--dry-run', action='store_true')
         parser.add_argument('--append-to-draft', action='store_true')
         parser.add_argument('--expected-version', type=int)
+        parser.add_argument('--allow-http-reference', action='store_true',
+                            help='Store an explicitly verified legacy HTTP reference as metadata only; never fetch URLs.')
 
     def draft_target(self, data, expected, locked=False):
         query = Exhibition.objects.select_for_update() if locked else Exhibition.objects
@@ -141,7 +144,8 @@ class Command(BaseCommand):
         created = []
         try:
             root = options['directory'].resolve()
-            data, digest = read_bundle(root)
+            # 예외는 메타데이터 URL 저장에만 적용하며, 원격 호출/TLS 설정을 바꾸지 않습니다.
+            data, digest = read_bundle(root, allow_http_reference=options['allow_http_reference'])
             append = options['append_to_draft']
             expected = options['expected_version']
             if (append and (type(expected) is not int or expected < 1)) or (not append and expected is not None):
@@ -191,7 +195,8 @@ class Command(BaseCommand):
                 'works': len(rows), 'imagesVerified': len(rows), 'manifestSha256': digest,
                 'exhibitionStatus': 'draft', 'exhibitionVersion': ex.version, 'appendToDraft': append,
                 'reviewStatus': 'source_check', 'publicWorks': 0,
-                'accountsImported': 0, 'layoutImported': False, 'approvalImported': False}
+                'accountsImported': 0, 'layoutImported': False, 'approvalImported': False,
+                'httpReferenceAllowed': options['allow_http_reference']}
         except Exception as exc:
             # 이번 호출이 새로 만든 파일만 회수합니다. 기존 DB/미디어는 지우지 않습니다.
             for target in created:

@@ -95,3 +95,5 @@ exhibitionAssignments는 전부 빈 배열이다. 실제/시연 전시 선택 �
 2026-11-09 확장 후속: [나머지13점 검토](remaining13-review.md)에서 조건부12점/007보류로 나눴다. [별도12점 manifest](remaining12-manifest.json)를 기존 시연 초안 전시에 추가해 비공개15점이 됐다. 판화 도상 후보4점은 개별 판본/연도를 확정하지 않아 DB year를 비웠다. 원래 inventory와 core3-manifest는 보존하고 [추가 결과](../../../docs/execution-plan/2026-11-07/records/W06/remaining-intake/README.md)를 따른다. 사람 확인/권리/공개와 전체 여정은 대기다.
 
 2026-11-09 사용자 추가 근거: [007 재단 공식 이미지/캡션 확인](007-source-followup.md)으로 기존 식별 보류 사유를 보강했다. Work/산 제목 차이는 출처별로 유지하며 조건부 비공개 인수 후보로 볼 근거가 생겼다. 이번에는 DB를 변경하지 않아 현재15점이다. 과거007보류 기록은 조사 당시 상태이며 최신 판단은 후속 문서를 따른다.
+
+2026-11-09 007 인수 후속: 사용자 지시에 따라 [007 단독 manifest](007-manifest.json)를 초안version2에 추가해 현재 비공개16점/version3이 됐다. 이전 보류/DB15점 기록은 당시 상태로 보존하고 [최신 인수 증거](../../../docs/execution-plan/2026-11-07/records/W06/007-intake/README.md)를 따른다. Work/산 표기·사람 동일성/권리/콘텐츠 확인,판화 개별 판본·실제 배치/태그/여정은 대기다.

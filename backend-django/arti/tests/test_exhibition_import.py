@@ -210,3 +210,23 @@ class ExhibitionImportTests(TestCase):
             self.run_import(append_to_draft=True, expected_version=1)
         self.assertEqual(Artwork.objects.count(), 1); self.assertEqual(Exhibition.objects.get().version, 1)
         self.assertFalse((self.media / 'intake-a2.png').exists())
+
+    def test_http_reference_requires_explicit_metadata_exception_without_fetch(self):
+        self.data['items'][0]['referenceUrl'] = 'http://example.test/legacy-catalogue'
+        with self.assertRaises(CommandError): self.run_import(True)
+        self.assert_empty()
+        with patch('urllib.request.urlopen', side_effect=AssertionError('metadata must never be fetched')):
+            out = self.run_import(True, allow_http_reference=True)
+            self.assertTrue(out['httpReferenceAllowed']); self.assert_empty()
+            self.run_import(allow_http_reference=True)
+        self.assertEqual(Artwork.objects.get().reference_url, 'http://example.test/legacy-catalogue')
+        self.assertEqual(Artwork.objects.get().review_status, 'source_check')
+        self.assertFalse(Artwork.objects.get().show_image)
+
+    def test_http_exception_still_rejects_credentials_whitespace_and_other_schemes(self):
+        for value in ['http://user:secret@example.test/work', 'https://user:secret@example.test/work',
+                      'javascript:alert(1)', 'file:///etc/passwd', 'http://example.test/with space']:
+            with self.subTest(url=value):
+                self.data['items'][0]['referenceUrl'] = value
+                with self.assertRaises(CommandError): self.run_import(True, allow_http_reference=True)
+                self.assert_empty()

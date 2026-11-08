@@ -1,0 +1,42 @@
+{
+  "format": "arti-exhibition-intake",
+  "version": 1,
+  "exhibition": {
+    "id": "ex-yyk-demo-20261109",
+    "title": "유영국: 색면과 질감 관찰",
+    "subtitle": "전달자료 비공개 검수용·실제 출품 전시 아님",
+    "venue": "실제 전시장 미정·내부 시연 재구성",
+    "startDate": "2026-11-09",
+    "endDate": "2026-12-31",
+    "kind": "demo_reconstruction",
+    "basis": "007 재단 공식 Work1968 이미지/캡션과 전달파일 대응 근거를 보강해 기존 시연 초안에 단독 추가. Work/산 표기 차이·사람 동일성/권리/내용 승인은 대기."
+  },
+  "items": [
+    {
+      "id": "yyk-demo-007",
+      "recordId": "yyk-intake-20261109-007",
+      "assetId": "asset-95bf3130e16845b8f1db2fb2",
+      "file": "yyk-demo-007-157612a2ced1.png",
+      "sha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "title": "작품 (Work)",
+      "artist": "유영국",
+      "year": "1968",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 재단의 Work,1968,oil on canvas,136x136cm 캡션과 이미지에 대응하는 후보입니다. 블로그 사진의 산 표기는 별도 출처 표기이며 동일성/권리/내용 최종 확인은 대기입니다. 붉고 주황색인 면 사이로 삼각형 경계가 교차하고 가는 노란 선들이 반복됩니다. 특정 장소·작가 의도·개인 소장 여부를 이 자료로 확정하지 않습니다.",
+      "source": "유영국미술문화재단 작품 페이지 id68 이미지/캡션 대응 후보; Work/산 표기 차이와 동일성·권리·내용 확인 대기",
+      "referenceUrl": "http://www.yooyoungkuk.org/about/work_view.php?year=1960&id=68&cont2_limit=45",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "붉고 주황색인 면 사이로 삼각형 경계가 교차하고 가는 노란 선들이 반복됩니다.",
+      "guide": {
+        "intro": "넓은 붉은 면과 가는 선 중 먼저 보이는 쪽을 골라보세요.",
+        "questions": [
+          "가는 선이 모이거나 방향을 바꾸는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "가운데 교차점과 아래쪽 가로선 중 한 곳만 살펴봐도 좋아요."
+        ]
+      }
+    }
+  ]
+}
