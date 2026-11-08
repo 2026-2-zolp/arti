@@ -1,0 +1,128 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+System check identified no issues (0 silenced).
+No changes detected
+Operations to perform:
+  Apply all migrations: arti, contenttypes
+Running migrations:
+  Applying arti.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+Creating test database for alias 'default' ('test_arti')...
+Found 97 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: rest_framework
+  Apply all migrations: arti, contenttypes
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying arti.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name...test_append_failure_restores_exhibition_version_and_original_rows (arti.tests.test_exhibition_import.ExhibitionImportTests.test_append_failure_restores_exhibition_version_and_original_rows) ... ok
+test_append_rechecks_version_under_lock_before_writing (arti.tests.test_exhibition_import.ExhibitionImportTests.test_append_rechecks_version_under_lock_before_writing) ... ok
+test_append_refuses_identity_changes_and_duplicate_work (arti.tests.test_exhibition_import.ExhibitionImportTests.test_append_refuses_identity_changes_and_duplicate_work) ... ok
+test_append_requires_explicit_flag_current_version_and_draft (arti.tests.test_exhibition_import.ExhibitionImportTests.test_append_requires_explicit_flag_current_version_and_draft) ... ok
+test_approval_layout_and_bad_pairing_cannot_be_imported (arti.tests.test_exhibition_import.ExhibitionImportTests.test_approval_layout_and_bad_pairing_cannot_be_imported) ... ok
+test_corrupt_missing_unsafe_and_fake_image_rejected_before_write (arti.tests.test_exhibition_import.ExhibitionImportTests.test_corrupt_missing_unsafe_and_fake_image_rejected_before_write) ... ok
+test_dry_run_writes_nothing_then_import_stays_private (arti.tests.test_exhibition_import.ExhibitionImportTests.test_dry_run_writes_nothing_then_import_stays_private) ... ok
+test_existing_media_never_overwritten (arti.tests.test_exhibition_import.ExhibitionImportTests.test_existing_media_never_overwritten) ... ok
+test_explicit_append_dry_run_and_existing_content_preservation (arti.tests.test_exhibition_import.ExhibitionImportTests.test_explicit_append_dry_run_and_existing_content_preservation) ... ok
+test_failure_rolls_back_rows_and_only_new_files (arti.tests.test_exhibition_import.ExhibitionImportTests.test_failure_rolls_back_rows_and_only_new_files) ... ok
+test_foreign_exhibition_remains_unchanged_and_titles_are_not_ids (arti.tests.test_exhibition_import.ExhibitionImportTests.test_foreign_exhibition_remains_unchanged_and_titles_are_not_ids) ... ok
+test_http_exception_still_rejects_credentials_whitespace_and_other_schemes (arti.tests.test_exhibition_import.ExhibitionImportTests.test_http_exception_still_rejects_credentials_whitespace_and_other_schemes) ... ok
+test_http_reference_requires_explicit_metadata_exception_without_fetch (arti.tests.test_exhibition_import.ExhibitionImportTests.test_http_reference_requires_explicit_metadata_exception_without_fetch) ... ok
+test_input_file_changed_after_preflight_rolls_back (arti.tests.test_exhibition_import.ExhibitionImportTests.test_input_file_changed_after_preflight_rolls_back) ... ok
+test_output_failure_after_commit_keeps_committed_media (arti.tests.test_exhibition_import.ExhibitionImportTests.test_output_failure_after_commit_keeps_committed_media) ... ok
+test_reimport_and_media_collision_preserve_existing_data (arti.tests.test_exhibition_import.ExhibitionImportTests.test_reimport_and_media_collision_preserve_existing_data) ... ok
+test_admin_reads_retain_drafts_and_suggested_text (arti.tests.test_foundation.FoundationTests.test_admin_reads_retain_drafts_and_suggested_text) ... ok
+test_bootstrap_hashes_and_never_overwrites (arti.tests.test_foundation.FoundationTests.test_bootstrap_hashes_and_never_overwrites) ... ok
+test_bootstrap_rejects_weak_password (arti.tests.test_foundation.FoundationTests.test_bootstrap_rejects_weak_password) ... ok
+test_counts_computed_from_server_not_client_and_weighted (arti.tests.test_foundation.FoundationTests.test_counts_computed_from_server_not_client_and_weighted) ... ok
+test_coverage_counts_positioned_approved_only (arti.tests.test_foundation.FoundationTests.test_coverage_counts_positioned_approved_only) ... ok
+test_database_constraints_enforce_coordinates_status_and_dates (arti.tests.test_foundation.FoundationTests.test_database_constraints_enforce_coordinates_status_and_dates) ... ok
+test_database_is_actual_postgres (arti.tests.test_foundation.FoundationTests.test_database_is_actual_postgres) ... ok
+test_fixture_is_repeatable_without_accounts (arti.tests.test_foundation.FoundationTests.test_fixture_is_repeatable_without_accounts) ... ok
+test_fk_json_null_and_timezone_round_trip (arti.tests.test_foundation.FoundationTests.test_fk_json_null_and_timezone_round_trip) ... ok
+test_flag_is_required_for_development_fixture (arti.tests.test_foundation.FoundationTests.test_flag_is_required_for_development_fixture) ... ok
+test_health_readiness_and_unimplemented_are_honest (arti.tests.test_foundation.FoundationTests.test_health_readiness_and_unimplemented_are_honest) ... ok
+test_invalid_profile_returns_400_not_500 (arti.tests.test_foundation.FoundationTests.test_invalid_profile_returns_400_not_500) ... ok
+test_media_permissions_and_public_show_image (arti.tests.test_foundation.FoundationTests.test_media_permissions_and_public_show_image) ... ok
+test_model_clean_rejects_foreign_room_and_mismatched_hints (arti.tests.test_foundation.FoundationTests.test_model_clean_rejects_foreign_room_and_mismatched_hints) ... ok
+test_no_default_accounts_or_sessions (arti.tests.test_foundation.FoundationTests.test_no_default_accounts_or_sessions) ... ok
+test_pending_and_draft_artwork_hidden_in_all_public_reads (arti.tests.test_foundation.FoundationTests.test_pending_and_draft_artwork_hidden_in_all_public_reads) ... ok
+test_pool_exact_ten_or_explicit_not_ready (arti.tests.test_foundation.FoundationTests.test_pool_exact_ten_or_explicit_not_ready) ... ok
+test_production_refuses_test_fixture_even_with_flag (arti.tests.test_foundation.FoundationTests.test_production_refuses_test_fixture_even_with_flag) ... ok
+test_public_dto_removes_suggested_content_with_ui_safe_defaults (arti.tests.test_foundation.FoundationTests.test_public_dto_removes_suggested_content_with_ui_safe_defaults) ... ok
+test_public_exhibition_policy_and_camel_case (arti.tests.test_foundation.FoundationTests.test_public_exhibition_policy_and_camel_case) ... ok
+test_recommendation_response_shape_duration_and_exclusions (arti.tests.test_foundation.FoundationTests.test_recommendation_response_shape_duration_and_exclusions) ... ok
+test_role_specific_opaque_token_and_logout (arti.tests.test_foundation.FoundationTests.test_role_specific_opaque_token_and_logout) ... ok
+test_saved_profile_requires_authenticated_owner (arti.tests.test_foundation.FoundationTests.test_saved_profile_requires_authenticated_owner) ... ok
+test_visit_identity_has_real_database_unique_constraint (arti.tests.test_foundation.FoundationTests.test_visit_identity_has_real_database_unique_constraint) ... ok
+test_actual_provider_429_preserves_api_retry_after (arti.tests.test_integration.IntegrationTests.test_actual_provider_429_preserves_api_retry_after) ... ok
+test_analysis_preserves_confirmed_independently_and_conflicts (arti.tests.test_integration.IntegrationTests.test_analysis_preserves_confirmed_independently_and_conflicts) ... ok
+test_analysis_timeout_remains_504 (arti.tests.test_integration.IntegrationTests.test_analysis_timeout_remains_504) ... ok
+test_authenticated_ai_rate_limit_and_timeout (arti.tests.test_integration.IntegrationTests.test_authenticated_ai_rate_limit_and_timeout) ... ok
+test_capture_import_hash_draft_and_no_overwrite (arti.tests.test_integration.IntegrationTests.test_capture_import_hash_draft_and_no_overwrite) ... ok
+test_confirm_batch_is_atomic_and_explicit (arti.tests.test_integration.IntegrationTests.test_confirm_batch_is_atomic_and_explicit) ... ok
+test_docent_context_is_server_reconstructed_and_history_bounded (arti.tests.test_integration.IntegrationTests.test_docent_context_is_server_reconstructed_and_history_bounded) ... ok
+test_docent_hidden_content_and_generic_tip (arti.tests.test_integration.IntegrationTests.test_docent_hidden_content_and_generic_tip) ... ok
+test_explicit_cors_origin_supports_version_headers_not_auth_bypass (arti.tests.test_integration.IntegrationTests.test_explicit_cors_origin_supports_version_headers_not_auth_bypass) ... ok
+test_explicit_regeneration_only_selected (arti.tests.test_integration.IntegrationTests.test_explicit_regeneration_only_selected) ... ok
+test_guest_interpret_validation_precedes_provider (arti.tests.test_integration.IntegrationTests.test_guest_interpret_validation_precedes_provider) ... ok
+test_guest_member_and_invalid_token_are_distinct (arti.tests.test_integration.IntegrationTests.test_guest_member_and_invalid_token_are_distinct) ... ok
+test_idempotency_reasons_snapshot_and_ai_independence (arti.tests.test_integration.IntegrationTests.test_idempotency_reasons_snapshot_and_ai_independence) ... ok
+test_image_version_checked_before_write_and_source_stales (arti.tests.test_integration.IntegrationTests.test_image_version_checked_before_write_and_source_stales) ... ok
+test_invalid_provider_output_does_not_write (arti.tests.test_integration.IntegrationTests.test_invalid_provider_output_does_not_write) ... ok
+test_malformed_payloads_return_400_without_writes (arti.tests.test_integration.IntegrationTests.test_malformed_payloads_return_400_without_writes) ... ok
+test_member_other_owner_logout_and_dormant (arti.tests.test_integration.IntegrationTests.test_member_other_owner_logout_and_dormant) ... ok
+test_member_reactions_are_central_and_guest_not_collected (arti.tests.test_integration.IntegrationTests.test_member_reactions_are_central_and_guest_not_collected) ... ok
+test_missing_version_and_full_edit_fields (arti.tests.test_integration.IntegrationTests.test_missing_version_and_full_edit_fields) ... ok
+test_postgres_is_real (arti.tests.test_integration.IntegrationTests.test_postgres_is_real) ... ok
+test_profile_only_same_request_retry_and_admin_receipt (arti.tests.test_integration.IntegrationTests.test_profile_only_same_request_retry_and_admin_receipt) ... ok
+test_roundtrip_guide_and_independent_confirmation (arti.tests.test_integration.IntegrationTests.test_roundtrip_guide_and_independent_confirmation) ... ok
+test_saved_profile_provenance_and_server_counts_cross_pool (arti.tests.test_integration.IntegrationTests.test_saved_profile_provenance_and_server_counts_cross_pool) ... ok
+test_signup_login_no_plaintext_and_reset_disabled (arti.tests.test_integration.IntegrationTests.test_signup_login_no_plaintext_and_reset_disabled) ... ok
+test_source_change_forces_separate_approval_and_stale (arti.tests.test_integration.IntegrationTests.test_source_change_forces_separate_approval_and_stale) ... ok
+test_visit_scope_validation (arti.tests.test_integration.IntegrationTests.test_visit_scope_validation) ... ok
+test_delete_plan_clears_positions_and_requires_admin (arti.tests.test_map_management.MapManagementTests.test_delete_plan_clears_positions_and_requires_admin) ... ok
+test_rooms_entrance_and_position_roundtrip_and_room_removal_guard (arti.tests.test_map_management.MapManagementTests.test_rooms_entrance_and_position_roundtrip_and_room_removal_guard) ... ok
+test_same_ratio_replacement_resets_only_target_exhibition (arti.tests.test_map_management.MapManagementTests.test_same_ratio_replacement_resets_only_target_exhibition) ... ok
+test_saved_positions_drive_recommendation_order_and_clear_on_new_plan (arti.tests.test_map_management.MapManagementTests.test_saved_positions_drive_recommendation_order_and_clear_on_new_plan) ... ok
+test_stale_upload_is_rejected_without_losing_placement (arti.tests.test_map_management.MapManagementTests.test_stale_upload_is_rejected_without_losing_placement) ... ok
+test_upload_requery_and_media_visibility (arti.tests.test_map_management.MapManagementTests.test_upload_requery_and_media_visibility) ... ok
+test_failure_preserves_values_and_version (arti.tests.test_model_service.ModelStorageTests.test_failure_preserves_values_and_version) ... ok
+test_scores_stored_as_suggestions_without_approval (arti.tests.test_model_service.ModelStorageTests.test_scores_stored_as_suggestions_without_approval) ... ok
+test_analysis_slot_is_cross_connection_exclusive (arti.tests.test_integration.ConcurrentVisitTests.test_analysis_slot_is_cross_connection_exclusive) ... ok
+test_simultaneous_same_visit_is_one_row (arti.tests.test_integration.ConcurrentVisitTests.test_simultaneous_same_visit_is_one_row) ... ok
+test_busy_unavailable_and_recovery_without_duplicate_calls (arti.tests.test_model_operations.ModelOperationTests.test_busy_unavailable_and_recovery_without_duplicate_calls) ... ok
+test_successful_late_model_result_rejected_after_version_change (arti.tests.test_model_operations.ModelOperationTests.test_successful_late_model_result_rejected_after_version_change) ... ok
+test_timeout_late_reply_cannot_write_and_next_request_recovers (arti.tests.test_model_operations.ModelOperationTests.test_timeout_late_reply_cannot_write_and_next_request_recovers) ... ok
+test_disabled_independent_of_gpt (arti.tests.test_model_service.ModelServiceTests.test_disabled_independent_of_gpt) ... ok
+test_http_failure_and_redirect_do_not_return_scores (arti.tests.test_model_service.ModelServiceTests.test_http_failure_and_redirect_do_not_return_scores) ... ok
+test_image_wire_and_single_analysis_for_two_outputs (arti.tests.test_model_service.ModelServiceTests.test_image_wire_and_single_analysis_for_two_outputs) ... ok
+test_invalid_scores_and_image_fallback_rejected (arti.tests.test_model_service.ModelServiceTests.test_invalid_scores_and_image_fallback_rejected) ... ok
+test_no_external_fetch_or_path_escape (arti.tests.test_model_service.ModelServiceTests.test_no_external_fetch_or_path_escape) ... ok
+test_timeout_and_large_response_fail_closed (arti.tests.test_model_service.ModelServiceTests.test_timeout_and_large_response_fail_closed) ... ok
+test_truncated_http_transport_is_sanitized (arti.tests.test_model_service.ModelServiceTests.test_truncated_http_transport_is_sanitized) ... ok
+test_actual_http_wire_context_and_data_minimization (arti.tests.test_provider.ProviderTests.test_actual_http_wire_context_and_data_minimization) ... ok
+test_all_text_tasks_validate_structured_outputs (arti.tests.test_provider.ProviderTests.test_all_text_tasks_validate_structured_outputs) ... ok
+test_classifier_is_not_replaced_by_text_llm (arti.tests.test_provider.ProviderTests.test_classifier_is_not_replaced_by_text_llm) ... ok
+test_compatible_options_and_task_model (arti.tests.test_provider.ProviderTests.test_compatible_options_and_task_model) ... ok
+test_disabled_missing_key_and_model_do_not_send (arti.tests.test_provider.ProviderTests.test_disabled_missing_key_and_model_do_not_send) ... ok
+test_malformed_refusal_truncated_and_oversized_responses (arti.tests.test_provider.ProviderTests.test_malformed_refusal_truncated_and_oversized_responses) ... ok
+test_oversized_prompt_does_not_send (arti.tests.test_provider.ProviderTests.test_oversized_prompt_does_not_send) ... ok
+test_redirect_is_not_followed (arti.tests.test_provider.ProviderTests.test_redirect_is_not_followed) ... ok
+test_timeout_and_network_failure (arti.tests.test_provider.ProviderTests.test_timeout_and_network_failure) ... ok
+test_unsafe_or_malformed_configuration_does_not_send (arti.tests.test_provider.ProviderTests.test_unsafe_or_malformed_configuration_does_not_send) ... ok
+test_upstream_errors_are_sanitized_without_fallback (arti.tests.test_provider.ProviderTests.test_upstream_errors_are_sanitized_without_fallback) ... ok
+
+----------------------------------------------------------------------
+Ran 97 tests in 50.497s
+
+OK
+Destroying test database for alias 'default' ('test_arti')...
+ OK
+System check identified no issues (0 silenced).

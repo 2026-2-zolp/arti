@@ -12,6 +12,9 @@ ROOT=Path(__file__).resolve().parent
 manifest=ROOT/"execution.json"
 report=ROOT/"document-check.json"
 base=json.loads(manifest.read_text(encoding="utf-8"))
+current=copy.deepcopy(base)
+# 기존 단계 의존성 가설은 최신 현황표와 독립적으로 검사합니다.
+base.pop('issueReconciliation',None)
 # Candidate fixtures start fresh so live W01/G0 progress never weakens negative probes.
 for task in base["tasks"]:
     task["status"]="planned"
@@ -132,9 +135,19 @@ cases=[
 ("ci_can_start_before_target_api",lambda p:start_task(p,"W11"),True,None),
 ("fixture_cd_before_real_ai_and_without_rds",cd_before_real_ai,True,None),
 ]
+if current.get('issueReconciliation'):
+    cases.extend([
+        ('current_unchanged',lambda p:None,True,None),
+        ('current_missing_review',lambda p:lookup(p,'F03').pop('currentReview'),False,'current review incomplete'),
+        ('current_missing_evidence',lambda p:lookup(p,'F03')['currentReview'].update(evidencePaths=['missing-current-evidence.md']),False,'Missing evidence file'),
+        ('current_closed_with_remaining',lambda p:lookup(p,'F03')['currentReview'].update(remaining='실환경 확인 대기'),False,'still has remaining acceptance'),
+        ('current_nonancestor_commit',lambda p:lookup(p,'F03').update(resolvedCommit='0'*40),False,'not in local ancestry'),
+        ('current_status_table_drift',lambda p:lookup(p,'F03').update(status='open'),False,'table status differs'),
+        ('current_local_scope_lost',lambda p:lookup(p,'F37').update(releaseRequired=True),False,'Local unique intake scope'),
+    ])
 results=[]
 for name,mutate,expected_ok,expected_error in cases:
-    candidate=copy.deepcopy(base)
+    candidate=copy.deepcopy(current if name.startswith('current_') else base)
     mutate(candidate)
     captured={}
     def read(path,*args,**kwargs):

@@ -175,9 +175,58 @@
       "passed": true,
       "expectedError": null,
       "actualErrors": []
+    },
+    {
+      "case": "current_unchanged",
+      "expectedAccepted": true,
+      "passed": true,
+      "expectedError": null,
+      "actualErrors": []
+    },
+    {
+      "case": "current_missing_review",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "current review incomplete",
+      "actualErrors": []
+    },
+    {
+      "case": "current_missing_evidence",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Missing evidence file",
+      "actualErrors": []
+    },
+    {
+      "case": "current_closed_with_remaining",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "still has remaining acceptance",
+      "actualErrors": []
+    },
+    {
+      "case": "current_nonancestor_commit",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "not in local ancestry",
+      "actualErrors": []
+    },
+    {
+      "case": "current_status_table_drift",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "table status differs",
+      "actualErrors": []
+    },
+    {
+      "case": "current_local_scope_lost",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Local unique intake scope",
+      "actualErrors": []
     }
   ],
-  "negativeCases": 21,
-  "positiveCases": 4,
+  "negativeCases": 27,
+  "positiveCases": 5,
   "scope": "In-memory plan-state probes only; execution.json and service gates unchanged"
 }

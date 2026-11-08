@@ -87,6 +87,13 @@
   ],
   "generalRuntimeRecreated": false
 },
+  "issueReconciliation": {
+    "record": "records/reconciliation-2026-11-09/README.md",
+    "asOf": "2026-11-09",
+    "sourceHead": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+    "scope": "37 issues evidence reconciliation; no human/cloud/PR gate promotion",
+    "snapshot": "records/reconciliation-2026-11-09/before-issues.json"
+  },
   "tasks": [
     {
       "id": "W01",
@@ -939,13 +946,24 @@
       "title": "빈도·선택 원본 소실",
       "check": "풍경2/따뜻함1과 반대 입력의 계산을 계약대로 검증",
       "source": "old:F01",
-      "status": "in_progress",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "backend-django/taste,recommendations + U05/U06/client; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "W04 API는서버선택빈도/profile계산구현·검사통과. 기존React원본/profile전달은W05.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 선택 원본·빈도 기반 profile과 서버 추천 연결 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "선택 원본·빈도 기반 profile과 서버 추천 연결 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F02",
@@ -962,13 +980,26 @@
       "title": "추천 입력변경 및 경합 검증",
       "check": "입력 무효화·늦은 응답 경합을 API/화면으로 확인",
       "source": "old:F02",
-      "status": "verification_pending",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "VisitContext/U07/U08 정상유지, requestGeneration·관람중변경정책보완; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/journey/2026-11-09/README.md"
+      ],
       "releaseRequired": true,
-      "observation": "11/08 실제React U07 정상경로30→60분3→5점 갱신 확인. reducer 단독결과를 전체UI결함으로 확대한 해석 정정. 기타변경/경합은 AC13 후속검증.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 정상 추천 갱신·구버전/늦은 요청 방어 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "정상 추천 갱신·구버전/늦은 요청 방어 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F03",
@@ -985,13 +1016,24 @@
       "title": "생성 가이드 저장 소실",
       "check": "중복 구현하지 않고 생성→수정→저장→재조회 회귀 확인",
       "source": "old:F03",
-      "status": "verification_pending",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "새 admin serializer/UI회귀, 중복재작성 제외; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "ae0e58e에 guide필드 반영 보완 확인; 실제 frontend 저장회귀 미검증",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 가이드 생성·수정·저장·재조회 및 독립 확정 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "가이드 생성·수정·저장·재조회 및 독립 확정 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F04",
@@ -1008,13 +1050,24 @@
       "title": "미검수 작품·AI필드 공개",
       "check": "상태 조합별 공개/관리자 API 검사",
       "source": "old:F04",
-      "status": "in_progress",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "catalog/public serializers, admin읽기 + client; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "W04 public조회/추천과DTO·파일제한검사통과. 전체쓰기검수/실제AI경로는W05이후.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: draft/source_check·미확정 AI필드의 공개 조회/직접 AI/파일 차단. 남은 조건: 없음: 접근제어 구현 범위. 작품 승인은 W06 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "draft/source_check·미확정 AI필드의 공개 조회/직접 AI/파일 차단",
+        "remaining": "없음: 접근제어 구현 범위. 작품 승인은 W06 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F05",
@@ -1031,13 +1084,23 @@
       "title": "실제AI·fallback·실패 구분 부족",
       "check": "정상/키없음/오류/timeout 응답과 UI",
       "source": "old:F05",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "providers, client/U11/U12; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 실제 GPT smoke/제한 품질, 오류·timeout 구분 및 모델 운영 장애 검사. 남은 조건: 실제 유영국 근거로 AC20 정식 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실제 GPT smoke/제한 품질, 오류·timeout 구분 및 모델 운영 장애 검사",
+        "remaining": "실제 유영국 근거로 AC20 정식 평가",
+        "nextWork": "W07",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W07-quality/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F06",
@@ -1055,13 +1118,23 @@
       "title": "승인 근거·출처 버전·검증 미완성",
       "check": "승인 sourceIds 서버검증·자료밖 유보",
       "source": "old:F06",
-      "status": "open",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "sources/provider validation; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 근거 ID 서버 검증과 원문 변경 재검수 구현. 남은 조건: 작품별 사람 검수·실제 근거 충실성 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "근거 ID 서버 검증과 원문 변경 재검수 구현",
+        "remaining": "작품별 사람 검수·실제 근거 충실성 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F07",
@@ -1078,13 +1151,28 @@
       "title": "실제 스택과 설계 차이",
       "check": "Django 권장/Express대안 결정을 기록 후 전환",
       "source": "old:F07",
-      "status": "in_progress",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "backend-django/Compose, React계약전환; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/dev-entry/README.md",
+        "records/git-materials/README.md"
+      ],
       "releaseRequired": true,
-      "observation": "W04 Django/DRF·PostgreSQL·Compose기반G3통과. 전체기능/default전환은W05후.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: Django/DRF·PostgreSQL 기본 실행 및 legacy 경계 정리. 남은 조건: 없음: 현 전환 범위. 원본 Express는 보존",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Django/DRF·PostgreSQL 기본 실행 및 legacy 경계 정리",
+        "remaining": "없음: 현 전환 범위. 원본 Express는 보존",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/dev-entry/README.md",
+          "records/git-materials/README.md"
+        ]
+      }
     },
     {
       "id": "F08",
@@ -1103,13 +1191,23 @@
       "title": "5쌍 선택풀·버전·부족 처리",
       "check": "전시앞10개 의존 제거/정당화 및 부족 안내",
       "source": "old:F08",
-      "status": "in_progress",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "taste-pool/profile·U05/06; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "W04 poolVersion/정확10점API·부족/중복검사구현. U05/06pool연결/최종UX합의는후속.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 10점5독립쌍·poolVersion·부족 안내 구현, 유영국 풀 초안. 남은 조건: U05/06 최종 합의 및 실제 준비작품/시연 구성 채택",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "10점5독립쌍·poolVersion·부족 안내 구현, 유영국 풀 초안",
+        "remaining": "U05/06 최종 합의 및 실제 준비작품/시연 구성 채택",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F09",
@@ -1126,13 +1224,23 @@
       "title": "유명작품 시드와 실제 전시 혼재",
       "check": "demo/실제 출처manifest·시연 구별",
       "source": "old:F09",
-      "status": "open",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "fixtures/import command, manifest; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 기존40/79점 평가용 분리, 유영국16점 비공개 인수. 남은 조건: 실제 전시 구성 채택·사람 승인과 실자료 여정",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "기존40/79점 평가용 분리, 유영국16점 비공개 인수",
+        "remaining": "실제 전시 구성 채택·사람 승인과 실자료 여정",
+        "nextWork": "W06 → W10",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F10",
@@ -1149,13 +1257,23 @@
       "title": "반응 이유 서버 저장 누락",
       "check": "저장→재조회→다른기기 관리자 확인",
       "source": "old:F10",
-      "status": "open",
+      "status": "verification_pending",
       "owner": "준억 통합 조율",
       "fixLocation": "VisitReaction/admin query + U12/A07; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 반응 사유 중앙 저장·관리자 재조회 및 격리 브라우저 저장 확인. 남은 조건: 실제 다른 기기에서 관리자 반영 확인은 미실행",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "반응 사유 중앙 저장·관리자 재조회 및 격리 브라우저 저장 확인",
+        "remaining": "실제 다른 기기에서 관리자 반영 확인은 미실행",
+        "nextWork": "W10",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F11",
@@ -1171,13 +1289,26 @@
       "title": "영수증 저장 손실·중복 위험",
       "check": "AI와 저장분리·idempotency·실패재시도",
       "source": "old:F11",
-      "status": "open",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "visits service/uniqueconstraint/U12; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/journey/2026-11-09/README.md"
+      ],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: AI와 저장 분리·회원 멱등 저장·guest 미저장·실패 복구 검증. 남은 조건: 없음: 현 저장 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "AI와 저장 분리·회원 멱등 저장·guest 미저장·실패 복구 검증",
+        "remaining": "없음: 현 저장 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F12",
@@ -1194,13 +1325,23 @@
       "title": "관람/계정 대화 혼입·history 부재",
       "check": "DB미저장과 sessionStorage표시 구분·도슨트 진입맥락/history·복귀·관람/계정 격리",
       "source": "old:F12",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "chat schema/VisitContext/U10/U11; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 관람/계정/작품 격리·질문 맥락/4왕복·복귀와 실제 합성 GPT 확인. 남은 조건: 실제 전시 근거의 AC20 정식 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "관람/계정/작품 격리·질문 맥락/4왕복·복귀와 실제 합성 GPT 확인",
+        "remaining": "실제 전시 근거의 AC20 정식 평가",
+        "nextWork": "W07",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F13",
@@ -1216,13 +1357,24 @@
       "title": "401복구·404/오프라인 무한로딩",
       "check": "토큰만료와 React상태·오류UI 재현",
       "source": "old:F13",
-      "status": "open",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "auth bootstrap/useAsync/페이지; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 401 만료 복구·404·목록503·연결 단절의 재시도/입력 보호 확인. 남은 조건: 없음: 기존 예외 계약 범위. 새 모델 장애 브라우저 시험은 후속",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "401 만료 복구·404·목록503·연결 단절의 재시도/입력 보호 확인",
+        "remaining": "없음: 기존 예외 계약 범위. 새 모델 장애 브라우저 시험은 후속",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F14",
@@ -1240,13 +1392,28 @@
       "title": "현 Bearer·scrypt와 목표 인증 차이",
       "check": "JWT로 오기 금지·인증선택·해시이관정책",
       "source": "old:F14",
-      "status": "in_progress",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "auth/session/legacy hasher조건부; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md",
+        "records/W05/data-intake-decision.md"
+      ],
       "releaseRequired": true,
-      "observation": "W04 adminopaque/authheader/bootstrap구현. 회원/legacy계정이관은W05·AC17미통과.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: opaque 토큰·권한·해시 정책 확정과 인증/복구 검증. 남은 조건: 없음: 신규 개발/Git 인수 범위. 로컬 고유 계정은 F37 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "opaque 토큰·권한·해시 정책 확정과 인증/복구 검증",
+        "remaining": "없음: 신규 개발/Git 인수 범위. 로컬 고유 계정은 F37 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md",
+          "records/W05/data-intake-decision.md"
+        ]
+      }
     },
     {
       "id": "F15",
@@ -1262,13 +1429,26 @@
       "title": "비밀번호 재설정 메일 미구현",
       "check": "필요시 실제발송, 불필요시 UI축소 결정",
       "source": "old:F15",
-      "status": "open",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "auth feature flag/U14/U15; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 메일 없는 재설정501·UI 비활성 정책 채택/검사. 남은 조건: 없음: 합의한 비활성 범위. 실제 발송 구현 완료라는 의미 아님",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "메일 없는 재설정501·UI 비활성 정책 채택/검사",
+        "remaining": "없음: 합의한 비활성 범위. 실제 발송 구현 완료라는 의미 아님",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F16",
@@ -1285,13 +1465,26 @@
       "title": "SQLiteJSON·수동스키마와 데이터모델 차이",
       "check": "ID/관계/null/날짜·필요 세션/이력만 구현",
       "source": "old:F16",
-      "status": "in_progress",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "models/migrations/import; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/W05/data-intake-decision.md"
+      ],
       "releaseRequired": true,
-      "observation": "W04 실제Postgres모델/migration/FK/JSON/null/날짜검사통과. 실제팀DB자료이전은AC17미통과.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 실제 PG migration·FK/JSON/null/날짜·Git 자료 importer 검증. 남은 조건: 없음: Git 인수 범위. 로컬 고유 자료는 F37 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실제 PG migration·FK/JSON/null/날짜·Git 자료 importer 검증",
+        "remaining": "없음: Git 인수 범위. 로컬 고유 자료는 F37 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W05/data-intake-decision.md"
+        ]
+      }
     },
     {
       "id": "F17",
@@ -1310,13 +1503,23 @@
       "title": "직선순서·이동시간과 실제공간 차이",
       "check": "좌표0~100유지·실제도면 비교·설명범위",
       "source": "old:F17",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "recommendation/map·설명; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 좌표 기준 순서와 실제 통로 한계 명시, 근거 없는 이동시간 삭제. 남은 조건: 유영국 시연 배치 채택·실기기 지도/실제 동선 범위 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "좌표 기준 순서와 실제 통로 한계 명시, 근거 없는 이동시간 삭제",
+        "remaining": "유영국 시연 배치 채택·실기기 지도/실제 동선 범위 확인",
+        "nextWork": "W06 → W10",
+        "evidencePaths": [
+          "records/W06/readiness/README.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F18",
@@ -1333,13 +1536,23 @@
       "title": "평가 입력 재현·유영국 추천 구별력",
       "check": "캡처40장/WikiArt79장은 Git에 있음. 새 전시표본·원본라벨·보정 재현/품질 검증",
       "source": "Git tree ae0e58e 및 bb83a86 / ai-service/evaluation/images",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "ai-service/evaluation/유영국평가; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "기존 이미지 부재 주장은 조사 누락으로 정정",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 40점 실제 기준선·평가자 민감도·유영국 독립 라벨 도구 준비. 남은 조건: 독립 응답 및 유영국 구별력의 사전 목표 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "40점 실제 기준선·평가자 민감도·유영국 독립 라벨 도구 준비",
+        "remaining": "독립 응답 및 유영국 구별력의 사전 목표 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W07-preparation/tag-baseline-2026-11-09/README.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F19",
@@ -1356,13 +1569,22 @@
       "title": "160초 보고·운영지연 미측정",
       "check": "같은환경 반복·동시요청·p50/p95 표본수",
       "source": "old:F19",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "providers/timeouts/evaluation; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 실모델 기동·동시성·재시작·시간/RSS 제한 실측. 남은 조건: 대표 반복 표본·지연 목표와 배포환경 검증. 현재 수치를 p95/SLA로 사용 금지",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실모델 기동·동시성·재시작·시간/RSS 제한 실측",
+        "remaining": "대표 반복 표본·지연 목표와 배포환경 검증. 현재 수치를 p95/SLA로 사용 금지",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F20",
@@ -1379,13 +1601,26 @@
       "title": "원문·요약·맞춤설명·가이드 혼용",
       "check": "콘텐츠4종·B안필드/상태 확정",
       "source": "old:F20",
-      "status": "open",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "sources/public DTO/provider; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md"
+      ],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 원문/요약/가이드/대화 분리와 독립 확정·재분석 보호 검증. 남은 조건: 없음: 콘텐츠 상태 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "원문/요약/가이드/대화 분리와 독립 확정·재분석 보호 검증",
+        "remaining": "없음: 콘텐츠 상태 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F21",
@@ -1407,8 +1642,18 @@
       "fixLocation": "설계변경/trace설명,새모델학습제외; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": false,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 좌표 최근접 기준선·최단 보행 미구현 한계를 명시. 남은 조건: 설계 대비 최종 범위 결정·발표 설명 AC31",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "좌표 최근접 기준선·최단 보행 미구현 한계를 명시",
+        "remaining": "설계 대비 최종 범위 결정·발표 설명 AC31",
+        "nextWork": "W10",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F22",
@@ -1430,8 +1675,17 @@
       "fixLocation": "ops결정/deploy env; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 로컬 PG 검증, AWS 운영 구성 미결. 남은 조건: 권한·리전·비용·DB 방식 결정 후 실제 시험환경",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 PG 검증, AWS 운영 구성 미결",
+        "remaining": "권한·리전·비용·DB 방식 결정 후 실제 시험환경",
+        "nextWork": "W12 → W08",
+        "evidencePaths": [
+          "06-operations.md"
+        ]
+      }
     },
     {
       "id": "F23",
@@ -1451,8 +1705,18 @@
       "fixLocation": "media permissions/storage adapter; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "W04 로컬protectedmedia·adminUI인증이미지연결확인. AWS저장/영속은후속.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 로컬 제한 미디어·권한·복원 경계 확인. 남은 조건: AWS 저장/모델 읽기·서버 재생성 후 보존",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 제한 미디어·권한·복원 경계 확인",
+        "remaining": "AWS 저장/모델 읽기·서버 재생성 후 보존",
+        "nextWork": "W08",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/backup-restore/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F24",
@@ -1477,8 +1741,18 @@
         "records/W11/README.md"
       ],
       "releaseRequired": true,
-      "observation": "CI4job 구현·로컬재현과 원격push run42448758269 전부성공. PR이벤트검증/인수 미완료",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록. 남은 조건: 최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록",
+        "remaining": "최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
+        "nextWork": "W11",
+        "evidencePaths": [
+          "records/W11/local-current-2026-11-09/README.md",
+          "records/push-review/2026-11-09/remote-ci.json"
+        ]
+      }
     },
     {
       "id": "F25",
@@ -1499,8 +1773,17 @@
       "fixLocation": "deployworkflow/runbook; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: CD 미구현. CI와 로컬 복원 검사를 배포 성공으로 해석하지 않음. 남은 조건: 운영 구성 후 OIDC/digest/직렬 migration/복귀 실제 시험",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CD 미구현. CI와 로컬 복원 검사를 배포 성공으로 해석하지 않음",
+        "remaining": "운영 구성 후 OIDC/digest/직렬 migration/복귀 실제 시험",
+        "nextWork": "W09",
+        "evidencePaths": [
+          "06-operations.md"
+        ]
+      }
     },
     {
       "id": "F26",
@@ -1519,13 +1802,22 @@
       "title": "로컬 모델 메모리/로딩·운영위치 미결",
       "check": "README9GB는 안내치·실측후상시/작업시 결정",
       "source": "new:model",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "model boundary/readiness/운영결정; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: CLIP/mDeBERTa 준비/메모리/단일 프로세스 운용 실측. 남은 조건: 모델 위치·외부 용량·유영국 정식 품질 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CLIP/mDeBERTa 준비/메모리/단일 프로세스 운용 실측",
+        "remaining": "모델 위치·외부 용량·유영국 정식 품질 평가",
+        "nextWork": "W12 → W07/W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F27",
@@ -1544,13 +1836,23 @@
       "title": "180/300초 요청과 배포 timeout 차이",
       "check": "레이어별예산·작업ID/상태조회 채택여부",
       "source": "new:timeout",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "provider hardtimeout/배포프록시; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 모델 HTTP30초·timeout 저장 보호, legacy 장기 timeout과 분리. 남은 조건: 관리자 전체 요청/프록시/배포 제한의 총 지연 검증",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "모델 HTTP30초·timeout 저장 보호, legacy 장기 timeout과 분리",
+        "remaining": "관리자 전체 요청/프록시/배포 제한의 총 지연 검증",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W02/decisions.md"
+        ]
+      }
     },
     {
       "id": "F28",
@@ -1568,13 +1870,22 @@
       "title": "개발프록시·공개주소·OAuth·영수증CORS",
       "check": "SPA직접진입·HTTPS·callback·이미지저장",
       "source": "new:web",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "frontendenv/media/render/deploy; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: Django 개발 프록시와 격리 화면 여정 확인. 남은 조건: 배포 HTTPS/SPA 재진입·이미지 저장/공유·실기기 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Django 개발 프록시와 격리 화면 여정 확인",
+        "remaining": "배포 HTTPS/SPA 재진입·이미지 저장/공유·실기기 확인",
+        "nextWork": "W08 → W10",
+        "evidencePaths": [
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F29",
@@ -1593,13 +1904,22 @@
       "title": "동명작품/연도치수 충돌·출처변경",
       "check": "작품ID고정·근거충돌관리·AI재검수",
       "source": "new:data",
-      "status": "open",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "sourceVersions/importmanifest; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 16점 식별·출처 충돌 구분, 007 근거 보강·조건부 비공개 인수. 남은 조건: 사람 확인·개별 출처/표시 조건·정식 콘텐츠 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "16점 식별·출처 충돌 구분, 007 근거 보강·조건부 비공개 인수",
+        "remaining": "사람 확인·개별 출처/표시 조건·정식 콘텐츠 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F30",
@@ -1618,13 +1938,23 @@
       "title": "모델내부접근·외부이미지URL·자료속지시",
       "check": "공개추론차단·URL/크기제한·권한불변 확인",
       "source": "new:boundary",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "permissions/media/provider; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 공개 권한·임의 이미지 fetch 제한·provider 경계·자료 지시 방어 일부 검사. 남은 조건: 실제 근거 질문셋 및 배포 내부접근/파일경로 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "공개 권한·임의 이미지 fetch 제한·provider 경계·자료 지시 방어 일부 검사",
+        "remaining": "실제 근거 질문셋 및 배포 내부접근/파일경로 확인",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F31",
@@ -1639,13 +1969,23 @@
       "title": "readiness·관측·비용·백업복원 미검증",
       "check": "프로세스/모델준비 분리·비밀제거·복원연습",
       "source": "new:ops",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "/ready/logging/opsbackup; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 로컬 DB/모델 readiness·실패 복구·합성 백업복원 확인. 남은 조건: 배포 접근제한·비용/관측·복원 시험",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 DB/모델 readiness·실패 복구·합성 백업복원 확인",
+        "remaining": "배포 접근제한·비용/관측·복원 시험",
+        "nextWork": "W12 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/backup-restore/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F32",
@@ -1662,13 +2002,23 @@
       "title": "코드복귀와 DB복구의 차이",
       "check": "호환schema·migration단일실행·백업복구범위",
       "source": "new:rollback",
-      "status": "open",
+      "status": "in_progress",
       "owner": "준억 통합 조율",
       "fixLocation": "import/migration/rollbackrunbook; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "현 통합본 재확인 필요",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: Git 비파괴 인수·합성 DB/파일 복원 절차 검증. 남은 조건: 배포 이미지 복귀와 schema/데이터 복구의 실제 한계 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Git 비파괴 인수·합성 DB/파일 복원 절차 검증",
+        "remaining": "배포 이미지 복귀와 schema/데이터 복구의 실제 한계 확인",
+        "nextWork": "W09",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md",
+          "records/backup-restore/2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F33",
@@ -1691,8 +2041,17 @@
       "fixLocation": "bootstrap명령/fixture분리; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "W04 빈기동계정0·명시bootstrap·운영fixture차단검사통과. AWS초기접근검증은미실행.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 로컬 빈기동 계정0·명시 bootstrap·운영 fixture 차단 검증. 남은 조건: AWS에서 고정 계정/자동 fixture 차단과 접근제한 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 빈기동 계정0·명시 bootstrap·운영 fixture 차단 검증",
+        "remaining": "AWS에서 고정 계정/자동 fixture 차단과 접근제한 확인",
+        "nextWork": "W08",
+        "evidencePaths": [
+          "records/W04/gate-review.md"
+        ]
+      }
     },
     {
       "id": "F34",
@@ -1709,13 +2068,26 @@
       ],
       "check": "가이드 미확정이면 confirmed 요약이 새 글/suggested로 바뀜. 산출물별 보호/명시재생성",
       "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
-      "status": "open",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": "analysisservice component보호; records/W02/issue-implementation-map.md",
-      "resolutionEvidence": [],
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/W07-preparation/model-operations-2026-11-09/README.md"
+      ],
       "releaseRequired": true,
-      "observation": "2026-11-07 재점검",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 독립 확정·재생성·provider 실패·버전 충돌에서 확정 요약 보존. 남은 조건: 없음: 현 검수 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "독립 확정·재생성·provider 실패·버전 충돌에서 확정 요약 보존",
+        "remaining": "없음: 현 검수 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
     },
     {
       "id": "F35",
@@ -1732,13 +2104,23 @@
       ],
       "check": "URL만 변경 시 확정유지 재현. seed-captures 해설변경 시 guide재검수 누락은 코드확인",
       "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
-      "status": "open",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "sourceVersion/importstale; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "2026-11-07 재점검",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 원문/출처 변경 시 source_check·제안화 및 재승인 분리 구현. 남은 조건: 유영국 실자료 사람 검수/출처 채택",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "원문/출처 변경 시 source_check·제안화 및 재승인 분리 구현",
+        "remaining": "유영국 실자료 사람 검수/출처 채택",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F36",
@@ -1755,13 +2137,23 @@
       ],
       "check": "테스트시드와 실제자료 적재 분리, pending/source_check에서 사람 검수",
       "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
-      "status": "in_progress",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "testfixture실자료import분리; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
       "releaseRequired": true,
-      "observation": "W04 명시testfixture명령과운영차단구현. 유영국실제코퍼스/사람검수는미완료.",
-      "resolvedCommit": null
+      "observation": "2026-11-09 재정합화: 명시 testfixture·실자료 importer 분리, 실제16점 draft/source_check 유지. 남은 조건: 실자료 사람 검수/시연 구성 채택. 자동 승인 금지",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "명시 testfixture·실자료 importer 분리, 실제16점 draft/source_check 유지",
+        "remaining": "실자료 사람 검수/시연 구성 채택. 자동 승인 금지",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
     },
     {
       "id": "F37",
@@ -1778,13 +2170,23 @@
       ],
       "check": "기존 guide confirmed를 새코드가 되돌리지 않음. 고유값 export/파일manifest 후 이관판단",
       "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
-      "status": "open",
+      "status": "blocked",
       "owner": "준억 통합 조율",
       "fixLocation": "manifest/export/import비파괴; records/W02/issue-implementation-map.md",
       "resolutionEvidence": [],
-      "releaseRequired": true,
-      "observation": "2026-11-07 재점검",
-      "resolvedCommit": null
+      "releaseRequired": false,
+      "observation": "2026-11-09 재정합화: Git 기준 인수 통과, 로컬 원본 보존 후 별도 인수 결정. 남은 조건: 제공자 DB/uploads 고유값 존재·제공 여부 unknown",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Git 기준 인수 통과, 로컬 원본 보존 후 별도 인수 결정",
+        "remaining": "제공자 DB/uploads 고유값 존재·제공 여부 unknown",
+        "nextWork": "별도 인수: Git 기준 릴리스 선행조건 아님",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md"
+        ]
+      },
+      "scopeDecision": "records/W05/data-intake-decision.md"
     }
   ],
   "baseline": {

@@ -1,6 +1,6 @@
 # ARTI 통합·리팩토링 실행계획 v2.1
 
-정리: 2026-11-08 KST / dev/임준억 / 실제 수행 후 과업별 회고 커밋. 원격 푸시 없음.
+최신 정리: 2026-11-09 KST / dev/임준억. [현재 W 상태·다음 순서](12-current-status.md)와 [37개 이슈 재정합화](records/reconciliation-2026-11-09/README.md)를 먼저 확인한다. 과거 push CI 성공과 최신 로컬 전용 변경을 구분한다.
 
 [통합 준비 문서](../../통합준비문서.md) · [누적 작업기록](../../작업기록/README.md)
 
@@ -21,6 +21,7 @@
 | [09-baseline-and-data.md](09-baseline-and-data.md) | 통합 기준선과 데이터 인수 조건 |
 | [10-persona-review-and-improvements.md](10-persona-review-and-improvements.md) | 검증단 관점과 개선 사항 |
 | [11-plan-readiness-review.md](11-plan-readiness-review.md) | 착수 준비도와 잔여 조건 |
+| [12-current-status.md](12-current-status.md) | 현재 W 상태·검수 대기 중 실행 순서·다음 한 작업 |
 
 ## 단계별 증거
 
@@ -31,7 +32,7 @@
 - [W03 / G2 검토](records/W03/gate-review.md)
 - [W04 / G3 검토](records/W04/gate-review.md)
 
-W04 로컬 API/DB/Compose와 React 최소 흐름까지 검증했다. [새 API 실행 안내](../../../backend-django/README.md). W05/G4도 통과했다. 다음 W06 자료 준비와 W07 실제 모델, W11 CI 등은 기존 의존관계에 따라 진행한다. 로컬 고유자료 별도 이전·실모델·AWS·CI/CD 실행·실기기 전체여정은 미통과다.
+W01~W05/G0~G4는 통과했다. [새 API 실행 안내](../../../backend-django/README.md). W06은16점 비공개 인수·평가/검수 준비 후 사람 확인 대기다. W07은 실제 GPT·분류모델·운영 안정성의 선행 실적이 있지만 정식 품질/G5는 미통과다. W11은 과거 원격 push 성공·최신 로컬 재현과 PR 인수 대기를 구분한다. 로컬 고유자료 별도 이전·AWS/CD·실기기 전체여정은 미완료다. 아래 날짜별 후속 문장은 당시 기록이며 최신 판정은 현재 상태 문서와 execution.json을 따른다.
 
 ## 과거 자료
 

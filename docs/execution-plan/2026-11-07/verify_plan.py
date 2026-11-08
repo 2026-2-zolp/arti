@@ -6,6 +6,7 @@ from urllib.parse import unquote
 import hashlib
 import json
 import re
+import subprocess
 
 ROOT = Path(__file__).resolve().parent
 WORKSPACE = ROOT.parents[2]
@@ -145,6 +146,39 @@ if gates["GOPS"]["status"]=="pass" and choice=="undecided":
     errors.append("GOPS passed without PostgreSQL operations decision")
 checks.append("Issue closure and conditional PostgreSQL operating choice")
 
+# 현재 판정은 과거 관측을 지우지 않고 근거·잔여 조건과 함께 유지합니다.
+review=plan.get('issueReconciliation')
+if review:
+    evidence([review['record'],review['snapshot']], 'Issue reconciliation', True)
+    snapshot_path=ROOT/review['snapshot']
+    if snapshot_path.is_file():
+        snapshot=json.loads(snapshot_path.read_text(encoding='utf-8'))
+        before={i['id']:i for i in snapshot['issues']}
+        ancestors={}
+        if set(before)!=set(issues):errors.append('Reconciliation snapshot issue coverage differs')
+        for key,i in issues.items():
+            for field in ('title','criteria','works'):
+                if key in before and i[field]!=before[key][field]:
+                    errors.append('Reconciliation changed original mapping: '+key+'/'+field)
+            current=i.get('currentReview',{})
+            if not all(current.get(k) for k in ('asOf','implemented','remaining','nextWork','evidencePaths')):
+                errors.append('Issue current review incomplete: '+key)
+            evidence(current.get('evidencePaths',[]),key+' current review',True)
+            if i['status']=='closed':
+                if not current.get('remaining','').startswith('없음:'):
+                    errors.append('Closed issue still has remaining acceptance: '+key)
+                sha=i.get('resolvedCommit') or ''
+                if re.fullmatch(r'[0-9a-fA-F]{40}',sha):
+                    if sha not in ancestors:
+                        ancestors[sha]=subprocess.run(['git','merge-base','--is-ancestor',sha,'HEAD'],cwd=WORKSPACE,capture_output=True).returncode
+                    if ancestors[sha]:errors.append('Resolved commit is not in local ancestry: '+key)
+        # 사용자가 결정한 Git 인수 경계는 자료 부재 확인이나 고유 자료 이전 성공이 아닙니다.
+        local=issues['F37']
+        if local['releaseRequired'] or local['status']=='closed' or not local.get('scopeDecision'):
+            errors.append('Local unique intake scope decision lost')
+        evidence([local.get('scopeDecision','')],'F37 scope',True)
+    checks.append('Current issue review, historical snapshot and Git intake boundary')
+
 link_count=0
 generated={"document-check.json","guardrail-check.json"}
 for file in ROOT.glob("*.md"):
@@ -164,6 +198,8 @@ table=(ROOT/"04-issues.md").read_text(encoding="utf-8")
 quality=(ROOT/"03-quality-gates.md").read_text(encoding="utf-8")
 for key in issues:
     if len(re.findall(r"^\| "+key+r" \|",table,re.M))!=1: errors.append("Issue row mismatch: "+key)
+    if review and not re.search(r'^\| '+key+r' \| '+issues[key]['status']+r' \|',table,re.M):
+        errors.append('Issue table status differs from manifest: '+key)
 for key in acs:
     if len(re.findall(r"^### "+key+r" · ",quality,re.M))!=1: errors.append("AC heading mismatch: "+key)
     if "**기준:** "+acs[key]["criterion"]+"." not in quality:

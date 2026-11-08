@@ -87,6 +87,7 @@ jobs:
     timeout-minutes: 10
     env:
       ARTI_PRELOAD: 'false'
+      ARTI_WRITER_ENABLED: 'false' # Current model role: CLIP/mDeBERTa; no legacy writer loading.
       HF_HUB_OFFLINE: '1'
       TRANSFORMERS_OFFLINE: '1'
     defaults:
