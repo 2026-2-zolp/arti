@@ -1,0 +1,116 @@
+
+> arti-frontend@0.1.0 test
+> tsx --test tests/*.test.mts
+
+TAP version 13
+# Subtest: late 401 from previous token cannot erase a newer account token
+ok 1 - late 401 from previous token cannot erase a newer account token
+  ---
+  duration_ms: 27.2658
+  type: 'test'
+  ...
+# Subtest: pending receipt cannot POST when token changes during same-owner verification
+ok 2 - pending receipt cannot POST when token changes during same-owner verification
+  ---
+  duration_ms: 1.2881
+  type: 'test'
+  ...
+# Subtest: same-owner explicit recovery transmits the original frozen payload once
+ok 3 - same-owner explicit recovery transmits the original frozen payload once
+  ---
+  duration_ms: 1.4208
+  type: 'test'
+  ...
+# Subtest: inactive receipt scope stops POST after successful account check
+ok 4 - inactive receipt scope stops POST after successful account check
+  ---
+  duration_ms: 0.866
+  type: 'test'
+  ...
+# Subtest: late logout completion cannot erase a newer login
+ok 5 - late logout completion cannot erase a newer login
+  ---
+  duration_ms: 0.5103
+  type: 'test'
+  ...
+# Subtest: failed login credentials do not expire an existing valid session
+ok 6 - failed login credentials do not expire an existing valid session
+  ---
+  duration_ms: 1.0958
+  type: 'test'
+  ...
+# Subtest: default and explicit legacy share API/admin image route semantics
+ok 7 - default and explicit legacy share API/admin image route semantics
+  ---
+  duration_ms: 2.8103
+  type: 'test'
+  ...
+# Subtest: unknown or blank target and unsafe proxy fail instead of silently using legacy
+ok 8 - unknown or blank target and unsafe proxy fail instead of silently using legacy
+  ---
+  duration_ms: 0.3476
+  type: 'test'
+  ...
+# Subtest: Vite loads env-file values with process precedence and shares dev/preview target
+ok 9 - Vite loads env-file values with process precedence and shares dev/preview target
+  ---
+  duration_ms: 8.0906
+  type: 'test'
+  ...
+# Subtest: actual config reads frontend mode file and rejects mismatched preview bundle
+ok 10 - actual config reads frontend mode file and rejects mismatched preview bundle
+  ---
+  duration_ms: 5.5527
+  type: 'test'
+  ...
+# Subtest: incomplete artwork dwell/reactions cannot enter a canonical receipt
+ok 11 - incomplete artwork dwell/reactions cannot enter a canonical receipt
+  ---
+  duration_ms: 3.0367
+  type: 'test'
+  ...
+# Subtest: zero completed works form an empty valid receipt instead of claiming a viewed work
+ok 12 - zero completed works form an empty valid receipt instead of claiming a viewed work
+  ---
+  duration_ms: 0.2304
+  type: 'test'
+  ...
+# Subtest: HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+ok 13 - HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+  ---
+  duration_ms: 1.6811
+  type: 'test'
+  ...
+# Subtest: taste/time invalidation rejects a late previous-generation recommendation
+ok 14 - taste/time invalidation rejects a late previous-generation recommendation
+  ---
+  duration_ms: 1.1802
+  type: 'test'
+  ...
+# Subtest: explicit new visit with same duration replaces ID and clears progress
+ok 15 - explicit new visit with same duration replaces ID and clears progress
+  ---
+  duration_ms: 1.202
+  type: 'test'
+  ...
+# Subtest: same-work navigation refresh preserves state; actor/exhibition changes isolate it
+ok 16 - same-work navigation refresh preserves state; actor/exhibition changes isolate it
+  ---
+  duration_ms: 0.6163
+  type: 'test'
+  ...
+# Subtest: frequency provenance survives selection and recommendation storage
+ok 17 - frequency provenance survives selection and recommendation storage
+  ---
+  duration_ms: 0.1984
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1069.1243

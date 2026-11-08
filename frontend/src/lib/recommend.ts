@@ -7,7 +7,7 @@ export function countForDuration(d: VisitDuration): number {
   return DURATION_OPTIONS.find((o) => o.value === d)?.count ?? 5;
 }
 
-/** 추천 목록·관람 순서 계산은 서버(backend/src/lib/recommend.ts)에서 한다. 여기는 화면 표시용 계산만 남겨 둔다. */
+/** 추천 목록·관람 순서 계산은 서버(backend-django/arti/recommendations.py)에서 한다. 여기는 화면 표시용 계산만 남겨 둔다. */
 function dist(p: MapPoint, q: MapPoint): number {
   return Math.hypot(p.x - q.x, p.y - q.y);
 }

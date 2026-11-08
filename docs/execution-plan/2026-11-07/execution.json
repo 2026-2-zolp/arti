@@ -106,7 +106,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "in_progress",
       "owner": " 광권: 작품선정·자료확보 / 준억: 적재·검수연결(카톡상 분담)",
       "criteria": [
         "AC18",
@@ -665,7 +665,10 @@
       "evidence": "data-manifest·사람검수 기록",
       "reviewer": "데이터",
       "status": "not_run",
-      "evidencePaths": []
+      "evidencePaths": [
+        "records/git-materials/README.md",
+        "records/git-materials/audit.json"
+      ]
     },
     {
       "id": "AC19",
@@ -675,7 +678,10 @@
       "evidence": "입력해시·평가계획",
       "reviewer": "AI",
       "status": "not_run",
-      "evidencePaths": []
+      "evidencePaths": [
+        "records/git-materials/README.md",
+        "records/git-materials/audit.json"
+      ]
     },
     {
       "id": "AC20",

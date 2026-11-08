@@ -1,0 +1,512 @@
+{
+  "version": 1,
+  "sourceCommit": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "sourcePath": "backend/scripts/capture-descriptions.json",
+  "sourceBlob": "7932017318824d31deddeb65b74e61dc486aac66",
+  "referenceFile": "data/reference/git-captures/capture-descriptions.json",
+  "referenceSha256": "416000f684bd66af6ccc694bf91242f07fae2bb7f53ee6cc042bb3f022c6b0b7",
+  "referenceBytes": 16740,
+  "hashPolicy": "images: raw bytes; JSON: sorted compact UTF-8 semantic encoding; CSV: UTF-8 with normalized LF",
+  "assets": [
+    {
+      "path": "ai-service/evaluation/tag_eval_set.json",
+      "sha256": "fe000bae750b304cfaf02dd086b10d1330c495475dd70c832541c03e0c52d805"
+    },
+    {
+      "path": "ai-service/evaluation/eval_set.json",
+      "sha256": "a0579cad9253637662c2aa33fb49b42c0917888db2798f05d09678b8ab36068f"
+    },
+    {
+      "path": "ai-service/evaluation/images/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ai-service/evaluation/images/01.jpg",
+      "sha256": "d9eefe39b877166c55589462162f7bfa99ce05cba67b81bfd920d99aeb8f24d8"
+    },
+    {
+      "path": "ai-service/evaluation/images/02.jpg",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e"
+    },
+    {
+      "path": "ai-service/evaluation/images/03.jpg",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c"
+    },
+    {
+      "path": "ai-service/evaluation/images/04.jpg",
+      "sha256": "8803f9badee211355b8be5625a5db2c32a98805fb07883a16e5ff902af2dd7b2"
+    },
+    {
+      "path": "ai-service/evaluation/images/05.jpg",
+      "sha256": "0efcae8a348bd9713e455173d956a6fb2878e5b30393ebdc35ac35f484a9c930"
+    },
+    {
+      "path": "ai-service/evaluation/images/06.jpg",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7"
+    },
+    {
+      "path": "ai-service/evaluation/images/07.jpg",
+      "sha256": "d3a1fc3d33e4c3e3fe23673f9a866ee98b0aa22d83e1ae60ed7186bd8975d9bf"
+    },
+    {
+      "path": "ai-service/evaluation/images/08.jpg",
+      "sha256": "1cfa8ace037f5acfeae3275472e87c70c74f4f04c604e66d22d3817d349267b2"
+    },
+    {
+      "path": "ai-service/evaluation/images/09.jpg",
+      "sha256": "82715722511e6d044ca22a9c47214cccab431552bc7bba3fb4ec5e9bdba1b168"
+    },
+    {
+      "path": "ai-service/evaluation/images/10.jpg",
+      "sha256": "8e978a5474d7e4807610914273d9044aeabdf0614cb57730bfdab7df11e5cef7"
+    },
+    {
+      "path": "ai-service/evaluation/images/11.jpg",
+      "sha256": "f45d58840b15b060c3509ff01d1aa8c4791bf15cff85a29b3516b467d5337e26"
+    },
+    {
+      "path": "ai-service/evaluation/images/12.jpg",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90"
+    },
+    {
+      "path": "ai-service/evaluation/images/13.jpg",
+      "sha256": "bb78e0f1f538507d4bc19004fe0e708e0c3bd00ed5475619fe08c060c5f50514"
+    },
+    {
+      "path": "ai-service/evaluation/images/14.jpg",
+      "sha256": "c4a1458034d44478847105ef4e5c60008a48f20e1420991b92abfe70c52086f6"
+    },
+    {
+      "path": "ai-service/evaluation/images/15.jpg",
+      "sha256": "5d1b0ce9598b73e994bdd6ab42f53934426c91731e71e12108990b3f9f9bdbc9"
+    },
+    {
+      "path": "ai-service/evaluation/images/16.jpg",
+      "sha256": "f2abd398d5eec58a835edca0fa6d370da75b8330b71b7cd41947df952bb8aa8c"
+    },
+    {
+      "path": "ai-service/evaluation/images/17.jpg",
+      "sha256": "f9bfffb742d077998ee0eb64d9779bd23f4578a9d4a587cb08424149e7fb48ae"
+    },
+    {
+      "path": "ai-service/evaluation/images/18.jpg",
+      "sha256": "bd495166958c376ebe0b38c148980cf0c2b59281cfb4bfbe6db90b9a84f3f3b3"
+    },
+    {
+      "path": "ai-service/evaluation/images/19.jpg",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08"
+    },
+    {
+      "path": "ai-service/evaluation/images/20.jpg",
+      "sha256": "bd5ae59c50534f9d395b6b12262caeb74dc6ea1b53507063477dd1029b602d73"
+    },
+    {
+      "path": "ai-service/evaluation/images/21.jpg",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70"
+    },
+    {
+      "path": "ai-service/evaluation/images/22.jpg",
+      "sha256": "95b7974d77ca85ba6d080e93da82a3d0a34e4598efe2e014b2c1ed6efb3c21ef"
+    },
+    {
+      "path": "ai-service/evaluation/images/23.jpg",
+      "sha256": "b935baff5f5e7b9a73e25acc957e9cee893d50b8816b0f99879519c180ebf594"
+    },
+    {
+      "path": "ai-service/evaluation/images/24.jpg",
+      "sha256": "a102db03f0f6fa375cd57e8937d5144e1cc684bb1553aa9c07f65bf5af4e8c79"
+    },
+    {
+      "path": "ai-service/evaluation/images/25.jpg",
+      "sha256": "fb5aef17492e2c698d36f9f6ad85dcb0cf9d839ec177e430dc206cbb246c1a06"
+    },
+    {
+      "path": "ai-service/evaluation/images/26.jpg",
+      "sha256": "0d61e06fed0f1f8e971c08c2c4b6db14e73959f76519f50dfc065874aa8db737"
+    },
+    {
+      "path": "ai-service/evaluation/images/27.jpg",
+      "sha256": "e785b9eec80b2b3f3c37f1b17a064e6acae64d437a80c73b6643a2d8240159ba"
+    },
+    {
+      "path": "ai-service/evaluation/images/28.jpg",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c"
+    },
+    {
+      "path": "ai-service/evaluation/images/29.jpg",
+      "sha256": "916e8dfdb34fe9529d810fba3c23b01b9a27ec469bc9d94861d4b0897508da81"
+    },
+    {
+      "path": "ai-service/evaluation/images/30.jpg",
+      "sha256": "9edc07602018b6128b905deea47cb8993448a2b542f16e6f964c560d1428f0b3"
+    },
+    {
+      "path": "ai-service/evaluation/images/31.jpg",
+      "sha256": "a3b4069d4eedd765a6e4d27daf1f9c6caa239d85b6d129e139ecdb18dccd7c91"
+    },
+    {
+      "path": "ai-service/evaluation/images/32.jpg",
+      "sha256": "44d91070f52f874f13c5fbd6dd4baf4f7ddb702a4850d1953eb6e5be41b50258"
+    },
+    {
+      "path": "ai-service/evaluation/images/33.jpg",
+      "sha256": "cbba2f55fa5df3314dd3ac3f8b84f85a2c2f5afeff8fa90b117147d124e3b2f7"
+    },
+    {
+      "path": "ai-service/evaluation/images/34.jpg",
+      "sha256": "c8e7ff08c516866b792925c02592379a4461849b6b8d432bf5c133f563757d41"
+    },
+    {
+      "path": "ai-service/evaluation/images/35.jpg",
+      "sha256": "7d1c1198a2d50ad137443228368f1d2a2942178578f50896eb22450fa980dd07"
+    },
+    {
+      "path": "ai-service/evaluation/images/36.jpg",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b"
+    },
+    {
+      "path": "ai-service/evaluation/images/37.jpg",
+      "sha256": "6b720d7d9a20608771b336992a8129a330763701811dcea3c3d70acb84eccd19"
+    },
+    {
+      "path": "ai-service/evaluation/images/38.jpg",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01"
+    },
+    {
+      "path": "ai-service/evaluation/images/39.jpg",
+      "sha256": "5ec645070841ef2e9e48828965f2ed5ec1dd9b5b8aa4c014b3c6d328e10ce868"
+    },
+    {
+      "path": "ai-service/evaluation/images/40.jpg",
+      "sha256": "e5c8c6988cd625cf0fa8f77db67077098e92f854578d283965a39bd4104d4e9a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1068.jpg",
+      "sha256": "751d1cdd9e69cebef868ed1fb2a2eddbf66ebe89997a14734bd32257968ad48b"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_12.jpg",
+      "sha256": "f4b1145f32fedbd938413c339b9f6b34ce827429dd4972b45de04db9d17b7851"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1208.jpg",
+      "sha256": "9451ef0a30acc41438a5cd9ef01383fca0dd1f241af470651587912a8f9eaf54"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1212.jpg",
+      "sha256": "131836f2ed18c5ff80d91d7a2aeb50120104fb28ecfd61f7ecf76513f4928242"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1295.jpg",
+      "sha256": "14e74d8815dea81e00f63c7f8fdb928736b6e1ad4ca7f879c60ee0430a6d6919"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1354.jpg",
+      "sha256": "cbfc71d19d7fad9ad7c973ed56ed921de99270b6a9be181fb57543284a0008d2"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1380.jpg",
+      "sha256": "d048612737ee26efe7834898a2af42f6e69a04a5c1cf54216466202e9a205647"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1534.jpg",
+      "sha256": "beda33345cf46f1916ee86f8132f11826e1a78ca7173c252853dcf570bd9b05d"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_158.jpg",
+      "sha256": "9215a6895ad2618e8279b3a8fe9f5223ee89180845d1fa3997bee87e000dd8c9"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1677.jpg",
+      "sha256": "a2593d280a5609a9fe13ce1f42cfee2d73b907d43ef28e25ad2eddb0ff70434c"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_17.jpg",
+      "sha256": "d5a2bb957e4f8eb9de321fee4667cd829e2e594b47a2fbdcf5352b2ad553c8c0"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1738.jpg",
+      "sha256": "f1252ba8c140387be4e27585ec31d4c4fe9f70d5e1770ba8aa951d500c701e91"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_184.jpg",
+      "sha256": "bab9f15c97a38e96729cf31969a463a4c95828df7f99c950001da0b122d580bf"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1863.jpg",
+      "sha256": "8d04a0234786d991018631c1e1988df1af3a8bffa9c8374b88599cf3a04ab515"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1872.jpg",
+      "sha256": "426a560b4c4b6b402f5aa7b1c61990b754be16519158668ff403148acf19c944"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1883.jpg",
+      "sha256": "99761b079a6364f71c90f02bf2820f993103f32350e1ec4df967a1b2e48056e8"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1890.jpg",
+      "sha256": "0b27b561de643e29a2ff462057b5d72a107fd08c3036a903a134096bf0e4a0d6"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_1918.jpg",
+      "sha256": "1dedc9f7d2e3cf0a9bfa3c0dd5be8b47c8e225181c542f16e9b1919d8690373a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2003.jpg",
+      "sha256": "a4a04a00044e9aaca8fb545f1e98564a91196ab4439cceca4c2eea5cfca12131"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_201.jpg",
+      "sha256": "53edecb648ff60e1bfb69a220754786ec2eeba0a9fe519176032526d9ded5bfb"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2078.jpg",
+      "sha256": "1910c27ae4c86de662f5f524d165f7a5a4d3045d180903927e004d5508b6b8ce"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2111.jpg",
+      "sha256": "6dcc59424afa400d22c946cc2fece007ff015b9b80fbcb401ca3849574b7bba1"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2190.jpg",
+      "sha256": "5868a173bd96180d273e7d1ffe25248b6170a5c203f4b08a9469777ab84ec44a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2203.jpg",
+      "sha256": "bea1de993e7e0cd01f4b4cc8a6282c7043c345c093653948af4922209c1e496a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2213.jpg",
+      "sha256": "9498e8d0a7bed39b1140be90c34aadb13e86a0ef4005c8c6cc40cf9a7bdd8cb9"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2223.jpg",
+      "sha256": "d20c6e64c6ebeff70f2aea027e0da78346563006d73ba2bd98e5dba102c6a237"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_24.jpg",
+      "sha256": "3d9b4b57c213d9d40b3ac92ca761e51b41b85cad77e4f9d6ff82746d0e996d26"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_251.jpg",
+      "sha256": "1e4543310c9baacd8db2343074b4c14c2dd37bb6747379c652374daf788ba05d"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2517.jpg",
+      "sha256": "e188c139f59432a931b3ff1a2d49234298f5041bb689711bcb6403b7b7f82698"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2538.jpg",
+      "sha256": "77749488d8033d1343e3fcf23bf443a4b3eb37e4c5b8cfc107be72bbecacc6a3"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_260.jpg",
+      "sha256": "30008813227b7f10787c5d977f9020155ae2aed8cf12b8a3f419c4b17f126e41"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2877.jpg",
+      "sha256": "00af498377af41eecbb714df5a66310ad00fd5033de9fa2d93116015a968a930"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2884.jpg",
+      "sha256": "d7a38f14248b1570dfd5dba4212a1899f3086924465edc25e2118f19d1121e8e"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_2920.jpg",
+      "sha256": "5dd1bb7459390a2b002c6d8153c42c33fdb14a2154e856b1f833bbb90a0a0fa0"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3.jpg",
+      "sha256": "bd8dfe1264ace6dfce7a2bbd1bdf285b8b1b849d41ef1f382a35adb4fad094ec"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_303.jpg",
+      "sha256": "4d2fbbdf0b99471c9f89e316e933e08aed96fcf2304cdce6ecd57bb6d489a0e1"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3130.jpg",
+      "sha256": "e50dfe4882fa723a25ebfd9d78843fa3c85b543f2730e103e72d96ad130ca1e2"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3187.jpg",
+      "sha256": "d2a2c5e8d1a09a8d19ef165e07c0c4c3104d9f67f82718d71d9794ea31426fde"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3198.jpg",
+      "sha256": "5a3281ad69c6319284e8d9f8b7803da48e3b2396f27123b16520aa9500a468fe"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_32.jpg",
+      "sha256": "207717dbf28935f33d173bf8e3758dabffaf9640878bfea2fc0ff505bc844f0f"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3205.jpg",
+      "sha256": "97ba94af23c9c74872e0c2f9f507de82d999b2f5a1cba43e5a6d5f8a88f158ff"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3241.jpg",
+      "sha256": "f9edd96c2ae80837cdb4d71d60fdc0243144fa0ecc3a3bf3aabd91d121b0ed3b"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3377.jpg",
+      "sha256": "6e8c9779ea61567037868863a832a119f143d0d6c87e1513bd07b0f778116f6d"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3398.jpg",
+      "sha256": "53471cd269427846adc956e65744101d6332fd71a9fc53ba1a4515812f530c37"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3488.jpg",
+      "sha256": "4c84feaa90a5c3bbca501c2ff279d88cdb6a4d1afb980362f3d608190e842a7a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_350.jpg",
+      "sha256": "644fa20654aeaddbd8dc148ffb744f0d334292d3c1982695d60a42af740d56f0"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3503.jpg",
+      "sha256": "8ac443c1c4b01327f5c6671ca0f6c40713dafbc4bff0b1276ff6ee16ea5e6625"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3507.jpg",
+      "sha256": "0685ede4f03d27b452086599af8943ca5f5ea581ee58e0739927ee6d59d18efb"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3527.jpg",
+      "sha256": "f6cf24306527fec0f059b3792831d81f10775ff071b41e5347690f825974b9eb"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3529.jpg",
+      "sha256": "c56b71765940a69be45291bd272722c68c36e7847c9c399299b01e67f6b02c57"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3547.jpg",
+      "sha256": "4e9d8dce979e9cda281452d8598529f9e11a9f25a594956a62d9c4c2cc4ab76b"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_364.jpg",
+      "sha256": "40ad76ffdb1d5bdf89ccfbfeb5ae33eeeed943a6b7151bc5654e6e7cd465b713"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3654.jpg",
+      "sha256": "e53167ea37bc176f803db6099f05c8c144692d6d4b0c1751d51ee199d4da1c22"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3670.jpg",
+      "sha256": "583f1f9af4a407c29b05077b27b6b084d1f86137a488a6299636c6edf27d862c"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3736.jpg",
+      "sha256": "a93c4d8b9c34c336616b15de9bd1c8b4dca1191942620f511d1284911f84f7c6"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3785.jpg",
+      "sha256": "c471ad78f6248be80d1a4d588cf70a6868748cbb93a724ae98134b9fa1fe98ef"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_39.jpg",
+      "sha256": "1f0ddc87cadb555600cc1fc308d3f947e2e698edb7d97d1ec1a8a7186d918a95"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3927.jpg",
+      "sha256": "7363dd38a9c98d90a60ce72d9e5e6723195baad891aae4e87f02ccf86fd94d19"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_3962.jpg",
+      "sha256": "c7f22be953f8dc9728d30d0fef4bc27e1b5341ad6ca6446162ee7278cb2d3695"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_397.jpg",
+      "sha256": "e5be63c72d713aa2a731461d340845ec6abb81b98d1f9ce2fff8f1c93beb7555"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_431.jpg",
+      "sha256": "1112b8b1637610ba19e4bda42e570f955890292841a0acaf51982c0c02a82766"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_436.jpg",
+      "sha256": "e19a41055d8a8380d7f058b6bba88844874fb37478cc83dd9828ab922e54d47a"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_495.jpg",
+      "sha256": "4fc95060891291e0daf7e35161ae24cee4af06562600b90df62cab50be9b967f"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_537.jpg",
+      "sha256": "c4be09e74626e809a5c9295d1549580c4d7be079ebf0119da4fd950b7a325ea5"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_577.jpg",
+      "sha256": "d723d0105ac4a53366cc0a7d76bfb70ceb918c625ab1aba28bfe868b14399060"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_600.jpg",
+      "sha256": "ba3aab3ded1c06283fe50277a9ac7380f22983b5ea4954c4c1199187432e7762"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_6026.jpg",
+      "sha256": "263463752ba7bdc70d0e4d2103b541c3b860f0f0726178b6ce8030724c1388db"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_613.jpg",
+      "sha256": "4a2f8fb4e71c3b6d38ceb96eb343414c1f33246ac686b6f51d6326512b97710e"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_636.jpg",
+      "sha256": "7c83ebc8177d316cc876e1a887a9f169b1c59f8c956fb65413d0ce0c66990a57"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_68.jpg",
+      "sha256": "1f9b22b54b4a5f615053ef4537b1018a4f11f980d49cee6ed84e019e090aebef"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_7.jpg",
+      "sha256": "43182e920f85eb9f5523feea1a49e8dcaec44f3fe07b8763087ad72c7ac1d58e"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_71.jpg",
+      "sha256": "e7d2604c67879d1c730f80a6e58dcb0abe1f2188fc1f039f986ab6f0dd6ef51d"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_792.jpg",
+      "sha256": "5fc360edf3ec16a03e3dbb0eed82af6a3ad1c175c9f30a3ab9852e7011173578"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_800.jpg",
+      "sha256": "4fb4a6304342925ab4c8dfcf7f9c91bcdeb6f7e6becf9c983709195f7422c1a0"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_876.jpg",
+      "sha256": "a5104e886115eb9675801cf73c6e96bc7cb02640fbb2d3e7b5df9cc36698c5ab"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_917.jpg",
+      "sha256": "5d58a60aec1e2277b0d660e4cc982c3a32fd82d25a30592f68a9f27bc292bb56"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_92.jpg",
+      "sha256": "0d2ca2c5c8609f81b53a5fd95b4acdcec73263fa54bf5edbf0882b5b2be180f4"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_949.jpg",
+      "sha256": "1669fd2921e494a109608a9c67691f12583de0dc8b89173f90bb335743ae13d6"
+    },
+    {
+      "path": "ai-service/evaluation/images/wikiart_99.jpg",
+      "sha256": "f395a97ae7ba8a30a92deee96e8c4138c360d846b1a47b33630d77a6264434a9"
+    },
+    {
+      "path": "ai-service/evaluation/labeling/responses/google_form_responses.csv",
+      "sha256": "db13d406653ac27b4c587e2657d542ca73c3969ef0d71f980d35720359daf393"
+    },
+    {
+      "path": "ai-service/evaluation/labeling/responses/labels_김동섭.csv",
+      "sha256": "d367ccfddad0ee524d1b38cbaa33fa67d23494088525563316c4fca73ca6d12d"
+    },
+    {
+      "path": "ai-service/evaluation/labeling/responses/labels_승혜.csv",
+      "sha256": "ae5c4b88fd5f2543f64e88ce42a8537480d5bb95a57b0c2fc8276e40e06d28de"
+    }
+  ]
+}

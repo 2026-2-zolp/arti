@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "captureWorks": 40,
+  "captureImagesVerified": 40,
+  "pathCorrections": 40,
+  "wikiArtImageFiles": 79,
+  "exampleEmotionCases": 11,
+  "checkedAt": null,
+  "duplicateImageHashGroups": [],
+  "referenceSha256": "416000f684bd66af6ccc694bf91242f07fae2bb7f53ee6cc042bb3f022c6b0b7",
+  "assetsVerified": 125,
+  "warnings": [
+    "Source URLs are syntactically checked, not browsed or fact-checked.",
+    "AI draft; no human approval inferred. WikiArt files are not 79 approved/labelled service works.",
+    "No Yoo Youngkuk exhibition intake; local unique DB/uploads remain unknown/separate."
+  ],
+  "writesToDatabase": false,
+  "approvedWorks": 0
+}

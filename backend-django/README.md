@@ -71,7 +71,7 @@ requirements.in에서 Django5.2 LTS/DRF3.16 경계를정하고 requirements.lock
 
 ## Git 40점 자료를 검수 대기로 가져오기
 
-저장소 루트에서 `python scripts/export_git_captures.py data/private/captures`를 실행한다. 메타데이터의 잘못된 .png 경로는 같은 작품 ID의 유일한 실제 이미지로 대응시키며 원래 경로·수정 여부·SHA256을 manifest에 남긴다. 여러 후보/누락은 실패한다. bundle은 Git 무시 디렉터리에만 생성한다.
+저장소 루트에서 `python scripts/git_materials.py`로 점검 후 `python scripts/export_git_captures.py data/private/captures-new`를 실행한다. 목적지는 존재하지 않는 새 디렉터리를 사용하며 기존 bundle을 덮지 않는다. 해설은 data/reference/git-captures의 기준 Git blob 참조 사본에서 읽고 legacy backend 폴더는 필요 없다. 메타데이터의 잘못된 .png 경로는 같은 작품 ID의 유일한 실제 이미지로 대응시키며 원래 경로·수정 여부·SHA256을 manifest에 남긴다. 여러 후보/누락은 실패한다. bundle은 Git 무시 디렉터리에만 생성한다.
 
 컨테이너에 bundle을 전달한 뒤 `python manage.py import_capture_bundle /tmp/captures --dry-run`으로 검증하고, 같은 명령에서 --dry-run을 빼면 명시적으로 가져온다. 시작 시 자동 실행되지 않는다. 전시는 draft, 작품은 source_check, 태그/AI확정은 없음, mock 좌표는 버린다. 같은 전시/작품이 있으면 덮어쓰지 않고 실패한다. 파일 변조도 실패한다. 승인 전에 공개되지 않는다.
 

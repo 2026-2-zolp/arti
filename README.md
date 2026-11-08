@@ -82,32 +82,35 @@ flowchart LR
 
 예를 들어 **한 작품의 `artwork_id`**를 정하면, 데이터 파일에서 이 작품을 찾고 → 백엔드가 같은 ID로 응답하고 → 프론트엔드가 추천·지도·해설 화면에 동일 작품을 표시해야 합니다.
 
-**작업 순서는** 작품·전시 데이터의 근거를 확인하고 → 최소 API의 요청·응답을 합의하고 → 화면과 연결하는 식으로 진행합니다. 기술 스택(Django/DRF, DB, 호스팅 등)은 기존 문서에 **후보**가 있지만 최종 선택과 실제 설치 여부는 별도로 판단합니다.
+**작업 순서는** 작품·전시 데이터의 근거를 확인하고 → 최소 API의 요청·응답을 합의하고 → 화면과 연결하는 식으로 진행합니다. 개발 API는 Django/DRF·PostgreSQL·Docker를 채택해 검증했습니다. AWS 운영 방식·호스팅/예산은 별도 결정·검증 대상입니다.
 
 ## 📁 어떤 폴더에서 무엇을 하나요?
 
 ```text
 arti/
 ├── frontend/       관람객·관리자 웹 화면
-├── backend/        API·작품 추천·감상 관련 로직
-├── data/           검증 가능한 전시·작품 데이터
+├── backend-django/ 현재 Django/DRF API·추천·검수·회원·기록
+├── backend/        보존한 legacy Express/SQLite 코드(기본 실행 아님)
+├── ai-service/     Python 모델 서비스·평가 자료(Kanana 실험 코드 포함)
+├── data/           자료 정책·원본 추적 가능한 Git 참조 사본
 ├── scripts/        데이터 수집·변환·검수 작업
 ├── docs/           처음 시작하기·협업·기술 논의 문서
-├── .github/        PR 양식 (Issue 템플릿은 사용하지 않음)
-├── .env.example    추후 환경변수 안내
+├── .github/        PR 양식·Actions CI workflow
+├── compose.yaml    Django·PostgreSQL·선택 UI 개발 실행
+├── .env.compose.example 서버 환경변수 예시(실제 값은 ignored 파일)
 └── README.md       지금 보고 있는 전체 안내
 ```
 
 | 담당 영역 | 첫 번째로 할 일 | 해당 안내 |
 | --- | --- | --- |
 | **프론트엔드** | 모바일 진입 → 취향 → 추천 → 지도 → 감상 화면 연결 | [frontend/README](frontend/README.md) |
-| **백엔드** | 전시/작품 조회와 추천 결과·좌표·해설 반환 규격 합의 | [backend/README](backend/README.md) |
+| **백엔드** | 현재 API 실행·권한·검수·저장 계약 확인 | [Django 안내](backend-django/README.md) |
 | **데이터** | 작품 3~5점의 출처·검수·이미지 권리 상태 정리 | [data/README](data/README.md) |
 | **데이터 처리** | 공식 자료 → 정리된 데이터로 만드는 방법 문서화 | [scripts/README](scripts/README.md) |
 | **공통 문서** | 개발 범위·API 논의·업무 흐름 확인 | [docs/문서 안내](docs/README.md) |
-| **AI·추천 (구현본)** | 감정 분석 AI·추천 기준·검증 결과, Windows 실행 방법 | [AI·추천 정리](docs/AI-감정분석-추천-정리.md) · [Windows 실행 가이드](docs/실행-가이드-Windows.md) |
+| **AI·추천 (legacy 참고)** | 기존 모델·추천 실험 기록. 현재 연결·품질 완료와 구분 | [AI·추천 정리](docs/AI-감정분석-추천-정리.md) · [Windows 실행 가이드](docs/실행-가이드-Windows.md) |
 
-각 폴더에는 **역할 → 데이터 입출력 → 작업 순서 → 유의사항**을 설명하는 README가 있습니다. 실제 앱이 만들어지면 **실행 명령·설치 방법·필요한 환경변수**도 해당 폴더에 추가합니다.
+각 폴더에는 **역할 → 데이터 입출력 → 작업 순서 → 유의사항**을 설명하는 README가 있습니다. 각 README에서 현재 실행 명령·계약·미검증 범위를 확인할 수 있습니다.
 
 ## 👥 팀원이 처음 들어오면?
 
@@ -161,3 +164,5 @@ flowchart LR
 후속: [CI workflow](.github/workflows/ci.yml)를 도입했고 실제 push 실행4job 성공을 확인했습니다. [서버 AI 설정](docs/operations/AI_설정과모델선택.md)은 기본 비활성·키 미설정이며 실제 모델 품질 검증은 남아 있습니다.
 
 원격 CI 첫 성공: [3750e13 / ARTI CI](https://github.com/2026-2-zolp/arti/actions/runs/42448758269). 프론트13·Django/PG63·fake모델17·계획계약 모두 통과했습니다. [원격 실행 기록](docs/작업기록/2026-11-08_최종검토와원격CI검증.md).
+
+현재 구조·보존 원본·자료 복원 경계는 [legacy 의존 정리](docs/operations/현재구조와legacy의존.md), Git 자료 점검은 [참조자료 정책](data/reference/git-captures/README.md)을 따릅니다.
