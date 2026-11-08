@@ -15,11 +15,11 @@ ARTI는 **미술 감상 초보자**가 자신의 취향에 맞는 작품을 찾�
 | 구분 | 검증한 범위 | 남은 범위 |
 | --- | --- | --- |
 | 기존 코드 | React·Express/SQLite·FastAPI 인수, 계약 확정과 회귀 9건 | 기존 결함의 후속 수정 |
-| 새 백엔드 | Django/DRF·PostgreSQL·Docker, 공개 조회·추천·관리자 읽기·보호 이미지 | 검수 쓰기·회원·대화·관람 기록의 전환 |
-| 실제 연결 | React → Django → PostgreSQL의 비회원 추천·지도·원문, 관리자 보호 이미지 | 실제 작품 데이터와 전체 관람 여정 |
-| 배포·AI | 로컬 기반 검증 | 실제 AI API·AWS·GitHub Actions CI/CD |
+| 새 백엔드 | Django/DRF·PostgreSQL·Docker, 조회·추천·관리자 검수 쓰기·회원·관람 저장·도슨트 맥락 | 실제 모델/작품 품질 및 후속 운영 인수 |
+| 실제 연결 | React → Django → PostgreSQL, 회원/비회원·만료 복구·검수 충돌·비공개 제한 | 유영국 실제 자료·실기기 전체 여정 |
+| 배포·AI | CI4job과 OpenAI 호환 텍스트 adapter의 로컬 검증, 기본 AI 비활성 | 실제 Actions 실행·PR 확인, 실제 AI API·AWS/CD |
 
-실제 PostgreSQL 검사 24건과 프론트 타입·빌드를 통과했습니다. 시험 fixture로 검증했으며 실제 작품 검수나 모델 품질 평가를 대신하지 않습니다.
+W05 당시 PostgreSQL51건, 이후 provider 준비 회귀를 포함한 전체63건과 프론트13건·타입·빌드, 모델 서비스 fake17건을 통과했습니다. 시험 fixture/로컬 HTTP로 검증했으며 실제 작품 검수나 모델 품질 평가를 대신하지 않습니다.
 
 읽는 순서: [통합 준비 문서](docs/통합준비문서.md) → [실행계획과 현재 상태](docs/execution-plan/2026-11-07/README.md) → [누적 작업기록](docs/작업기록/README.md). 실행은 [Django 개발 안내](backend-django/README.md)를 따릅니다. 작업 상태의 단일 기준은 [execution.json](docs/execution-plan/2026-11-07/execution.json)입니다.
 

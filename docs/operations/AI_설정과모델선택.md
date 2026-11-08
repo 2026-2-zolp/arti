@@ -56,3 +56,9 @@ Kanana를 비교하려면 기존 `/write` 응답을 새 summary/guide 계약으�
 지금 통과한 것은 로컬 HTTP stub의 요청/오류/보안 경계다. 실제 GPT 품질·Kanana 비교·CLIP/mDeBERTa·W07/G6를 통과시킨 것이 아니다. 일반 CI는 disabled와 가상 키/로컬 endpoint만 사용한다.
 
 참고: [공식 Chat Completions 형식](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create), [공식 서버 키 관리](https://developers.openai.com/api/docs/guides/api-keys). OpenAI는 신규 기능에 Responses도 권장하지만 이번에는 요청한 공급자 호환성을 위해 Chat Completions 경계를 사용했다.
+
+## 사용자 후속 결정 — 키·확장·하네스는 추후 함께 논의
+
+2026-11-08 사용자는 **API 키 삽입과 실제 호출 검증은 추후 필요할 때 진행**하기로 했다. 모델 확장 방향도 그때 재논의하며 **하네스도 함께 논의**한다. 위 단일 모델/작업별 분리는 제안이며 팀의 최종 모델 선정이나 당장 구현할 약속이 아니다.
+
+그때 논의할 후보는 평가용 작품/질문과 근거, U10→도슨트 맥락·대화 재현, provider 교체·강제 실패/timeout/429, 응답 품질·지연·비용 판정과 관측/재실행 범위다. 구체적인 하네스 구조·도구·통과 수치는 아직 정하지 않았다. 이번 원격 CI 검증에서 키를 넣거나 유료 호출·추가 모델 라우팅·하네스 구현을 확대하지 않는다. 기존 로컬 HTTP 회귀와 실제 모델 평가 하네스를 구분한다.
