@@ -693,7 +693,9 @@
       "evidence": "실제/강제실패 호출·평가표",
       "reviewer": "AI",
       "status": "not_run",
-      "evidencePaths": []
+      "evidencePaths": [
+        "records/W07-live-smoke/2026-11-09/README.md"
+      ]
     },
     {
       "id": "AC21",

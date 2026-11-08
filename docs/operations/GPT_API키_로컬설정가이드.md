@@ -55,3 +55,5 @@ Compose를 쓰지 않는 Django 직접 실행은 같은 변수를 **서버 프�
 연결을 끄려면 provider=disabled로 돌리고 API 컨테이너를 재생성한다. DB/미디어 볼륨 삭제는 필요 없다.
 
 근거: [현재 AI 설정·모델 선택](AI_설정과모델선택.md), [서버 adapter](../../backend-django/arti/llm.py), [서버 설정](../../backend-django/config/settings.py), [OpenAI 공식 키 관리](https://developers.openai.com/api/docs/guides/api-keys). 공식 안내도 키를 서버의 비밀값으로 제공하도록 설명한다.
+
+2026-11-09 실행 결과: 사용자가 gpt-6-luna를 선택하고 키를 입력해 [합성 연결 시험](../execution-plan/2026-11-07/records/W07-live-smoke/2026-11-09/README.md)을 통과했다. provider가disabled였던 부분을openai_compatible으로 고쳤다. 이 결과는 요청 모델의 합성1점 API검증이며 계정 모든모델/실제전시/브라우저 품질을 보증하지 않는다.

@@ -1,0 +1,83 @@
+{
+  "evidenceType": "executed source + completed assertions + saved API responses; not a network request capture",
+  "executedSourceSha256": "c8e3bfda9917a9444138b1f2a4eb18d166c4725e50adf0b166f736d31e93a672",
+  "requestedModel": "gpt-6-luna",
+  "resolvedUpstreamModel": "not captured",
+  "generationInput": {
+    "version": 1
+  },
+  "confirmationRequest": {
+    "items": [
+      {
+        "id": "smoke-art",
+        "version": 2,
+        "fields": [
+          "summary",
+          "guide"
+        ]
+      }
+    ]
+  },
+  "guideAsk": {
+    "question": "빨간 삼각형이 파란 바탕보다 앞으로 나오는 것 같아요. 보던 질문에 이어 무엇을 더 살펴보면 좋을까요?",
+    "entryContext": {
+      "tab": "guided",
+      "kind": "guide",
+      "questionIndex": 0,
+      "contentVersion": 3
+    },
+    "history": []
+  },
+  "followupAsk": {
+    "question": "내가 앞서 말한 관찰과 연결해 노란 선 두 개는 어떻게 보면 좋을까요?",
+    "entryContext": {
+      "tab": "desc",
+      "kind": "summary",
+      "contentVersion": 3
+    },
+    "history": [
+      {
+        "role": "user",
+        "text": "빨간 삼각형이 파란 바탕보다 앞으로 나오는 것 같아요. 보던 질문에 이어 무엇을 더 살펴보면 좋을까요?"
+      },
+      {
+        "role": "assistant",
+        "text": "그렇게 느껴질 수 있겠네요. 이어서 삼각형이 화면의 어느 쪽에 놓였는지, 아래쪽 노란 가로선 두 개와 얼마나 떨어져 있는지 살펴보세요. 삼각형의 크기와 색의 대비가 앞으로 나오는 듯한 인상에 어떻게 작용하는지도 비교해 볼 수 있어요."
+      }
+    ]
+  },
+  "valueProvenance": {
+    "contentVersion3": "derived from sourceVersion/contentVersion update code and successful version-checked requests, not independently captured GET body",
+    "visitId": "UUIDv4 generated during run, exact value not preserved",
+    "summaryGuideRevision3": "captured in actual sourceRefs"
+  },
+  "completedAssertions": [
+    {
+      "expression": "w.summary_status=='suggested' and w.guide_status=='suggested'",
+      "result": true
+    },
+    {
+      "expression": "not hidden['summary'] and not hidden['guidedLooking']",
+      "result": true,
+      "observationKind": "executed assertion; raw public response not saved"
+    },
+    {
+      "expression": "approved.status_code==200",
+      "result": true
+    },
+    {
+      "expression": "visible['summary'] and visible['guidedLooking']",
+      "result": true,
+      "observationKind": "executed assertion; raw public response not saved"
+    },
+    {
+      "expression": "answer['mode']=='llm' and answer['sourceRefs'][0]['kind']=='guide'",
+      "result": true
+    },
+    {
+      "expression": "follow['sourceRefs'][0]['kind']=='summary'",
+      "result": true
+    }
+  ],
+  "completionEvidence": "saved SAFE_REPORT outcome=transport_and_api_smoke_passed is reached only after assertions"
+}
