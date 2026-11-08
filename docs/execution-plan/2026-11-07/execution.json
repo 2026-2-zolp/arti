@@ -64,6 +64,17 @@
   ],
   "formalGatesUnchanged": true
 },
+  "independentReviewPreparation": {
+  "record": "records/W06/independent-review-2026-11-09/README.md",
+  "tool": "../../review/yoo-2026-11-09/labeling.html",
+  "scope": "independent response collection preparation only",
+  "usageInput": "web capture by teammate, campus graduation project period per user",
+  "humanResponses": 0,
+  "identityAndContentApproval": "pending",
+  "usageConditionEvidence": "pending per image",
+  "noDatabaseMutation": true,
+  "formalGatesUnchanged": true
+},
   "tasks": [
     {
       "id": "W01",

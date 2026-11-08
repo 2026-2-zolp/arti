@@ -1,0 +1,303 @@
+{
+  "format": "arti-independent-labels",
+  "version": 1,
+  "manifestDigest": "bc30f8a5cd25c81b0df57861e406196c747c1288cd0676a5068dd67cbf21c09b",
+  "tagDefinitionVersion": "ai-review-2026-11-09-v1-proposed",
+  "reviewerAlias": "TEST",
+  "forTesting": true,
+  "createdAt": "2026-11-08T21:03:55.121Z",
+  "sampleOrder": [
+    "yyk-demo-007",
+    "yyk-demo-013",
+    "yyk-demo-010",
+    "yyk-demo-001",
+    "yyk-demo-012",
+    "yyk-demo-004",
+    "yyk-demo-011",
+    "yyk-demo-003",
+    "yyk-demo-009",
+    "yyk-demo-002",
+    "yyk-demo-005",
+    "yyk-demo-016",
+    "yyk-demo-006",
+    "yyk-demo-015",
+    "yyk-demo-008",
+    "yyk-demo-014"
+  ],
+  "completeCount": 1,
+  "status": "draft",
+  "items": [
+    {
+      "id": "yyk-demo-001",
+      "imageSha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-002",
+      "imageSha256": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-003",
+      "imageSha256": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-004",
+      "imageSha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-005",
+      "imageSha256": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-006",
+      "imageSha256": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-007",
+      "imageSha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "imageVerified": true,
+      "tags": {
+        "landscape": "unsure",
+        "people": "unsure",
+        "abstract": "unsure",
+        "light": "unsure",
+        "vivid": "unsure",
+        "cool": "unsure",
+        "warm": "unsure",
+        "soft": "unsure"
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-008",
+      "imageSha256": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-009",
+      "imageSha256": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-010",
+      "imageSha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-011",
+      "imageSha256": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-012",
+      "imageSha256": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-013",
+      "imageSha256": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-014",
+      "imageSha256": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-015",
+      "imageSha256": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    },
+    {
+      "id": "yyk-demo-016",
+      "imageSha256": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f",
+      "imageVerified": true,
+      "tags": {
+        "landscape": null,
+        "people": null,
+        "abstract": null,
+        "light": null,
+        "vivid": null,
+        "cool": null,
+        "warm": null,
+        "soft": null
+      },
+      "emotionReviewed": false,
+      "emotions": []
+    }
+  ]
+}

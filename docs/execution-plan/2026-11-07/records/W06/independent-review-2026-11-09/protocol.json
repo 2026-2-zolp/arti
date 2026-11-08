@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "sourceCommit": "10955a9",
+  "manifestDigest": "bc30f8a5cd25c81b0df57861e406196c747c1288cd0676a5068dd67cbf21c09b",
+  "formSha256": "789287b908126b275856b8e9e14170b34db2135b788af25ee361ee53a55dbc75",
+  "firstPhase": "image only, model scores/prior human labels/candidate descriptions hidden",
+  "tags": "explicit yes/no/unsure; blank remains unanswered",
+  "emotions": "optional subjective opinions, not objective truth",
+  "collection": "local in-memory, file hash checked; JSON export only; no server submission/DB import",
+  "raterAdvice": "independent first pass; use aliases; separately record any previous exposure; no group discussion before first submission",
+  "humanReviewCount": 0,
+  "teamApproval": "pending",
+  "usageContext": "web captures for campus graduation-project period per user; individual conditions not established",
+  "sourcePacketPreserved": true
+}
