@@ -8,24 +8,25 @@ ARTI는 **미술 감상 초보자**가 자신의 취향에 맞는 작품을 찾�
 
 **바로가기:** [팀 Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032) · [10/17 개발·발표 현황](https://app.notion.com/p/3fc34713f167814bb884e2bf31a8bdb9) · [처음 시작하기](docs/처음-시작하기.md) · [협업 규칙](docs/협업-규칙.md) · [개발 범위](docs/프로젝트-범위.md) · [PR 목록](https://github.com/2026-2-zolp/arti/pulls)
 
-## 현재 개발 상태 — 2026-11-08
+## 현재 개발 상태 —2026-11-09
 
-작업 브랜치는 `dev/임준억`, 통합 기준은 동섭님 통합본 `ae0e58e`입니다. W01~W04와 G0~G3를 완료하고 로컬 과업별 커밋으로 정리했습니다. 후속 사용자 승인으로 원격 dev/임준억에 푸시했습니다.
-
-[W05 핵심 통합 구현·검증](docs/execution-plan/2026-11-07/records/W05/README.md)과 G4를 통과했습니다. 관리자 쓰기·회원·관람 저장·도슨트 맥락 및 Git 기준 자료 인수를 검증했습니다. 실제 모델·AWS/CD·실기기 검증은 후속 단계입니다. 원격 CI push4job은 실제 성공했고 PR 이벤트 검증은 남아 있습니다.
+작업 브랜치는 `dev/임준억`, 통합 기준은 동섭님 통합본 `ae0e58e`입니다. W01~W05와 G0~G4를 완료했고, 현재 W06 자료·시연 준비를 진행하고 있습니다. **[팀 공유 요약](docs/operations/2026-11-09_팀공유현황.md)**에서 이번 변경과 남은 작업을 먼저 확인할 수 있습니다.
 
 | 구분 | 검증한 범위 | 남은 범위 |
 | --- | --- | --- |
-| 기존 코드 | React·Express/SQLite·FastAPI 인수, 계약 확정과 회귀 9건 | 기존 결함의 후속 수정 |
-| 새 백엔드 | Django/DRF·PostgreSQL·Docker, 조회·추천·관리자 검수 쓰기·회원·관람 저장·도슨트 맥락 | 실제 모델/작품 품질 및 후속 운영 인수 |
-| 실제 연결 | React → Django → PostgreSQL, 회원/비회원·만료 복구·검수 충돌·비공개 제한 | 유영국 실제 자료·실기기 전체 여정 |
-| 배포·AI | CI4job과 OpenAI 호환 텍스트 adapter의 로컬 검증, 기본 AI 비활성 | PR 이벤트 확인, 실제 AI API·AWS/CD |
+| 기본 실행 | React/Vite → Django/DRF·PostgreSQL·Docker. Express 원본은 legacy로 보존 | 실제 운영 환경 구성 |
+| 핵심 통합 | 관리자 쓰기·회원/비회원·관람 저장·도슨트 맥락·복구/버전 충돌 | 실제 작품/실기기 전체 여정 |
+| 유영국 자료 | 로컬 개발DB16점 비공개 인수·백업/복원·시연 배치/선택풀 초안 | 팀원 식별/콘텐츠·사용 범위 검수, 태그/감정·배치·공개 |
+| 텍스트 AI | OpenAI 호환 adapter, GPT 해설·요약·가이드·맥락 대화 실연결과 소규모 품질 점검 | 정식 W07 품질·CLIP/mDeBERTa 실연동/자원 검증 |
+| CI/운영 | 기존 push CI4job 성공 이력. 이번 공유 전 PG85·프론트20/타입/빌드 통과 | 이번 push CI 확인, PR 이벤트·AWS/CD |
 
-W05 당시 PostgreSQL51건, 이후 provider 준비 회귀를 포함한 전체63건과 프론트13건·타입·빌드, 모델 서비스 fake17건을 통과했습니다. 시험 fixture/로컬 HTTP로 검증했으며 실제 작품 검수나 모델 품질 평가를 대신하지 않습니다.
+AC19 평가 준비는 통과했고, AC18은 팀원 검수/사용 범위 확인 등이 남아 blocked입니다. W06 전체와 G5는 완료 처리하지 않았습니다. 시연 좌표·태그 가설의 오프라인 검사를 실제 모델 성능이나 현장 경로 검증으로 설명하지 않습니다.
 
-읽는 순서: [통합 준비 문서](docs/통합준비문서.md) → [실행계획과 현재 상태](docs/execution-plan/2026-11-07/README.md) → [누적 작업기록](docs/작업기록/README.md). 실행은 [Django 개발 안내](backend-django/README.md)를 따릅니다. 작업 상태의 단일 기준은 [execution.json](docs/execution-plan/2026-11-07/execution.json)입니다.
+**Git에는 로컬 DB·덤프·실제 유영국 이미지·API 키가 포함되지 않습니다.** 새 환경은 자동 자료/기본 계정 없이 시작합니다. AI는 기본 비활성이며 서버 전용 키와 provider를 명시 설정해야 합니다. 실제 파일은 별도 인수 후 manifest 기반으로 적재합니다.
 
-아래 서비스 흐름은 목표 방향을 설명합니다. 모든 기능이 새 백엔드로 전환된 상태는 아닙니다. 기존 10/17 안내는 [통합 기준 커밋의 README](https://github.com/2026-2-zolp/arti/blob/ae0e58ebc338c17da6d4d17616fd802f03ba3bb6/README.md)에 보존되어 있습니다.
+읽는 순서: [팀 공유 요약](docs/operations/2026-11-09_팀공유현황.md) → [통합 준비 문서](docs/통합준비문서.md) → [실행계획](docs/execution-plan/2026-11-07/README.md) → [누적 작업기록](docs/작업기록/README.md). 실행은 [Django 개발 안내](docs/개발실행-Django.md)를 따릅니다. W/게이트 상태의 단일 기준은 [execution.json](docs/execution-plan/2026-11-07/execution.json)입니다.
+
+아래는 목표를 포함한 서비스 흐름입니다. 기존10/17 안내는 [통합 기준 README](https://github.com/2026-2-zolp/arti/blob/ae0e58ebc338c17da6d4d17616fd802f03ba3bb6/README.md)에 보존했습니다.
 
 ## 🖼️ 사용자는 ARTI를 어떻게 이용하나요?
 
