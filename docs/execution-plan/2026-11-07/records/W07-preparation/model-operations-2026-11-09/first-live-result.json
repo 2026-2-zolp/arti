@@ -1,0 +1,82 @@
+{
+  "scope": "single-worker local CPU operations, synthetic inputs only; no DB writes/paid LLM",
+  "events": [
+    {
+      "case": "cold_and_loading_requests",
+      "initialReady": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.0024670000129844993
+      },
+      "first": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.004801700008101761
+      },
+      "second": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.003306200000224635
+      },
+      "readyAfterSeconds": 10.430621799983783
+    },
+    {
+      "case": "two_concurrent_requests",
+      "responses": [
+        {
+          "status": 200,
+          "seconds": 4.971306199993705
+        },
+        {
+          "status": 429,
+          "retryAfter": "1",
+          "seconds": 0.004142099991440773
+        }
+      ]
+    },
+    {
+      "case": "caller_timeout_keeps_slot_until_compute_finishes",
+      "timeout": {
+        "status": "transport_error",
+        "errorType": "TimeoutError",
+        "seconds": 0.03920030000153929
+      },
+      "whileBusy": {
+        "status": 429,
+        "retryAfter": "1",
+        "seconds": 0.0016839999880176038
+      },
+      "afterComplete": {
+        "status": 200,
+        "seconds": 3.474414700001944
+      }
+    },
+    {
+      "case": "service_stop_restart",
+      "djangoBefore": {
+        "ok": true,
+        "tagCount": 8,
+        "emotionCount": 6
+      },
+      "djangoStopped": {
+        "ok": false,
+        "status": 503,
+        "code": "AI_UNAVAILABLE"
+      },
+      "restartCold": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.018328200007090345
+      },
+      "restartReadySeconds": 6.264222800004063,
+      "djangoAfter": {
+        "ok": true,
+        "tagCount": 8,
+        "emotionCount": 6
+      }
+    }
+  ],
+  "pass": true,
+  "peakServerTreeRssMiB": 1258.6015625,
+  "memoryScope": "sampled server launcher+child RSS, excludes callers; local Windows CPU4threads"
+}

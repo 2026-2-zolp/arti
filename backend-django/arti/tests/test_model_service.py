@@ -77,6 +77,16 @@ class ModelServiceTests(SimpleTestCase):
                 with self.assertRaises(ContractError):
                     providers.generate('tag', {'description': '원문'})
 
+    @override_settings(ARTI_MODEL_SERVICE_URL='http://localhost:8001')
+    def test_truncated_http_transport_is_sanitized(self):
+        from http.client import IncompleteRead
+        with patch('arti.model_service.build_opener') as opener:
+            opener.return_value.open.side_effect=IncompleteRead(b'synthetic partial body')
+            with self.assertRaises(ContractError) as exc:
+                providers.generate('tag', {'description':'원문'})
+            self.assertEqual(exc.exception.status_code,502)
+            self.assertNotIn('synthetic partial body',str(exc.exception))
+
     @override_settings(ARTI_MODEL_SERVICE_URL='')
     def test_disabled_independent_of_gpt(self):
         with self.assertRaises(ContractError) as exc: providers.generate('tag', {})

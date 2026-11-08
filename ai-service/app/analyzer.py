@@ -152,9 +152,11 @@ class HuggingFaceScorer:
                 return
             from transformers import CLIPModel, CLIPProcessor, pipeline
 
-            self._clip = CLIPModel.from_pretrained(self.clip_name).eval()
-            self._clip_processor = CLIPProcessor.from_pretrained(self.clip_name)
-            self._nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            # 모두 성공한 뒤에만 게시해 부분 초기화를 ready로 오인하지 않습니다.
+            clip = CLIPModel.from_pretrained(self.clip_name).eval()
+            processor = CLIPProcessor.from_pretrained(self.clip_name)
+            nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            self._clip, self._clip_processor, self._nli = clip, processor, nli
 
     def image_scores(self, image: Image.Image) -> Scores:
         import torch

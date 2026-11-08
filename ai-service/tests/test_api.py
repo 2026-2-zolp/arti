@@ -157,6 +157,7 @@ class FakeWriter:
 
 
 def test_write_returns_summary_and_guide(client, monkeypatch):
+    monkeypatch.setattr(main.config, "WRITER_ENABLED", True)
     monkeypatch.setattr(main, "writer", FakeWriter())
     r = client.post("/write", json={"title": "야경", "artist": "렘브란트", "year": "1642", "description": "단체 초상화예요."})
     assert r.status_code == 200
@@ -166,8 +167,19 @@ def test_write_returns_summary_and_guide(client, monkeypatch):
 
 
 def test_write_unusable_answer_is_422(client, monkeypatch):
+    monkeypatch.setattr(main.config, "WRITER_ENABLED", True)
     class Bad(FakeWriter):
         def generate(self, system, user):
             return "모르겠어요"
     monkeypatch.setattr(main, "writer", Bad())
     assert client.post("/write", json={"description": "단체 초상화예요."}).status_code == 422
+
+
+def test_disabled_writer_does_not_generate(client, monkeypatch):
+    from unittest.mock import Mock
+    writer=Mock()
+    monkeypatch.setattr(main,'writer',writer)
+    monkeypatch.setattr(main.config,'WRITER_ENABLED',False)
+    response=client.post('/write',json={'description':'합성 원문'})
+    assert response.status_code==503
+    writer.generate.assert_not_called()

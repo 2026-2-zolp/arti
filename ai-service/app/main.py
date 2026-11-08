@@ -1,4 +1,4 @@
-# 모델 서비스: FastAPI 모델 서비스의 분석·작성 API를 구성합니다. 새 Django의 실제 모델 연동 여부는 별도입니다.
+# 모델 서비스: 분석 API와 로딩·추론 상태를 제공합니다. Django는 분석 전용 경계로 연결합니다.
 """
 ARTI 감정 분석 서버 (FastAPI)
 
@@ -13,13 +13,13 @@ ARTI 감정 분석 서버 (FastAPI)
 from __future__ import annotations
 
 import logging
-import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from . import config
+from .runtime import ModelRuntime
 from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load_tag_thresholds
 from .emotions import EMOTIONS
 from .tags import TAGS
@@ -28,6 +28,7 @@ from .writer import KananaWriter, Writer, write
 
 log = logging.getLogger("arti.ai")
 scorer: Scorer = HuggingFaceScorer()
+runtime = ModelRuntime()
 # 라벨 편향 보정값 (app/calibration.json). 파일이 없으면 보정 없이 동작
 calibration = load_calibration() if config.CALIBRATE else {}
 # 태그별 '해당함' 기준값 (app/tag_calibration.json). 파일이 없으면 모든 태그 0.5
@@ -40,13 +41,7 @@ writer: Writer = KananaWriter()
 async def lifespan(_: FastAPI):
     # 모델을 백그라운드에서 미리 불러온다 (첫 분석 요청이 오래 걸리지 않도록). 실패해도 서버는 뜬다.
     if config.PRELOAD and isinstance(scorer, HuggingFaceScorer):
-        def _load():
-            try:
-                scorer.load()
-                log.info("모델 로딩 완료")
-            except Exception:
-                log.exception("모델 로딩 실패 — 첫 분석 요청 때 다시 시도합니다")
-        threading.Thread(target=_load, daemon=True).start()
+        runtime.warmup(scorer)
     yield
 
 
@@ -81,10 +76,20 @@ def health():
     return {
         "ok": True,
         "modelsLoaded": scorer.loaded,
+        "modelState": runtime.state(scorer),
+        "analysisBusy": runtime.busy(scorer),
+        "busySeconds": runtime.busy_seconds(),
         "calibration": sorted(calibration),
         "tagThresholds": tag_thresholds,
         "writer": {"enabled": config.WRITER_ENABLED, "model": config.WRITER_MODEL, "loaded": writer.loaded},
     }
+
+
+@app.get("/ready")
+def ready():
+    if not scorer.loaded:
+        raise HTTPException(503,detail='분석 모델 준비 중',headers={'Retry-After':'5'})
+    return {'ok':True,'modelState':'ready'}
 
 
 @app.get("/emotions")
@@ -99,6 +104,11 @@ def tags():
 
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze_artwork(req: AnalyzeRequest):
+    with runtime.slot(scorer):
+        return _analyze_artwork(req)
+
+
+def _analyze_artwork(req: AnalyzeRequest):
     image, image_error = None, None
     if req.imageBase64 or req.imageUrl:
         try:

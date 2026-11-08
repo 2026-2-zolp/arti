@@ -75,6 +75,18 @@
   "noDatabaseMutation": true,
   "formalGatesUnchanged": true
 },
+  "modelOperationsPreparation": {
+  "record": "records/W07-preparation/model-operations-2026-11-09/README.md",
+  "status": "local operational checks pass",
+  "scope": "single model process, admission/loading, timeout/failure/restart and PostgreSQL storage protection",
+  "doesNotClaim": [
+    "distributed capacity",
+    "native inference forced cancellation",
+    "Yoo label/quality acceptance",
+    "G5 pass"
+  ],
+  "generalRuntimeRecreated": false
+},
   "tasks": [
     {
       "id": "W01",

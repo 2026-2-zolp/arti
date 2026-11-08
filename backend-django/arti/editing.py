@@ -234,7 +234,7 @@ def analyze(request,artwork_id):
     regenerate=request.data.get('regenerateFields',[])
     if not isinstance(regenerate,list) or any(f not in STATES for f in regenerate):fail()
     if w.review_status!='approved' or not w.description.strip():fail('승인된 원문을 먼저 준비해 주세요.')
-    results={};updates={};model_cache={}
+    results={};updates={};model_cache={};retry_waits=[]
     with analysis_slot():
         for kind,field in STATES.items():
             if getattr(w,field)=='confirmed' and kind not in regenerate:
@@ -245,13 +245,15 @@ def analyze(request,artwork_id):
                 providers.validate(kind,value)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}
-            except ContractError as e:results[kind]={'ok':False,'error':str(e.detail),'code':e.contract_code,'made':False}
+            except ContractError as e:
+                results[kind]={'ok':False,'error':str(e.detail),'code':e.contract_code,'made':False}
+                if getattr(e,'wait',None) is not None:retry_waits.append(e.wait)
     if not updates:
         if any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
             code=next((c for c in ['AI_TIMEOUT','PROVIDER_ERROR','RATE_LIMITED','AI_UNAVAILABLE'] if c in codes),'AI_UNAVAILABLE')
             error=ContractError({'AI_TIMEOUT':504,'PROVIDER_ERROR':502,'RATE_LIMITED':429,'AI_UNAVAILABLE':503}[code],code,'분석 결과를 준비하지 못했어요.',retryable=True)
-            if code=='RATE_LIMITED':error.wait=30
+            if code=='RATE_LIMITED':error.wait=min(30,max(1,int(max(retry_waits or [30]))))
             raise error
         return Response({'artwork':artwork_dto(w,True),**results})
     with transaction.atomic():

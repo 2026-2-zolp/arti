@@ -10,8 +10,14 @@ def generate(kind, snapshot, **context):
             raise ContractError(503, 'AI_UNAVAILABLE', '분석 모델 연결을 준비 중이에요.', retryable=True)
         from .model_service import analyze
         cache = context.get('analysis_cache', {})
+        if 'error' in cache:
+            raise cache['error']
         if 'result' not in cache:
-            cache['result'] = analyze(snapshot)
+            try:
+                cache['result'] = analyze(snapshot)
+            except ContractError as exc:
+                cache['error'] = exc
+                raise
         result = cache['result']
         return {'scores': result['tags']} if kind == 'tag' else result
     if settings.ARTI_LLM_PROVIDER == 'openai_compatible':

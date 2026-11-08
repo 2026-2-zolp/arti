@@ -4,6 +4,7 @@ import json
 import math
 import socket
 from pathlib import Path
+from http.client import HTTPException as HTTPTransportError
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, build_opener
@@ -12,6 +13,7 @@ from .constants import TAGS, EMOTIONS
 from .http import ContractError
 from .llm import NoRedirect
 
+TIMEOUT_SECONDS = 30
 MAX_IMAGE = 10 * 1024 * 1024
 MAX_RESPONSE = 128 * 1024
 
@@ -49,13 +51,19 @@ def analyze(snapshot):
         failure(503, 'AI_UNAVAILABLE')
     request = Request(base + '/analyze', data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
     try:
-        with build_opener(NoRedirect()).open(request, timeout=30) as response:
+        with build_opener(NoRedirect()).open(request, timeout=TIMEOUT_SECONDS) as response:
             raw = response.read(MAX_RESPONSE + 1)
         if len(raw) > MAX_RESPONSE:
             failure()
         value = json.loads(raw)
     except HTTPError as exc:
-        if exc.code == 503:
+        status=exc.code
+        exc.close()
+        if status == 429:
+            error=ContractError(429,'RATE_LIMITED','다른 분석을 진행 중이에요. 잠시 후 다시 시도해 주세요.',retryable=True)
+            error.wait=1
+            raise error
+        if status == 503:
             failure(503, 'AI_UNAVAILABLE')
         failure()
     except (TimeoutError, socket.timeout):
@@ -64,7 +72,7 @@ def analyze(snapshot):
         if isinstance(exc.reason, (TimeoutError, socket.timeout)):
             failure(504, 'AI_TIMEOUT')
         failure(503, 'AI_UNAVAILABLE')
-    except (ValueError, OSError):
+    except (ValueError, OSError, HTTPTransportError):
         failure()
     if not isinstance(value, dict):
         failure()
