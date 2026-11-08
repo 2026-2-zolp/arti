@@ -33,10 +33,10 @@ class ExhibitionImportTests(TestCase):
                 'guide': {'intro': '색을 보세요', 'questions': ['어디가 보이나요?'], 'hints': ['경계를 보세요']}}]}
         (self.root / 'intake-a1.png').write_bytes(PNG)
 
-    def run_import(self, dry=False):
+    def run_import(self, dry=False, **options):
         (self.root / 'manifest.json').write_text(json.dumps(self.data), encoding='utf-8')
         output = io.StringIO()
-        call_command('import_exhibition_bundle', str(self.root), dry_run=dry, stdout=output)
+        call_command('import_exhibition_bundle', str(self.root), dry_run=dry, stdout=output, **options)
         return json.loads(output.getvalue())
 
     def assert_empty(self):
@@ -141,3 +141,72 @@ class ExhibitionImportTests(TestCase):
                 call_command('import_exhibition_bundle', str(self.root), stdout=output)
         self.assertTrue(Artwork.objects.filter(pk='intake-a1').exists())
         self.assertEqual((self.media / 'intake-a1.png').read_bytes(), PNG)
+
+    def prepare_append(self):
+        self.run_import()
+        first = Artwork.objects.get(pk='intake-a1'); first.summary = '기존 검수 내용'; first.summary_status = 'confirmed'; first.save()
+        row = self.data['items'][0]
+        row.update(id='intake-a2', recordId='record-a2', assetId='asset-a2', file='intake-a2.png')
+        (self.root / row['file']).write_bytes(PNG)
+        self.data['exhibition']['subtitle'] = '자료 확장·비공개 검수'
+        return first
+
+    def test_explicit_append_dry_run_and_existing_content_preservation(self):
+        first = self.prepare_append()
+        ex = Exhibition.objects.get(); ex.entrance_x = 13; ex.entrance_y = 17; ex.save()
+        original = (ex.subtitle, ex.version, first.summary, first.summary_revision)
+        out = self.run_import(True, append_to_draft=True, expected_version=1)
+        self.assertTrue(out['appendToDraft']); self.assertEqual(Artwork.objects.count(), 1)
+        ex.refresh_from_db(); self.assertEqual((ex.subtitle, ex.version), original[:2])
+        self.assertFalse((self.media / 'intake-a2.png').exists())
+        out = self.run_import(append_to_draft=True, expected_version=1)
+        ex.refresh_from_db(); first.refresh_from_db()
+        self.assertEqual(out['exhibitionVersion'], 2); self.assertEqual(ex.version, 2)
+        self.assertEqual((ex.entrance_x, ex.entrance_y), (13, 17))
+        self.assertEqual((first.summary, first.summary_revision), original[2:])
+        self.assertEqual(first.summary_status, 'confirmed'); self.assertEqual(Artwork.objects.count(), 2)
+        self.assertEqual(Exhibition.objects.count(), 1)
+
+    def test_append_requires_explicit_flag_current_version_and_draft(self):
+        self.prepare_append()
+        for options in [{}, {'append_to_draft': True}, {'expected_version': 1},
+                        {'append_to_draft': True, 'expected_version': 99}]:
+            with self.subTest(options=options), self.assertRaises(CommandError): self.run_import(**options)
+        ex = Exhibition.objects.get()
+        for status in ['running', 'closed']:
+            ex.status = status; ex.save()
+            with self.assertRaises(CommandError): self.run_import(append_to_draft=True, expected_version=1)
+        ex.status = 'draft'; ex.subtitle = '공식 전시 초안'; ex.save()
+        with self.assertRaises(CommandError): self.run_import(append_to_draft=True, expected_version=1)
+        self.assertEqual(Artwork.objects.count(), 1); self.assertFalse((self.media / 'intake-a2.png').exists())
+
+    def test_append_refuses_identity_changes_and_duplicate_work(self):
+        self.prepare_append(); original = copy.deepcopy(self.data)
+        for key in ['title', 'venue', 'startDate']:
+            self.data = copy.deepcopy(original)
+            self.data['exhibition'][key] = 'different' if key != 'startDate' else '2026-11-10'
+            with self.assertRaises(CommandError): self.run_import(append_to_draft=True, expected_version=1)
+        self.data = original; self.data['items'][0]['id'] = 'intake-a1'
+        with self.assertRaises(CommandError): self.run_import(append_to_draft=True, expected_version=1)
+        self.assertEqual(Artwork.objects.count(), 1); self.assertEqual(Exhibition.objects.get().version, 1)
+
+    def test_append_failure_restores_exhibition_version_and_original_rows(self):
+        first = self.prepare_append(); ex = Exhibition.objects.get(); before = (ex.subtitle, ex.version)
+        with patch.object(Artwork, 'save', side_effect=RuntimeError('synthetic append failure')):
+            with self.assertRaises(RuntimeError): self.run_import(append_to_draft=True, expected_version=1)
+        ex.refresh_from_db(); first.refresh_from_db()
+        self.assertEqual((ex.subtitle, ex.version), before); self.assertEqual(first.summary, '기존 검수 내용')
+        self.assertEqual(Artwork.objects.count(), 1); self.assertFalse((self.media / 'intake-a2.png').exists())
+        self.assertEqual((self.media / 'intake-a1.png').read_bytes(), PNG)
+
+    def test_append_rechecks_version_under_lock_before_writing(self):
+        self.prepare_append()
+        from arti.management.commands.import_exhibition_bundle import Command
+        original = Command.draft_target
+        def changed(command, data, expected, locked=False):
+            if locked: raise CommandError('synthetic concurrent version update')
+            return original(command, data, expected, locked)
+        with patch.object(Command, 'draft_target', changed), self.assertRaises(CommandError):
+            self.run_import(append_to_draft=True, expected_version=1)
+        self.assertEqual(Artwork.objects.count(), 1); self.assertEqual(Exhibition.objects.get().version, 1)
+        self.assertFalse((self.media / 'intake-a2.png').exists())

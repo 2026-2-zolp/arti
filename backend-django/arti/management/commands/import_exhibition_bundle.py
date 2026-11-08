@@ -114,30 +114,52 @@ def read_bundle(root):
     return data, hashlib.sha256(raw).hexdigest()
 
 
-# dry-run과 실제 적재가 같은 검사 경로를 사용하며 기존 데이터는 갱신하지 않습니다.
+# dry-run과 실제 적재는 같은 검사를 사용하고, 명시한 초안 전시에만 신규 작품을 추가합니다.
 class Command(BaseCommand):
     help = 'Create a draft exhibition and source_check works from a validated intake v1 bundle; never approve or overwrite.'
 
     def add_arguments(self, parser):
         parser.add_argument('directory', type=Path)
         parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument('--append-to-draft', action='store_true')
+        parser.add_argument('--expected-version', type=int)
+
+    def draft_target(self, data, expected, locked=False):
+        query = Exhibition.objects.select_for_update() if locked else Exhibition.objects
+        ex = query.filter(pk=data['id']).first()
+        if ex is None or ex.status != 'draft' or ex.version != expected or not ex.subtitle.startswith('[시연 재구성] '):
+            raise CommandError('Append requires an existing draft exhibition at the expected version.')
+        if (ex.title != data['title'] or ex.venue != data['venue'] or
+                ex.start_date.isoformat() != data['startDate'] or ex.end_date.isoformat() != data['endDate']):
+            raise CommandError('Append cannot change exhibition identity, venue or dates.')
+        # 추가 배치의 설명만 명시 갱신합니다. 도면·입구·방은 그대로 보존합니다.
+        ex.subtitle = '[시연 재구성] ' + data['subtitle']
+        ex.full_clean()
+        return ex
 
     def handle(self, *args, **options):
         created = []
         try:
             root = options['directory'].resolve()
             data, digest = read_bundle(root)
+            append = options['append_to_draft']
+            expected = options['expected_version']
+            if (append and (type(expected) is not int or expected < 1)) or (not append and expected is not None):
+                raise CommandError('Use --append-to-draft together with a positive --expected-version only.')
             ex_data, rows = data['exhibition'], data['items']
-            if Exhibition.objects.filter(pk=ex_data['id']).exists() or Artwork.objects.filter(pk__in=[r['id'] for r in rows]).exists():
+            if (not append and Exhibition.objects.filter(pk=ex_data['id']).exists()) or Artwork.objects.filter(pk__in=[r['id'] for r in rows]).exists():
                 raise CommandError('Target IDs exist; no overwrite, update or reset supported.')
             media = settings.MEDIA_ROOT
             if media.resolve() == root:
                 raise CommandError('Bundle and destination media must be separate directories.')
             if any((media / r['file']).exists() or (media / r['file']).is_symlink() for r in rows):
                 raise CommandError('Destination media exists; preserve and compare it separately.')
-            ex = Exhibition(id=ex_data['id'], title=ex_data['title'], subtitle='[시연 재구성] ' + ex_data['subtitle'], venue=ex_data['venue'],
-                            start_date=ex_data['startDate'], end_date=ex_data['endDate'], status='draft', rooms=[])
-            ex.full_clean()
+            if append:
+                ex = self.draft_target(ex_data, expected)
+            else:
+                ex = Exhibition(id=ex_data['id'], title=ex_data['title'], subtitle='[시연 재구성] ' + ex_data['subtitle'], venue=ex_data['venue'],
+                                start_date=ex_data['startDate'], end_date=ex_data['endDate'], status='draft', rooms=[])
+                ex.full_clean()
             works = [Artwork(id=r['id'], exhibition=ex, title=r['title'], artist=r['artist'], year=r['year'],
                              description=r['description'],
                              source=f"팀작성 초안·식별/권리 확인 대기 | {r['recordId']} | {r['assetId']} | {r['source']}",
@@ -151,17 +173,24 @@ class Command(BaseCommand):
             if not options['dry_run']:
                 media.mkdir(parents=True, exist_ok=True)
                 with transaction.atomic():
-                    ex.save(force_insert=True)
+                    if append:
+                        ex = self.draft_target(ex_data, expected, locked=True)
+                        ex.version += 1
+                        ex.save(update_fields=['subtitle', 'version', 'updated_at'])
+                    else:
+                        ex.save(force_insert=True)
                     for row, work in zip(rows, works):
                         raw = local_image(root, row)  # 검사 후 바뀐 입력 파일도 거절합니다.
                         target = media / row['file']
                         with target.open('xb') as output:
                             created.append(target)
                             output.write(raw)
+                        work.exhibition = ex
                         work.save(force_insert=True)
             result = {'ok': True, 'dryRun': options['dry_run'], 'exhibitionId': ex.id,
                 'works': len(rows), 'imagesVerified': len(rows), 'manifestSha256': digest,
-                'exhibitionStatus': 'draft', 'reviewStatus': 'source_check', 'publicWorks': 0,
+                'exhibitionStatus': 'draft', 'exhibitionVersion': ex.version, 'appendToDraft': append,
+                'reviewStatus': 'source_check', 'publicWorks': 0,
                 'accountsImported': 0, 'layoutImported': False, 'approvalImported': False}
         except Exception as exc:
             # 이번 호출이 새로 만든 파일만 회수합니다. 기존 DB/미디어는 지우지 않습니다.

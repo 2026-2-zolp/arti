@@ -91,3 +91,5 @@ exhibitionAssignments는 전부 빈 배열이다. 실제/시연 전시 선택 �
 [이전1차 조사](../../../docs/operations/2026-11-09_유영국자료검토와시연계획.md), [이번 작업기록](../../../docs/작업기록/2026-11-09_W06_유영국식별출처표.md).
 
 2026-11-09 후속: 연구 inventory는 원래 미확정/linkedArtworkId=null 상태로 보존했다. [core3-manifest.json](core3-manifest.json)에 별도 DBID와 인수/asset 매핑·검수 전 콘텐츠 v2를 기록하고 [비공개 적재 결과](../../../docs/execution-plan/2026-11-07/records/W06/core3-intake/README.md)에 연결했다. 역사적 연구표의 null은 현재 적재본이 없다는 뜻으로 재사용하지 않고 이 후속 매핑을 조회한다. 나머지13점·사람 승인·실제 출품은 대기다.
+
+2026-11-09 확장 후속: [나머지13점 검토](remaining13-review.md)에서 조건부12점/007보류로 나눴다. [별도12점 manifest](remaining12-manifest.json)를 기존 시연 초안 전시에 추가해 비공개15점이 됐다. 판화 도상 후보4점은 개별 판본/연도를 확정하지 않아 DB year를 비웠다. 원래 inventory와 core3-manifest는 보존하고 [추가 결과](../../../docs/execution-plan/2026-11-07/records/W06/remaining-intake/README.md)를 따른다. 사람 확인/권리/공개와 전체 여정은 대기다.
