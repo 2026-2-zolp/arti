@@ -1,8 +1,8 @@
 /**
- * ARTI API 클라이언트 — 백엔드(backend/) REST API 호출
+ * ARTI API 클라이언트 — 기본 Django, 명시 선택 시 legacy Express.
  *
  * 함수 이름·인자·반환 타입은 목업 시절과 같아서 화면 코드는 그대로 쓴다.
- * 개발 중에는 Vite 프록시가 /api 요청을 http://localhost:4000 으로 넘긴다(vite.config.ts).
+ * 개발 기본 프록시는 Django4018이며 자동 fallback은 없다(vite.config.ts).
  * 다른 주소의 서버를 쓰려면 VITE_API_BASE 환경 변수를 지정한다.
  *
  * 로그인 토큰
@@ -21,6 +21,7 @@ import type {
   VisitRecord,
 } from '../types';
 import { load, remove, save } from '../lib/storage';
+import { apiTarget } from '../lib/apiTarget';
 
 export class ApiError extends Error {
   constructor(message: string, public status = 0, public code = '') {
@@ -30,7 +31,7 @@ export class ApiError extends Error {
 
 const BASE = (import.meta.env?.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? '/api';
 // W04: explicit target selection, never retry/fall back to another API automatically.
-const ADMIN_READ = import.meta.env?.VITE_API_TARGET === 'django' ? '/admin' : '';
+const ADMIN_READ = apiTarget(import.meta.env?.VITE_API_TARGET) === 'django' ? '/admin' : '';
 const USER_TOKEN = 'arti.token';
 const ADMIN_TOKEN = 'arti.adminToken';
 /** 관리자 화면 로그인 여부 표시용 키 (pages/admin/AdminLayout.tsx의 ADMIN_KEY와 같은 값) */

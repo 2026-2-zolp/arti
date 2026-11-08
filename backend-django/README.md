@@ -1,5 +1,7 @@
 # ARTI Django API — W04 기반 + W05 핵심 통합 검증 완료
 
+단독 Vite/Compose의 최신 실행 방법과 legacy 선택·preview 재빌드 조건은 [Django 실행 안내](../docs/개발실행-Django.md)를 따릅니다. 단독 Vite도 이제 환경변수 없이 Django4018 및 관리자 보호 경로를 기본 사용합니다.
+
 이 디렉터리는 동섭 통합본 ae0e58e에서 옮기는 **새 서비스 API**다. 기존 backend/ Express와 ai-service/ FastAPI는 보존한다. W04 기반 위에 W05의 관리자 쓰기·회원·관람 저장·도슨트 맥락 처리를 구현하고 G4를 통과했다. Git 기준 인수이며 로컬 고유자료는 별도 보존·인수한다. 실제 모델·배포는 후속이다. 현재 판정과 경계는 [W05 기록](../docs/execution-plan/2026-11-07/records/W05/README.md)을 따른다.
 
 ## 구현 범위와 계약 차이
@@ -44,11 +46,9 @@ docker compose --env-file .env.compose -p arti-dev exec api python manage.py boo
 
 ## 프론트/API 선택과 연결
 
-Compose UI는 VITE_API_PROXY=http://api:8000와 VITE_API_TARGET=django를 명시한다. 관리자 helper는 이 모드에서만 admin읽기API를 쓰며 공개자료와섞지않는다. 기존 호스트 npm run dev의 기본은 Express4000으로 보존해 비교할 수 있다. 새API를 호스트 Vite에서 확인하려면 두환경변수를 모두 지정한다.
+단독 Vite는 추가 설정 없이 Django4018과 /api/admin 보호 조회를 사용한다. Compose는 내부 proxy=http://api:8000, target=django를 명시한다. Express 비교는 target=express와 proxy=http://127.0.0.1:4000을 명시하고, target/API_BASE를 바꾼 preview는 재빌드해야 한다. [현재 실행 안내](../docs/개발실행-Django.md)를 따른다.
 
 ```powershell
-$env:VITE_API_PROXY='http://127.0.0.1:4018'
-$env:VITE_API_TARGET='django'
 npm --prefix frontend run dev
 ```
 
