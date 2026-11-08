@@ -53,6 +53,17 @@
   "settingsAndHumanLabels": "unchanged",
   "gatePromotion": false
 },
+  "isolatedJourneyReview": {
+  "record": "records/journey/2026-11-09/README.md",
+  "scope": "isolated synthetic browser/API/DB journey and coordinate-guidance correction",
+  "status": "preparatory technical checks pass",
+  "workLinks": [
+    "W05 followup",
+    "W07 preparation",
+    "W10 future real visitor acceptance"
+  ],
+  "formalGatesUnchanged": true
+},
   "tasks": [
     {
       "id": "W01",

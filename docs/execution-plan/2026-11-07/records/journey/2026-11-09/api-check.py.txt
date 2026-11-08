@@ -1,0 +1,23 @@
+import json,urllib.request,math
+from pathlib import Path
+base='http://127.0.0.1:4029/api'
+def call(path,payload=None):
+ data=None if payload is None else json.dumps(payload).encode()
+ with urllib.request.urlopen(urllib.request.Request(base+path,data=data,headers={'Content-Type':'application/json'}),timeout=10) as response:return json.load(response)
+works=call('/artworks?exhibitionId=fixture-ex01');by_id={w['id']:w for w in works}
+pool=call('/exhibitions/fixture-ex01/taste-pool');assert pool['ready'] and len(pool['pairs'])==5
+reports=[]
+for taste in ['landscape','warm','people']:
+ for duration,count in [('30m',3),('60m',5),('relaxed',7)]:
+  results=call('/recommendations',{'exhibitionId':'fixture-ex01','tastes':[taste],'duration':duration})
+  ids=[r['artworkId'] for r in results];assert len(ids)==count and len(set(ids))==count
+  assert all(i in by_id for i in ids)
+  remaining=set(ids);position={'x':0,'y':0}
+  for key in ids:
+   distance=lambda i:math.hypot(by_id[i]['position']['x']-position['x'],by_id[i]['position']['y']-position['y'])
+   assert distance(key)<=min(distance(i) for i in remaining)+1e-9
+   position=by_id[key]['position'];remaining.remove(key)
+  if taste=='people':assert all(not r['matchedTags'] for r in results)
+  reports.append({'taste':taste,'duration':duration,'ids':ids,'matchedTags':[r['matchedTags'] for r in results]})
+Path('docs/execution-plan/2026-11-07/records/journey/2026-11-09/api-check.json').write_text(json.dumps({'ok':True,'poolPairs':len(pool['pairs']),'cases':reports,'scope':'synthetic fixed tags/coordinates; nearest among selected points, not physical indoor navigation'},ensure_ascii=False,indent=2),encoding='utf-8')
+print('9 recommendation quantity/order/scope checks passed')

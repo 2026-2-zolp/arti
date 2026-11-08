@@ -1,0 +1,37 @@
+- banner:
+  - button "뒤로가기":
+  - heading "1 / 3" [level=1]:
+    - generic: 1 / 3
+  - button "지도 보기":
+    - text: 지도 보기
+- main:
+  - img "검증용 작품 01"
+  - button "전체 화면":
+  - heading "검증용 작품 01" [level=2]
+  - paragraph: 가상 작가|연도 미상
+  - strong: 이 작품이 추천된 이유
+  - paragraph: 당신이 고른 '풍경'이 담긴 작품이에요.
+  - tablist:
+    - tab "작품 해설"
+    - tab "관람가이드" [selected]
+  - tabpanel:
+    - paragraph: 파란 면과 노란 원의 크기를 비교해 보세요.
+    - generic: 천천히 보며 답해 보세요
+    - list:
+      - text: 어느 색면에 먼저 눈이 가나요?
+      - button "이 질문으로 내 생각 이야기하기"
+      - button "힌트 보기"
+      - text: 흰 여백이 두 색 사이에서 어떤 역할을 하나요?
+      - button "이 질문으로 내 생각 이야기하기"
+      - button "힌트 닫기" [expanded]
+      - generic: 💡 두 색이 직접 닿는지 살펴보세요.
+  - button "음성 설명 듣기":
+    - text: 음성 설명 듣기
+  - button "내 생각 이야기하기":
+    - text: 내 생각 이야기하기
+  - generic: 이 작품, 어땠나요? (선택)
+  - button "좋아요":
+  - button "별로예요":
+- contentinfo:
+  - button "다음 작품 안내":
+    - text: 다음 작품 안내

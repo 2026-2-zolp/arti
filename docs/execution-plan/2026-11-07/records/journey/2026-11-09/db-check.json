@@ -1,0 +1,160 @@
+{
+  "guest": {
+    "visits": 0,
+    "reactions": 0
+  },
+  "member": {
+    "visits": 1,
+    "reactions": 1,
+    "payload": {
+      "date": "2026-11-08T20:36:56.741Z",
+      "dwell": {
+        "fixture-art01": 15,
+        "fixture-art03": 0,
+        "fixture-art05": 0
+      },
+      "venue": "가상 전시실",
+      "tastes": [
+        "landscape"
+      ],
+      "visitId": "8d61e6bf-ce57-47b2-977e-2938139f412c",
+      "reactions": {
+        "fixture-art01": "like"
+      },
+      "durationMin": 1,
+      "exhibitionId": "fixture-ex01",
+      "tasteProfile": {
+        "picks": [
+          {
+            "artworkId": "fixture-art01",
+            "pairIndex": 0
+          },
+          {
+            "artworkId": "fixture-art03",
+            "pairIndex": 1
+          },
+          {
+            "artworkId": "fixture-art05",
+            "pairIndex": 2
+          },
+          {
+            "artworkId": "fixture-art07",
+            "pairIndex": 3
+          },
+          {
+            "artworkId": "fixture-art09",
+            "pairIndex": 4
+          }
+        ],
+        "counts": {
+          "cool": 0,
+          "soft": 0,
+          "warm": 0,
+          "light": 0,
+          "vivid": 0,
+          "people": 0,
+          "abstract": 0,
+          "landscape": 5
+        },
+        "source": "picks",
+        "version": 1,
+        "poolVersion": "fd81bbe71b7b14b3b807622d72fb852a20509cd60ba58581bb28d3ca2e9938c9",
+        "selectedTags": [
+          "landscape"
+        ],
+        "originalPicks": [
+          {
+            "artworkId": "fixture-art01",
+            "pairIndex": 0
+          },
+          {
+            "artworkId": "fixture-art03",
+            "pairIndex": 1
+          },
+          {
+            "artworkId": "fixture-art05",
+            "pairIndex": 2
+          },
+          {
+            "artworkId": "fixture-art07",
+            "pairIndex": 3
+          },
+          {
+            "artworkId": "fixture-art09",
+            "pairIndex": 4
+          }
+        ],
+        "originExhibitionId": "fixture-ex01",
+        "originalPoolVersion": "fd81bbe71b7b14b3b807622d72fb852a20509cd60ba58581bb28d3ca2e9938c9"
+      },
+      "exhibitionTitle": "ARTI 개발 검증 전시",
+      "reactionReasons": {
+        "fixture-art01": "색감이 좋아요"
+      },
+      "recommendedCount": 3,
+      "selectedDuration": "30m",
+      "viewedArtworkIds": [
+        "fixture-art01",
+        "fixture-art03",
+        "fixture-art05"
+      ],
+      "requestGeneration": 12,
+      "submittedTasteProfile": {
+        "picks": [
+          {
+            "artworkId": "fixture-art01",
+            "pairIndex": 0
+          },
+          {
+            "artworkId": "fixture-art03",
+            "pairIndex": 1
+          },
+          {
+            "artworkId": "fixture-art05",
+            "pairIndex": 2
+          },
+          {
+            "artworkId": "fixture-art07",
+            "pairIndex": 3
+          },
+          {
+            "artworkId": "fixture-art09",
+            "pairIndex": 4
+          }
+        ],
+        "counts": {
+          "landscape": 5
+        },
+        "source": "picks",
+        "version": 1,
+        "poolVersion": "fd81bbe71b7b14b3b807622d72fb852a20509cd60ba58581bb28d3ca2e9938c9",
+        "selectedTags": [
+          "landscape"
+        ]
+      }
+    },
+    "reactionRows": [
+      {
+        "artwork_id": "fixture-art01",
+        "reaction": "like",
+        "reason": "색감이 좋아요",
+        "dwell_seconds": 15
+      }
+    ]
+  },
+  "finalCountsAfterRetry": {
+    "visits": 1,
+    "reactions": 1
+  },
+  "generalDevelopmentStateBeforeExtraChecks": {
+    "works": 16,
+    "exhibitions": 1,
+    "stateDigest": "4477c50757be8e40a1c6eb9590e6e19345b8c4d0a5a5717d368192fd619b1e5c"
+  },
+  "generalDevelopmentStateAfter": {
+    "works": 16,
+    "exhibitions": 1,
+    "stateDigest": "4477c50757be8e40a1c6eb9590e6e19345b8c4d0a5a5717d368192fd619b1e5c"
+  },
+  "generalStateUnchanged": true
+}
