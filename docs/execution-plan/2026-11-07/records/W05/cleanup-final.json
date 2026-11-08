@@ -1,0 +1,17 @@
+{
+  "asOf": "2026-11-08",
+  "source": "actual final local cleanup output",
+  "syntheticSessionsRemoved": 4,
+  "syntheticActorsDisabled": 2,
+  "vite5178Stopped": true,
+  "vite5179Stopped": true,
+  "faultProxy4019Stopped": true,
+  "composeProject": "arti-w05",
+  "containersRemoved": true,
+  "preservedVolumes": [
+    "arti-w05_media_data",
+    "arti-w05_postgres_data"
+  ],
+  "providerOriginalLocalDataReceivedOrChanged": false,
+  "remotePushPerformed": false
+}

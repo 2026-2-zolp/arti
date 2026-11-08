@@ -1,6 +1,6 @@
-# ARTI Django API — W04 기반
+# ARTI Django API — W04 기반 + W05 핵심 통합 검증 완료
 
-이 디렉터리는 동섭 통합본 ae0e58e에서 옮기는 **새 서비스 API**다. 기존 backend/ Express와 ai-service/ FastAPI는 보존한다. 현재는 전시/작품 공개조회·추천·관리자읽기·DB/컨테이너 기반까지다. 전체 백엔드 전환 완료가 아니다.
+이 디렉터리는 동섭 통합본 ae0e58e에서 옮기는 **새 서비스 API**다. 기존 backend/ Express와 ai-service/ FastAPI는 보존한다. W04 기반 위에 W05의 관리자 쓰기·회원·관람 저장·도슨트 맥락 처리를 구현하고 G4를 통과했다. Git 기준 인수이며 로컬 고유자료는 별도 보존·인수한다. 실제 모델·배포는 후속이다. 현재 판정과 경계는 [W05 기록](../docs/execution-plan/2026-11-07/records/W05/README.md)을 따른다.
 
 ## 구현 범위와 계약 차이
 
@@ -8,10 +8,10 @@
 - running/approved만 공개, 미검수 AI내용은 서버에서 빈문자열/빈배열/null로 제거한다. draft/closed 직접URL은404, 이미지숨김도 파일접근까지 제한한다.
 - GET /api/admin/exhibitions(/:id), /api/admin/artworks(/:id)는 X-Admin-Token이 필요하고 미검수 자료를 유지한다. opaque 관리자로그인/로그아웃과 명시적 bootstrap을 최소 구현했다.
 - 관리자 비공개 이미지/도면은 /api/admin/uploads를 헤더인증으로 fetch한 뒤 임시objectURL로 표시한다. 토큰을URL에넣거나외부이미지에전송하지않고화면이바뀌면취소/해제한다.
-- POST /api/recommendations는 기존 {exhibitionId,tastes,duration}를 받고 tasteProfile을 선택적으로 검증한다. picks빈도는 서버pool로 재계산, 출처가없는 과거태그는균등가중한다. empty tastes는일반추천0점. saved는 본인서버snapshot만 허용하고 회원로그인/프로필저장은 W05에서 연결한다.
-- GET /api/exhibitions/:id/taste-pool는 정확히10점5쌍 또는 ready:false다. 현 U05는 아직 기존 목록기반 UI이며 pool/profile전달 연결은 W05다.
+- POST /api/recommendations는 기존 {exhibitionId,tastes,duration}를 받고 tasteProfile을 선택적으로 검증한다. picks빈도는 서버pool로 재계산, 출처가없는 과거태그는균등가중한다. empty tastes는일반추천0점. saved는 본인서버snapshot만 허용하고 회원 로그인/프로필 저장과 본인 snapshot 재사용을 연결했다.
+- GET /api/exhibitions/:id/taste-pool는 정확히10점5쌍 또는 ready:false다. U05는 서버의 pool/version과 원본 선택·빈도를 전달한다.
 - 상태확인: /api/health는 process/AI미연결 표시, /api/ready는 실제 PostgreSQL과 migration된 테이블 확인.
-- 전용 쓰기/분석/회원/영수증/도슨트는 W05/W07 후속이다. 미구현 경로는501 또는 읽기전용 경로의405다. Express에 숨은 fallback은 없다. 501을 성공/실제AI로 표시하지 않는다.
+- W05 쓰기/회원/영수증과 도슨트 맥락 API를 구현했다. 실제 provider는 W07에서 연결하며 기본 호출은503 AI_UNAVAILABLE다. 비밀번호 재설정/전시 일괄 분석은501 FEATURE_DISABLED다. Express에 숨은 fallback은 없다. 501을 성공/실제AI로 표시하지 않는다.
 
 ## 로컬 실행 — 저장소 루트에서
 
@@ -32,7 +32,7 @@ docker compose --env-file .env.compose -p arti-dev exec api python manage.py loa
 docker compose --env-file .env.compose -p arti-dev --profile ui up -d --build frontend
 ```
 
-브라우저 [개발 UI](http://127.0.0.1:5178)에서 검증전시가 보인다. fixture는 실제전시가아닌 명시적개발검증자료로13작품/2전시이며 계정은없다. 실제자료 import/기존SQLite 데이터이전은 아직 구현하지 않았고 자동승인하지 않는다. 운영(ARTI_ENV=production)은 플래그가켜져있어도 fixture명령이실패한다.
+브라우저 [개발 UI](http://127.0.0.1:5178)에서 검증전시가 보인다. fixture는 실제전시가아닌 명시적개발검증자료로13작품/2전시이며 계정은없다. Git 40점 자료의 명시적 bundle 가져오기는 아래 절차로 제공한다. 로컬 SQLite 고유 자료·회원/세션의 전체 이전은 아직 확인되지 않았고 자동승인하지 않는다. 운영(ARTI_ENV=production)은 플래그가켜져있어도 fixture명령이실패한다.
 
 관리자는 자동계정 대신 명시적으로 생성한다. 아래 명령의 숨김프롬프트에 영문/숫자가포함된12~128자비밀번호를 입력한다. 명령줄인자에 비밀번호를 넣지 않는다. 계정중복시기존비밀번호를바꾸지않고실패한다.
 
@@ -52,7 +52,7 @@ $env:VITE_API_TARGET='django'
 npm --prefix frontend run dev
 ```
 
-관람조회/추천/가이드표시 최소경로만 확인한다. 회원가입/회원로그인·관리자저장·AI·기록까지 작동한다고 보지 않는다. A04는초안읽기까지가능하며저장/분석은후속이다. 과거영수증의현재catalog의존제거도W05다.
+W05에서는 회원 가입·로그인·취향 저장, 버전 기반 관리자 저장·검수, 관람 저장과 historical snapshot을 연결했다. 실제 AI 연결은 아직 없고503을 반환한다. 본인 관람은 /api/visits/:id, 관리자 열람은 별도 /api/admin/visits/:id를 사용한다. 헤더 역할을 혼용하지 않는다. 검증된 범위와 미통과 항목은 W05 기록을 확인한다.
 
 ## 검사와 영속성
 
@@ -68,3 +68,13 @@ docker compose --env-file .env.compose -p arti-dev exec api python manage.py mak
 ## 버전 근거
 
 requirements.in에서 Django5.2 LTS/DRF3.16 경계를정하고 requirements.lock의직접/전이패키지버전으로Linux이미지설치를검증했다. [Django 지원정책](https://www.djangoproject.com/download/), [DRF5.2지원](https://www.django-rest-framework.org/community/3.16-announcement/), [Compose 준비/기동순서](https://docs.docker.com/compose/how-tos/startup-order/)를참고했다. Python3.12/PostgreSQL17을사용하며 이미지실제digest/검사환경은실행증거에기록한다. AWS배포·RDS·CI가완료됐다는뜻은아니다.
+
+## Git 40점 자료를 검수 대기로 가져오기
+
+저장소 루트에서 `python scripts/export_git_captures.py data/private/captures`를 실행한다. 메타데이터의 잘못된 .png 경로는 같은 작품 ID의 유일한 실제 이미지로 대응시키며 원래 경로·수정 여부·SHA256을 manifest에 남긴다. 여러 후보/누락은 실패한다. bundle은 Git 무시 디렉터리에만 생성한다.
+
+컨테이너에 bundle을 전달한 뒤 `python manage.py import_capture_bundle /tmp/captures --dry-run`으로 검증하고, 같은 명령에서 --dry-run을 빼면 명시적으로 가져온다. 시작 시 자동 실행되지 않는다. 전시는 draft, 작품은 source_check, 태그/AI확정은 없음, mock 좌표는 버린다. 같은 전시/작품이 있으면 덮어쓰지 않고 실패한다. 파일 변조도 실패한다. 승인 전에 공개되지 않는다.
+
+이는 Git 자료 복원이며 광권님 로컬 DB의 고유 수정이 없다는 증명이 아니다. 유영국 전시는 다른 외부 ID의 전시·작품으로 등록할 수 있지만 실제 자료와 사람 검수는 후속 과업이다. 사용자/세션 전체 이관을 포함하지 않는다.
+
+교차 origin 프론트가 필요한 경우에만 API의 ARTI_ALLOWED_ORIGINS에 정확한 origin을 쉼표로 지정한다. 기본값은 빈 목록이며 Vite proxy의 같은 origin 요청을 권장한다. If-Match 요청/ETag 노출을 지원해도 실제 API 권한 검사는 유지한다.

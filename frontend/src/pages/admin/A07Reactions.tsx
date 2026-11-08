@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
-import { readReactionLog, type ReactionLogItem } from '../../lib/reactionLog';
+import { type ReactionLogItem } from '../../lib/reactionLog';
 import { PageHead } from './AdminLayout';
 import type { Reaction } from '../../types';
 
@@ -19,7 +19,8 @@ function formatAt(iso: string) {
 export default function A07Reactions() {
   const { data } = useAsync(() => api.listAdminArtworks(), []);
   const [filter, setFilter] = useState<Filter>('all');
-  const log = readReactionLog();
+  const {data: result, error, reload} = useAsync(() => api.listReactions(), []);
+  const log = (result?.items ?? []).map(item => ({...item, at: item.date}));
   const likes = log.filter((item) => item.reaction === 'like').length;
   const dislikes = log.length - likes;
   const shown = filter === 'all' ? log : log.filter((item) => item.reaction === filter);
@@ -28,6 +29,8 @@ export default function A07Reactions() {
   return (
     <>
       <PageHead title="평가" desc="관람객이 작품에 남긴 좋아요·별로예요와 이유를 확인합니다." />
+      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      <p>서버에 저장된 회원 관람 평가만 표시합니다. 최근 50건입니다.</p>
       <div className="react-filters" role="group" aria-label="평가 필터">
         <FilterButton label="전체" count={log.length} on={filter === 'all'} onClick={() => setFilter('all')} />
         <FilterButton label="좋아요" count={likes} on={filter === 'like'} kind="like" onClick={() => setFilter('like')} />
@@ -50,7 +53,7 @@ export default function A07Reactions() {
             </thead>
             <tbody>
               {shown.map((item) => (
-                <Row key={item.artworkId} item={item} title={titleOf(item.artworkId)} />
+                <Row key={item.visitId + item.artworkId} item={item} title={titleOf(item.artworkId)} />
               ))}
             </tbody>
           </table>

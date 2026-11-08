@@ -38,7 +38,7 @@ def with_etag(data):
 
 @api_view(['GET'])
 def health(request):
-    return Response({'ok': True, 'service': 'django-api', 'stage': 'W04', 'ai': 'not-connected'})
+    return Response({'ok': True, 'service': 'django-api', 'stage': 'W05-development', 'ai': 'not-connected'})
 
 
 @api_view(['GET'])
@@ -101,6 +101,9 @@ def recommendations(request):
 
 class LoginThrottle(AnonRateThrottle):
     rate = '10/min'
+
+    def get_cache_key(self,request,view):
+        return self.cache_format % {'scope':'login','ident':self.get_ident(request)}
 
 
 @api_view(['POST'])

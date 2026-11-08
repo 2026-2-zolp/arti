@@ -1,3 +1,4 @@
+import {useConfirm} from '../../components/Confirmation';
 /** U-06 저장 취향 확인 — 로그인 사용자의 기존 취향을 그대로 쓰거나 수정 */
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
@@ -6,6 +7,7 @@ import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath, withRedirect } from '../../store/ExhibitionRoute';
 
 export default function U06SavedTaste() {
+  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
@@ -16,12 +18,12 @@ export default function U06SavedTaste() {
   const hasTastes = user.tastes.length > 0;
   const name = user.nickname || user.email.split('@')[0];
 
-  const useSaved = () => {
-    dispatch({ type: 'setTastes', tastes: user.tastes });
+  const useSaved = async () => {
+    if (state.startedAt && !(await confirmAction('현재 관람 진행을 초기화하고 새로 시작할까요?'))) return;
+    dispatch({ type: 'setTastes', tastes: user.tastes, profile: {version: 1, source: 'saved', savedProfileVersion: user.tasteProfileVersion ?? 1, poolVersion: null, picks: [], counts: {}, selectedTags: user.tastes} });
     navigate(to('/time'));
   };
   const edit = () => {
-    dispatch({ type: 'setTastes', tastes: user.tastes });
     navigate(to('/taste'));
   };
 

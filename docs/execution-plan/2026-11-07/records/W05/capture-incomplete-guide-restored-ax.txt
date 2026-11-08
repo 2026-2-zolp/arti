@@ -1,0 +1,3 @@
+Browser tab: 5, Title: "ARTI", URL: "http://localhost:5178/exhibitions/fixture-ex01/artwork".
+There has been no change in the accessibility tree.
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-ex01/artwork

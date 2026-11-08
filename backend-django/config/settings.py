@@ -10,6 +10,7 @@ ARTI_ENV = os.environ.get('ARTI_ENV', 'production')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true' and ARTI_ENV == 'development'
 ALLOW_TEST_FIXTURES = os.environ.get('ALLOW_TEST_FIXTURES', 'false').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,api').split(',')
+CORS_ALLOWED_ORIGINS = tuple(v.strip() for v in os.environ.get('ARTI_ALLOWED_ORIGINS','').split(',') if v.strip())
 INSTALLED_APPS = ['django.contrib.contenttypes', 'rest_framework', 'arti']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'arti.http.RequestIdMiddleware',
               'django.middleware.common.CommonMiddleware']
@@ -32,6 +33,7 @@ TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'ko-kr'
 MEDIA_ROOT = Path(os.environ.get('MEDIA_ROOT', '/app/media'))
 REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': ['arti.http.ObjectJSONParser'],
     'DEFAULT_AUTHENTICATION_CLASSES': ['arti.authentication.OpaqueAuthentication'],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
     'UNAUTHENTICATED_USER': None,

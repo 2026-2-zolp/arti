@@ -32,6 +32,7 @@
  */
 import { Link, Route, Routes } from 'react-router-dom';
 import { VisitProvider } from './store/VisitContext';
+import { ConfirmationProvider } from './components/Confirmation';
 import { ExhibitionLayout } from './store/ExhibitionRoute';
 
 import U01Start from './pages/user/U01Start';
@@ -62,6 +63,7 @@ import A07Reactions from './pages/admin/A07Reactions';
 export default function App() {
   return (
     <VisitProvider>
+      <ConfirmationProvider>
       <Routes>
         {/* 사용자 (모바일 웹) */}
         <Route path="/" element={<U01Start />} />
@@ -98,6 +100,7 @@ export default function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </ConfirmationProvider>
     </VisitProvider>
   );
 }

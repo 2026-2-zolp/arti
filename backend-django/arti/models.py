@@ -109,6 +109,14 @@ class Artwork(models.Model):
         for status, value in [(self.summary_status, self.summary), (self.guide_status, self.guide_intro or self.guided_looking)]:
             if status == 'confirmed' and not value:
                 raise ValidationError('Confirmed content cannot be empty.')
+        for values in [self.guided_hints,self.guided_looking,self.summary_keywords,self.palette]:
+            if not isinstance(values,list) or len(values)>50 or any(not isinstance(v,str) or len(v)>10000 for v in values):
+                raise ValidationError('Invalid content array.')
+        if self.tag_scores is not None:
+            if not isinstance(self.tag_scores,dict) or any(k not in TAGS or type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for k,v in self.tag_scores.items()):
+                raise ValidationError('Invalid tag scores.')
+        if self.emotion_status=='confirmed' and (not isinstance(self.analysis,dict) or not isinstance(self.analysis.get('emotions'),dict)):
+            raise ValidationError('Confirmed emotion requires reviewed scores.')
 
 
 class Account(models.Model):

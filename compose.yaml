@@ -20,6 +20,7 @@ services:
       ARTI_ENV: ${ARTI_ENV:-development}
       DJANGO_DEBUG: "false"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      ARTI_ALLOWED_ORIGINS: ${ARTI_ALLOWED_ORIGINS:-}
       PGHOST: db
       PGPORT: "5432"
       PGDATABASE: arti

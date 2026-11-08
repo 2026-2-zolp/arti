@@ -53,7 +53,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   const { state, dispatch } = useVisit();
   const navigate = useNavigate();
   const to = useExhibitionPath();
-  const { data: ex, loading, error } = useAsync(() => api.getExhibition(exhibitionId), [exhibitionId]);
+  const { data: ex, loading, error, reload } = useAsync(() => api.getExhibition(exhibitionId), [exhibitionId]);
 
   // 화면에 들어온 시점 기준으로 판단 (ExhibitionLayout이 전시를 맞춘 뒤라 같은 전시의 관람이다)
   const [resumable] = useState(() => state.startedAt !== null);
@@ -89,7 +89,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
       }
     >
       {loading && <Spinner />}
-      {error && <p className="error-text">{error}</p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><a href="/">전시 목록으로</a></p>}
       {ex && (
         <div className="current-ex">
           <span className="eyebrow">현재 전시</span>
@@ -112,14 +112,14 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
 }
 
 function ExhibitionPicker() {
-  const { data, loading, error } = useAsync(() => api.listExhibitions(), []);
+  const { data, loading, error, reload } = useAsync(() => api.listExhibitions(), []);
   const running = (data ?? []).filter((ex) => ex.status === 'running');
 
   return (
     <StartShell footer={<p className="footnote">전시장 입구의 QR로 접속하면 바로 시작할 수 있어요</p>}>
       <span className="eyebrow ex-list-head">진행 중인 전시</span>
       {loading && <Spinner />}
-      {error && <p className="error-text">{error}</p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><a href="/">전시 목록으로</a></p>}
       {data && running.length === 0 && <p className="muted center">지금 진행 중인 전시가 없어요.</p>}
       <ul className="history-list">
         {running.map((ex) => (

@@ -63,6 +63,31 @@ def weights_for(tastes, profile, works, account=None):
     return {t: raw[t] / total for t in tastes} if total else {}
 
 
+def profile_snapshot(tastes, profile, works, account=None, exhibition_id=None):
+    from .serializers import TasteProfileInput
+    if not isinstance(tastes, list) or any(t not in TAGS for t in tastes) or len(set(tastes)) != len(tastes):
+        raise ContractError(400, 'VALIDATION_ERROR', '취향 태그를 확인해 주세요.')
+    if profile is not None:
+        form = TasteProfileInput(data=profile)
+        form.is_valid(raise_exception=True)
+        profile = form.validated_data
+    weights_for(tastes, profile, works, account)
+    if profile and profile['source'] == 'saved':
+        return account.taste_profile or {'version': 1, 'source': 'manual', 'picks': [], 'poolVersion': None,
+                                        'counts': {t: 0 for t in TAGS}, 'selectedTags': tastes}
+    counts = {t: 0 for t in TAGS}
+    if profile and profile['source'] == 'picks':
+        pool, _ = make_pool(works)
+        for pick in profile['picks']:
+            w = next(w for w in pool if w.id == pick['artworkId'])
+            for t in w.tags:
+                counts[t] += 1
+        return {**profile, 'counts': counts, 'originExhibitionId': exhibition_id,
+                'originalPoolVersion': profile['poolVersion'], 'originalPicks': profile['picks']}
+    return {'version': 1, 'source': 'manual', 'picks': [], 'poolVersion': None,
+            'counts': counts, 'selectedTags': tastes}
+
+
 def recommend(works, exhibition, tastes, duration, profile=None, account=None):
     ordered_tags = [t for t in TAGS if t in tastes]
     weights = weights_for(ordered_tags, profile, works, account)

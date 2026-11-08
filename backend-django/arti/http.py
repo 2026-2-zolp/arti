@@ -1,7 +1,19 @@
 import logging
 import uuid
 from django.http import JsonResponse
+from django.http import HttpResponse
+from django.conf import settings
+from django.utils.cache import patch_vary_headers
 from rest_framework.exceptions import APIException
+from rest_framework.parsers import JSONParser
+from rest_framework.exceptions import ParseError
+
+
+class ObjectJSONParser(JSONParser):
+    def parse(self, stream, media_type=None, parser_context=None):
+        value=super().parse(stream,media_type,parser_context)
+        if not isinstance(value,dict):raise ParseError('JSON object required.')
+        return value
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +59,15 @@ class RequestIdMiddleware:
 
     def __call__(self, request):
         request.request_id = str(uuid.uuid4())
-        response = self.get_response(request)
+        origin=request.headers.get('Origin')
+        allowed=origin and origin in settings.CORS_ALLOWED_ORIGINS and origin!='null'
+        response = HttpResponse(status=204) if allowed and request.method=='OPTIONS' else self.get_response(request)
+        if allowed:
+            response['Access-Control-Allow-Origin']=origin
+            response['Access-Control-Allow-Methods']='GET, POST, PUT, DELETE, OPTIONS'
+            response['Access-Control-Allow-Headers']='Content-Type, Authorization, X-Admin-Token, If-Match'
+            response['Access-Control-Expose-Headers']='ETag, X-Request-Id'
+            patch_vary_headers(response,('Origin',))
         response['X-Request-Id'] = request.request_id
         return response
 

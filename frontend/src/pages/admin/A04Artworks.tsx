@@ -1,3 +1,4 @@
+import {useConfirm} from '../../components/Confirmation';
 /**
  * A-04 작품 등록·수정
  * - /admin/artworks        : 작품 목록 (전시·검수 상태 필터)
@@ -16,12 +17,16 @@ import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 
+const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
+
 export function ArtworkList() {
+  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
-  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const { data, reload, error } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const [reviewed, setReviewed] = useState<string[]>([]);
   const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
   const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
   // 일괄 작업 대상 전시: 필터로 고른 전시, 없으면 운영 중인 전시
@@ -47,18 +52,23 @@ export function ArtworkList() {
   };
 
   const confirmAll = async () => {
-    if (!targetEx || !confirm(`「${targetEx.title}」의 AI 제안(취향 태그·감정 분석·요약)을 모두 확정할까요? 태그는 AI가 "해당함"으로 본 태그가 켜져요.`)) return;
+    if (!targetEx || !(await confirmAction(`「${targetEx.title}」에서 체크한 작품의 검토한 AI 제안만 확정할까요?`))) return;
     setBusy('confirm');
     try {
-      const r = await api.confirmExhibitionAi(targetEx.id);
+      const items = (data?.[1] ?? []).filter(w => reviewed.includes(w.id) && w.exhibitionId === targetEx.id).map(w => ({id: w.id, version: w.version ?? 0, fields: (['summary','guide','tag','emotion'] as const).filter(f => w[`${f}Status`] === 'suggested')})).filter(i => i.fields.length);
+      const r = await api.confirmExhibitionAi(targetEx.id, items); setReviewed([]);
       setAiMsg({ type: 'ok', text: `작품 ${r.confirmed}점의 AI 결과를 확정했어요. 이제 추천·작품 화면에 반영됩니다.` });
       reload();
+    } catch (e) {
+      setReviewed([]);
+      setAiMsg({type: 'err', text: `${e instanceof Error ? e.message : '확정에 실패했어요.'} 최신 자료를 다시 조회하고 내용을 재검토해 주세요.`});
     } finally {
       setBusy(null);
     }
   };
 
   const setFilter = (k: string, v: string) => {
+    setReviewed([]);
     const next = new URLSearchParams(params);
     if (v) next.set(k, v);
     else next.delete(k);
@@ -80,11 +90,11 @@ export function ArtworkList() {
         desc="작품 정보와 설명, 출처·참고자료, 검수 상태를 함께 관리합니다."
         actions={
           <>
-            <button className="a-btn" disabled={!targetEx || busy !== null} onClick={analyzeAll}>
-              {busy === 'analyze' ? 'AI 분석 중… (작품당 수 초)' : '전시 AI 일괄 분석'}
+            <button className="a-btn" disabled title="전시 일괄 분석은 비활성입니다. 작품별 분석을 이용해 주세요." onClick={analyzeAll}>
+              전시 일괄 분석 준비 중 (개별 작품 이용)
             </button>
-            <button className="a-btn" disabled={!targetEx || busy !== null} onClick={confirmAll}>
-              AI 제안 모두 확정
+            <button className="a-btn" disabled={!targetEx || !(data?.[1] ?? []).some(w => w.exhibitionId === targetEx.id && reviewed.includes(w.id) && hasSuggestions(w)) || busy !== null} onClick={confirmAll}>
+              체크한 검토 항목 확정
             </button>
             <button className="a-btn primary" onClick={() => navigate(`/admin/artworks/new${exFilter ? `?exhibition=${exFilter}` : ''}`)}>
               + 작품 등록
@@ -92,7 +102,8 @@ export function ArtworkList() {
           </>
         }
       />
-      {aiMsg && <p className={aiMsg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{aiMsg.text}</p>}
+      {error && <p role="alert">{error}<button onClick={reload}>다시 조회</button></p>}
+      {aiMsg && <p className={aiMsg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{aiMsg.text}{aiMsg.type === 'err' && <button onClick={() => {setReviewed([]); reload();}}>최신 자료 다시 조회</button>}</p>}
       <div className="a-filters">
         <select value={exFilter} onChange={(e) => setFilter('exhibition', e.target.value)} aria-label="전시 필터">
           <option value="">전체 전시</option>
@@ -118,7 +129,7 @@ export function ArtworkList() {
           <thead>
             <tr>
               <th style={{ width: 64 }} />
-              <th>작품명</th>
+              <th>검토 완료 / 작품명</th>
               <th>작가</th>
               <th>연도</th>
               <th>전시실</th>
@@ -135,7 +146,7 @@ export function ArtworkList() {
                   <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w, true)} alt="" ratio={1} />
                 </td>
                 <td>
-                  <strong>{w.title}</strong>
+                  <label onClick={e => e.stopPropagation()}><input type="checkbox" disabled={!hasSuggestions(w)} checked={reviewed.includes(w.id)} onChange={e => setReviewed(old => e.target.checked ? [...old, w.id] : old.filter(id => id !== w.id))} aria-label={`${w.title} 제안 내용 검토 완료`} /> 검토 완료</label><strong>{w.title}</strong><details onClick={e => e.stopPropagation()}><summary>확정 대상 내용 보기</summary><p>{w.summaryStatus === 'suggested' ? w.summary : '요약 제안 없음'}</p><p>{w.guideIntro}</p><p>{w.guidedLooking.join(' / ')}</p><p>{JSON.stringify(w.analysis)} · {JSON.stringify(w.tagScores)}</p></details>
                 </td>
                 <td>{w.artist}</td>
                 <td>{w.year}</td>
@@ -194,7 +205,7 @@ export function ArtworkEdit() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const isNew = id === 'new';
-  const { data } = useAsync(
+  const { data, error, reload } = useAsync(
     () => Promise.all([api.listAdminExhibitions(), isNew ? Promise.resolve(null) : api.getAdminArtwork(id!)]),
     [id],
   );
@@ -207,6 +218,7 @@ export function ArtworkEdit() {
     setW(initial);
   }, [data, params]);
 
+  if (error) return <><PageHead title="작품 등록·수정" desc={error} /><button onClick={reload}>다시 조회</button><button onClick={() => navigate('/admin/artworks')}>목록으로</button></>;
   if (!data || !w) return <PageHead title="작품 등록·수정" desc="불러오는 중…" />;
 
   const exhibitions = data[0];
@@ -313,7 +325,7 @@ export function ArtworkEdit() {
         <section className="a-card pad">
           <h2>설명 및 검수</h2>
           <label className="a-field">
-            <span>작품 해설 (미술관 공식 해설 원문 — 사용자 「작품 해설」 탭에 그대로 표시)</span>
+            <span>작품 해설 원문 (출처 확인 후 사용자 「작품 해설」 탭에 표시)</span>
             <textarea rows={8} value={w.description} onChange={(e) => set('description', e.target.value)} />
           </label>
           <p className="muted small" style={{ marginTop: -6 }}>
@@ -366,6 +378,7 @@ function ImageField({
   setW: (f: (cur: Artwork | null) => Artwork | null) => void;
   set: <K extends keyof Artwork>(k: K, v: Artwork[K]) => void;
 }) {
+  const confirmAction = useConfirm();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
@@ -399,7 +412,7 @@ function ImageField({
   };
 
   const removeFile = async () => {
-    if (!confirm('올린 이미지 파일을 삭제할까요?')) return;
+    if (!(await confirmAction('올린 이미지 파일을 삭제할까요?'))) return;
     applyServer(await api.deleteArtworkImage(w.id));
   };
 
@@ -491,14 +504,15 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
           guidedLooking: r.artwork.guidedLooking,
           guidedHints: r.artwork.guidedHints,
           guideStatus: r.artwork.guideStatus,
-          updatedAt: r.artwork.updatedAt,
+          updatedAt: r.artwork.updatedAt, version: r.artwork.version, contentVersion: r.artwork.contentVersion, sourceVersion: r.artwork.sourceVersion,
         },
       );
       const notes = [
         r.emotion.ok ? '취향 태그·감정 분석 완료 (태그 제안은 위 「취향 태그」에서 확인)' : `AI 분석 실패: ${r.emotion.error}`,
         r.summary.ok
           ? {
-              claude: '요약·가이드: Claude',
+              provider: '분석 서비스 초안',
+            claude: '요약·가이드: Claude',
               kanana: '요약·가이드: Kanana(로컬 모델)',
               fallback: '요약: AI 서버의 글쓰기 모델을 쓸 수 없어 원문 앞부분으로 대신했어요',
               kept: '요약·가이드는 이미 확정되어 있어 그대로 둠',

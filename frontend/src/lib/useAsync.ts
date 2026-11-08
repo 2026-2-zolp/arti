@@ -14,6 +14,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setData(null);
     setError(null);
     fn()
       .then((d) => !cancelled && setData(d))

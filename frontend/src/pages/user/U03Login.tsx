@@ -74,7 +74,7 @@ export default function U03Login() {
         </button>
       </div>
 
-      <p className="demo-hint">데모 계정: demo@arti.app / arti1234</p>
+      <p className="muted">가입한 계정으로 로그인해 주세요. 기본 데모 계정은 제공하지 않습니다.</p>
     </MobileShell>
   );
 }

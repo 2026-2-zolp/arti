@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "asOf": "2026-11-08",
-  "scope": "dev/임준억 회고 커밋 정리: W01~W04 증거 포함",
+  "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
   "tasks": [
     {
       "id": "W01",
@@ -83,7 +83,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC11",
@@ -305,7 +305,7 @@
       "dependsOn": [
         "G3"
       ],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC11",
         "AC12",
@@ -315,7 +315,9 @@
         "AC16",
         "AC17"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W05/gate-review.md"
+      ]
     },
     {
       "id": "G5",
@@ -552,8 +554,13 @@
       "criterion": "생성→별도항목수정→저장→재조회 후 guide/summary/tag/emotion의 값·검수 상태 보존. 승인 원문/출처 버전 변경 시 기존 summary/guide를 stale 또는 확정해제로 처리하고 공개/AI근거에서 제외, 재검수 후에만 재노출",
       "evidence": "API round-trip와 화면 증거",
       "reviewer": "데이터",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC12",
@@ -562,8 +569,13 @@
       "criterion": "draft/closed 등 전시운영정책과 pending/source_check 작품·suggested AI필드가 공개 목록/상세/질문/해설에서 제한됨. 관리자만 미리보기 가능, 준비중 전시 직접 URL도 검사",
       "evidence": "상태 조합 API 검사",
       "reviewer": "데이터",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC13",
@@ -572,8 +584,13 @@
       "criterion": "취향/시간/전시 변경시 추천·진행 상태 정책 적용, 늦은 응답이 최신 결과를 덮지 않음. 고정 선택·반대 빈도·사용자수정 예시의 기대 프로필/점수/추천근거가 계약과 일치하고 선택 원본 저장·재조회 일치. 추천 목록이 반드시 달라야 한다는 조건은 사용하지 않음",
       "evidence": "경합 검사·화면 기록",
       "reviewer": "사용자",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC14",
@@ -582,8 +599,13 @@
       "criterion": "회원 관람은 같은 visit 중복POST/재시도로 DB1건 저장, AI실패와 무관하게 기록 저장·재조회·합의필드 보존. guest 기본정책은 DB미저장·영수증제공이며 가입없이 이용·미저장안내가 일치해야 함. guest서버저장/회원이관을 채택하면 D05/D06와 검사를 함께 변경",
       "evidence": "DB건수·재시도/오류 검사",
       "reviewer": "데이터",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC15",
@@ -592,8 +614,13 @@
       "criterion": "회원/관리자·타인기록·401/logout·관람/계정 대화 격리를 확인. U10→U11에 작품/탭/원문·요약·질문ID·필요한최근대화 전달, 복귀시 탭·확장·힌트·스크롤 유지. 실제LLM 없이도 맥락 payload와 UI복귀 검증. 사용자에게 보던질문/해설에서 이어짐이 드러나야 하고, 관찰답 입력이 없는데 사용자의 생각을 지어내지 않음",
       "evidence": "2계정/guest 권한 검사",
       "reviewer": "기술",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC16",
@@ -602,8 +629,13 @@
       "criterion": "정확한 10점5쌍·중복/누락 선택 제어·선택풀 부족·후보0·404·오프라인·저장실패에 명시 안내/재시도, 무한로딩 없음. 비밀번호 재설정은 실제 발송/재설정 성공 또는 명시적인 기능 제거·비활성 및 안내를 확인. 후보집계0은 전시전체의 소재부재를 뜻하지 않음. 미검수/위치미등록/태그미준비와 실제추천불가를 혼동하지 않는 안내·운영준비 체크",
       "evidence": "실패별 화면 결과",
       "reviewer": "사용자",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
     },
     {
       "id": "AC17",
@@ -612,8 +644,14 @@
       "criterion": "로컬 고유 작품/태그/검수/분석/좌표/도면이 있으면 데이터 export와 대응파일 일관성을 보존·이전검증. 없으면 재생성근거 기록. 회원/세션 전체 이관을 기본요구로 두지 않으며 scrypt 정책 별도검증. 회신대기는 이관완료가 아니며 자료확보 또는 명시적 인수제외/재생성 결정과 보존근거가 필요",
       "evidence": "이전·복구 로그 또는 부재확인",
       "reviewer": "데이터",
-      "status": "not_run",
-      "evidencePaths": []
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/data-intake-decision.md",
+        "records/W05/data-and-browser-db.json"
+      ]
     },
     {
       "id": "AC18",

@@ -12,10 +12,11 @@ import { useAsync } from '../../lib/useAsync';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
-import { removeReactionLog, upsertReactionLog } from '../../lib/reactionLog';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Reaction } from '../../types';
+import { load, save } from '../../lib/storage';
+import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
+import type { Reaction, EntryContext } from '../../types';
 
 const LIKE_REASONS = ['색감이 좋아요', '구도가 편해요', '분위기가 좋아요', '형태가 흥미로워요'];
 const DISLIKE_REASONS = ['색감이 별로예요', '비율이 이상해요', '분위기가 맞지 않아요', '형태가 어색해요'];
@@ -27,11 +28,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 /** 관리자가 확정한 관람가이드가 없는 작품에 보여 줄 기본 관찰 팁 (백엔드 BASIC_LOOKING_TIPS와 같은 내용) */
-const BASIC_TIPS = [
-  '그림에서 가장 밝은 곳을 먼저 찾아보세요. 눈이 가장 먼저 가는 곳이에요.',
-  '화면에서 가장 넓게 쓰인 색은 무엇인가요?',
-  '조금 떨어져서 한 번, 가까이 다가가서 한 번 보세요. 무엇이 달라 보이나요?',
-];
+const BASIC_TIPS = BASIC_LOOKING_TIPS;
 
 export default function U10Artwork() {
   const navigate = useNavigate();
@@ -52,22 +49,28 @@ export default function U10Artwork() {
   const descRef = useRef<HTMLParagraphElement>(null);
   const tts = useSpeech();
 
-  const { data: w, loading } = useAsync(
+  const { data: w, loading, error, reload } = useAsync(
     () => (rec ? api.getArtwork(rec.artworkId) : Promise.resolve(null)),
     [rec?.artworkId],
   );
 
-  // 작품이 바뀌면 탭·원문 보기 상태 초기화
+  const readingKey = w ? scopeKey(state, w.id, w.contentVersion ?? 1) + '.reading' : '';
+  const restored = useRef('');
+  const [hydratedKey, setHydratedKey] = useState('');
+  useLayoutEffect(() => {
+    if (!readingKey || restored.current === readingKey) return;
+    const r = load<ReadingState | null>(readingKey, null, 'session');
+    setTab(r?.tab ?? 'desc'); setSummaryOn(r?.summaryOn ?? false); setExpanded(r?.expanded ?? false); setOpenHints(r?.openHints ?? []);
+    setAsk(null); setCustomOn(false); setCustomText(''); restored.current = readingKey; setHydratedKey(readingKey);
+    const id = requestAnimationFrame(() => { const body = document.querySelector('.m-body'); if (body) body.scrollTop = r?.scroll ?? 0; });
+    return () => cancelAnimationFrame(id);
+  }, [readingKey]);
   useEffect(() => {
-    setTab('desc');
-    setExpanded(false);
-    setSummaryOn(false);
-    setOpenHints([]);
-    setAsk(null);
-    setCustomOn(false);
-    setCustomText('');
-  }, [rec?.artworkId]);
-
+    if (!readingKey || hydratedKey !== readingKey) return;
+    const persist = () => save(readingKey, {...load<ReadingState | null>(readingKey, null, 'session'), tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0}, 'session');
+    const body = document.querySelector('.m-body'); persist(); body?.addEventListener('scroll', persist, {passive: true}); window.addEventListener('pagehide', persist);
+    return () => {persist(); body?.removeEventListener('scroll', persist); window.removeEventListener('pagehide', persist);};
+  }, [readingKey, hydratedKey, tab, summaryOn, expanded, openHints]);
   // 접힌 원문이 실제로 잘렸는지 측정 (펼친 상태에서는 「접기」를 위해 그대로 둔다)
   useLayoutEffect(() => {
     const el = descRef.current;
@@ -115,7 +118,6 @@ export default function U10Artwork() {
     // 창이 닫혀 있고 이미 같은 반응이면 반응 취소
     if (reaction === r && !ask) {
       dispatch({ type: 'react', artworkId: rec.artworkId, reaction: null });
-      removeReactionLog(rec.artworkId);
       return;
     }
     openReason(r);
@@ -125,7 +127,6 @@ export default function U10Artwork() {
     const text = reason.trim();
     if (!ask || !text) return;
     dispatch({ type: 'react', artworkId: rec.artworkId, reaction: ask, reason: text });
-    upsertReactionLog({ artworkId: rec.artworkId, reaction: ask, reason: text });
     setAsk(null);
   };
 
@@ -160,6 +161,14 @@ export default function U10Artwork() {
     setSummaryOn((v) => !v);
   };
 
+  const goDocent = (questionIndex = 0) => {
+    if (!w || !readingKey) return;
+    const entry: EntryContext = tab === 'desc'
+      ? {tab, kind: showSummary ? 'summary' : 'original', contentVersion: w.contentVersion ?? 1}
+      : {tab, kind: hasGuide && w.guidedLooking.length ? 'guide' : 'generic_tip', contentVersion: w.contentVersion ?? 1, questionIndex, ...(!(hasGuide && w.guidedLooking.length) ? {tipVersion: 'basic-v1' as const} : {})};
+    save(readingKey, {tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0, entry}, 'session');
+    navigate(to('/artwork/ask'));
+  };
   const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`));
 
   return (
@@ -200,7 +209,7 @@ export default function U10Artwork() {
         </div>
       }
     >
-      {loading || !w ? (
+      {error ? <p role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={() => navigate(to('/route'))}>지도로 돌아가기</button></p> : loading || !w ? (
         <Spinner />
       ) : (
         <>
@@ -265,7 +274,7 @@ export default function U10Artwork() {
               <>
                 {showSummary ? (
                   <>
-                    <span className="ai-label">AI 요약 · 미술관 해설 기반</span>
+                    <span className="ai-label">AI 요약 · 검수된 작품 자료 기반</span>
                     <p>{w.summary}</p>
                   </>
                 ) : (
@@ -300,6 +309,7 @@ export default function U10Artwork() {
                   {questions.map((q, i) => (
                     <li key={`${i}-${q}`}>
                       {q}
+                      <button className="link-btn" onClick={() => goDocent(i)}>이 질문으로 내 생각 이야기하기</button>
                       {hints[i] && (
                         <>
                           {' '}
@@ -321,8 +331,8 @@ export default function U10Artwork() {
               <Icon name={tts.speaking ? 'stop' : 'speaker'} size={20} />
               {tts.speaking ? '재생 중지' : '음성 설명 듣기'}
             </button>
-            <button className="btn outline" onClick={() => navigate(to('/artwork/ask'))}>
-              <Icon name="chat" size={20} /> AI에게 질문하기
+            <button className="btn outline" onClick={() => goDocent(0)}>
+              <Icon name="chat" size={20} /> {tab === 'guided' ? '내 생각 이야기하기' : '이 부분 더 알아보기'}
             </button>
           </div>
 

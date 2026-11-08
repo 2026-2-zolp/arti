@@ -236,8 +236,8 @@ class FoundationTests(TestCase):
     def test_health_readiness_and_unimplemented_are_honest(self):
         self.assertEqual(self.client.get('/api/health').json()['ai'], 'not-connected')
         self.assertEqual(self.client.get('/api/ready').status_code, 200)
-        self.assertEqual(self.client.post('/api/artworks/fixture-art01/ask', {'question':'test'}, format='json').status_code, 501)
-        self.assertEqual(self.client.post('/api/visits', {}, format='json').status_code, 501)
+        self.assertEqual(self.client.post('/api/artworks/fixture-art01/ask', {'question':'test'}, format='json').status_code, 503)
+        self.assertEqual(self.client.post('/api/visits', {}, format='json').status_code, 400)
         missing = self.client.get('/api/nonexistent')
         self.assertEqual(missing.status_code, 404)
         self.assertEqual(set(missing.json()), {'error', 'code', 'retryable', 'requestId'})

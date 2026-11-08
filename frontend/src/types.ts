@@ -74,6 +74,7 @@ export interface FloorPlan {
 }
 
 export interface Exhibition {
+  version?: number;
   id: string;
   title: string;
   subtitle: string;
@@ -87,6 +88,11 @@ export interface Exhibition {
 }
 
 export interface Artwork {
+  version?: number;
+  sourceVersion?: number;
+  contentVersion?: number;
+  summaryRevision?: number;
+  guideRevision?: number;
   id: string;
   exhibitionId: string;
   title: string;
@@ -147,6 +153,8 @@ export interface Recommendation {
 export type Reaction = 'like' | 'dislike';
 
 export interface User {
+  tasteProfile?: TasteProfile | null;
+  tasteProfileVersion?: number;
   id: string;
   email: string;
   nickname: string;
@@ -157,6 +165,15 @@ export interface User {
 
 /** 관람 1회 기록 (아트 영수증 데이터) */
 export interface VisitRecord {
+  visitId?: string;
+  persisted?: boolean;
+  tasteProfile?: TasteProfile;
+  tastes?: TasteTag[];
+  selectedDuration?: VisitDuration;
+  requestGeneration?: number;
+  reactionReasons?: Record<string, string>;
+  dwell?: Record<string, number>;
+  artworkSnapshots?: Artwork[];
   id: string;
   userId: string | null;
   exhibitionId: string;
@@ -176,7 +193,25 @@ export interface VisitRecord {
 }
 
 export interface ChatMessage {
+  mode?: 'llm' | 'fallback' | 'refusal';
+  sourceRefs?: unknown[];
   id: string;
   role: 'user' | 'ai';
   text: string;
 }
+
+export interface TasteProfile {
+  version: 1;
+  source: 'picks' | 'saved' | 'manual';
+  poolVersion: string | null;
+  picks: { pairIndex: number; artworkId: string }[];
+  counts: Partial<Record<TasteTag, number>>;
+  selectedTags: TasteTag[];
+  savedProfileVersion?: number;
+}
+export interface EntryContext {
+  tab: 'desc' | 'guided'; kind: 'original' | 'summary' | 'guide' | 'generic_tip';
+  contentVersion: number; questionIndex?: number; tipVersion?: 'basic-v1';
+  excerpt?: { start: number; end: number };
+}
+export interface DocentAnswer { answer: string; mode: 'llm' | 'fallback' | 'refusal'; sourceRefs: unknown[]; requestId?: string }

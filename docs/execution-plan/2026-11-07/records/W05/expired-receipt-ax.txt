@@ -1,0 +1,51 @@
+Browser tab: 5, Title: "ARTI", URL: "http://localhost:5178/exhibitions/fixture-ex01/receipt".
+1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-ex01/receipt
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 아트 영수증, Value: 1
+				6 text 아트 영수증
+		7 container
+			8 heading 오늘의 관람이 완성됐어요, Value: 2
+				9 text 오늘의 관람이 완성됐어요
+			12 container 아트 영수증
+				13 container
+					14 heading ART RECEIPT, Value: 3
+						15 text ART RECEIPT
+					16 text ARTI 개발 검증 전시 가상 전시실
+				17 definition list
+					18 container 관람 날짜
+						19 text 관람 날짜
+					20 text 2026.11.08 (일)
+					21 container 관람 시간
+						22 text 관람 시간
+					23 container
+						24 text 1 분
+				25 definition list
+					26 container 관람 작품
+						27 text 관람 작품
+					28 container
+						29 text 0 점
+					30 container 추천 작품
+						31 text 추천 작품
+					32 container
+						33 text 3 점
+					34 container 선호 표시
+						35 text 선호 표시
+					36 container
+						37 text 0 회
+					38 container 가장 오래 본 작품
+						39 text 가장 오래 본 작품
+					40 text 검증용 작품 01
+				41 text 오늘 본 작품
+				42 text 오늘의 취향 키워드 풍경
+				43 text 오늘 본 작품을 기억해두세요.
+			44 button 이미지 저장·공유
+			45 text 아직 관람기록이 저장되지 않았어요. 로그인이 만료됐어요. 같은 계정으로 로그인한 뒤 마이페이지에서 미저장 기록을 복구해 주세요.
+			46 button 저장 재시도
+			47 button 로그인 후 미저장 기록 복구
+			48 button (disabled) 취향 해석 보기
+				49 text 취향 해석  보기
+		11 button 관람 완료
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-ex01/receipt

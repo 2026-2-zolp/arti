@@ -1,3 +1,4 @@
+import {useConfirm} from '../../components/Confirmation';
 /**
  * A-05 위치·지도 관리
  * - 미술관 평면도(안내도) 캡처 이미지를 올리면 그 이미지가 지도가 된다 (없으면 전시실 사각형 기본 평면도)
@@ -21,9 +22,9 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
 
 export default function A05Map() {
   const [params, setParams] = useSearchParams();
-  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listAdminExhibitions(), []);
+  const { data: exhibitions, setData: setExhibitions, error: exError, reload: reloadEx } = useAsync(() => api.listAdminExhibitions(), []);
   const exId = params.get('exhibition') ?? exhibitions?.[0]?.id ?? '';
-  const { data: artworks, setData: setArtworks } = useAsync(
+  const { data: artworks, setData: setArtworks, error: artError, reload: reloadArt } = useAsync(
     () => (exId ? api.listAdminArtworks(exId) : Promise.resolve([] as Artwork[])),
     [exId],
   );
@@ -37,6 +38,7 @@ export default function A05Map() {
   }, [selectedId]);
 
   const ex = exhibitions?.find((e) => e.id === exId);
+  if (exError || artError) return <><PageHead title="위치·지도 관리" desc={exError ?? artError ?? ''} /><button onClick={() => {reloadEx(); reloadArt();}}>다시 조회</button></>;
   if (!ex || !artworks) return <PageHead title="위치·지도 관리" desc="불러오는 중…" />;
 
   const selected = artworks.find((w) => w.id === selectedId) ?? null;
@@ -125,8 +127,8 @@ export default function A05Map() {
             ex={ex}
             positioned={artworks.filter((w) => w.position).length}
             onSaved={(saved, text) => {
-              applyExhibition(saved);
-              setMsg({ type: 'ok', text });
+              applyExhibition(saved); reloadArt();
+              setMsg({ type: 'ok', text: text + ' 작품 좌표는 새 도면 기준으로 다시 확인해 주세요.' });
             }}
             onError={fail}
           />
@@ -257,6 +259,7 @@ function FloorPlanField({
   onSaved: (ex: Exhibition, text: string) => void;
   onError: (e: unknown) => void;
 }) {
+  const confirmAction = useConfirm();
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const plan = ex.floorPlan;
@@ -274,7 +277,7 @@ function FloorPlanField({
       if (
         positioned > 0 &&
         (ratioChanged || !plan) &&
-        !confirm(`이미 위치를 지정한 작품이 ${positioned}점 있어요. 새 평면도를 올리면 위치가 어긋날 수 있으니 올린 뒤 마커 위치를 확인해 주세요. 계속할까요?`)
+        !(await confirmAction(`이미 위치를 지정한 작품이 ${positioned}점 있어요. 새 평면도로 바꾸면 기존 좌표는 미배정으로 돌아갑니다. 다시 위치를 지정할까요?`))
       )
         return;
       const saved = await api.uploadFloorPlan(ex.id, file, width, height);
@@ -287,7 +290,7 @@ function FloorPlanField({
   };
 
   const remove = async () => {
-    if (!confirm('평면도 이미지를 삭제할까요? 지도는 전시실 사각형 기본 평면도로 돌아가요.')) return;
+    if (!(await confirmAction('평면도 이미지를 삭제할까요? 기본 평면도로 돌아가며 작품 좌표는 다시 지정해야 해요.'))) return;
     try {
       onSaved(await api.deleteFloorPlan(ex.id), '평면도 이미지를 삭제했어요.');
     } catch (e) {
@@ -365,13 +368,13 @@ function RoomsEditor({ ex, artworks, onSave }: { ex: Exhibition; artworks: Artwo
 
   const remove = (r: Room) => {
     const n = count(r.id);
-    if (n > 0 && !confirm(`'${r.name}'에 작품 ${n}점이 있어요. 삭제하면 이 작품들은 「전시실 미지정」이 돼요. 삭제할까요?`)) return;
+    if (n > 0) return; // Move artworks explicitly before removing a room.
     setRooms(rooms.filter((x) => x.id !== r.id));
   };
 
   return (
     <div className="a-card pad">
-      <h2>전시실</h2>
+      <h2>전시실</h2><p className="muted small">작품이 배정된 전시실은 작품을 먼저 옮긴 뒤 삭제할 수 있어요.</p>
       <ul className="a-room-list">
         {rooms.map((r) => (
           <li key={r.id}>
@@ -382,7 +385,7 @@ function RoomsEditor({ ex, artworks, onSave }: { ex: Exhibition; artworks: Artwo
               onChange={(e) => setRooms(rooms.map((x) => (x.id === r.id ? { ...x, name: e.target.value } : x)))}
             />
             <span className="muted small">{count(r.id)}점</span>
-            <button type="button" className="a-btn sm" onClick={() => remove(r)}>
+            <button type="button" className="a-btn sm" disabled={count(r.id) > 0} title={count(r.id) > 0 ? '작품을 먼저 다른 전시실이나 미지정으로 옮겨 주세요.' : undefined} onClick={() => remove(r)}>
               삭제
             </button>
           </li>

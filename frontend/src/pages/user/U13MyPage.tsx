@@ -8,6 +8,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import { PendingReceipts } from '../../components/PendingReceipts';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { TASTE_LABEL } from '../../data/mock';
@@ -40,6 +41,8 @@ export default function U13MyPage() {
         </button>
       }
     >
+
+      <PendingReceipts onRecovered={visits.reload} />
       <Lead title={`${user.nickname || '회원'}님, 안녕하세요`} />
 
       <div className="tabs" role="tablist">

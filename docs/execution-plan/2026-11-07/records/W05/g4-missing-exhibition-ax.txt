@@ -1,0 +1,21 @@
+Browser tab: 1, Title: "ARTI", URL: "http://localhost:5178/exhibitions/fixture-g4-missing".
+1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-g4-missing
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading ARTI, Value: 1
+				6 text ARTI
+			7 link Description: 마이페이지, Value: localhost:5178/mypage
+		8 container
+			9 heading 나만의 시선으로 만나는 미술관, Value: 2
+				10 text 나만의 시선으로 만나는 미술관
+			11 text AI가 추천하고, 작품을 보는 방법까지 안내합니다.
+			12 image 작품 앞에 선 관람객 일러스트
+			13 text 전시 정보를 찾을 수 없어요.
+			14 button 다시 불러오기
+			15 link Description: 전시 목록으로, Value: localhost:5178/
+		16 container
+			17 button (disabled) 관람 시작하기
+			18 text 입구 QR 또는 전시 URL로 접속
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-g4-missing

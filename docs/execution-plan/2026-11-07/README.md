@@ -24,12 +24,14 @@
 
 ## 단계별 증거
 
+- [W05 구현·검증 완료](records/W05/README.md) / [G4 통과](records/W05/gate-review.md): 복구·관리자·예외 재시험 및 명시 Git기준 인수 결정을 반영했다.
+
 - [W01 / G0 검토](records/W01/gate-review.md)
 - [W02 / G1 검토](records/W02/gate-review.md)
 - [W03 / G2 검토](records/W03/gate-review.md)
 - [W04 / G3 검토](records/W04/gate-review.md)
 
-W04 로컬 API/DB/Compose와 React 최소 흐름까지 검증했다. [새 API 실행 안내](../../../backend-django/README.md). 다음은 W05. 실제 자료이전·모델·AWS·CI/CD·실기기 전체여정은 아직 미통과다.
+W04 로컬 API/DB/Compose와 React 최소 흐름까지 검증했다. [새 API 실행 안내](../../../backend-django/README.md). W05/G4도 통과했다. 다음 W06 자료 준비와 W07 실제 모델, W11 CI 등은 기존 의존관계에 따라 진행한다. 로컬 고유자료 별도 이전·실모델·AWS·CI/CD 실행·실기기 전체여정은 미통과다.
 
 ## 과거 자료
 
