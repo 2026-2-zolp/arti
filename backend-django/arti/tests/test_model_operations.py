@@ -69,6 +69,8 @@ class ModelOperationTests(Helpers,TransactionTestCase):
             response=self.call();self.assertEqual(response.status_code,200,response.content)
             self.assertEqual(state['calls'],1)
             self.work.refresh_from_db()
+            from django.utils.dateparse import parse_datetime
+            self.assertIsNotNone(parse_datetime(self.work.analysis['analyzedAt']))
             self.assertEqual(self.work.tag_status,'suggested');self.assertEqual(self.work.emotion_status,'suggested')
             self.assertEqual(self.work.review_status,'approved')
 

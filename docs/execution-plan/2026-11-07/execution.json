@@ -94,6 +94,13 @@
     "scope": "37 issues evidence reconciliation; no human/cloud/PR gate promotion",
     "snapshot": "records/reconciliation-2026-11-09/before-issues.json"
   },
+  "modelFailureJourneyReview": {
+    "record": "records/journey/model-fault-2026-11-09/README.md",
+    "status": "isolated browser fault/recovery checks pass",
+    "scope": "loading503/busy429/model HTTP timeout/stopped service/restart and local drafts/storage",
+    "formalGatesUnchanged": true,
+    "nextWork": "W12 operating decision draft"
+  },
   "tasks": [
     {
       "id": "W01",

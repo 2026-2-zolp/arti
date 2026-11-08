@@ -24,7 +24,7 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 
 export class ApiError extends Error {
-  constructor(message: string, public status = 0, public code = '') {
+  constructor(message: string, public status = 0, public code = '', public retryAfterSeconds?:number) {
     super(message);
   }
 }
@@ -97,7 +97,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new ApiError(data?.error ?? '요청을 처리하지 못했어요.', res.status, data?.code);
+  if (!res.ok) {
+    const wait=Number(res.headers.get('Retry-After'));
+    throw new ApiError(data?.error ?? '요청을 처리하지 못했어요.', res.status, data?.code,
+      Number.isInteger(wait) && wait>0 && wait<=300 ? wait : undefined);
+  }
   const remember = (item: { id?: string; version?: number; exhibitionId?: string }) => {
     if (item?.id && item.version) versions.set(`/admin/${item.exhibitionId ? 'artworks' : 'exhibitions'}/${enc(item.id)}`, item.version);
   };
@@ -218,13 +222,14 @@ export const api = {
     remove(ADMIN_TOKEN);
   },
 
-  /** A-04 AI 분석: 태그·감정 분석(ai-service) + 해설 요약·관람가이드 초안(Claude 또는 로컬 모델 Kanana) → 「AI 제안」으로 저장 */
+  /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
   analyzeArtwork: (id: string, useImage = true) =>
     request<{
       artwork: Artwork;
-      emotion: { ok: true } | { ok: false; error: string };
+      tag?: {ok:boolean; made?:boolean};
+      emotion: ({ ok: true } | { ok: false; error: string }) & {made?:boolean};
       /** claude = Claude API, kanana = 로컬 모델(ai-service), fallback = 원문 앞 2문장, kept = 이미 확정이라 그대로 둠 */
-      summary: { ok: true; source: 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string };
+      summary: ({ ok: true; source: 'provider' | 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string }) & {made?:boolean};
       /** 관람가이드를 새로 제안했는지 (만들 수 없거나 이미 확정이면 false) */
       guide?: { made: boolean };
     }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage, version: versions.get(`/admin/artworks/${enc(id)}`) }),

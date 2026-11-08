@@ -1,6 +1,7 @@
 # 텍스트 생성과 태그·감정 분석의 제공자 경계를 관리합니다.
 """Explicit provider boundary; disabled by default, never fake success/fallback."""
 from django.conf import settings
+from django.utils import timezone
 from .http import ContractError
 
 
@@ -19,7 +20,7 @@ def generate(kind, snapshot, **context):
                 cache['error'] = exc
                 raise
         result = cache['result']
-        return {'scores': result['tags']} if kind == 'tag' else result
+        return {'scores': result['tags']} if kind == 'tag' else result | {'analyzedAt': timezone.now().isoformat()}
     if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
         from .llm import generate_text
         return generate_text(kind, snapshot, **context)

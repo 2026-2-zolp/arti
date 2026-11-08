@@ -1,0 +1,57 @@
+{
+  "sourceHead": "37a2484",
+  "scope": "synthetic fault service, actual browser/Django/PostgreSQL; not native model quality",
+  "finalHttpStatuses": [
+    503,
+    429,
+    504,
+    503,
+    200
+  ],
+  "failureSnapshotsUnchanged": true,
+  "lateReplyAfter33SecondsDoesNotWrite": true,
+  "protectedConfirmedContentUnchanged": true,
+  "singleRecoveryModelCall": true,
+  "versionBefore": 2,
+  "versionAfter": 3,
+  "rows": {
+    "artworks": 13,
+    "visits": 0,
+    "reactions": 0
+  },
+  "unsavedInputsPreserved": true,
+  "serverTimestampPresent": true,
+  "frontend": {
+    "tests": 23,
+    "typecheck": true,
+    "build": true
+  },
+  "postgres": {
+    "tests": 97,
+    "seconds": 48.354
+  },
+  "paidOrNativeModelCalls": 0,
+  "formalGatePromotion": false,
+  "remotePush": false,
+  "notBrowserExercised": [
+    "502 during in-flight native process termination",
+    "90 second client abort",
+    "real mobile device"
+  ],
+  "eventLogCaveat": "Middle timeout calls include first misconfigured whole regression; final slow request occurs after test address isolation",
+  "planErrors": 0,
+  "guardrailsPassed": 32,
+  "protectedFilesPreserved": 38,
+  "inputHashes": {
+    "backend-django/arti/providers.py": "fdce3775fda2bbc31d90171a936c89da8a02e3118db994f3cd2b0f3c26e3a7fe",
+    "backend-django/arti/tests/test_model_operations.py": "8dd49bb5d1ba433a145aad2c54e656f1c199838726573b0cd435e8059a030c4e",
+    "frontend/src/api/client.ts": "c851f246b29c63ba63524969c388c5efe485aec6abda83c4506ec0adcc3e7eb9",
+    "frontend/src/lib/adminAnalysis.ts": "9c9480cce7328627d2382ac1b89b1ce9b1467d25a0839b2250046c7e2505e3bc",
+    "frontend/src/pages/admin/A04Artworks.tsx": "ae46fb236e34fea96274b16d30919c30e3d5ec536a549e152847a3615ccd4377",
+    "frontend/tests/adminAnalysis.test.mts": "f224eefe29bee896891e1dab76bf32632e4befc0cdc7ac220b3fe579203d6cd8"
+  },
+  "frontendEnvironment": "Windows host: npm run typecheck; npm test; npm run build. Browser frontend: Node22 Alpine/Vite.",
+  "isolatedContainersAndNetworkRemoved": true,
+  "isolatedPostgresMediaVolumesPreserved": true,
+  "inputHashScope": "Local working-file bytes"
+}

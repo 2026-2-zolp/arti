@@ -7,7 +7,8 @@ import {useConfirm} from '../../components/Confirmation';
  * - /admin/artworks/:id    : 작품 수정
  * 작품 해설과 AI 응답 데이터의 신뢰성을 위해 출처·참고자료·검수 상태를 함께 관리한다.
  */
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import {analysisFailure, analysisTime, mergeAnalysis} from '../../lib/adminAnalysis';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -485,31 +486,18 @@ function ImageField({
 function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => Artwork | null) => void }) {
   const [useImage, setUseImage] = useState(true);
   const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const run = async () => {
+    if (inFlight.current) return;
+    inFlight.current=true;
     setBusy(true);
     setMsg(null);
     try {
       const r = await api.analyzeArtwork(w.id, useImage);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
-      setW((cur) =>
-        cur && {
-          ...cur,
-          analysis: r.artwork.analysis,
-          tagStatus: r.artwork.tagStatus,
-          tagScores: r.artwork.tagScores,
-          emotionStatus: r.artwork.emotionStatus,
-          summary: r.artwork.summary,
-          summaryKeywords: r.artwork.summaryKeywords,
-          summaryStatus: r.artwork.summaryStatus,
-          guideIntro: r.artwork.guideIntro,
-          guidedLooking: r.artwork.guidedLooking,
-          guidedHints: r.artwork.guidedHints,
-          guideStatus: r.artwork.guideStatus,
-          updatedAt: r.artwork.updatedAt, version: r.artwork.version, contentVersion: r.artwork.contentVersion, sourceVersion: r.artwork.sourceVersion,
-        },
-      );
+      setW((cur) => cur && mergeAnalysis(cur,w,r));
       const notes = [
         r.emotion.ok ? '취향 태그·감정 분석 완료 (태그 제안은 위 「취향 태그」에서 확인)' : `AI 분석 실패: ${r.emotion.error}`,
         r.summary.ok
@@ -529,8 +517,9 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
-      setMsg({ type: 'err', text: e instanceof Error ? e.message : 'AI 분석에 실패했어요.' });
+      setMsg({ type: 'err', text: analysisFailure(e) });
     } finally {
+      inFlight.current=false;
       setBusy(false);
     }
   };
@@ -572,11 +561,11 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
             </label>
           )}
           <button type="button" className="a-btn primary" disabled={busy} onClick={run}>
-            {busy ? 'AI 분석 중… (1분 안팎)' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
+            {busy ? 'AI 분석 중… 잠시 기다려 주세요' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
           </button>
         </div>
       </div>
-      {msg && <p className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{msg.text}</p>}
+      {msg && <p role={msg.type === 'err' ? 'alert' : 'status'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{msg.text}{msg.type === 'err' && <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>}</p>}
 
       <div className="ai-grid">
         <div className="ai-box">
@@ -594,7 +583,7 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
                 <br />
                 모델: {a.models.image} · {a.models.text}
                 <br />
-                분석 시각: {a.analyzedAt.slice(0, 16).replace('T', ' ')}
+                분석 시각: {analysisTime(a.analyzedAt)}
               </p>
               <div className="ai-actions">
                 {w.emotionStatus !== 'confirmed' ? (
