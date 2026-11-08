@@ -669,7 +669,8 @@
         "records/git-materials/README.md",
         "records/git-materials/audit.json",
         "records/W06/yoo-intake/README.md",
-        "records/W06/map-review/README.md"
+        "records/W06/map-review/README.md",
+        "../../operations/2026-11-09_유영국핵심3점_콘텐츠검수준비.md"
       ]
     },
     {
@@ -682,7 +683,8 @@
       "status": "not_run",
       "evidencePaths": [
         "records/git-materials/README.md",
-        "records/git-materials/audit.json"
+        "records/git-materials/audit.json",
+        "records/W07-quality/2026-11-09/README.md"
       ]
     },
     {
@@ -694,7 +696,8 @@
       "reviewer": "AI",
       "status": "not_run",
       "evidencePaths": [
-        "records/W07-live-smoke/2026-11-09/README.md"
+        "records/W07-live-smoke/2026-11-09/README.md",
+        "records/W07-quality/2026-11-09/README.md"
       ]
     },
     {
@@ -705,7 +708,9 @@
       "evidence": "질문별 판정·지연·원본근거",
       "reviewer": "AI",
       "status": "not_run",
-      "evidencePaths": []
+      "evidencePaths": [
+        "records/W07-quality/2026-11-09/README.md"
+      ]
     },
     {
       "id": "AC22",

@@ -1,0 +1,11 @@
+import tarfile,hashlib,json
+from pathlib import Path
+root=Path('/target');backup=Path('/backup')
+assert not any(root.iterdir()),'Refuse nonempty restore media'
+with tarfile.open(backup/'media.tar') as tar:
+ for m in tar.getmembers():
+  assert m.isfile() and Path(m.name).name==m.name and not m.name.startswith('.')
+ tar.extractall(root,filter='data')
+expected=json.loads((backup/'media-manifest.json').read_text());observed={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in root.iterdir() if p.is_file()}
+assert observed==expected
+print('Restored/verified synthetic media files:',len(observed))
