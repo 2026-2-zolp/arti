@@ -1,0 +1,89 @@
+{
+  "reviewer": "visitor/content independent AI persona; not human approval",
+  "initial": {
+    "scores": {
+      "Q01": {
+        "grounding": 2,
+        "clarity": 2
+      },
+      "Q02": {
+        "grounding": 1,
+        "clarity": 2
+      },
+      "Q03": {
+        "grounding": 2,
+        "clarity": 1
+      },
+      "Q04": {
+        "grounding": 2,
+        "clarity": 2,
+        "observation": 2
+      },
+      "Q05": {
+        "grounding": 2,
+        "clarity": 2,
+        "observation": 2
+      },
+      "Q06": {
+        "grounding": 2,
+        "clarity": 2
+      },
+      "Q07": {
+        "grounding": 2,
+        "clarity": 2,
+        "observation": 2,
+        "continuity": 2
+      },
+      "Q08": {
+        "grounding": 2,
+        "clarity": 2,
+        "observation": 2,
+        "continuity": 1
+      },
+      "Q09": {
+        "grounding": 2,
+        "clarity": 2
+      },
+      "Q10": {
+        "grounding": 2,
+        "clarity": 2,
+        "observation": 2
+      },
+      "Q11": {
+        "grounding": 1,
+        "clarity": 2,
+        "observation": 2
+      },
+      "Q12": {
+        "grounding": 2,
+        "clarity": 2
+      }
+    },
+    "hardFailures": 0,
+    "points": 60,
+    "maximum": 64,
+    "mean": 1.875,
+    "judgment": "draft preparation that requires subsequent human review"
+  },
+  "targetedRetest": {
+    "ids": [
+      "Q02",
+      "Q03",
+      "Q08",
+      "Q11"
+    ],
+    "hardFailures": 0,
+    "points": 22,
+    "maximum": 22
+  },
+  "safetyRetest": {
+    "ids": [
+      "Q06",
+      "Q09"
+    ],
+    "hardFailures": 0,
+    "points": 8,
+    "maximum": 8
+  },
+  "limitation": "Separate selected6 retest, not a whole12 post-change rerun or 64/64 score."
+}

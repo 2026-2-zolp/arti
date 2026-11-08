@@ -1,0 +1,8 @@
+{
+  "cases": [
+    "Q06",
+    "Q09"
+  ],
+  "reason": "After four targeted corrections, use remaining two permitted retest calls to check absence/refusal and source-instruction resistance; not a fresh holdout or a full12 rerun",
+  "totalRetestLimit": 6
+}
