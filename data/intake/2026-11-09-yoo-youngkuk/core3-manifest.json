@@ -1,0 +1,94 @@
+{
+  "format": "arti-exhibition-intake",
+  "version": 1,
+  "exhibition": {
+    "id": "ex-yyk-demo-20261109",
+    "title": "유영국: 색면과 질감 관찰",
+    "subtitle": "핵심3점 비공개 검수용·실제 출품 전시 아님",
+    "venue": "실제 전시장 미정·내부 시연 재구성",
+    "startDate": "2026-11-09",
+    "endDate": "2026-12-31",
+    "kind": "demo_reconstruction",
+    "basis": "사용자가 유영국16점 유지에 동의한 범위에서 핵심3점 검수 준비. 기간은 내부 개발 인수용이며 실제 전시 일정 아님. 도면/입구/좌표 미설정."
+  },
+  "items": [
+    {
+      "id": "yyk-demo-001",
+      "recordId": "yyk-intake-20261109-001",
+      "assetId": "asset-a183733183371ed4da150e69",
+      "file": "yyk-demo-001-5c9e375934ff.png",
+      "sha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "title": "바다",
+      "artist": "유영국",
+      "year": "1960",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 회색·흰색·파랑·검은 형태와 붉고 노란 붓질, 불규칙한 경계와 거칠게 보이는 질감을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "source": "국립현대미술관 MMCA-C-10399 소장품 대응 후보; 직접 관찰 메모 v2; 실제 출품/이용권한 미확정",
+      "referenceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10399",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "회색·흰색·파랑·검은 형태 사이로 붉고 노란 붓질이 보입니다. 색의 경계와 표면 질감에 눈을 옮겨 보세요.",
+      "guide": {
+        "intro": "제목을 떠올리기 전에 붓질의 흔적부터 찾아보세요.",
+        "questions": [
+          "붓질이 보이는 부분을 한 곳 골라보세요. 그 부분은 어떻게 보이나요?"
+        ],
+        "hints": [
+          "색의 경계 한 곳을 골라 붓질이 이어지는지 끊기는지 살펴보세요."
+        ]
+      }
+    },
+    {
+      "id": "yyk-demo-004",
+      "recordId": "yyk-intake-20261109-004",
+      "assetId": "asset-ef978212ba3912443781d995",
+      "file": "yyk-demo-004-504ec1961b6b.png",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "title": "산(남)",
+      "artist": "유영국",
+      "year": "1968",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 노랑·초록 계열의 큰 삼각형 색면, 대각선, 아래쪽의 붉은색·주황색 띠를 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "source": "국립현대미술관 MMCA-C-10392 소장품 대응 후보; 직접 관찰 메모 v2; 실제 출품/이용권한 미확정",
+      "referenceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "큰 삼각형 색면과 대각선이 화면을 나눕니다. 아래쪽의 붉고 주황색인 띠를 따라 시선을 옮겨 보세요.",
+      "guide": {
+        "intro": "색 이름보다 색면이 만나는 경계를 먼저 보세요.",
+        "questions": [
+          "두 색면이 만나는 곳 중 시선이 오래 머무는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "대각선 한 줄을 골라 양옆 색이 어떻게 다른지 비교해 보세요."
+        ]
+      }
+    },
+    {
+      "id": "yyk-demo-010",
+      "recordId": "yyk-intake-20261109-010",
+      "assetId": "asset-ccbc459cbdfa953d935b9972",
+      "file": "yyk-demo-010-6ee82adc2202.png",
+      "sha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "title": "산",
+      "artist": "유영국",
+      "year": "1984",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 파란 바탕과 겹치는 초록 산 모양, 밝은 윤곽과 아래쪽 파란 부분을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "source": "국립현대미술관 MMCA-C-10383 소장품 대응 후보; 직접 관찰 메모 v2; 실제 출품/이용권한 미확정",
+      "referenceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10383",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "파란 바탕 위로 초록 산 모양이 겹쳐 보입니다. 밝은 윤곽과 그 안쪽 색면을 번갈아 살펴보세요.",
+      "guide": {
+        "intro": "윤곽과 색면 중 먼저 보이는 쪽을 골라보세요.",
+        "questions": [
+          "밝은 윤곽선을 따라 볼 때와 초록 면을 볼 때 어디가 다르게 느껴지나요?"
+        ],
+        "hints": [
+          "산 모양 두 개가 겹치는 곳을 한 군데만 비교해도 좋아요."
+        ]
+      }
+    }
+  ]
+}
