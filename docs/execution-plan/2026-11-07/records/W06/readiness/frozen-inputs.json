@@ -1,0 +1,13 @@
+{
+  "asOf": "2026-11-09",
+  "round": "futureW07-YYK16-v1",
+  "afterExistingExploratoryTextCalls": true,
+  "beforePlanned16ModelCalls": true,
+  "hashPolicy": "canonical JSON compact/sorted UTF-8; raw original image SHA ineach item",
+  "canonicalJsonSha256": {
+    "layout-draft.json": "5f881926dc97d0e3167364bf11e01d807fb8df5613d9311e3ec777e5aff13f5f",
+    "pool-decision.json": "fcb02d7891af486902a5436ab273b3ca00fc6d9c527bcb691d53e139e87d3d64",
+    "evaluation-plan.json": "3062e12926e7be2ca4128f888726a9de44d3d459e85a3f5a2e993b2fcb036aa6",
+    "human-review-checklist.json": "c8637d99f3004204664c8bb7de74b6baef5803afed4c49b753600b9fd304ad68"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "decision": "retain_current_id_sorted_v1_for_first_demo",
+  "selectedIds": [
+    "yyk-demo-001",
+    "yyk-demo-002",
+    "yyk-demo-003",
+    "yyk-demo-004",
+    "yyk-demo-005",
+    "yyk-demo-006",
+    "yyk-demo-007",
+    "yyk-demo-008",
+    "yyk-demo-009",
+    "yyk-demo-010"
+  ],
+  "pairs": [
+    {
+      "leftId": "yyk-demo-001",
+      "rightId": "yyk-demo-002",
+      "reason": "밝은 부분/질감과 어두운 띠·색면 비교"
+    },
+    {
+      "leftId": "yyk-demo-003",
+      "rightId": "yyk-demo-004",
+      "reason": "거친 경계와 삼각형 색면의 차이"
+    },
+    {
+      "leftId": "yyk-demo-005",
+      "rightId": "yyk-demo-006",
+      "reason": "파란 대각선 면과 초록 중심의 대비"
+    },
+    {
+      "leftId": "yyk-demo-007",
+      "rightId": "yyk-demo-008",
+      "reason": "붉은 교차선과 초록 반복선의 대비"
+    },
+    {
+      "leftId": "yyk-demo-009",
+      "rightId": "yyk-demo-010",
+      "reason": "따뜻한 붉은 산 모양과 차가운 겹침의 대비"
+    }
+  ],
+  "corpusIds": [
+    "yyk-demo-001",
+    "yyk-demo-002",
+    "yyk-demo-003",
+    "yyk-demo-004",
+    "yyk-demo-005",
+    "yyk-demo-006",
+    "yyk-demo-007",
+    "yyk-demo-008",
+    "yyk-demo-009",
+    "yyk-demo-010",
+    "yyk-demo-011",
+    "yyk-demo-012",
+    "yyk-demo-013",
+    "yyk-demo-014",
+    "yyk-demo-015",
+    "yyk-demo-016"
+  ],
+  "recommendationCandidates": "all16 only after individual source/content/image/tag/position readiness; not current live readiness",
+  "sourceCheck": "001..010 are9individual catalogue candidates plus foundation007; avoids using edition-uncertain013..016 in initial picks",
+  "alternativeConsidered": "Adding011/012 grid contrast to hand-curated pool would require changing currentID-sorted10 selection; defer until actual model/visitor evidence justifies it. No ID renaming, artificial exclusion or extra API/DB selection field now.",
+  "appliedToDatabase": false,
+  "readyNow": false
+}

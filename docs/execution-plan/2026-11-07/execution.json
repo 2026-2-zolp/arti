@@ -664,7 +664,7 @@
       "criterion": "유영국 실제출품작 식별·출처/버전·사람검수·이미지 사용/표시·실제/시연 좌표 구분. 캡처40점 AI초안·테스트좌표는 공식전시와 분리. 10점5쌍 선택풀과 최종 전시 코퍼스 관계를 결정. 작품별 최소인수manifest로 식별·출품상태·공식근거·원문/이미지/도면 경로·충돌/검수상태를 연결. 검수/위치/태그 준비여부를 확인",
       "evidence": "data-manifest·사람검수 기록",
       "reviewer": "데이터",
-      "status": "not_run",
+      "status": "blocked",
       "evidencePaths": [
         "records/git-materials/README.md",
         "records/git-materials/audit.json",
@@ -673,7 +673,8 @@
         "../../operations/2026-11-09_유영국핵심3점_콘텐츠검수준비.md",
         "records/W06/core3-intake/README.md",
         "records/W06/remaining-intake/README.md",
-        "records/W06/007-intake/README.md"
+        "records/W06/007-intake/README.md",
+        "records/W06/readiness/README.md"
       ]
     },
     {
@@ -683,11 +684,12 @@
       "criterion": "Git의 캡처40장/WikiArt79장·라벨/보정 입력 존재와 출처를 확인하고 실제 재실행 범위를 기록. 별도 유영국 표본·질문셋·내용근거/관찰유도 합격예시·태그별목표·지연예산을 결과확인 전에 고정. 고정해설만 vs 관찰질문/맥락대화의 작은 비교설계, 쉽게/깊게 2개대화 합격예시와 시험자/표본·순서·한계 기록 포함",
       "evidence": "입력해시·평가계획",
       "reviewer": "AI",
-      "status": "not_run",
+      "status": "pass",
       "evidencePaths": [
         "records/git-materials/README.md",
         "records/git-materials/audit.json",
-        "records/W07-quality/2026-11-09/README.md"
+        "records/W07-quality/2026-11-09/README.md",
+        "records/W06/readiness/README.md"
       ]
     },
     {
