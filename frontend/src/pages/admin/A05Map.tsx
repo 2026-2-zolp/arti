@@ -1,3 +1,4 @@
+/** 전시 도면·입구·작품 배치와 전시실 소속을 관리하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /**
  * A-05 위치·지도 관리
@@ -21,6 +22,7 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
     ? undefined
     : ex.rooms.find((r) => r.rect && p.x >= r.rect.x && p.x <= r.rect.x + r.rect.w && p.y >= r.rect.y && p.y <= r.rect.y + r.rect.h);
 
+/** 전시 도면·입구·작품 배치와 전시실 소속을 관리하는 화면 */
 export default function A05Map() {
   const [params, setParams] = useSearchParams();
   const { data: exhibitions, setData: setExhibitions, error: exError, reload: reloadEx } = useAsync(() => api.listAdminExhibitions(), []);

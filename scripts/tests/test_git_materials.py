@@ -1,3 +1,4 @@
+# Git 참조 자료의 누락·변조·경로와 내보내기 정합성을 검증합니다.
 import hashlib
 import json
 import shutil

@@ -1,3 +1,4 @@
+# 명시적으로 관리자 계정을 생성하며 기본 계정을 자동 배포하지 않습니다.
 import getpass
 import os
 from django.contrib.auth.hashers import make_password

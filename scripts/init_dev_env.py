@@ -1,3 +1,4 @@
+# 로컬 개발 설정 파일을 안전하게 준비합니다.
 """Generate local-only ignored Compose credentials, without overwriting existing settings."""
 import secrets
 from pathlib import Path

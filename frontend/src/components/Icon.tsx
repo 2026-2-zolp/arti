@@ -25,6 +25,7 @@ const paths = {
 
 export type IconName = keyof typeof paths;
 
+/** 화면에서 사용하는 SVG 아이콘을 제공합니다. */
 export function Icon({ name, size = 22, className }: { name: IconName; size?: number; className?: string }) {
   return (
     <svg

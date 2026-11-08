@@ -7,6 +7,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
 }
 
+/** 폼 입력의 라벨·설명·오류 표시를 묶습니다. */
 export function Field({ label, error, hint, id, ...rest }: Props) {
   const inputId = id ?? `f-${label}`;
   return (

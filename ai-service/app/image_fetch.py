@@ -1,3 +1,4 @@
+# 모델 서비스: 분석할 이미지의 로딩과 입력 경계를 처리합니다.
 """작품 이미지 읽기: 업로드 파일(base64) 또는 URL 다운로드 (형식·크기·시간 제한)"""
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from PIL import Image
 from . import config
 
 
+# 모델 입력 이미지 조회 실패를 구분합니다.
 class ImageFetchError(Exception):
     pass
 

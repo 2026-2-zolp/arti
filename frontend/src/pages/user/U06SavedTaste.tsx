@@ -1,3 +1,4 @@
+/** 저장된 취향을 확인하고 재사용하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /** U-06 저장 취향 확인 — 로그인 사용자의 기존 취향을 그대로 쓰거나 수정 */
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -6,6 +7,7 @@ import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath, withRedirect } from '../../store/ExhibitionRoute';
 
+/** 저장된 취향을 확인하고 재사용하는 화면 */
 export default function U06SavedTaste() {
   const confirmAction = useConfirm();
   const navigate = useNavigate();

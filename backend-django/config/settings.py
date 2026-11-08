@@ -1,3 +1,4 @@
+# 서버 환경변수·PostgreSQL·인증·모델 연결 설정을 읽습니다.
 import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured

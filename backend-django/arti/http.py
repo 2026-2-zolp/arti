@@ -1,3 +1,4 @@
+# 공통 API 오류·요청 식별자와 HTTP 응답 경계를 처리합니다.
 import logging
 import uuid
 from django.http import JsonResponse
@@ -9,6 +10,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.exceptions import ParseError
 
 
+# 최상위 JSON 객체 입력만 허용합니다.
 class ObjectJSONParser(JSONParser):
     def parse(self, stream, media_type=None, parser_context=None):
         value=super().parse(stream,media_type,parser_context)
@@ -18,6 +20,7 @@ class ObjectJSONParser(JSONParser):
 log = logging.getLogger(__name__)
 
 
+# API 계약의 상태 코드와 사용자용 오류를 전달합니다.
 class ContractError(APIException):
     def __init__(self, status, code, message, retryable=False):
         self.status_code = status
@@ -53,6 +56,7 @@ def exception_handler(exc, context):
     return response
 
 
+# 요청 식별자와 공통 응답 헤더를 붙입니다.
 class RequestIdMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

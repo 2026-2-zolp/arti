@@ -1,3 +1,4 @@
+# 공개 전시·작품·추천 조회와 인증·미디어 API를 제공합니다.
 import hashlib
 import secrets
 from datetime import timedelta
@@ -99,6 +100,7 @@ def recommendations(request):
     return Response(recommend(list(public_works(ex.id)), ex, data['tastes'], data['duration'], data.get('tasteProfile'), request.user))
 
 
+# 로그인 시도 빈도를 제한합니다.
 class LoginThrottle(AnonRateThrottle):
     rate = '10/min'
 

@@ -1,3 +1,4 @@
+# Git 참조 자료의 파일·메타데이터·해시 정합성을 점검합니다.
 """Read-only inventory/contracts for existing Git material; no model, DB or network."""
 import hashlib
 import json

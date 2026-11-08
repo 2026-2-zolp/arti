@@ -1,3 +1,4 @@
+# API URL을 Django 처리 함수에 연결합니다.
 from django.urls import path, re_path
 from arti import views
 from arti import member, editing, records, docent

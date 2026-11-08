@@ -1,3 +1,4 @@
+# 승인된 작품 근거와 진입 맥락을 재구성해 도슨트 응답을 요청합니다.
 import uuid
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.throttling import AnonRateThrottle
@@ -12,6 +13,7 @@ BASIC_TIPS=['그림에서 가장 밝은 곳을 먼저 찾아보세요. 눈이 �
             '조금 떨어져서 한 번, 가까이 다가가서 한 번 보세요. 무엇이 달라 보이나요?']
 
 
+# 도슨트 요청 빈도를 제한합니다.
 class AIThrottle(AnonRateThrottle):
     rate='20/min'
     scope='ai'

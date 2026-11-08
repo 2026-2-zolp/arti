@@ -1,3 +1,4 @@
+# 외부 모델 adapter의 요청·오류·보안 경계를 가상 응답으로 검증합니다.
 """Provider transport/contracts without paid keys or external HTTP."""
 import io
 import json

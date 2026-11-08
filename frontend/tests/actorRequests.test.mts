@@ -1,3 +1,4 @@
+/** 계정 변경 뒤 늦은 응답이 인증·관람 기록에 적용되지 않는지 검증합니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {api} from '../src/api/client.ts';

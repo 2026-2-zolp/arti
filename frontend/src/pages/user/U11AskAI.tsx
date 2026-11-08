@@ -16,6 +16,7 @@ const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는
 
 // crypto.randomUUID는 https에서만 동작해 휴대폰 LAN 테스트(http)에서 실패하므로 간단한 id 생성기를 쓴다
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+/** 현재 작품과 해설·질문 맥락을 이어 도슨트와 대화하는 화면 */
 export default function U11AskAI() {
   const { state } = useVisit();
   const to = useExhibitionPath();

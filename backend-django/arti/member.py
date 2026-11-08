@@ -1,3 +1,4 @@
+# 회원 가입·로그인·취향 저장과 계정 경계를 처리합니다.
 import re
 import hashlib
 import secrets

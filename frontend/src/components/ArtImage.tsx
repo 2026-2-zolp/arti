@@ -43,6 +43,7 @@ interface Props {
   ratio?: number; // 가로/세로 비율
 }
 
+/** 작품 이미지와 대체 표시를 렌더링합니다. */
 export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 3 }: Props) {
   const shapes = useMemo(() => {
     const rnd = mulberry32(hash(seed));

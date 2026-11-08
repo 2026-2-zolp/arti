@@ -1,3 +1,4 @@
+# 취향 점수로 작품을 선정하고 좌표상 가까운 방문 순서를 계산합니다.
 import hashlib
 import json
 import math

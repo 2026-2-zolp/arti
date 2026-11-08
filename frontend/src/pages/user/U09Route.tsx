@@ -15,6 +15,7 @@ import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork, MapPoint } from '../../types';
 
+/** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();

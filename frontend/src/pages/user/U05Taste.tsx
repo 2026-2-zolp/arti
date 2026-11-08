@@ -1,3 +1,4 @@
+/** 작품 쌍 선택으로 취향을 파악하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /**
  * U-05 취향 파악 — 작품 약 10점을 두 점씩 보여 주고 하나만 고르게 한다.
@@ -19,6 +20,7 @@ import type { Artwork, TasteTag, TasteProfile } from '../../types';
 
 
 
+/** 작품 쌍 선택으로 취향을 파악하는 화면 */
 export default function U05Taste() {
   const confirmAction = useConfirm();
   const navigate = useNavigate();

@@ -1,3 +1,4 @@
+/** 관람·계정 경계가 바뀔 때 상태와 응답의 적용 범위를 구분합니다. */
 import type { EntryContext } from '../types';
 export function newVisitId(): string {
   if (!globalThis.crypto?.getRandomValues) throw new Error('안전한 관람 식별자를 만들 수 없어요. 지원 브라우저에서 다시 열어 주세요.');

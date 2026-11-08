@@ -1,3 +1,4 @@
+# 역할별 불투명 세션 토큰을 확인하고 관리자 권한을 검사합니다.
 import hashlib
 from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
@@ -6,6 +7,7 @@ from .http import ContractError
 from .models import Session
 
 
+# 불투명 토큰으로 요청 계정과 역할을 확인합니다.
 class OpaqueAuthentication(BaseAuthentication):
     """Only protected views enforce validity; public catalog remains guest-readable."""
     def authenticate(self, request):
@@ -23,6 +25,7 @@ class OpaqueAuthentication(BaseAuthentication):
         return None
 
 
+# 관리자 역할이 필요한 API 접근을 제한합니다.
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         if not request.user:

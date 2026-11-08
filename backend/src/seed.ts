@@ -1,3 +1,4 @@
+/** 보존된 Express 구현: 기존 개발용 시드 자료를 구성합니다. 현재 기본 서비스 API는 Django입니다. */
 import type { Artwork, Exhibition, TasteTag, User, VisitDuration, VisitRecord } from './types.js';
 
 /**

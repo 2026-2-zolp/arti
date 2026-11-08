@@ -1,3 +1,4 @@
+# 전시·작품·계정·관람 기록의 PostgreSQL 관계와 제약을 정의합니다.
 import math
 import secrets
 from django.core.exceptions import ValidationError
@@ -16,6 +17,7 @@ def validate_point(x, y):
         raise ValidationError('Coordinates must both be null or finite values from 0 to 100.')
 
 
+# 전시별 기간·도면·공개 상태를 저장합니다.
 class Exhibition(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     title = models.CharField(max_length=100)
@@ -49,6 +51,7 @@ class Exhibition(models.Model):
             raise ValidationError('Room IDs must be unique nonempty strings.')
 
 
+# 작품의 근거·배치·검수와 AI 산출물 버전을 저장합니다.
 class Artwork(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     exhibition = models.ForeignKey(Exhibition, on_delete=models.PROTECT, related_name='artworks')
@@ -119,6 +122,7 @@ class Artwork(models.Model):
             raise ValidationError('Confirmed emotion requires reviewed scores.')
 
 
+# 회원·관리자 계정과 저장된 취향을 관리합니다.
 class Account(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     login_id = models.CharField(max_length=254, unique=True)
@@ -141,12 +145,14 @@ class Account(models.Model):
                        models.CheckConstraint(condition=Q(status__in=['active', 'dormant']), name='account_status_valid')]
 
 
+# 원문 대신 해시한 세션 토큰과 만료를 저장합니다.
 class Session(models.Model):
     token_hash = models.CharField(primary_key=True, max_length=64)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     expires_at = models.DateTimeField()
 
 
+# 회원 관람의 중복 방지 키와 당시 작품 정보를 보존합니다.
 class Visit(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     user = models.ForeignKey(Account, on_delete=models.PROTECT)
@@ -162,6 +168,7 @@ class Visit(models.Model):
         constraints = [models.UniqueConstraint(fields=['user', 'visit_id'], name='visit_actor_id_unique')]
 
 
+# 관람별 작품 반응·이유·체류 시간을 저장합니다.
 class VisitReaction(models.Model):
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='reactions')
     artwork = models.ForeignKey(Artwork, on_delete=models.PROTECT)

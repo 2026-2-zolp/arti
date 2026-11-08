@@ -1,3 +1,4 @@
+# 관람 기록 저장·중복 방지와 회원·관리자 조회를 처리합니다.
 import uuid
 from django.db import IntegrityError, transaction
 from django.utils.dateparse import parse_datetime

@@ -1,12 +1,15 @@
+# API 입력 검증과 공개·관리자 응답 변환을 정의합니다.
 from rest_framework import serializers
 from .constants import DURATION_COUNTS, EMOTIONS, TAGS
 
 
+# 작품 쌍 선택 한 건의 입력을 검증합니다.
 class PickInput(serializers.Serializer):
     pairIndex = serializers.IntegerField(min_value=0, max_value=4)
     artworkId = serializers.CharField(max_length=64)
 
 
+# 취향 프로필의 출처·선택 이력·버전을 검증합니다.
 class TasteProfileInput(serializers.Serializer):
     version = serializers.IntegerField(min_value=1, max_value=1)
     source = serializers.ChoiceField(choices=('picks', 'manual', 'saved'))
@@ -24,6 +27,7 @@ class TasteProfileInput(serializers.Serializer):
         return value
 
 
+# 추천 요청의 전시·시간·취향을 검증합니다.
 class RecommendInput(serializers.Serializer):
     exhibitionId = serializers.CharField(max_length=64)
     tastes = serializers.ListField(child=serializers.ChoiceField(choices=TAGS), max_length=8)
@@ -36,6 +40,7 @@ class RecommendInput(serializers.Serializer):
         return value
 
 
+# 관리자 로그인 입력을 검증합니다.
 class AdminLoginInput(serializers.Serializer):
     id = serializers.CharField(max_length=254)
     password = serializers.CharField(max_length=128, trim_whitespace=False)

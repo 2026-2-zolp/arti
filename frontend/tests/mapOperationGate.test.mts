@@ -1,3 +1,4 @@
+/** 도면 작업의 전시 전환·중복 요청·늦은 응답 격리를 검증합니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createMapOperationGate} from '../src/lib/mapOperationGate.ts';

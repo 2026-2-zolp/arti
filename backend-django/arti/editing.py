@@ -1,3 +1,4 @@
+# 버전 충돌을 확인하며 관리자 편집·이미지·도면·검수를 저장합니다.
 """Versioned administrator edits; generated values are never client-owned."""
 import re
 import secrets
@@ -147,6 +148,7 @@ def exhibitions(request, ex_id=None):
         return with_etag(exhibition_dto(ex))
 
 
+# 이미지 업로드 크기를 제한하며 원시 바이트를 읽습니다.
 class RawImageParser(BaseParser):
     media_type='*/*'
     def parse(self,stream,media_type=None,parser_context=None):

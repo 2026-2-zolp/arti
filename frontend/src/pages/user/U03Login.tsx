@@ -7,6 +7,7 @@ import { api } from '../../api/client';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect, withRedirect } from '../../store/ExhibitionRoute';
 
+/** 회원 로그인 화면 */
 export default function U03Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();

@@ -1,3 +1,4 @@
+/** 관람 시간을 선택하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /** U-07 관람 시간 선택 — 시간에 따라 추천 작품 수 결정 */
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { VisitDuration } from '../../types';
 
+/** 관람 시간을 선택하는 화면 */
 export default function U07Time() {
   const confirmAction = useConfirm();
   const navigate = useNavigate();

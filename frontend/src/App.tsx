@@ -60,6 +60,7 @@ import A05Map from './pages/admin/A05Map';
 import A06Members from './pages/admin/A06Members';
 import A07Reactions from './pages/admin/A07Reactions';
 
+/** 공개·관리자 화면의 라우팅과 공통 상태 제공자를 구성합니다. */
 export default function App() {
   return (
     <VisitProvider>
@@ -105,6 +106,7 @@ export default function App() {
   );
 }
 
+/** 유효하지 않은 경로를 안내합니다. */
 function NotFound() {
   return (
     <div className="m-shell">

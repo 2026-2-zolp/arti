@@ -1,3 +1,4 @@
+/** 확인 대화상자와 비동기 확인 요청을 관리합니다. */
 import {createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode} from 'react';
 import {useLocation} from 'react-router-dom';
 import {useVisit} from '../store/VisitContext';
@@ -5,6 +6,7 @@ import {useVisit} from '../store/VisitContext';
 const ConfirmationContext = createContext<((message: string) => Promise<boolean>) | null>(null);
 
 /** Explicit confirmation without a browser-wide blocking JavaScript dialog. */
+/** 확인 대화상자와 비동기 확인 요청을 관리합니다. */
 export function ConfirmationProvider({children}: {children: ReactNode}) {
   const [message, setMessage] = useState<string | null>(null);
   const resolver = useRef<((value: boolean) => void) | null>(null);

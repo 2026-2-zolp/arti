@@ -1,3 +1,4 @@
+/** 관람 상태를 서버에 저장할 영수증 요청으로 변환합니다. */
 import type {VisitState} from '../store/visitReducer';
 import type {Artwork, Exhibition, TasteTag, VisitRecord} from '../types';
 import {TASTE_LABEL} from '../data/mock';

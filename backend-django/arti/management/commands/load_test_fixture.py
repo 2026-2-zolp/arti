@@ -1,3 +1,4 @@
+# 허용된 개발·시험 환경에만 합성 전시 자료를 적재합니다.
 import base64
 import json
 from pathlib import Path

@@ -16,6 +16,7 @@ function formatAt(iso: string) {
   return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`;
 }
 
+/** 회원 관람 반응과 기록을 조회하는 화면 */
 export default function A07Reactions() {
   const { data } = useAsync(() => api.listAdminArtworks(), []);
   const [filter, setFilter] = useState<Filter>('all');
@@ -63,6 +64,7 @@ export default function A07Reactions() {
   );
 }
 
+/** 반응 목록의 필터 선택을 표시합니다. */
 function FilterButton({
   label,
   count,
@@ -84,6 +86,7 @@ function FilterButton({
   );
 }
 
+/** 관람 반응 한 행을 표시합니다. */
 function Row({ item, title }: { item: ReactionLogItem; title: string }) {
   const like = item.reaction === 'like';
   return (

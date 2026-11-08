@@ -1,3 +1,4 @@
+# PostgreSQL 초기 구조·공개 제한·취향 추천의 기초 계약을 검증합니다.
 import hashlib
 import io
 import os

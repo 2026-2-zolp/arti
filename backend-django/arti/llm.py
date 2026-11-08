@@ -1,3 +1,4 @@
+# 서버 전용 키로 OpenAI 호환 텍스트 API를 호출하고 응답을 검증합니다.
 """Small Chat Completions adapter for text only. No downloads, retries or model fallback."""
 import json
 import socket
@@ -23,6 +24,7 @@ SYSTEM = ('당신은 ARTI 미술 감상을 돕는 도슨트입니다. 아래 JSO
           '일반 감상 팁과 작품 사실을 구분하고 쉬운 한국어로 작성하세요. 반드시 요청한 JSON 객체 하나만 반환하세요.')
 
 
+# 외부 리다이렉트로 인증 정보가 전달되지 않게 막습니다.
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None  # Never forward a credential to a redirected destination.

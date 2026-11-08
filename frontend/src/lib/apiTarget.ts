@@ -1,3 +1,4 @@
+/** 개발 API 대상과 프록시 설정을 해석합니다. */
 /** Shared by Vite and the browser: no implicit legacy fallback. */
 export function apiTarget(value?: string): 'django' | 'express' {
   if (value === undefined) return 'django';

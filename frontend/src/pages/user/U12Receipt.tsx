@@ -1,3 +1,4 @@
+/** 현재·과거 관람의 영수증을 표시하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /**
  * U-12 아트 영수증
@@ -19,6 +20,7 @@ import type { Artwork, EmotionScores, VisitRecord } from '../../types';
 
 type Interpretation = { text: string; emotionProfile: EmotionScores | null };
 
+/** 현재·과거 관람의 영수증을 표시하는 화면 */
 export default function U12Receipt() {
   const { visitId } = useParams();
   return visitId ? <HistoryReceipt visitId={visitId} /> : <LiveReceipt />;
@@ -94,6 +96,7 @@ function LiveReceipt() {
   </MobileShell>;
 }
 
+/** 저장된 관람 기록의 영수증을 조회합니다. */
 function HistoryReceipt({ visitId }: { visitId: string }) {
   const navigate = useNavigate();
   const { state } = useVisit();

@@ -1,9 +1,11 @@
+/** 저장하지 못한 회원 관람 기록의 명시적 복구를 안내합니다. */
 import {useConfirm} from './Confirmation';
 import {useState, useRef, useEffect} from 'react';
 import {api} from '../api/client';
 import {useVisit} from '../store/VisitContext';
 import {load, remove} from '../lib/storage';
 import type {VisitRecord} from '../types';
+/** 저장하지 못한 회원 관람 기록의 명시적 복구를 안내합니다. */
 export function PendingReceipts({onRecovered}: {onRecovered?: () => void}) {
  const confirmAction = useConfirm();
  const {state} = useVisit(); const [revision, setRevision] = useState(0); const [busy, setBusy] = useState(false); const [message, setMessage] = useState('');

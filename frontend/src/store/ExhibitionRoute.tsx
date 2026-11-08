@@ -12,6 +12,7 @@ import { useVisit } from './VisitContext';
 
 export const exhibitionPath = (exhibitionId: string, sub = '') => `/exhibitions/${encodeURIComponent(exhibitionId)}${sub}`;
 
+/** URL의 전시 식별자를 화면 경로와 연결합니다. */
 export function ExhibitionLayout() {
   const { exhibitionId = '' } = useParams();
   const { state, dispatch } = useVisit();

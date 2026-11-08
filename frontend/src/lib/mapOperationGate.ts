@@ -1,3 +1,4 @@
+/** 도면 편집 작업의 중복 실행과 늦은 응답 적용을 막습니다. */
 /** One map upload/delete at a time; results from a retired view cannot update its successor. */
 export function createMapOperationGate() {
   let alive = true;

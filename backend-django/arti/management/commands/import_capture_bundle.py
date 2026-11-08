@@ -1,3 +1,4 @@
+# 기존 Git 캡처40점 묶음을 미검수 상태로 명시적으로 인수합니다.
 import hashlib
 import json
 from pathlib import Path

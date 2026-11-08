@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Django 관리 명령의 실행 진입점입니다.
 import os
 import sys
 

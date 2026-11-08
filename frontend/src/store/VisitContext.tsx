@@ -23,6 +23,7 @@ interface Ctx {
 
 const VisitCtx = createContext<Ctx | null>(null);
 
+/** 관람 상태와 저장·복구 흐름을 하위 화면에 제공합니다. */
 export function VisitProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, init);
 

@@ -1,3 +1,4 @@
+# 검수·회원·도슨트·관람 기록 API의 통합 회귀를 검증합니다.
 import copy
 import hashlib
 import io

@@ -1,3 +1,4 @@
+/** 관람 선택·진행·대화·기록 상태를 전이시키는 순수 로직입니다. */
 import type { Reaction, Recommendation, TasteTag, User, VisitDuration, TasteProfile } from '../types';
 import {load} from '../lib/storage';
 import {newVisitId} from '../lib/visitScope';

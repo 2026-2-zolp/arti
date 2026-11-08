@@ -1,3 +1,4 @@
+# 관리자 도면·배치 저장과 전시 격리·추천 연결을 검증합니다.
 """Administrator map workflow on isolated fixture data, never the Yoo intake corpus."""
 from django.test import TestCase, override_settings
 from arti.models import Artwork, Exhibition

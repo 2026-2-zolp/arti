@@ -5,6 +5,7 @@ import { api } from '../../api/client';
 import { save } from '../../lib/storage';
 import { ADMIN_KEY, isAdminLoggedIn } from './AdminLayout';
 
+/** 관리자 로그인 화면 */
 export default function A01Login() {
   const navigate = useNavigate();
   const [id, setId] = useState('');

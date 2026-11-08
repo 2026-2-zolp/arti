@@ -1,3 +1,4 @@
+/** 작품 정보·근거와 AI 산출물의 검수를 관리하는 화면 */
 import {useConfirm} from '../../components/Confirmation';
 /**
  * A-04 작품 등록·수정
@@ -19,6 +20,7 @@ import { PageHead, REVIEW_LABEL } from './AdminLayout';
 
 const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
 
+/** 작품 목록과 검수 상태를 조회합니다. */
 export function ArtworkList() {
   const confirmAction = useConfirm();
   const navigate = useNavigate();
@@ -200,6 +202,7 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   showImage: true,
 });
 
+/** 단일 작품의 정보와 검수 상태를 편집합니다. */
 export function ArtworkEdit() {
   const { id } = useParams();
   const [params] = useSearchParams();

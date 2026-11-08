@@ -1,3 +1,4 @@
+# 모델 서비스: 보존된 Kanana 기반 요약·가이드 작성을 담당합니다. 새 Django 텍스트 경로와 구분합니다.
 """
 초보자용 글쓰기 — 해설 요약 + 초보자 가이드(쉬운 설명 · 관찰 질문 · 힌트)
 
@@ -39,6 +40,7 @@ TASK = """아래 형식 그대로, 다른 말 없이 답하세요.
 3. (질문) | (힌트)"""
 
 
+# 작성 모델이 만든 결과를 묶습니다.
 @dataclass
 class WriteResult:
     summary: str
@@ -51,6 +53,7 @@ class WriteResult:
     dropped: list[str] = field(default_factory=list)  # 안전장치로 버린 문장 (확인용)
 
 
+# 작성 모델의 공통 호출 인터페이스입니다.
 class Writer(Protocol):
     @property
     def loaded(self) -> bool: ...
@@ -58,6 +61,7 @@ class Writer(Protocol):
     def generate(self, system: str, user: str) -> str: ...
 
 
+# 보존된 Kanana 작성 모델의 로딩과 생성을 담당합니다.
 class KananaWriter:
     """Hugging Face transformers로 Kanana를 CPU에서 실행 (처음 쓸 때 한 번 불러온다, 약 4GB)"""
 

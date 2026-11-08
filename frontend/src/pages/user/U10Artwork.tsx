@@ -30,6 +30,7 @@ const TABS: { id: Tab; label: string }[] = [
 /** 관리자가 확정한 관람가이드가 없는 작품에 보여 줄 기본 관찰 팁 (백엔드 BASIC_LOOKING_TIPS와 같은 내용) */
 const BASIC_TIPS = BASIC_LOOKING_TIPS;
 
+/** 작품해설·관람가이드와 감상 반응을 제공하는 화면 */
 export default function U10Artwork() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
@@ -373,6 +374,7 @@ export default function U10Artwork() {
   );
 }
 
+/** 감상 반응의 이유를 선택하도록 돕습니다. */
 function ReasonPicker({
   kind,
   customOn,

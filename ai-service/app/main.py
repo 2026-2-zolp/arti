@@ -1,3 +1,4 @@
+# 모델 서비스: FastAPI 모델 서비스의 분석·작성 API를 구성합니다. 새 Django의 실제 모델 연동 여부는 별도입니다.
 """
 ARTI 감정 분석 서버 (FastAPI)
 
@@ -52,6 +53,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="ARTI 감정 분석 서버", lifespan=lifespan)
 
 
+# 모델 분석 요청 형식을 검증합니다.
 class AnalyzeRequest(BaseModel):
     title: str = Field(default="", max_length=200)
     description: str = Field(default="", max_length=5000)
@@ -60,6 +62,7 @@ class AnalyzeRequest(BaseModel):
     imageBase64: str | None = Field(default=None, max_length=15_000_000)
 
 
+# 모델 분석 결과의 응답 형식을 정의합니다.
 class AnalyzeResponse(BaseModel):
     emotions: dict[str, float]
     imageScores: dict[str, float] | None
@@ -126,6 +129,7 @@ def analyze_artwork(req: AnalyzeRequest):
     )
 
 
+# 요약·가이드 작성 요청을 검증합니다.
 class WriteRequest(BaseModel):
     title: str = Field(default="", max_length=200)
     artist: str = Field(default="", max_length=200)
@@ -133,6 +137,7 @@ class WriteRequest(BaseModel):
     description: str = Field(default="", max_length=5000)
 
 
+# 요약·가이드 작성 응답을 정의합니다.
 class WriteResponse(BaseModel):
     summary: str
     keywords: list[str]

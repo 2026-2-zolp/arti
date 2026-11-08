@@ -22,6 +22,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'likes', label: '좋아요 목록' },
 ];
 
+/** 회원 정보와 관람 기록·선호 작품을 표시하는 화면 */
 export default function U13MyPage() {
   const { state } = useVisit();
   const logout = useLogout();

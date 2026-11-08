@@ -15,6 +15,7 @@ import { useVisit } from '../../store/VisitContext';
 import { exhibitionPath, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Exhibition } from '../../types';
 
+/** 전시 선택과 서비스 시작 화면 */
 export default function U01Start() {
   const { exhibitionId } = useParams();
   return exhibitionId ? <ExhibitionStart exhibitionId={exhibitionId} /> : <ExhibitionPicker />;
@@ -49,6 +50,7 @@ function StartShell({ footer, children }: { footer?: ReactNode; children: ReactN
 
 const period = (ex: Exhibition) => `${ex.startDate.replaceAll('-', '.')} – ${ex.endDate.replaceAll('-', '.')}`;
 
+/** 선택된 전시의 시작 안내를 표시합니다. */
 function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   const { state, dispatch } = useVisit();
   const navigate = useNavigate();
@@ -111,6 +113,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   );
 }
 
+/** 관람할 전시 목록을 표시합니다. */
 function ExhibitionPicker() {
   const { data, loading, error, reload } = useAsync(() => api.listExhibitions(), []);
   const running = (data ?? []).filter((ex) => ex.status === 'running');

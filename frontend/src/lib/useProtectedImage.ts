@@ -1,3 +1,4 @@
+/** 권한이 필요한 이미지의 조회와 객체 URL 수명을 관리합니다. */
 import { useEffect, useState } from 'react';
 import { fetchProtectedImage, isProtectedImageUrl } from '../api/client';
 

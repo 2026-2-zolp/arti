@@ -1,3 +1,4 @@
+/** 화면 옵션과 개발용 예시 값을 정의합니다. 실제 전시 데이터와 구분합니다. */
 import type { AiStatus, EmotionKey, TasteTag, VisitDuration } from '../types';
 
 /**

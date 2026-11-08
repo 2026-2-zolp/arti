@@ -1,3 +1,4 @@
+/** 관람 영수증 요청의 저장 필드·취향 근거를 검증합니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {buildRecord} from '../src/lib/receiptPayload.ts';

@@ -22,6 +22,7 @@ const blank = (): Exhibition => ({
   ],
 });
 
+/** 전시를 등록·조회·수정하는 화면 */
 export default function A03Exhibitions() {
   const navigate = useNavigate();
   const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
@@ -90,6 +91,7 @@ export default function A03Exhibitions() {
   );
 }
 
+/** 전시 등록·수정 입력을 모아 저장합니다. */
 function ExhibitionModal({
   initial,
   onClose,

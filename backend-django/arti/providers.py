@@ -1,3 +1,4 @@
+# 텍스트 생성과 태그·감정 분석의 제공자 경계를 관리합니다.
 """Explicit provider boundary; disabled by default, never fake success/fallback."""
 from django.conf import settings
 from .http import ContractError

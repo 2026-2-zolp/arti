@@ -1,3 +1,4 @@
+/** 관람 상태 전이·복귀·계정 경계와 취향 이력 보존을 검증합니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {init,reducer} from '../src/store/visitReducer.ts';

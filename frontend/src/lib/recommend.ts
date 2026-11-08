@@ -1,3 +1,4 @@
+/** 추천 이유와 관람 시간 등 화면 표시용 값을 계산합니다. 실제 추천 순서는 서버가 정합니다. */
 import type { MapPoint, TasteTag, VisitDuration } from '../types';
 import { DURATION_OPTIONS, TASTE_LABEL } from '../data/mock';
 import { josa } from './josa';

@@ -43,6 +43,7 @@ interface Props {
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
 type Drag = { kind: 'marker' | 'entrance'; id: string; origin: MapPoint; start: MapPoint; point: MapPoint; moved: boolean };
 
+/** 전시 도면 위에 입구·작품 마커와 관람 순서를 표시합니다. */
 export function FloorMap({
   exhibition,
   markers,

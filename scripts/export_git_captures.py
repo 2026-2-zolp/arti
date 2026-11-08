@@ -1,3 +1,4 @@
+# 기존 Git 캡처 자료를 해시·근거와 함께 인수 묶음으로 내보냅니다.
 """Bundle committed 40-work assets without executing the legacy approved seed."""
 import argparse
 import hashlib

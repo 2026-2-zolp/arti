@@ -10,6 +10,7 @@ import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute'
 import { TASTE_LABEL } from '../../data/mock';
 import type { Artwork } from '../../types';
 
+/** 취향·시간에 따른 추천 작품을 확인하는 화면 */
 export default function U08Recommend() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();

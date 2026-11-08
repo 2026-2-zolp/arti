@@ -9,6 +9,7 @@ import { safeRedirect } from '../../store/ExhibitionRoute';
 
 type Errors = Partial<Record<'email' | 'password' | 'confirm' | 'terms' | 'form', string>>;
 
+/** 회원 가입 화면 */
 export default function U04Signup() {
   const navigate = useNavigate();
   const [params] = useSearchParams();

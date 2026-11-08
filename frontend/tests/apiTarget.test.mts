@@ -1,3 +1,4 @@
+/** 프론트 API 대상·개발 프록시 설정을 검증합니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {apiTarget, apiProxy} from '../src/lib/apiTarget.ts';
