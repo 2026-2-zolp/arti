@@ -40,3 +40,5 @@ W04 로컬 API/DB/Compose와 React 최소 흐름까지 검증했다. [새 API �
 2026-11-08 후속: [W11 CI 도입](records/W11/README.md)은 workflow/로컬 Linux 검증 완료·원격 run 대기다. [W07 텍스트 provider 준비](records/W07-preparation/README.md)는 실제 모델 게이트를 통과시킨 것이 아니다.
 
 후속 원격 결과: [W11 push4job 실제 성공](records/W11/remote-run-1.json), PR 이벤트는 아직 없어 AC07/GCI 완료와 구분한다. [누적 원격 기록](../../../docs/작업기록/2026-11-08_최종검토와원격CI검증.md).
+
+2026-11-09 후속: [유영국16점 전시 구성·관리자 지도 확인과 남은W 순서](../../../docs/operations/2026-11-09_유영국전시구성과동선검토.md). W06 실제 자료 준비와 지도 API부분 확인, W11/W12 병행·W07/W08~W10 의존관계를 연결한다. EVALUATOR/SENIOR는 사용자 동의로 추가한 AI검토 관점이며 실제 외부 승인 아님.

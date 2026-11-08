@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-11-07",
+  "asOf": "2026-11-09",
   "type": "acceptance-design examples; no actual user/model test",
   "scenarios": [
     {
@@ -91,7 +91,34 @@
       "expectation": "구체관찰근거/혼란/도움/실패·조건/표본/한계를 기록",
       "status": "not_run",
       "evidencePaths": []
+    },
+    {
+      "id": "PS09",
+      "title": "도면 교체·배치와 추천 연계",
+      "criteria": [
+        "AC16",
+        "AC18"
+      ],
+      "expectation": "같은비율 교체/미저장위치 초기화 사전안내, 취소 시 기존상태유지, 교체/삭제대기중 전시전환의늦은응답격리, 재배치/재조회 후 추천 반영, 다른전시 미변경. API/지연가드검사와 실제브라우저/유영국배치 시험을 구분",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W06/map-review/README.md"
+      ]
+    },
+    {
+      "id": "PS10",
+      "title": "평가위원의 추천·동선 증명 확인",
+      "criteria": [
+        "AC18",
+        "AC19",
+        "AC22",
+        "AC31"
+      ],
+      "expectation": "16점 준비상태·선택풀·3/5/7 선정근거·방문순서·도면/통로/시간 가정과 실제 품질의 한계를 설명. 실증없는 최적보행/개인화효과 주장금지",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W06/map-review/README.md"
+      ]
     }
   ]
 }
-

@@ -1,6 +1,6 @@
 {
   "version": "2.1",
-  "asOf": "2026-11-08",
+  "asOf": "2026-11-09",
   "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
   "tasks": [
     {
@@ -667,7 +667,9 @@
       "status": "not_run",
       "evidencePaths": [
         "records/git-materials/README.md",
-        "records/git-materials/audit.json"
+        "records/git-materials/audit.json",
+        "records/W06/yoo-intake/README.md",
+        "records/W06/map-review/README.md"
       ]
     },
     {
@@ -1721,6 +1723,14 @@
       {
         "id": "CONTENT",
         "name": "콘텐츠 운영·검수"
+      },
+      {
+        "id": "EVALUATOR",
+        "name": "외부 평가위원 관점 (AI 역할 검토)"
+      },
+      {
+        "id": "SENIOR",
+        "name": "시니어 개발자 관점 (AI 역할 검토)"
       }
     ],
     "improvements": [
@@ -1903,6 +1913,50 @@
         ],
         "title": "후보 0과 전시 부재 구분",
         "change": "approved+position 후보집계0을 전시전체소재 부재로 오기하지 않음. 준비부족/추천불가 안내로 수정",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI10",
+        "personas": [
+          "EVALUATOR",
+          "PROF"
+        ],
+        "works": [
+          "W06",
+          "W07",
+          "W10"
+        ],
+        "criteria": [
+          "AC18",
+          "AC19",
+          "AC22",
+          "AC31"
+        ],
+        "title": "전시구성·추천·동선의 주장과 증거 일치",
+        "change": "실제/시연 도면·작품후보 선정·관람순서·실통로·시간가정을 분리해 증명.16점이나3점 시연만으로 전체품질을 통과하지 않음",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI11",
+        "personas": [
+          "SENIOR",
+          "CONTENT"
+        ],
+        "works": [
+          "W05",
+          "W06",
+          "W10"
+        ],
+        "criteria": [
+          "AC11",
+          "AC16",
+          "AC18",
+          "AC31"
+        ],
+        "title": "관리자 배치에서 사용자 추천까지 경계 검토",
+        "change": "도면교체 좌표초기화·버전충돌·다전시격리·보존/복원·실제통로 미반영을 확인. API회귀와 실제브라우저/현장시험을 구분",
         "planStatus": "applied",
         "productStatus": "not_run"
       }
