@@ -246,8 +246,10 @@ def analyze(request,artwork_id):
     if not updates:
         if any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
-            code=next((c for c in ['AI_TIMEOUT','PROVIDER_ERROR','AI_UNAVAILABLE'] if c in codes),'AI_UNAVAILABLE')
-            raise ContractError({'AI_TIMEOUT':504,'PROVIDER_ERROR':502,'AI_UNAVAILABLE':503}[code],code,'분석 결과를 준비하지 못했어요.',retryable=True)
+            code=next((c for c in ['AI_TIMEOUT','PROVIDER_ERROR','RATE_LIMITED','AI_UNAVAILABLE'] if c in codes),'AI_UNAVAILABLE')
+            error=ContractError({'AI_TIMEOUT':504,'PROVIDER_ERROR':502,'RATE_LIMITED':429,'AI_UNAVAILABLE':503}[code],code,'분석 결과를 준비하지 못했어요.',retryable=True)
+            if code=='RATE_LIMITED':error.wait=30
+            raise error
         return Response({'artwork':artwork_dto(w,True),**results})
     with transaction.atomic():
         current=get_locked(Artwork,w.id);version(current,w.version);old=before(current)

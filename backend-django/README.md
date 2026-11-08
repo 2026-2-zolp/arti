@@ -78,3 +78,7 @@ requirements.in에서 Django5.2 LTS/DRF3.16 경계를정하고 requirements.lock
 이는 Git 자료 복원이며 광권님 로컬 DB의 고유 수정이 없다는 증명이 아니다. 유영국 전시는 다른 외부 ID의 전시·작품으로 등록할 수 있지만 실제 자료와 사람 검수는 후속 과업이다. 사용자/세션 전체 이관을 포함하지 않는다.
 
 교차 origin 프론트가 필요한 경우에만 API의 ARTI_ALLOWED_ORIGINS에 정확한 origin을 쉼표로 지정한다. 기본값은 빈 목록이며 Vite proxy의 같은 origin 요청을 권장한다. If-Match 요청/ETag 노출을 지원해도 실제 API 권한 검사는 유지한다.
+
+## 텍스트 AI 연결 설정 준비
+
+기본은 disabled/503이다. 사용자 요청으로 OpenAI 호환 Chat Completions adapter를 준비했다. 서버의 ignored .env.compose에 provider/key/base URL/model을 명시하면 텍스트5종만 연결된다. 태그/감정은 별도이며 Kanana 자동대체는 없다. [설정·지원범위](../docs/operations/AI_설정과모델선택.md), [로컬63검사·미검증경계](../docs/execution-plan/2026-11-07/records/W07-preparation/README.md). 실제 유료 모델 품질을 검증한 상태는 아니다.

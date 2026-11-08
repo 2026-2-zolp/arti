@@ -36,3 +36,5 @@ W04 로컬 API/DB/Compose와 React 최소 흐름까지 검증했다. [새 API �
 ## 과거 자료
 
 [조사 아카이브](../../project-baseline/2026-11-06/README.md)와 [v1 계획](../2026-11-06/README.md)은 당시 기록 그대로다. 개인 PC/조사 사본 경로가 남아 있어 새 체크아웃의 실행 경로로 사용하지 않는다. 실제 카톡·DB·키·임시 pytest 폴더는 복제하지 않았다. 원시 logs는 fixtures/fake 환경의 과거 증거이며 자동 재실행 결과로 오인하지 않는다.
+
+2026-11-08 후속: [W11 CI 도입](records/W11/README.md)은 workflow/로컬 Linux 검증 완료·원격 run 대기다. [W07 텍스트 provider 준비](records/W07-preparation/README.md)는 실제 모델 게이트를 통과시킨 것이 아니다.

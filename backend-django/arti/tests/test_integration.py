@@ -252,6 +252,22 @@ class IntegrationTests(Helpers,TestCase):
                 with self.assertRaises(CommandError):call_command('import_capture_bundle',str(root),stdout=io.StringIO())
 
 
+    @override_settings(ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-provider-test-key',
+                       OPENAI_MODEL='test-model', ARTI_LLM_MODELS={})
+    def test_actual_provider_429_preserves_api_retry_after(self):
+        from arti.tests.test_provider import endpoint
+        with endpoint(status=429,body=b'private-upstream-detail') as requests:
+            answer=self.a.post('/api/artworks/fixture-art01/ask',{'question':'어떤 색인가요?'},format='json')
+            analysis=self.admin.post('/api/admin/artworks/fixture-art01/analyze',{'version':1},format='json')
+        for response in [answer,analysis]:
+            self.assertEqual(response.status_code,429,response.content)
+            self.assertEqual(response.json()['code'],'RATE_LIMITED')
+            self.assertEqual(response['Retry-After'],'30')
+            self.assertNotIn('private-upstream-detail',response.content.decode())
+        self.assertEqual(len(requests),3)
+        self.assertEqual(Artwork.objects.get(pk='fixture-art01').version,1)
+
+
 @override_settings(ARTI_ENV='test',ALLOW_TEST_FIXTURES=True)
 class ConcurrentVisitTests(Helpers,TransactionTestCase):
     def test_analysis_slot_is_cross_connection_exclusive(self):

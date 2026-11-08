@@ -43,3 +43,13 @@ REST_FRAMEWORK = {
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024
 SECURE_CONTENT_TYPE_NOSNIFF = True
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.PBKDF2PasswordHasher']
+
+# Server only. No key/model is required to boot or run normal CI.
+ARTI_LLM_PROVIDER = os.environ.get('ARTI_LLM_PROVIDER', 'disabled')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', '')
+ARTI_LLM_MODELS = {kind: os.environ.get('ARTI_LLM_MODEL_' + kind.upper(), '')
+                   for kind in ('answer', 'explanation', 'summary', 'guide', 'interpret')}
+ARTI_LLM_JSON_MODE = os.environ.get('ARTI_LLM_JSON_MODE', 'true').lower() == 'true'
+ARTI_LLM_TOKEN_PARAMETER = os.environ.get('ARTI_LLM_TOKEN_PARAMETER', 'max_completion_tokens')

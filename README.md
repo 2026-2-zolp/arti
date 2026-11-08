@@ -155,3 +155,5 @@ flowchart LR
 ---
 
 **기획 참고:** [ARTI 전체 Notion](https://app.notion.com/p/26-2-ARTI-a3534713f16782789905811787871032) · [10/12 구현 착수안](https://app.notion.com/p/3f734713f16781dda4fef887384ac17d) · [개발 1단계](https://app.notion.com/p/3fa34713f167804ebb23c251498f3c5a)
+
+후속: [CI workflow](.github/workflows/ci.yml)를 도입했고 실제 Actions 실행은 push 이후 확인합니다. [서버 AI 설정](docs/operations/AI_설정과모델선택.md)은 기본 비활성·키 미설정이며 실제 모델 품질 검증은 남아 있습니다.

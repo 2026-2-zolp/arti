@@ -1,8 +1,12 @@
-"""Provider boundary. W07 connects real providers; no production fake success."""
+"""Explicit provider boundary; disabled by default, never fake success/fallback."""
+from django.conf import settings
 from .http import ContractError
 
 
 def generate(kind, snapshot, **context):
+    if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
+        from .llm import generate_text
+        return generate_text(kind, snapshot, **context)
     raise ContractError(503, 'AI_UNAVAILABLE', 'AI 연결을 준비 중이에요. 잠시 후 다시 시도해 주세요.', retryable=True)
 
 
