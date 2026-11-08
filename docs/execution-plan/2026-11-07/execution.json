@@ -46,6 +46,13 @@
     "record": "records/W07-preparation/tag-baseline-2026-11-09/feedback-plan.md"
   }
 },
+  "scoreAndFeedbackReview": {
+  "record": "records/W07-preparation/ai-review-2026-11-09/README.md",
+  "scope": "vivid/cool error review + score/opinion/feedback contract review",
+  "productImplementation": "not started; guest retention/identity and sample-display policy pending",
+  "settingsAndHumanLabels": "unchanged",
+  "gatePromotion": false
+},
   "tasks": [
     {
       "id": "W01",
