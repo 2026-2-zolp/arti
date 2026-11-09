@@ -1,0 +1,26 @@
+{
+  "asOf": "2026-11-09 KST",
+  "project": "arti-dev",
+  "newVolumes": [
+    "arti-dev_postgres_data",
+    "arti-dev_media_data"
+  ],
+  "unchangedOriginalVolumes": true,
+  "counts": {
+    "exhibitions": 0,
+    "artworks": 0,
+    "accounts": 0
+  },
+  "provider": "openai_compatible",
+  "requestedModel": "gpt-6-luna",
+  "keyConfigured": true,
+  "api": "http://127.0.0.1:4018",
+  "frontend": "http://127.0.0.1:5178",
+  "frontendProxyReady": {
+    "ok": true,
+    "database": "postgresql"
+  },
+  "browserObserved": "ARTI / 진행 중인 전시 지금 진행 중인 전시가 없어요.",
+  "runningAfterTask": true,
+  "scope": "fresh empty development runtime, no real exhibition intake or full journey acceptance"
+}

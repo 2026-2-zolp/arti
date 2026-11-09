@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "scope": "review artifacts only; no production feedback implementation",
+  "cases": 18,
+  "examples": {
+    "model": {
+      "label": "모델 연관 점수",
+      "value": 0.74,
+      "unit": "score",
+      "isProbability": false
+    },
+    "team": {
+      "positive": 3,
+      "validJudgments": 5,
+      "unknown": 0,
+      "responses": 5,
+      "positivePercent": 60.0,
+      "responsePercent": null,
+      "scope": "positive percentage excludes unknown; response percentage includes unknown"
+    },
+    "helpful": {
+      "positive": 8,
+      "validJudgments": 10,
+      "unknown": 0,
+      "responses": 10,
+      "positivePercent": 80.0,
+      "responsePercent": 50.0,
+      "scope": "positive percentage excludes unknown; response percentage includes unknown"
+    },
+    "unknown": {
+      "positive": 3,
+      "validJudgments": 4,
+      "unknown": 1,
+      "responses": 5,
+      "positivePercent": 75.0,
+      "responsePercent": null,
+      "scope": "positive percentage excludes unknown; response percentage includes unknown"
+    },
+    "small": {
+      "positive": 2,
+      "validJudgments": 2,
+      "unknown": 0,
+      "responses": 2,
+      "positivePercent": null,
+      "responsePercent": null,
+      "scope": "positive percentage excludes unknown; response percentage includes unknown"
+    },
+    "none": {
+      "positive": 0,
+      "validJudgments": 0,
+      "unknown": 0,
+      "responses": 0,
+      "positivePercent": null,
+      "responsePercent": null,
+      "scope": "positive percentage excludes unknown; response percentage includes unknown"
+    }
+  },
+  "gateStatusUnchanged": true,
+  "tests": {
+    "passed": 21,
+    "seconds": 6.031
+  },
+  "planChecks": {
+    "errors": 0,
+    "protectedFilesPreserved": 38,
+    "guardrailCases": 25,
+    "W02Errors": 0
+  },
+  "sourceInputsPreserved": true,
+  "reviewDecision": "preparatory artifact review pass; team labels/UI acceptance/G5 unchanged"
+}

@@ -1,0 +1,40 @@
+{
+  "task": "structure and Git material/legacy dependency separation",
+  "materialTestsWindows": 7,
+  "materialTestsLinux": 7,
+  "frontendTests": 17,
+  "actionlintExitCode": 0,
+  "workPayloadsUnchanged": 40,
+  "backendAndAiServiceUnchangedFromBaseline": true,
+  "protectedArchivesPreserved": 38,
+  "W06": "in_progress",
+  "actualYooIntakeOrHumanApproval": false,
+  "remoteCIExecutedForThisChange": false,
+  "remotePush": false,
+  "sourceFiles": [
+    {
+      "path": "scripts/git_materials.py",
+      "sha256": "26d62ca1bf3773770252ad3cb9b8443c74bdcd39e275be9895a202de01ea8faf"
+    },
+    {
+      "path": "scripts/export_git_captures.py",
+      "sha256": "f611b6bce1ee22028f35e6c326c46511929a041e7c41693b6d1456a25ff74827"
+    },
+    {
+      "path": "scripts/tests/test_git_materials.py",
+      "sha256": "68d06c403c7ca62233086104acb257b6d922c14d470877b0d63ea87cad2b61fb"
+    },
+    {
+      "path": "data/reference/git-captures/capture-descriptions.json",
+      "sha256": "416000f684bd66af6ccc694bf91242f07fae2bb7f53ee6cc042bb3f022c6b0b7"
+    },
+    {
+      "path": "data/reference/git-captures/provenance.json",
+      "sha256": "0e22971c7676dae878b2eaa03f7800956dc452a459cce38f5d6d033d64591176"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "039fd2cd114807336044d1939a4a73921e4e90f5439ba2aafe1d55c560935e9a"
+    }
+  ]
+}

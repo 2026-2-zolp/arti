@@ -4,8 +4,9 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
 
+/** 전시·작품 운영 현황을 요약하는 화면 */
 export default function A02Dashboard() {
-  const { data } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
+  const { data } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   if (!data) return <PageHead title="대시보드" desc="불러오는 중…" />;
   const [exs, works] = data;
 
@@ -62,6 +63,7 @@ export default function A02Dashboard() {
   );
 }
 
+/** 관리 현황의 단일 요약 수치를 표시합니다. */
 function Stat({ label, value, sub, to, warn }: { label: string; value: number; sub: string; to: string; warn?: boolean }) {
   return (
     <Link to={to} className={`stat ${warn ? 'warn' : ''}`}>

@@ -1,0 +1,48 @@
+import sys,os,json,hashlib,io
+from pathlib import Path
+sys.path.insert(0,'/app');os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from rest_framework.test import APIClient
+from arti.models import Account,Artwork,Exhibition,Session,Visit,VisitReaction
+before=json.loads(Path('/evidence/before.json').read_text(encoding='utf-8'))
+new=json.loads(Path('/intake/manifest.json').read_text(encoding='utf-8'))
+core=json.loads(Path('/core/core3-manifest.json').read_text(encoding='utf-8'))
+rows=core['items']+new['items']; assert len(rows)==len({r['id'] for r in rows})==15
+ex=Exhibition.objects.get(pk=new['exhibition']['id']);assert ex.status=='draft' and ex.version==2 and ex.floor_plan is None and ex.rooms==[]
+assert ex.subtitle=='[시연 재구성] '+new['exhibition']['subtitle']
+public=APIClient(HTTP_HOST='localhost');staff=APIClient(HTTP_HOST='localhost')
+staff.force_authenticate(user=Account(id='internal-read-check',role='admin'))
+assert public.get('/api/exhibitions').json()==public.get('/api/artworks').json()==[]
+assert public.get('/api/exhibitions/'+ex.id).status_code==404
+assert staff.get('/api/admin/exhibitions/'+ex.id).status_code==200
+assert not Artwork.objects.filter(pk='yyk-demo-007').exists()
+hashes={}
+for row in rows:
+ w=Artwork.objects.get(pk=row['id']); assert w.exhibition_id==ex.id
+ assert w.review_status=='source_check' and not w.show_image and w.position_x is None and w.position_y is None
+ assert w.tags==[] and w.tag_status=='none' and w.emotion_status=='none' and w.tag_scores is None and w.analysis is None
+ assert w.summary==row['summary'] and w.summary_status=='suggested' and w.guide_status=='suggested'
+ assert w.guide_intro==row['guide']['intro'] and w.guided_looking==row['guide']['questions'] and w.guided_hints==row['guide']['hints']
+ assert row['recordId'] in w.source and row['assetId'] in w.source
+ if row['id'] in ['yyk-demo-013','yyk-demo-014','yyk-demo-015','yyk-demo-016']:
+  assert w.year=='' and '도상 후보' in w.title and '개별 판본' in w.description
+ path=settings.MEDIA_ROOT/w.image_file; hashes[path.name]=hashlib.sha256(path.read_bytes()).hexdigest(); assert hashes[path.name]==row['sha256']
+ assert public.get('/api/artworks/'+w.id).status_code==public.get('/api/uploads/'+w.image_file).status_code==404
+ response=staff.get('/api/admin/artworks/'+w.id); assert response.status_code==200 and response.json()['summaryStatus']=='suggested'
+ response=staff.get('/api/admin/uploads/'+w.image_file);assert response.status_code==200;response.close()
+for work_id,digest in before['workRowSha256'].items():
+ row=Artwork.objects.filter(pk=work_id).values().get()
+ observed=hashlib.sha256(json.dumps(row,sort_keys=True,default=str,ensure_ascii=False).encode()).hexdigest(); assert observed==digest
+for name,digest in before['media'].items():assert hashes[name]==digest
+try: call_command('import_exhibition_bundle','/intake',append_to_draft=True,expected_version=2,stdout=io.StringIO())
+except CommandError: pass
+else: raise AssertionError('Reimport unexpectedly accepted')
+assert Account.objects.count()==Session.objects.count()==Visit.objects.count()==VisitReaction.objects.count()==0
+assert Artwork.objects.count()==15 and Exhibition.objects.count()==1
+assert all(hashlib.sha256((settings.MEDIA_ROOT/name).read_bytes()).hexdigest()==digest for name,digest in hashes.items())
+ex.refresh_from_db();assert ex.version==2
+print('VERIFIED='+json.dumps({'privateExhibitions':1,'privateWorks':15,'newWorks':12,'held007Absent':True,'old3FullRowsAndMediaPreserved':True,'motif4YearBlankAndCandidateLabel':True,'publicWorks':0,'publicMedia404':True,'adminMedia200':True,'adminApiRead':'in-memory test principal; no real account/login created','reimportBlockedAndUnchanged':True,'suggestedStatesPreserved':True,'provider':settings.ARTI_LLM_PROVIDER,'requestedModel':settings.OPENAI_MODEL,'keyConfigured':bool(settings.OPENAI_API_KEY)},sort_keys=True))

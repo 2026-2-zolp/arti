@@ -1,0 +1,427 @@
+﻿2026-11-08T04:56:03.7837944Z Current runner version: '2.338.2'
+2026-11-08T04:56:03.7858981Z ##[group]Runner Image Provisioner
+2026-11-08T04:56:03.7859585Z Hosted Compute Agent
+2026-11-08T04:56:03.7859958Z Version: 20261028.624
+2026-11-08T04:56:03.7860396Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-08T04:56:03.7860851Z Build Date: 2026-10-28T21:51:42Z
+2026-11-08T04:56:03.7861309Z Worker ID: {5bafb55f-f221-4e55-bd8a-bef3190a5cb3}
+2026-11-08T04:56:03.7861830Z Region: centralus
+2026-11-08T04:56:03.7862189Z Cloud: Azure
+2026-11-08T04:56:03.7862571Z ##[endgroup]
+2026-11-08T04:56:03.7863802Z ##[group]Operating System
+2026-11-08T04:56:03.7864184Z Ubuntu
+2026-11-08T04:56:03.7864582Z 24.04.5
+2026-11-08T04:56:03.7864912Z LTS
+2026-11-08T04:56:03.7865261Z ##[endgroup]
+2026-11-08T04:56:03.7865631Z ##[group]Runner Image
+2026-11-08T04:56:03.7866051Z Image: ubuntu-24.04
+2026-11-08T04:56:03.7866479Z Version: 20261101.360.1
+2026-11-08T04:56:03.7867270Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-08T04:56:03.7868267Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-08T04:56:03.7868860Z ##[endgroup]
+2026-11-08T04:56:03.7869611Z ##[group]GITHUB_TOKEN Permissions
+2026-11-08T04:56:03.7871000Z Contents: read
+2026-11-08T04:56:03.7871435Z Metadata: read
+2026-11-08T04:56:03.7871829Z ##[endgroup]
+2026-11-08T04:56:03.7873646Z Secret source: Actions
+2026-11-08T04:56:03.7874265Z Cache mode: write
+2026-11-08T04:56:03.7874755Z Prepare workflow directory
+2026-11-08T04:56:03.8161461Z Prepare all required actions
+2026-11-08T04:56:03.8212714Z Getting action download info
+2026-11-08T04:56:04.0599093Z Download action repository 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+2026-11-08T04:56:04.1511015Z Download action repository 'actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+2026-11-08T04:56:04.3625258Z Complete job name: Plan and contract checks
+2026-11-08T04:56:04.4210899Z ##[group]Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+2026-11-08T04:56:04.4211455Z with:
+2026-11-08T04:56:04.4211704Z   fetch-depth: 0
+2026-11-08T04:56:04.4211967Z   persist-credentials: false
+2026-11-08T04:56:04.4212263Z   repository: 2026-2-zolp/arti
+2026-11-08T04:56:04.4214650Z   token: ***
+2026-11-08T04:56:04.4214892Z   ssh-strict: true
+2026-11-08T04:56:04.4215142Z   ssh-user: git
+2026-11-08T04:56:04.4215386Z   clean: true
+2026-11-08T04:56:04.4215644Z   sparse-checkout-cone-mode: true
+2026-11-08T04:56:04.4215949Z   fetch-tags: false
+2026-11-08T04:56:04.4216202Z   show-progress: true
+2026-11-08T04:56:04.4216462Z   lfs: false
+2026-11-08T04:56:04.4216701Z   submodules: false
+2026-11-08T04:56:04.4216960Z   set-safe-directory: true
+2026-11-08T04:56:04.4217252Z   allow-unsafe-pr-checkout: false
+2026-11-08T04:56:04.4217635Z ##[endgroup]
+2026-11-08T04:56:04.6544429Z Syncing repository: 2026-2-zolp/arti
+2026-11-08T04:56:04.6545775Z ##[group]Getting Git version info
+2026-11-08T04:56:04.6546223Z Working directory is '/home/runner/work/arti/arti'
+2026-11-08T04:56:04.6546769Z [command]/usr/bin/git version
+2026-11-08T04:56:04.6630954Z git version 2.56.0
+2026-11-08T04:56:04.6648702Z ##[endgroup]
+2026-11-08T04:56:04.6661690Z Temporarily overriding HOME='/home/runner/work/_temp/4f2b7072-939f-4af5-85a8-9cfe2bd9d429' before making global git config changes
+2026-11-08T04:56:04.6663152Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:04.6666135Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:04.6723450Z Deleting the contents of '/home/runner/work/arti/arti'
+2026-11-08T04:56:04.6728072Z ##[group]Determining repository object format
+2026-11-08T04:56:04.6729771Z ##[endgroup]
+2026-11-08T04:56:04.6730276Z ##[group]Initializing the repository
+2026-11-08T04:56:04.6734328Z [command]/usr/bin/git init /home/runner/work/arti/arti
+2026-11-08T04:56:04.6832461Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-08T04:56:04.6834024Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-08T04:56:04.6835090Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-08T04:56:04.6835918Z hint: call:
+2026-11-08T04:56:04.6836416Z hint:
+2026-11-08T04:56:04.6837009Z hint: 	git config --global init.defaultBranch <name>
+2026-11-08T04:56:04.6837691Z hint:
+2026-11-08T04:56:04.6838337Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-08T04:56:04.6839338Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-08T04:56:04.6840131Z hint:
+2026-11-08T04:56:04.6840630Z hint: 	git branch -m <name>
+2026-11-08T04:56:04.6841195Z hint:
+2026-11-08T04:56:04.6841910Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-08T04:56:04.6843554Z Initialized empty Git repository in /home/runner/work/arti/arti/.git/
+2026-11-08T04:56:04.6855480Z [command]/usr/bin/git remote add origin https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:04.6924407Z ##[endgroup]
+2026-11-08T04:56:04.6925125Z ##[group]Disabling automatic garbage collection
+2026-11-08T04:56:04.6925761Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-08T04:56:04.6955037Z ##[endgroup]
+2026-11-08T04:56:04.6956367Z ##[group]Setting up auth
+2026-11-08T04:56:04.6956910Z Removing SSH command configuration
+2026-11-08T04:56:04.6962369Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:04.7009792Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:04.7344048Z Removing HTTP extra header
+2026-11-08T04:56:04.7349430Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:04.7390288Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:04.7593460Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:04.7599370Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:04.7642845Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:04.7855781Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-08T04:56:04.7906079Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:04.7947984Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:04.8004770Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:04.8189594Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:04.8235101Z ##[endgroup]
+2026-11-08T04:56:04.8235900Z ##[group]Fetching the repository
+2026-11-08T04:56:04.8244627Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-11-08T04:56:06.2591626Z From https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:06.2593348Z  * [new branch]      dev/김광권         -> origin/dev/김광권
+2026-11-08T04:56:06.2594564Z  * [new branch]      dev/김동섭         -> origin/dev/김동섭
+2026-11-08T04:56:06.2595407Z  * [new branch]      dev/김동섭-1106-merge -> origin/dev/김동섭-1106-merge
+2026-11-08T04:56:06.2596246Z  * [new branch]      dev/임준억         -> origin/dev/임준억
+2026-11-08T04:56:06.2596971Z  * [new branch]      dev/지성현         -> origin/dev/지성현
+2026-11-08T04:56:06.2597520Z  * [new branch]      main                  -> origin/main
+2026-11-08T04:56:06.2601141Z [command]/usr/bin/git branch --list --remote origin/dev/임준억
+2026-11-08T04:56:06.2636674Z   origin/dev/임준억
+2026-11-08T04:56:06.2644242Z [command]/usr/bin/git rev-parse refs/remotes/origin/dev/임준억
+2026-11-08T04:56:06.2678279Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:06.2681766Z ##[endgroup]
+2026-11-08T04:56:06.2682254Z ##[group]Determining the checkout info
+2026-11-08T04:56:06.2683261Z ##[endgroup]
+2026-11-08T04:56:06.2686657Z [command]/usr/bin/git sparse-checkout disable
+2026-11-08T04:56:06.2746254Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-08T04:56:06.2785237Z ##[group]Checking out the ref
+2026-11-08T04:56:06.2788524Z [command]/usr/bin/git checkout --progress --force -B dev/임준억 refs/remotes/origin/dev/임준억
+2026-11-08T04:56:06.3556547Z Switched to a new branch 'dev/임준억'
+2026-11-08T04:56:06.3559711Z branch 'dev/임준억' set up to track 'origin/dev/임준억'.
+2026-11-08T04:56:06.3571385Z ##[endgroup]
+2026-11-08T04:56:06.3626218Z [command]/usr/bin/git log -1 --format=%H
+2026-11-08T04:56:06.3666323Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:06.3677913Z ##[group]Removing auth
+2026-11-08T04:56:06.3697979Z Removing SSH command configuration
+2026-11-08T04:56:06.3698894Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:06.3732291Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:06.3969249Z Removing HTTP extra header
+2026-11-08T04:56:06.3972619Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:06.4015531Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:06.4225302Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:06.4232542Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:06.4271094Z includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:06.4272534Z includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:06.4273967Z includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:06.4275154Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:06.4281859Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:06.4315743Z /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4327839Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4374548Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:06.4412548Z /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4422178Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4470625Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:06.4504110Z /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4511084Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4551851Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:06.4584169Z /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4592513Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config
+2026-11-08T04:56:06.4634316Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:06.4842374Z Removing credentials config '/home/runner/work/_temp/git-credentials-692bf198-b1ee-4666-a6ee-3d2d77f456c8.config'
+2026-11-08T04:56:06.4850315Z ##[endgroup]
+2026-11-08T04:56:06.5217828Z ##[group]Run actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+2026-11-08T04:56:06.5218891Z with:
+2026-11-08T04:56:06.5219436Z   python-version: 3.12
+2026-11-08T04:56:06.5220045Z   check-latest: false
+2026-11-08T04:56:06.5225805Z   token: ***
+2026-11-08T04:56:06.5226382Z   update-environment: true
+2026-11-08T04:56:06.5227058Z   allow-prereleases: false
+2026-11-08T04:56:06.5227703Z   freethreaded: false
+2026-11-08T04:56:06.5228300Z ##[endgroup]
+2026-11-08T04:56:06.6269790Z ##[group]Installed versions
+2026-11-08T04:56:06.6343900Z Successfully set up CPython (3.12.16)
+2026-11-08T04:56:06.6345702Z ##[endgroup]
+2026-11-08T04:56:06.6540573Z ##[group]Run python docs/execution-plan/2026-11-07/verify_plan.py
+2026-11-08T04:56:06.6541909Z [36;1mpython docs/execution-plan/2026-11-07/verify_plan.py[0m
+2026-11-08T04:56:06.6578262Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:06.6578985Z env:
+2026-11-08T04:56:06.6579706Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.6580911Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:06.6582066Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.6583345Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.6584392Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.6585440Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:06.6586327Z ##[endgroup]
+2026-11-08T04:56:06.7423141Z {
+2026-11-08T04:56:06.7424159Z   "ok": true,
+2026-11-08T04:56:06.7424970Z   "checks": [
+2026-11-08T04:56:06.7426064Z     "Unique IDs, baseline, and expected coverage",
+2026-11-08T04:56:06.7427629Z     "Task/gate mixed DAG, start and completion prerequisites, review evidence",
+2026-11-08T04:56:06.7429320Z     "Issue closure and conditional PostgreSQL operating choice",
+2026-11-08T04:56:06.7430634Z     "Local links and document ID coverage",
+2026-11-08T04:56:06.7431854Z     "Persona improvement and scenario traceability",
+2026-11-08T04:56:06.7433321Z     "Original archive and v1 inventory/SHA256 unchanged"
+2026-11-08T04:56:06.7434467Z   ],
+2026-11-08T04:56:06.7435181Z   "tasks": 12,
+2026-11-08T04:56:06.7435931Z   "gates": 10,
+2026-11-08T04:56:06.7436705Z   "criteria": 33,
+2026-11-08T04:56:06.7437497Z   "issues": 37,
+2026-11-08T04:56:06.7438275Z   "localLinks": 64,
+2026-11-08T04:56:06.7439149Z   "protectedFilesPreserved": 38,
+2026-11-08T04:56:06.7440154Z   "errors": [],
+2026-11-08T04:56:06.7441318Z   "scope": "Plan integrity only; no actual service/model/cloud acceptance"
+2026-11-08T04:56:06.7442706Z }
+2026-11-08T04:56:06.7539251Z ##[group]Run python docs/execution-plan/2026-11-07/verify_guardrails.py
+2026-11-08T04:56:06.7540439Z [36;1mpython docs/execution-plan/2026-11-07/verify_guardrails.py[0m
+2026-11-08T04:56:06.7559510Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:06.7560122Z env:
+2026-11-08T04:56:06.7560777Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.7561992Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:06.7563122Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.7564091Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.7565058Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:06.7566030Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:06.7566851Z ##[endgroup]
+2026-11-08T04:56:07.1447342Z {
+2026-11-08T04:56:07.1448210Z   "ok": true,
+2026-11-08T04:56:07.1448807Z   "cases": [
+2026-11-08T04:56:07.1449448Z     {
+2026-11-08T04:56:07.1450022Z       "case": "stale_summary_field",
+2026-11-08T04:56:07.1450788Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1451478Z       "passed": true,
+2026-11-08T04:56:07.1452149Z       "expectedError": "Legacy summary field",
+2026-11-08T04:56:07.1453139Z       "actualErrors": []
+2026-11-08T04:56:07.1453789Z     },
+2026-11-08T04:56:07.1454310Z     {
+2026-11-08T04:56:07.1454894Z       "case": "pass_without_evidence",
+2026-11-08T04:56:07.1455631Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1456332Z       "passed": true,
+2026-11-08T04:56:07.1457019Z       "expectedError": "lacks evidence",
+2026-11-08T04:56:07.1457767Z       "actualErrors": []
+2026-11-08T04:56:07.1458355Z     },
+2026-11-08T04:56:07.1458857Z     {
+2026-11-08T04:56:07.1459510Z       "case": "release_closure_cycle",
+2026-11-08T04:56:07.1460589Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1461538Z       "passed": true,
+2026-11-08T04:56:07.1462469Z       "expectedError": "Release closure cycle",
+2026-11-08T04:56:07.1463735Z       "actualErrors": []
+2026-11-08T04:56:07.1464396Z     },
+2026-11-08T04:56:07.1464884Z     {
+2026-11-08T04:56:07.1465610Z       "case": "release_open_issues",
+2026-11-08T04:56:07.1466726Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1467391Z       "passed": true,
+2026-11-08T04:56:07.1468234Z       "expectedError": "unresolved release-required issue",
+2026-11-08T04:56:07.1469089Z       "actualErrors": []
+2026-11-08T04:56:07.1469692Z     },
+2026-11-08T04:56:07.1470199Z     {
+2026-11-08T04:56:07.1470773Z       "case": "work_mapping_missing",
+2026-11-08T04:56:07.1471499Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1472177Z       "passed": true,
+2026-11-08T04:56:07.1473076Z       "expectedError": "omits criterion implementation work",
+2026-11-08T04:56:07.1473945Z       "actualErrors": []
+2026-11-08T04:56:07.1474528Z     },
+2026-11-08T04:56:07.1475029Z     {
+2026-11-08T04:56:07.1475547Z       "case": "task_cycle",
+2026-11-08T04:56:07.1476208Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1476868Z       "passed": true,
+2026-11-08T04:56:07.1477534Z       "expectedError": "Mixed dependency cycle",
+2026-11-08T04:56:07.1478296Z       "actualErrors": []
+2026-11-08T04:56:07.1478867Z     },
+2026-11-08T04:56:07.1479346Z     {
+2026-11-08T04:56:07.1479877Z       "case": "complete_without_ac",
+2026-11-08T04:56:07.1480574Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1481225Z       "passed": true,
+2026-11-08T04:56:07.1481843Z       "expectedError": "unpassed criterion",
+2026-11-08T04:56:07.1482566Z       "actualErrors": []
+2026-11-08T04:56:07.1483259Z     },
+2026-11-08T04:56:07.1483732Z     {
+2026-11-08T04:56:07.1484248Z       "case": "gate_without_review",
+2026-11-08T04:56:07.1484936Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1485570Z       "passed": true,
+2026-11-08T04:56:07.1486159Z       "expectedError": "lacks evidence",
+2026-11-08T04:56:07.1486846Z       "actualErrors": []
+2026-11-08T04:56:07.1487401Z     },
+2026-11-08T04:56:07.1487871Z     {
+2026-11-08T04:56:07.1488801Z       "case": "missing_review_path",
+2026-11-08T04:56:07.1489494Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1490132Z       "passed": true,
+2026-11-08T04:56:07.1490766Z       "expectedError": "Missing evidence file",
+2026-11-08T04:56:07.1491508Z       "actualErrors": []
+2026-11-08T04:56:07.1492096Z     },
+2026-11-08T04:56:07.1492567Z     {
+2026-11-08T04:56:07.1493377Z       "case": "complete_bypasses_gate",
+2026-11-08T04:56:07.1494085Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1494721Z       "passed": true,
+2026-11-08T04:56:07.1495372Z       "expectedError": "Required gate not passed",
+2026-11-08T04:56:07.1496132Z       "actualErrors": []
+2026-11-08T04:56:07.1496691Z     },
+2026-11-08T04:56:07.1497163Z     {
+2026-11-08T04:56:07.1497687Z       "case": "start_bypasses_gate",
+2026-11-08T04:56:07.1498378Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1499027Z       "passed": true,
+2026-11-08T04:56:07.1499676Z       "expectedError": "Required gate not passed",
+2026-11-08T04:56:07.1500430Z       "actualErrors": []
+2026-11-08T04:56:07.1500991Z     },
+2026-11-08T04:56:07.1501453Z     {
+2026-11-08T04:56:07.1501988Z       "case": "ci_finish_before_target_api",
+2026-11-08T04:56:07.1502725Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1503511Z       "passed": true,
+2026-11-08T04:56:07.1504170Z       "expectedError": "Required task not complete",
+2026-11-08T04:56:07.1504934Z       "actualErrors": []
+2026-11-08T04:56:07.1505499Z     },
+2026-11-08T04:56:07.1505967Z     {
+2026-11-08T04:56:07.1506522Z       "case": "cloud_without_operations_gate",
+2026-11-08T04:56:07.1507268Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1507902Z       "passed": true,
+2026-11-08T04:56:07.1508537Z       "expectedError": "Required gate not passed",
+2026-11-08T04:56:07.1509276Z       "actualErrors": []
+2026-11-08T04:56:07.1509832Z     },
+2026-11-08T04:56:07.1510299Z     {
+2026-11-08T04:56:07.1510821Z       "case": "operations_undecided",
+2026-11-08T04:56:07.1511523Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1512149Z       "passed": true,
+2026-11-08T04:56:07.1513002Z       "expectedError": "without PostgreSQL operations decision",
+2026-11-08T04:56:07.1513875Z       "actualErrors": []
+2026-11-08T04:56:07.1514426Z     },
+2026-11-08T04:56:07.1514888Z     {
+2026-11-08T04:56:07.1515423Z       "case": "gate_without_owner_complete",
+2026-11-08T04:56:07.1516143Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1516774Z       "passed": true,
+2026-11-08T04:56:07.1517425Z       "expectedError": "Required task not complete",
+2026-11-08T04:56:07.1518267Z       "actualErrors": []
+2026-11-08T04:56:07.1519053Z     },
+2026-11-08T04:56:07.1519719Z     {
+2026-11-08T04:56:07.1520474Z       "case": "closed_without_commit",
+2026-11-08T04:56:07.1521584Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1522856Z       "passed": true,
+2026-11-08T04:56:07.1523834Z       "expectedError": "lacks resolved commit",
+2026-11-08T04:56:07.1524577Z       "actualErrors": []
+2026-11-08T04:56:07.1525138Z     },
+2026-11-08T04:56:07.1525617Z     {
+2026-11-08T04:56:07.1526116Z       "case": "baseline_drift",
+2026-11-08T04:56:07.1526758Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1527390Z       "passed": true,
+2026-11-08T04:56:07.1527986Z       "expectedError": "Baseline differs",
+2026-11-08T04:56:07.1528676Z       "actualErrors": []
+2026-11-08T04:56:07.1529224Z     },
+2026-11-08T04:56:07.1529697Z     {
+2026-11-08T04:56:07.1530201Z       "case": "self_gate_cycle",
+2026-11-08T04:56:07.1530852Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1531482Z       "passed": true,
+2026-11-08T04:56:07.1532115Z       "expectedError": "Mixed dependency cycle",
+2026-11-08T04:56:07.1532855Z       "actualErrors": []
+2026-11-08T04:56:07.1533564Z     },
+2026-11-08T04:56:07.1534036Z     {
+2026-11-08T04:56:07.1534554Z       "case": "unknown_persona",
+2026-11-08T04:56:07.1535219Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1535851Z       "passed": true,
+2026-11-08T04:56:07.1536721Z       "expectedError": "Unknown improvement persona",
+2026-11-08T04:56:07.1537492Z       "actualErrors": []
+2026-11-08T04:56:07.1538055Z     },
+2026-11-08T04:56:07.1538527Z     {
+2026-11-08T04:56:07.1539048Z       "case": "persona_omits_work",
+2026-11-08T04:56:07.1539729Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1540362Z       "passed": true,
+2026-11-08T04:56:07.1541016Z       "expectedError": "Improvement omits AC work",
+2026-11-08T04:56:07.1541904Z       "actualErrors": []
+2026-11-08T04:56:07.1542458Z     },
+2026-11-08T04:56:07.1543081Z     {
+2026-11-08T04:56:07.1543610Z       "case": "criterion_text_drift",
+2026-11-08T04:56:07.1544307Z       "expectedAccepted": false,
+2026-11-08T04:56:07.1544943Z       "passed": true,
+2026-11-08T04:56:07.1545547Z       "expectedError": "AC text differs",
+2026-11-08T04:56:07.1546232Z       "actualErrors": []
+2026-11-08T04:56:07.1546789Z     },
+2026-11-08T04:56:07.1547255Z     {
+2026-11-08T04:56:07.1547766Z       "case": "unchanged_plan",
+2026-11-08T04:56:07.1548422Z       "expectedAccepted": true,
+2026-11-08T04:56:07.1549049Z       "passed": true,
+2026-11-08T04:56:07.1549632Z       "expectedError": null,
+2026-11-08T04:56:07.1550255Z       "actualErrors": []
+2026-11-08T04:56:07.1550818Z     },
+2026-11-08T04:56:07.1551291Z     {
+2026-11-08T04:56:07.1551853Z       "case": "local_development_external_wait",
+2026-11-08T04:56:07.1552656Z       "expectedAccepted": true,
+2026-11-08T04:56:07.1553492Z       "passed": true,
+2026-11-08T04:56:07.1554071Z       "expectedError": null,
+2026-11-08T04:56:07.1554689Z       "actualErrors": []
+2026-11-08T04:56:07.1555246Z     },
+2026-11-08T04:56:07.1555712Z     {
+2026-11-08T04:56:07.1556267Z       "case": "ci_can_start_before_target_api",
+2026-11-08T04:56:07.1557007Z       "expectedAccepted": true,
+2026-11-08T04:56:07.1557629Z       "passed": true,
+2026-11-08T04:56:07.1558201Z       "expectedError": null,
+2026-11-08T04:56:07.1558821Z       "actualErrors": []
+2026-11-08T04:56:07.1559385Z     },
+2026-11-08T04:56:07.1559852Z     {
+2026-11-08T04:56:07.1560459Z       "case": "fixture_cd_before_real_ai_and_without_rds",
+2026-11-08T04:56:07.1561246Z       "expectedAccepted": true,
+2026-11-08T04:56:07.1561866Z       "passed": true,
+2026-11-08T04:56:07.1562442Z       "expectedError": null,
+2026-11-08T04:56:07.1563189Z       "actualErrors": []
+2026-11-08T04:56:07.1563743Z     }
+2026-11-08T04:56:07.1564207Z   ],
+2026-11-08T04:56:07.1564699Z   "negativeCases": 21,
+2026-11-08T04:56:07.1565284Z   "positiveCases": 4,
+2026-11-08T04:56:07.1566206Z   "scope": "In-memory plan-state probes only; execution.json and service gates unchanged"
+2026-11-08T04:56:07.1567214Z }
+2026-11-08T04:56:07.1621003Z ##[group]Run python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py
+2026-11-08T04:56:07.1622297Z [36;1mpython docs/execution-plan/2026-11-07/records/W02/verify_contracts.py[0m
+2026-11-08T04:56:07.1642229Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:07.1643027Z env:
+2026-11-08T04:56:07.1643721Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:07.1644805Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib/pkgconfig
+2026-11-08T04:56:07.1645815Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:07.1646727Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:07.1647655Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.16/x64
+2026-11-08T04:56:07.1648616Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.16/x64/lib
+2026-11-08T04:56:07.1649452Z ##[endgroup]
+2026-11-08T04:56:07.2940629Z {
+2026-11-08T04:56:07.2941346Z   "ok": true,
+2026-11-08T04:56:07.2942062Z   "sourceFiles": 65,
+2026-11-08T04:56:07.2942658Z   "baselineRoutes": 34,
+2026-11-08T04:56:07.2943665Z   "directFrontendCalls": 51,
+2026-11-08T04:56:07.2944364Z   "contractCases": 35,
+2026-11-08T04:56:07.2944946Z   "wireExamples": 6,
+2026-11-08T04:56:07.2945523Z   "mappedIssues": 37,
+2026-11-08T04:56:07.2946088Z   "errors": [],
+2026-11-08T04:56:07.2947279Z   "scope": "Static examples/pinned Git baseline/map integrity only; current worktree and target API acceptance are separate."
+2026-11-08T04:56:07.2948518Z }
+2026-11-08T04:56:07.3153411Z Post job cleanup.
+2026-11-08T04:56:07.4368186Z Post job cleanup.
+2026-11-08T04:56:07.5036048Z [command]/usr/bin/git version
+2026-11-08T04:56:07.5077660Z git version 2.56.0
+2026-11-08T04:56:07.5111923Z Temporarily overriding HOME='/home/runner/work/_temp/4ccd3a9e-ad25-4d6e-bcb5-91676a78a481' before making global git config changes
+2026-11-08T04:56:07.5117219Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:07.5119360Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:07.5152120Z Removing SSH command configuration
+2026-11-08T04:56:07.5158948Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:07.5200756Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:07.5450063Z Removing HTTP extra header
+2026-11-08T04:56:07.5455800Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:07.5503538Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:07.5740558Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:07.5747719Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:07.5794596Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:07.6159645Z Cleaning up orphan processes

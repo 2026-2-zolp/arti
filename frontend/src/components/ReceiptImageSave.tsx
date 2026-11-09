@@ -124,6 +124,7 @@ async function makePng(node: HTMLElement): Promise<Blob> {
   return new Promise((ok, ng) => out.toBlob((b) => (b ? ok(b) : ng(new Error('toBlob'))), 'image/png'));
 }
 
+/** 관람 영수증을 이미지로 저장하는 동작을 제공합니다. */
 export function ReceiptImageSave({
   targetRef,
   ready,

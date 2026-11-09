@@ -1,0 +1,80 @@
+# Local development only. No fixture/account creation on startup; no production deployment claim.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: arti
+      POSTGRES_USER: arti
+      POSTGRES_PASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD in an ignored env file}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U arti -d arti"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api:
+    build: ./backend-django
+    environment: &api_environment
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set a random DJANGO_SECRET_KEY}
+      ARTI_ENV: ${ARTI_ENV:-development}
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      ARTI_ALLOWED_ORIGINS: ${ARTI_ALLOWED_ORIGINS:-}
+      ARTI_MODEL_SERVICE_URL: ${ARTI_MODEL_SERVICE_URL:-}
+      ARTI_LLM_PROVIDER: ${ARTI_LLM_PROVIDER:-disabled}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      ARTI_LLM_MODEL_ANSWER: ${ARTI_LLM_MODEL_ANSWER:-}
+      ARTI_LLM_MODEL_EXPLANATION: ${ARTI_LLM_MODEL_EXPLANATION:-}
+      ARTI_LLM_MODEL_SUMMARY: ${ARTI_LLM_MODEL_SUMMARY:-}
+      ARTI_LLM_MODEL_GUIDE: ${ARTI_LLM_MODEL_GUIDE:-}
+      ARTI_LLM_MODEL_INTERPRET: ${ARTI_LLM_MODEL_INTERPRET:-}
+      ARTI_LLM_JSON_MODE: ${ARTI_LLM_JSON_MODE:-true}
+      ARTI_LLM_TOKEN_PARAMETER: ${ARTI_LLM_TOKEN_PARAMETER:-max_completion_tokens}
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: arti
+      PGUSER: arti
+      PGPASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD}
+      ALLOW_TEST_FIXTURES: ${ALLOW_TEST_FIXTURES:-false}
+      MEDIA_ROOT: /app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${ARTI_API_PORT:-4018}:8000"
+    volumes:
+      - media_data:/app/media
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/ready', timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+  migrate:
+    build: ./backend-django
+    environment: *api_environment
+    command: [python, manage.py, migrate, --noinput]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+  frontend:
+    profiles: [ui]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_PROXY: http://api:8000
+      VITE_API_TARGET: django
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${ARTI_UI_PORT:-5178}:5173"
+volumes:
+  postgres_data:
+  media_data:

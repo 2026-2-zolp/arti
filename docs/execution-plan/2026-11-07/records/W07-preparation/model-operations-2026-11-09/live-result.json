@@ -1,0 +1,134 @@
+{
+  "python": "3.12.14",
+  "versions": {
+    "torch": "2.15.0+cpu",
+    "transformers": "4.57.6",
+    "fastapi": "0.162.0",
+    "uvicorn": "0.54.0"
+  },
+  "modelRevisions": [
+    {
+      "repo": "openai/clip-vit-base-patch32",
+      "revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+      "files": [
+        "config.json",
+        "merges.txt",
+        "preprocessor_config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ]
+    },
+    {
+      "repo": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+      "revision": "8adb042d524ecd5c26d3e3ba0e3fbcf7e2d0864c",
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "spm.model",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "ai-service/app/runtime.py": "7e7d6cc0b460cbd02966ce3c26358e0eae9eae2fb755372961b7e03f0a8c97c9",
+    "ai-service/app/main.py": "a28d48aa7b3adac0b5a48d0390b4eb1ea9d99fd13809b26d584d7c17f054f9c0",
+    "ai-service/app/analyzer.py": "80ef03d4eb6aa1d18504c57da06e121f99ebb759a48a222e1b317800d95cd591",
+    "backend-django/arti/providers.py": "bdda9dcef8d5c492f621a5381510ddc582991bf1346e4d1ce6d15ba6c2840e07",
+    "backend-django/arti/model_service.py": "67b4200f66e1c238b398297a5efd299ebfd40ddba7f1368eec9c63d5b1fd1732",
+    "backend-django/arti/editing.py": "3d59a8f9ba91a61a3c41d803487993f524938abbb2bb5e2957ccfae7e2fd0e3d"
+  },
+  "scope": "single-worker local CPU operations, synthetic inputs only; no DB writes/paid LLM",
+  "events": [
+    {
+      "case": "cold_and_loading_requests",
+      "initialReady": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.0466821999871172
+      },
+      "first": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.012074800004484132
+      },
+      "second": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.028327700012596324
+      },
+      "readyAfterSeconds": 5.814691999985371
+    },
+    {
+      "case": "two_concurrent_requests",
+      "responses": [
+        {
+          "status": 429,
+          "retryAfter": "1",
+          "seconds": 0.0041621999989729375
+        },
+        {
+          "status": 200,
+          "seconds": 4.930139900010545
+        }
+      ]
+    },
+    {
+      "case": "caller_timeout_keeps_slot_until_compute_finishes",
+      "timeout": {
+        "status": "transport_error",
+        "errorType": "TimeoutError",
+        "seconds": 0.024646099976962432
+      },
+      "whileBusy": {
+        "status": 429,
+        "retryAfter": "1",
+        "seconds": 0.001614599983440712
+      },
+      "afterComplete": {
+        "status": 200,
+        "seconds": 3.3176155999826733
+      }
+    },
+    {
+      "case": "process_stop_during_django_inference",
+      "analysisWasBusy": true,
+      "djangoResult": {
+        "ok": false,
+        "status": 502,
+        "code": "PROVIDER_ERROR"
+      }
+    },
+    {
+      "case": "service_stop_restart",
+      "djangoBefore": {
+        "ok": true,
+        "tagCount": 8,
+        "emotionCount": 6
+      },
+      "djangoStopped": {
+        "ok": false,
+        "status": 503,
+        "code": "AI_UNAVAILABLE"
+      },
+      "restartCold": {
+        "status": 503,
+        "retryAfter": "5",
+        "seconds": 0.006256099994061515
+      },
+      "restartReadySeconds": 9.529387499991572,
+      "djangoAfter": {
+        "ok": true,
+        "tagCount": 8,
+        "emotionCount": 6
+      }
+    }
+  ],
+  "pass": true,
+  "peakServerTreeRssMiB": 1261.04296875,
+  "memoryScope": "sampled server launcher+child RSS, excludes callers; local Windows CPU4threads"
+}

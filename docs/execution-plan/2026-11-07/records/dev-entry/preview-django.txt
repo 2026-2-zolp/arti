@@ -1,0 +1,18 @@
+Browser tab: 8, Title: "ARTI", URL: "http://localhost:5181/exhibitions/fixture-ex01".
+0 AXWebArea ARTI, URL: localhost:5181/exhibitions/fixture-ex01
+	1 container root
+		2 container
+			3 button 뒤로가기
+			4 heading ARTI, Value: 1
+				5 text ARTI
+		6 container
+			7 heading 나만의 시선으로 만나는 미술관, Value: 2
+				8 text 나만의 시선으로 만나는 미술관
+			9 text AI가 추천하고, 작품을 보는 방법까지 안내합니다.
+			10 image 작품 앞에 선 관람객 일러스트
+			11 text 현재 전시 ARTI 개발 검증 전시 가상 전시실  ·  2026.01.01 – 2026.12.31
+		12 container
+			13 button 관람 시작하기
+			14 text 입구 QR 또는 전시 URL로 접속
+
+The focused UI element is 0 AXWebArea ARTI, URL: localhost:5181/exhibitions/fixture-ex01

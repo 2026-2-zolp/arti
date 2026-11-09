@@ -1,0 +1,307 @@
+{
+  "asOf": "2026-11-09",
+  "collector": "김광권",
+  "teamReviewStatus": "pending; user confirmed teammates have not reviewed the delivered collection",
+  "usagePermissionStatus": "not established",
+  "fields": [
+    "identity/source match",
+    "title/year/edition",
+    "image acquisition/usage scope",
+    "description fact/observation/interpretation",
+    "summary",
+    "guide questions/hints",
+    "taghypotheses",
+    "demo/layout distinction"
+  ],
+  "items": [
+    {
+      "id": "yyk-demo-001",
+      "recordId": "yyk-intake-20261109-001",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10399",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-002",
+      "recordId": "yyk-intake-20261109-002",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10396",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-003",
+      "recordId": "yyk-intake-20261109-003",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10387",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-004",
+      "recordId": "yyk-intake-20261109-004",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-005",
+      "recordId": "yyk-intake-20261109-005",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=7917",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-006",
+      "recordId": "yyk-intake-20261109-006",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10391",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-007",
+      "recordId": "yyk-intake-20261109-007",
+      "source": "http://www.yooyoungkuk.org/about/work_view.php?year=1960&id=68&cont2_limit=45",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": "007 Work/산 표기 차이 확인"
+    },
+    {
+      "id": "yyk-demo-008",
+      "recordId": "yyk-intake-20261109-008",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10389",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-009",
+      "recordId": "yyk-intake-20261109-009",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10401",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-010",
+      "recordId": "yyk-intake-20261109-010",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10383",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-011",
+      "recordId": "yyk-intake-20261109-011",
+      "source": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=201603150000405",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-012",
+      "recordId": "yyk-intake-20261109-012",
+      "source": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=201603150000405",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": ""
+    },
+    {
+      "id": "yyk-demo-013",
+      "recordId": "yyk-intake-20261109-013",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10567",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": "도상/개별판본·year비움 확인"
+    },
+    {
+      "id": "yyk-demo-014",
+      "recordId": "yyk-intake-20261109-014",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10537",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": "도상/개별판본·year비움 확인"
+    },
+    {
+      "id": "yyk-demo-015",
+      "recordId": "yyk-intake-20261109-015",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10405",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": "도상/개별판본·year비움 확인"
+    },
+    {
+      "id": "yyk-demo-016",
+      "recordId": "yyk-intake-20261109-016",
+      "source": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10403",
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "decisions": {
+        "identity": "pending",
+        "rights": "pending",
+        "description": "pending",
+        "summary": "pending",
+        "guide": "pending",
+        "tags": "pending",
+        "layout": "pending"
+      },
+      "notes": "도상/개별판본·year비움 확인"
+    }
+  ],
+  "howToRecord": "검수자/날짜/각 항목 통과·수정·보류와 근거·변경 전후를 기록. 수집자와 검수자를 동일시하지 않고 DB승인을 자동 설정하지 않음."
+}

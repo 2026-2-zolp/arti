@@ -1,5 +1,7 @@
 # 🧠 AI Service — 작품 태그·감정 분석 서버 (Python · FastAPI)
 
+현재 Django 분석 연동의 기동·로딩/과부하·timeout·중단/복구 정책은 [로컬 운영 기준](../docs/operations/모델서비스_로컬운영.md)을 따른다. 아래 Claude/Kanana 작성 흐름은 보존된 legacy 설명이며 새 Django의 GPT 텍스트 경로와 구분한다.
+
 [← 메인 안내로](../README.md) · [백엔드](../backend/README.md)
 
 관리자가 작품을 등록하고 **「AI 분석」**을 누르면, 백엔드가 이 서버에 작품 그림(과 해설)을 보내고 두 가지를 받아 옵니다.

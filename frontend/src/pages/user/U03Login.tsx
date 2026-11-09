@@ -7,6 +7,7 @@ import { api } from '../../api/client';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect, withRedirect } from '../../store/ExhibitionRoute';
 
+/** 회원 로그인 화면 */
 export default function U03Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -74,7 +75,7 @@ export default function U03Login() {
         </button>
       </div>
 
-      <p className="demo-hint">데모 계정: demo@arti.app / arti1234</p>
+      <p className="muted">가입한 계정으로 로그인해 주세요. 기본 데모 계정은 제공하지 않습니다.</p>
     </MobileShell>
   );
 }

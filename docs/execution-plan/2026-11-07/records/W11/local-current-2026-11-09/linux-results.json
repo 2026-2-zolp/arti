@@ -1,0 +1,146 @@
+{
+  "scope": "Linux command reproduction, not GitHub runner or PR acceptance",
+  "sourceHead": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+  "results": {
+    "network-create": {
+      "exitCode": 0,
+      "seconds": 0.16,
+      "command": [
+        "docker",
+        "network",
+        "create",
+        "arti-ci-intake-20261109"
+      ]
+    },
+    "postgres-start": {
+      "exitCode": 0,
+      "seconds": 0.574,
+      "command": [
+        "docker",
+        "run",
+        "-d",
+        "--name",
+        "arti-ci-intake-20261109-db",
+        "--network",
+        "arti-ci-intake-20261109",
+        "-e",
+        "POSTGRES_DB=arti",
+        "-e",
+        "POSTGRES_USER=arti",
+        "-e",
+        "POSTGRES_PASSWORD=ci-only-disposable-password",
+        "postgres:17-alpine"
+      ]
+    },
+    "model": {
+      "exitCode": 0,
+      "seconds": 20.008,
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        "C:\\Proj\\26-2-zolp\\work\\arti\\ai-service:/app:ro",
+        "-w",
+        "/app",
+        "-e",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "-e",
+        "ARTI_PRELOAD=false",
+        "-e",
+        "ARTI_WRITER_ENABLED=false",
+        "-e",
+        "HF_HUB_OFFLINE=1",
+        "-e",
+        "TRANSFORMERS_OFFLINE=1",
+        "python:3.12-slim",
+        "python",
+        "-c",
+        "import subprocess\nsubprocess.run(['python','-m','pip','install','--quiet','-r','requirements-dev.txt'],check=True)\nsubprocess.run(['python','-m','pytest','-q','-o','cache_dir=/tmp/pytest-cache','--basetemp=/tmp/arti-ci-tests'],check=True)\n"
+      ]
+    },
+    "frontend": {
+      "exitCode": 0,
+      "seconds": 24.347,
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        "C:\\Proj\\26-2-zolp\\work\\arti\\frontend:/src:ro",
+        "node:22-alpine",
+        "sh",
+        "-c",
+        "set -eu\nmkdir -p /tmp/frontend\ntar -C /src --exclude=node_modules --exclude=dist --exclude='.env*' -cf - . | tar -C /tmp/frontend -xf -\ncd /tmp/frontend\nnpm ci --ignore-scripts --no-audit --no-fund\nnpm test\nnpm run typecheck\nnpm run build\n"
+      ]
+    },
+    "django": {
+      "exitCode": 0,
+      "seconds": 70.737,
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--network",
+        "arti-ci-intake-20261109",
+        "-v",
+        "C:\\Proj\\26-2-zolp\\work\\arti\\backend-django:/app:ro",
+        "-w",
+        "/app",
+        "-e",
+        "DJANGO_SECRET_KEY=ci-only-not-a-production-secret-at-least-32-characters",
+        "-e",
+        "DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver",
+        "-e",
+        "ARTI_ENV=test",
+        "-e",
+        "ALLOW_TEST_FIXTURES=true",
+        "-e",
+        "ARTI_LLM_PROVIDER=disabled",
+        "-e",
+        "ARTI_MODEL_SERVICE_URL=",
+        "-e",
+        "OPENAI_API_KEY=",
+        "-e",
+        "PGHOST=arti-ci-intake-20261109-db",
+        "-e",
+        "PGPORT=5432",
+        "-e",
+        "PGDATABASE=arti",
+        "-e",
+        "PGUSER=arti",
+        "-e",
+        "PGPASSWORD=ci-only-disposable-password",
+        "-e",
+        "MEDIA_ROOT=/tmp/arti-ci-media",
+        "-e",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python:3.12-slim",
+        "python",
+        "-c",
+        "import subprocess\ncommands=[['python','-m','pip','install','--quiet','-r','requirements.lock'],['python','manage.py','check'],['python','manage.py','makemigrations','--check','--dry-run'],['python','manage.py','migrate','--noinput'],['python','manage.py','test','arti.tests','--noinput','-v','2']]\nfor command in commands:subprocess.run(command,check=True)\n"
+      ]
+    },
+    "postgres-cleanup": {
+      "exitCode": 0,
+      "seconds": 0.528,
+      "command": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "arti-ci-intake-20261109-db"
+      ]
+    },
+    "network-cleanup": {
+      "exitCode": 0,
+      "seconds": 0.8,
+      "command": [
+        "docker",
+        "network",
+        "rm",
+        "arti-ci-intake-20261109"
+      ]
+    }
+  }
+}

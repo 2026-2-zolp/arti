@@ -1,0 +1,2485 @@
+{
+  "version": "2.1",
+  "asOf": "2026-11-09",
+  "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
+  "preparatoryWork": {
+  "W07Preparation": {
+    "scope": [
+      "Django–FastAPI 분석 연동",
+      "가상 응답 기반 계약·저장 보호 회귀",
+      "실모델 기동·자원 측정 준비"
+    ],
+    "startRequires": [
+      "W05 complete",
+      "G4 pass"
+    ],
+    "doesNotRequire": "W06 전체 완료는 선행 기술 구현의 조건이 아님",
+    "completionStillRequires": [
+      "W06 complete",
+      "AC20/AC21/AC22 정식 평가",
+      "G5 검토"
+    ],
+    "limits": [
+      "사람 검수·공개 승인 자동 변경 없음",
+      "가상 응답 결과를 실모델 정확도/성능으로 주장하지 않음",
+      "모델 확장·정식 하네스는 별도 논의"
+    ]
+  }
+},
+  "biasMitigation": {
+  "evaluationBiasMitigation": {
+    "status": "planned feedback design; baseline measurement recorded separately",
+    "workLinks": [
+      "W06 independent labels and uncertainty",
+      "W07 fixed baseline/rater sensitivity",
+      "W05 feedback followup design",
+      "W10 user usefulness evaluation"
+    ],
+    "rules": [
+      "operational generated tags differ from independent evaluation references",
+      "individual votes/uncertainty retained; ties masked in sensitivity analysis",
+      "like/dislike artwork preference is not tag correctness or answer helpfulness",
+      "optional versioned feedback is review evidence, not automatic truth/training input",
+      "no response is not negative; exposure/rating denominators separate",
+      "no automatic approval/retraining/production threshold update"
+    ],
+    "record": "records/W07-preparation/tag-baseline-2026-11-09/feedback-plan.md"
+  }
+},
+  "scoreAndFeedbackReview": {
+  "record": "records/W07-preparation/ai-review-2026-11-09/README.md",
+  "scope": "vivid/cool error review + score/opinion/feedback contract review",
+  "productImplementation": "not started; guest retention/identity and sample-display policy pending",
+  "settingsAndHumanLabels": "unchanged",
+  "gatePromotion": false
+},
+  "isolatedJourneyReview": {
+  "record": "records/journey/2026-11-09/README.md",
+  "scope": "isolated synthetic browser/API/DB journey and coordinate-guidance correction",
+  "status": "preparatory technical checks pass",
+  "workLinks": [
+    "W05 followup",
+    "W07 preparation",
+    "W10 future real visitor acceptance"
+  ],
+  "formalGatesUnchanged": true
+},
+  "independentReviewPreparation": {
+  "record": "records/W06/independent-review-2026-11-09/README.md",
+  "tool": "../../review/yoo-2026-11-09/labeling.html",
+  "scope": "independent response collection preparation only",
+  "usageInput": "web capture by teammate, campus graduation project period per user",
+  "humanResponses": 0,
+  "identityAndContentApproval": "pending",
+  "usageConditionEvidence": "pending per image",
+  "noDatabaseMutation": true,
+  "formalGatesUnchanged": true
+},
+  "modelOperationsPreparation": {
+  "record": "records/W07-preparation/model-operations-2026-11-09/README.md",
+  "status": "local operational checks pass",
+  "scope": "single model process, admission/loading, timeout/failure/restart and PostgreSQL storage protection",
+  "doesNotClaim": [
+    "distributed capacity",
+    "native inference forced cancellation",
+    "Yoo label/quality acceptance",
+    "G5 pass"
+  ],
+  "generalRuntimeRecreated": false
+},
+  "issueReconciliation": {
+    "record": "records/reconciliation-2026-11-09/README.md",
+    "asOf": "2026-11-09",
+    "sourceHead": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+    "scope": "37 issues evidence reconciliation; no human/cloud/PR gate promotion",
+    "snapshot": "records/reconciliation-2026-11-09/before-issues.json"
+  },
+  "modelFailureJourneyReview": {
+    "record": "records/journey/model-fault-2026-11-09/README.md",
+    "status": "isolated browser fault/recovery checks pass",
+    "scope": "loading503/busy429/model HTTP timeout/stopped service/restart and local drafts/storage",
+    "formalGatesUnchanged": true,
+    "nextWork": "W12 operating decision draft"
+  },
+  "operationsPreparation": {
+    "record": "records/W12/2026-11-09/README.md",
+    "decision": "records/W12/2026-11-09/decision.json",
+    "status": "draft preparation reviewed; account/budget/selection pending",
+    "cloudResourcesCreated": false,
+    "actualAccountInspected": false,
+    "selectedPostgresDeployment": null,
+    "GOPSPromoted": false,
+    "nextWork": "W07 preparation/W05 maintenance: total analysis deadline and client abort/retry"
+  },
+  "tasks": [
+    {
+      "id": "W01",
+      "title": "통합본 확보·데이터 인수 경계 확인",
+      "dependsOn": [],
+      "requiredGates": [],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "complete",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC01",
+        "AC02"
+      ]
+    },
+    {
+      "id": "W02",
+      "title": "개발 계약·전환 범위",
+      "dependsOn": [
+        "W01"
+      ],
+      "requiredGates": [
+        "G0"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "complete",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC03",
+        "AC04",
+        "AC05"
+      ]
+    },
+    {
+      "id": "W03",
+      "title": "로컬 회귀 기준",
+      "dependsOn": [
+        "W02"
+      ],
+      "requiredGates": [
+        "G1"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "complete",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC06"
+      ]
+    },
+    {
+      "id": "W04",
+      "title": "Django·PostgreSQL·Docker 기반",
+      "dependsOn": [
+        "W03"
+      ],
+      "requiredGates": [
+        "G2"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "complete",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC08",
+        "AC09",
+        "AC10"
+      ]
+    },
+    {
+      "id": "W05",
+      "title": "핵심 흐름·검수·도슨트 맥락",
+      "dependsOn": [
+        "W04"
+      ],
+      "requiredGates": [
+        "G3"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "complete",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17"
+      ]
+    },
+    {
+      "id": "W06",
+      "title": "유영국 자료·선택풀·평가 입력",
+      "dependsOn": [
+        "W01"
+      ],
+      "requiredGates": [
+        "G0"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "in_progress",
+      "owner": " 광권: 작품선정·자료확보 / 준억: 적재·검수연결(카톡상 분담)",
+      "criteria": [
+        "AC18",
+        "AC19"
+      ]
+    },
+    {
+      "id": "W07",
+      "title": "실제 AI·품질·자원",
+      "dependsOn": [
+        "W05",
+        "W06"
+      ],
+      "requiredGates": [
+        "G4"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "planned",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC20",
+        "AC21",
+        "AC22"
+      ]
+    },
+    {
+      "id": "W08",
+      "title": "제한된 AWS 시험환경",
+      "dependsOn": [
+        "W04",
+        "W12"
+      ],
+      "requiredGates": [
+        "G3",
+        "GOPS"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "planned",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26"
+      ]
+    },
+    {
+      "id": "W09",
+      "title": "CD·배포·복귀 시험",
+      "dependsOn": [
+        "W05",
+        "W08",
+        "W11"
+      ],
+      "requiredGates": [
+        "G4",
+        "GCI",
+        "GOPS"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "planned",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC27",
+        "AC28"
+      ]
+    },
+    {
+      "id": "W10",
+      "title": "실환경 인수·릴리스",
+      "dependsOn": [
+        "W06",
+        "W07",
+        "W09"
+      ],
+      "requiredGates": [
+        "G0",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6",
+        "GCI",
+        "GOPS"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "planned",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ]
+    },
+    {
+      "id": "W11",
+      "title": "GitHub Actions CI",
+      "dependsOn": [
+        "W03"
+      ],
+      "requiredGates": [
+        "G2"
+      ],
+      "completionDependsOn": [
+        "W04"
+      ],
+      "completionGates": [],
+      "status": "in_progress",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC07"
+      ]
+    },
+    {
+      "id": "W12",
+      "title": "운영 구성·예산 결정",
+      "dependsOn": [
+        "W01"
+      ],
+      "requiredGates": [
+        "G0"
+      ],
+      "completionDependsOn": [],
+      "completionGates": [],
+      "status": "in_progress",
+      "owner": "준억(통합·리팩토링 중심)",
+      "criteria": [
+        "AC33"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "G0",
+      "dependsOn": [],
+      "status": "pass",
+      "criteria": [
+        "AC01",
+        "AC02"
+      ],
+      "reviewEvidence": [
+        "records/W01/gate-review.md"
+      ]
+    },
+    {
+      "id": "G1",
+      "dependsOn": [
+        "G0"
+      ],
+      "status": "pass",
+      "criteria": [
+        "AC03",
+        "AC04",
+        "AC05"
+      ],
+      "reviewEvidence": [
+        "records/W02/gate-review.md"
+      ]
+    },
+    {
+      "id": "G2",
+      "dependsOn": [
+        "G1"
+      ],
+      "status": "pass",
+      "criteria": [
+        "AC06"
+      ],
+      "reviewEvidence": [
+        "records/W03/gate-review.md"
+      ]
+    },
+    {
+      "id": "G3",
+      "dependsOn": [
+        "G2"
+      ],
+      "status": "pass",
+      "criteria": [
+        "AC08",
+        "AC09",
+        "AC10"
+      ],
+      "reviewEvidence": [
+        "records/W04/gate-review.md"
+      ]
+    },
+    {
+      "id": "G4",
+      "dependsOn": [
+        "G3"
+      ],
+      "status": "pass",
+      "criteria": [
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17"
+      ],
+      "reviewEvidence": [
+        "records/W05/gate-review.md"
+      ]
+    },
+    {
+      "id": "G5",
+      "dependsOn": [
+        "G4"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC18",
+        "AC19",
+        "AC20",
+        "AC21",
+        "AC22"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "GCI",
+      "dependsOn": [
+        "G2"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC07"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "GOPS",
+      "dependsOn": [
+        "G0"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC33"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G6",
+      "dependsOn": [
+        "G3",
+        "G4",
+        "GCI",
+        "GOPS"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26",
+        "AC27",
+        "AC28"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G7",
+      "dependsOn": [
+        "G5",
+        "G6"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ],
+      "reviewEvidence": []
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC01",
+      "gate": "G0",
+      "work": "W01",
+      "criterion": "사용자 확정 통합본 ae0e58e를 정식 격리 Git 작업공간에 확보하고 SHA·인수문서·이후diff 기록, 이전 ZIP/광권 코드는 비교자료로 보존",
+      "evidence": "baseline.md 및 소스 diff",
+      "reviewer": "정합성",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W01/baseline.md",
+        "records/W01/source-state.json"
+      ]
+    },
+    {
+      "id": "AC02",
+      "gate": "G0",
+      "work": "W01",
+      "criterion": "통합본 전체의 새 작업공간에서 빌드/타입/테스트·주요 회귀를 재실행. 고유DB/파일은 확인완료 또는 회신대기와 원본미변경·비파괴 새개발DB 정책을 기록하면 코드인수 G0 통과 가능. 실제고유데이터 이전 AC17 통과로 승계하지 않음",
+      "evidence": "명령·종료코드·로그/재현표",
+      "reviewer": "기술",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W01/baseline.md",
+        "records/W01/frontend-build.log",
+        "records/W01/backend-tests.log",
+        "records/W01/ai-unit-tests.log",
+        "records/W01/regression-audit.json"
+      ]
+    },
+    {
+      "id": "AC03",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "현 U05/06 방식의 임시 유지·최종합의 대기 범위를 구별하고 선택풀/빈도/수정계약, 콘텐츠4종·검수·ID·좌표·도슨트 진입맥락/복귀 상태의 정상·실패 예시 확정. 회원DB저장/guest미저장 기본정책, U05/06 임시흐름·계약변경 경계, 명시적 쉬운/깊은설명 요청 사례와 한작품 추적항목 포함",
+      "evidence": "계약 예시·대조표",
+      "reviewer": "정합성",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/contracts.md",
+        "records/W02/cases.json",
+        "records/W02/wire-examples.json",
+        "records/W02/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC04",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "개발에 필요한 API스택·인증 계약·모델 provider 경계·데이터계약을 결정. AWS예산/계정/상세서비스는 W12, 실제모델 지연·평가목표는 W06에서 별도 확정하여 로컬 개발을 막지 않음",
+      "evidence": "결정기록·담당·수치/조건",
+      "reviewer": "운영",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/decisions.md",
+        "records/W02/contracts.md",
+        "records/W02/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC05",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "이슈별 현 통합본의 반영/미해결/미검증 구분, 수정 위치·담당·회귀 연결과 Express 이중구현 방지 범위 기록",
+      "evidence": "이슈 추적표·작업계획",
+      "reviewer": "기술",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W02/issue-implementation-map.md",
+        "records/W02/source-inventory.json",
+        "records/W02/contract-check.json",
+        "records/W02/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC06",
+      "gate": "G2",
+      "work": "W03",
+      "criterion": "현재 통합본에서 요약재생성·미검수/초안전시 노출·추천갱신·저장손실의 회귀 입력/기대/실제 확인. F03은 이미 보완된 필드를 다시 구현하지 않고 저장 round-trip 재검증",
+      "evidence": "회귀 검사·실패 로그",
+      "reviewer": "기술",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W03/README.md",
+        "records/W03/regression.test.mts",
+        "records/W03/regression.log",
+        "records/W03/results.json",
+        "records/W03/browser-observations.md",
+        "records/W03/browser-http.jsonl",
+        "records/W03/guide-reloaded-ax.txt",
+        "records/W03/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC07",
+      "gate": "GCI",
+      "work": "W11",
+      "criterion": "PR Actions에 frontend 빌드/타입·최종 대상 API의 실제 PostgreSQL migration/저장/권한/계약·fake 모델 실패검사를 실행. 실모델·유료키는 별도. Actions권한 대기여도 로컬 W04/W05는 진행 가능",
+      "evidence": "Actions run·job 정의",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W11/README.md",
+        "records/W11/validation-summary.json",
+        "records/W11/remote-run-1.json"
+      ]
+    },
+    {
+      "id": "AC08",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "현 프론트 API계약을 유지한 대상 API fixture 검사와 의도적 결함수정 차이를 기록. frontend 전체 교체나 미검수노출 복제 없음. 외부계약이 바뀌면 영향화면/이전→새요청응답/유지사항/재현법의 짧은 인수요약을 기록",
+      "evidence": "계약 검사·차이표",
+      "reviewer": "기술",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/contract-delta.md",
+        "records/W04/postgres-tests.log",
+        "records/W04/browser-observations.md",
+        "records/W04/frontend-typecheck.log",
+        "records/W04/frontend-build.log",
+        "records/W04/source-state.json",
+        "records/W04/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC09",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "Postgres 빈DB migration·동일fixture 재적재·ID/JSON/null/날짜/관계 제약 확인",
+      "evidence": "DB 검사 로그·모델/migration",
+      "reviewer": "데이터",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/postgres-tests.log",
+        "records/W04/empty-startup.log",
+        "records/W04/fixture.log",
+        "records/W04/migration-drift.log",
+        "records/W04/source-state.json",
+        "records/W04/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC10",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "Compose 새환경·DB준비·재시작 데이터/파일보존·운영 자동데모시드 차단·안전한 관리자 생성 확인. 개발 테스트 fixture와 실제 전시 적재 경로 분리",
+      "evidence": "시작/재시작 로그",
+      "reviewer": "운영",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W04/compose-check.json",
+        "records/W04/compose-events.json",
+        "records/W04/empty-startup.log",
+        "records/W04/bootstrap.log",
+        "records/W04/postgres-tests.log",
+        "records/W04/cleanup.log",
+        "records/W04/gate-review.md"
+      ]
+    },
+    {
+      "id": "AC11",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "생성→별도항목수정→저장→재조회 후 guide/summary/tag/emotion의 값·검수 상태 보존. 승인 원문/출처 버전 변경 시 기존 summary/guide를 stale 또는 확정해제로 처리하고 공개/AI근거에서 제외, 재검수 후에만 재노출",
+      "evidence": "API round-trip와 화면 증거",
+      "reviewer": "데이터",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC12",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "draft/closed 등 전시운영정책과 pending/source_check 작품·suggested AI필드가 공개 목록/상세/질문/해설에서 제한됨. 관리자만 미리보기 가능, 준비중 전시 직접 URL도 검사",
+      "evidence": "상태 조합 API 검사",
+      "reviewer": "데이터",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC13",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "취향/시간/전시 변경시 추천·진행 상태 정책 적용, 늦은 응답이 최신 결과를 덮지 않음. 고정 선택·반대 빈도·사용자수정 예시의 기대 프로필/점수/추천근거가 계약과 일치하고 선택 원본 저장·재조회 일치. 추천 목록이 반드시 달라야 한다는 조건은 사용하지 않음",
+      "evidence": "경합 검사·화면 기록",
+      "reviewer": "사용자",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC14",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "회원 관람은 같은 visit 중복POST/재시도로 DB1건 저장, AI실패와 무관하게 기록 저장·재조회·합의필드 보존. guest 기본정책은 DB미저장·영수증제공이며 가입없이 이용·미저장안내가 일치해야 함. guest서버저장/회원이관을 채택하면 D05/D06와 검사를 함께 변경",
+      "evidence": "DB건수·재시도/오류 검사",
+      "reviewer": "데이터",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC15",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "회원/관리자·타인기록·401/logout·관람/계정 대화 격리를 확인. U10→U11에 작품/탭/원문·요약·질문ID·필요한최근대화 전달, 복귀시 탭·확장·힌트·스크롤 유지. 실제LLM 없이도 맥락 payload와 UI복귀 검증. 사용자에게 보던질문/해설에서 이어짐이 드러나야 하고, 관찰답 입력이 없는데 사용자의 생각을 지어내지 않음",
+      "evidence": "2계정/guest 권한 검사",
+      "reviewer": "기술",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC16",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "정확한 10점5쌍·중복/누락 선택 제어·선택풀 부족·후보0·404·오프라인·저장실패에 명시 안내/재시도, 무한로딩 없음. 비밀번호 재설정은 실제 발송/재설정 성공 또는 명시적인 기능 제거·비활성 및 안내를 확인. 후보집계0은 전시전체의 소재부재를 뜻하지 않음. 미검수/위치미등록/태그미준비와 실제추천불가를 혼동하지 않는 안내·운영준비 체크",
+      "evidence": "실패별 화면 결과",
+      "reviewer": "사용자",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/browser-observations.md"
+      ]
+    },
+    {
+      "id": "AC17",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "로컬 고유 작품/태그/검수/분석/좌표/도면이 있으면 데이터 export와 대응파일 일관성을 보존·이전검증. 없으면 재생성근거 기록. 회원/세션 전체 이관을 기본요구로 두지 않으며 scrypt 정책 별도검증. 회신대기는 이관완료가 아니며 자료확보 또는 명시적 인수제외/재생성 결정과 보존근거가 필요",
+      "evidence": "이전·복구 로그 또는 부재확인",
+      "reviewer": "데이터",
+      "status": "pass",
+      "evidencePaths": [
+        "records/W05/gate-review.md",
+        "records/W05/README.md",
+        "records/W05/validation-summary.json",
+        "records/W05/data-intake-decision.md",
+        "records/W05/data-and-browser-db.json"
+      ]
+    },
+    {
+      "id": "AC18",
+      "gate": "G5",
+      "work": "W06",
+      "criterion": "유영국 실제출품작 식별·출처/버전·사람검수·이미지 사용/표시·실제/시연 좌표 구분. 캡처40점 AI초안·테스트좌표는 공식전시와 분리. 10점5쌍 선택풀과 최종 전시 코퍼스 관계를 결정. 작품별 최소인수manifest로 식별·출품상태·공식근거·원문/이미지/도면 경로·충돌/검수상태를 연결. 검수/위치/태그 준비여부를 확인",
+      "evidence": "data-manifest·사람검수 기록",
+      "reviewer": "데이터",
+      "status": "blocked",
+      "evidencePaths": [
+        "records/git-materials/README.md",
+        "records/git-materials/audit.json",
+        "records/W06/yoo-intake/README.md",
+        "records/W06/map-review/README.md",
+        "../../operations/2026-11-09_유영국핵심3점_콘텐츠검수준비.md",
+        "records/W06/core3-intake/README.md",
+        "records/W06/remaining-intake/README.md",
+        "records/W06/007-intake/README.md",
+        "records/W06/readiness/README.md"
+      ]
+    },
+    {
+      "id": "AC19",
+      "gate": "G5",
+      "work": "W06",
+      "criterion": "Git의 캡처40장/WikiArt79장·라벨/보정 입력 존재와 출처를 확인하고 실제 재실행 범위를 기록. 별도 유영국 표본·질문셋·내용근거/관찰유도 합격예시·태그별목표·지연예산을 결과확인 전에 고정. 고정해설만 vs 관찰질문/맥락대화의 작은 비교설계, 쉽게/깊게 2개대화 합격예시와 시험자/표본·순서·한계 기록 포함",
+      "evidence": "입력해시·평가계획",
+      "reviewer": "AI",
+      "status": "pass",
+      "evidencePaths": [
+        "records/git-materials/README.md",
+        "records/git-materials/audit.json",
+        "records/W07-quality/2026-11-09/README.md",
+        "records/W06/readiness/README.md"
+      ]
+    },
+    {
+      "id": "AC20",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "실제 LLM 정상/키없음/오류/timeout mode를 구별하고 승인 sourceIds와 실제 근거내용을 검사. U10 진입 질문/해설과 최근 대화가 이어지는 응답·자료밖 유보·지시문 방어 확인. 한작품 입력→추천점수/규칙·근거조회→U10맥락→실제출력 추적과 명시적 설명깊이 요청 2사례 확인. 모델 내부추론문 수집이나 사용자의 미입력 감상 추정 금지",
+      "evidence": "실제/강제실패 호출·평가표",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W07-live-smoke/2026-11-09/README.md",
+        "records/W07-quality/2026-11-09/README.md"
+      ]
+    },
+    {
+      "id": "AC21",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "고정 필수 질문셋에서 다른작품/유효하지않은출처/미검수근거 사용0건, 주요사실이 근거로 지지되고 관찰질문이 작품을 보게 하는 사전기준과 지연예산 충족. 실패는 수정 후 재평가. 쉽게설명은 용어풀기·눈앞특징 연결, 깊게설명은 승인맥락 확장으로 판정. 감상도움 비교의 출력판정과 오류를 기록하되 AI검토를 실제사용자실험으로 발표하지 않음",
+      "evidence": "질문별 판정·지연·원본근거",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W07-quality/2026-11-09/README.md"
+      ]
+    },
+    {
+      "id": "AC22",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "로컬 CLIP/mDeBERTa readiness·메모리·반복/동시추론 측정. 유영국 표본의 태그구별력·동률·추천근거를 평가하고 AC19의 사전목표 충족. 미달은 기록만으로 통과하지 않음; 수정·재평가 또는 명시적 범위결정 필요",
+      "evidence": "자원 로그·태그평가표",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC23",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "실제 AWS에서 API→선택한 PostgreSQL 운영환경 연결·암호화/접근제어·migration 확인. RDS를 채택한 경우 RDS설정 검증, 대안이면 그 환경의 동등한 기준 검증. 고정데모계정/자동승인시드 차단",
+      "evidence": "민감값 제거 설정·연결검사",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC24",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "미디어 업로드→공개/제한열람→모델읽기→서버재생성 후 보존을 AWS에서 확인",
+      "evidence": "파일조회·권한·영속성 검사",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC25",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "HTTPS 공개주소·SPA상세재진입·API경로·인증callback/설정·모델내부주소가 배포환경과 일치",
+      "evidence": "URL별 smoke·인증검사",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC26",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "시험환경 접근제한·비실사용fixture·process/model readiness·로그비밀제거·백업복원·예산/종료절차 확인. 실제AI 품질완료 전에도 고정 smoke로 검증 가능하나 공개 서비스/AI완료로 표현하지 않음",
+      "evidence": "상태·로그·복원·예산 기록",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC27",
+      "gate": "G6",
+      "work": "W09",
+      "criterion": "GCI 통과 커밋의 digest를 제한된 OIDC역할로 배포, concurrency/migration단일실행/오류중단 검증. 실제 AI 대기 중 fixture 기반 CD시험 가능, 공개릴리스는 G5/G6/G7 필수",
+      "evidence": "Actions run·digest·migration로그",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC28",
+      "gate": "G6",
+      "work": "W09",
+      "criterion": "배포후 핵심API smoke와 이전이미지 복귀를 확인하고 schema/데이터 복구 한계를 기록",
+      "evidence": "배포/복귀 연습 결과",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC29",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "고정 모바일 환경에서 실제 유영국 자료로 guest/회원의 진입→합의한 취향조사→추천→감상/맥락있는도슨트→영수증 완주·재진입. 아직미합의인 U05/06을 임의로 토너먼트로 교체하지 않음. 비회원은가입없이감상·도슨트·영수증을 이용하고 미저장안내가 실제정책과 일치. 가능한 작은 실제관찰과제로 구체관찰근거·혼란해소·도움/실패를 기록; 팀내파일럿도 시험자/표본을 명시하고 일반학습효과로 과장하지 않음",
+      "evidence": "환경별 E2E 기록",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC30",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "다른 기기 평가가 서버 관리자 조회에 반영되고 지도·이미지저장/공유·오류·계정전환 확인",
+      "evidence": "2기기 결과·영수증 이미지",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC31",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "releaseRequired=true 이슈가 closed이고 증거 연결, 실제스택·AI·추천/동선의 제한이 설명과 일치. F21 고급 알고리즘은 미구현·변경사유 설명과 범위결정으로 관리. 최소1개 실제 승인작품의 입력→처리→출력 추적표와 정적해설 기준선 대비 결과/실패·표본한계를 기술설명에 연결",
+      "evidence": "이슈종결표·시연/설계변경",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC32",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "작성자 외 검토자가 문서만으로 실행·등록검수·배포/복구 절차를 따라 확인",
+      "evidence": "독립 재현·인수 기록",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC33",
+      "gate": "GOPS",
+      "work": "W12",
+      "criterion": "AWS계정범위·권한/담당·리전·비용상한·PostgreSQL 운영방식(RDS는 후보)·파일저장·모델운영위치·공개주소/배포방법·초기접근제한을 결정. 실측전 모델자원은 가정과 측정계획으로 구분",
+      "evidence": "운영 결정기록·비용가정·리소스/권한 범위",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    }
+  ],
+  "issues": [
+    {
+      "id": "F01",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC13"
+      ],
+      "title": "빈도·선택 원본 소실",
+      "check": "풍경2/따뜻함1과 반대 입력의 계산을 계약대로 검증",
+      "source": "old:F01",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "backend-django/taste,recommendations + U05/U06/client; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 선택 원본·빈도 기반 profile과 서버 추천 연결 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "선택 원본·빈도 기반 profile과 서버 추천 연결 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F02",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC13"
+      ],
+      "title": "추천 입력변경 및 경합 검증",
+      "check": "입력 무효화·늦은 응답 경합을 API/화면으로 확인",
+      "source": "old:F02",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "VisitContext/U07/U08 정상유지, requestGeneration·관람중변경정책보완; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/journey/2026-11-09/README.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 정상 추천 갱신·구버전/늦은 요청 방어 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "정상 추천 갱신·구버전/늦은 요청 방어 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F03",
+      "priority": "P0",
+      "evidence": "code",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC11"
+      ],
+      "title": "생성 가이드 저장 소실",
+      "check": "중복 구현하지 않고 생성→수정→저장→재조회 회귀 확인",
+      "source": "old:F03",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "새 admin serializer/UI회귀, 중복재작성 제외; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 가이드 생성·수정·저장·재조회 및 독립 확정 검증. 남은 조건: 없음: 현 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "가이드 생성·수정·저장·재조회 및 독립 확정 검증",
+        "remaining": "없음: 현 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F04",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC12"
+      ],
+      "title": "미검수 작품·AI필드 공개",
+      "check": "상태 조합별 공개/관리자 API 검사",
+      "source": "old:F04",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "catalog/public serializers, admin읽기 + client; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: draft/source_check·미확정 AI필드의 공개 조회/직접 AI/파일 차단. 남은 조건: 없음: 접근제어 구현 범위. 작품 승인은 W06 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "draft/source_check·미확정 AI필드의 공개 조회/직접 AI/파일 차단",
+        "remaining": "없음: 접근제어 구현 범위. 작품 승인은 W06 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F05",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W07"
+      ],
+      "criteria": [
+        "AC03",
+        "AC20"
+      ],
+      "title": "실제AI·fallback·실패 구분 부족",
+      "check": "정상/키없음/오류/timeout 응답과 UI",
+      "source": "old:F05",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "providers, client/U11/U12; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 실제 GPT smoke/제한 품질, 오류·timeout 구분 및 모델 운영 장애 검사. 남은 조건: 실제 유영국 근거로 AC20 정식 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실제 GPT smoke/제한 품질, 오류·timeout 구분 및 모델 운영 장애 검사",
+        "remaining": "실제 유영국 근거로 AC20 정식 평가",
+        "nextWork": "W07",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W07-quality/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F06",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W06",
+        "W07"
+      ],
+      "criteria": [
+        "AC18",
+        "AC20",
+        "AC21"
+      ],
+      "title": "승인 근거·출처 버전·검증 미완성",
+      "check": "승인 sourceIds 서버검증·자료밖 유보",
+      "source": "old:F06",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "sources/provider validation; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 근거 ID 서버 검증과 원문 변경 재검수 구현. 남은 조건: 작품별 사람 검수·실제 근거 충실성 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "근거 ID 서버 검증과 원문 변경 재검수 구현",
+        "remaining": "작품별 사람 검수·실제 근거 충실성 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F07",
+      "priority": "P0",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W04"
+      ],
+      "criteria": [
+        "AC04",
+        "AC08"
+      ],
+      "title": "실제 스택과 설계 차이",
+      "check": "Django 권장/Express대안 결정을 기록 후 전환",
+      "source": "old:F07",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "backend-django/Compose, React계약전환; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/dev-entry/README.md",
+        "records/git-materials/README.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: Django/DRF·PostgreSQL 기본 실행 및 legacy 경계 정리. 남은 조건: 없음: 현 전환 범위. 원본 Express는 보존",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Django/DRF·PostgreSQL 기본 실행 및 legacy 경계 정리",
+        "remaining": "없음: 현 전환 범위. 원본 Express는 보존",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/dev-entry/README.md",
+          "records/git-materials/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F08",
+      "priority": "P1",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W06",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC18",
+        "AC16"
+      ],
+      "title": "5쌍 선택풀·버전·부족 처리",
+      "check": "전시앞10개 의존 제거/정당화 및 부족 안내",
+      "source": "old:F08",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "taste-pool/profile·U05/06; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 10점5독립쌍·poolVersion·부족 안내 구현, 유영국 풀 초안. 남은 조건: U05/06 최종 합의 및 실제 준비작품/시연 구성 채택",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "10점5독립쌍·poolVersion·부족 안내 구현, 유영국 풀 초안",
+        "remaining": "U05/06 최종 합의 및 실제 준비작품/시연 구성 채택",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F09",
+      "priority": "P0",
+      "evidence": "code",
+      "works": [
+        "W06",
+        "W10"
+      ],
+      "criteria": [
+        "AC18",
+        "AC29"
+      ],
+      "title": "유명작품 시드와 실제 전시 혼재",
+      "check": "demo/실제 출처manifest·시연 구별",
+      "source": "old:F09",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "fixtures/import command, manifest; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 기존40/79점 평가용 분리, 유영국16점 비공개 인수. 남은 조건: 실제 전시 구성 채택·사람 승인과 실자료 여정",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "기존40/79점 평가용 분리, 유영국16점 비공개 인수",
+        "remaining": "실제 전시 구성 채택·사람 승인과 실자료 여정",
+        "nextWork": "W06 → W10",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F10",
+      "priority": "P1",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC14"
+      ],
+      "title": "반응 이유 서버 저장 누락",
+      "check": "저장→재조회→다른기기 관리자 확인",
+      "source": "old:F10",
+      "status": "verification_pending",
+      "owner": "준억 통합 조율",
+      "fixLocation": "VisitReaction/admin query + U12/A07; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 반응 사유 중앙 저장·관리자 재조회 및 격리 브라우저 저장 확인. 남은 조건: 실제 다른 기기에서 관리자 반영 확인은 미실행",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "반응 사유 중앙 저장·관리자 재조회 및 격리 브라우저 저장 확인",
+        "remaining": "실제 다른 기기에서 관리자 반영 확인은 미실행",
+        "nextWork": "W10",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F11",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC14",
+        "AC16"
+      ],
+      "title": "영수증 저장 손실·중복 위험",
+      "check": "AI와 저장분리·idempotency·실패재시도",
+      "source": "old:F11",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "visits service/uniqueconstraint/U12; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/journey/2026-11-09/README.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: AI와 저장 분리·회원 멱등 저장·guest 미저장·실패 복구 검증. 남은 조건: 없음: 현 저장 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "AI와 저장 분리·회원 멱등 저장·guest 미저장·실패 복구 검증",
+        "remaining": "없음: 현 저장 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F12",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05",
+        "W07"
+      ],
+      "criteria": [
+        "AC15",
+        "AC20"
+      ],
+      "title": "관람/계정 대화 혼입·history 부재",
+      "check": "DB미저장과 sessionStorage표시 구분·도슨트 진입맥락/history·복귀·관람/계정 격리",
+      "source": "old:F12",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "chat schema/VisitContext/U10/U11; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 관람/계정/작품 격리·질문 맥락/4왕복·복귀와 실제 합성 GPT 확인. 남은 조건: 실제 전시 근거의 AC20 정식 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "관람/계정/작품 격리·질문 맥락/4왕복·복귀와 실제 합성 GPT 확인",
+        "remaining": "실제 전시 근거의 AC20 정식 평가",
+        "nextWork": "W07",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F13",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC15",
+        "AC16"
+      ],
+      "title": "401복구·404/오프라인 무한로딩",
+      "check": "토큰만료와 React상태·오류UI 재현",
+      "source": "old:F13",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "auth bootstrap/useAsync/페이지; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 401 만료 복구·404·목록503·연결 단절의 재시도/입력 보호 확인. 남은 조건: 없음: 기존 예외 계약 범위. 새 모델 장애 브라우저 시험은 후속",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "401 만료 복구·404·목록503·연결 단절의 재시도/입력 보호 확인",
+        "remaining": "없음: 기존 예외 계약 범위. 새 모델 장애 브라우저 시험은 후속",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F14",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC04",
+        "AC15",
+        "AC17"
+      ],
+      "title": "현 Bearer·scrypt와 목표 인증 차이",
+      "check": "JWT로 오기 금지·인증선택·해시이관정책",
+      "source": "old:F14",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "auth/session/legacy hasher조건부; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md",
+        "records/W05/data-intake-decision.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: opaque 토큰·권한·해시 정책 확정과 인증/복구 검증. 남은 조건: 없음: 신규 개발/Git 인수 범위. 로컬 고유 계정은 F37 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "opaque 토큰·권한·해시 정책 확정과 인증/복구 검증",
+        "remaining": "없음: 신규 개발/Git 인수 범위. 로컬 고유 계정은 F37 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md",
+          "records/W05/data-intake-decision.md"
+        ]
+      }
+    },
+    {
+      "id": "F15",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC15",
+        "AC16"
+      ],
+      "title": "비밀번호 재설정 메일 미구현",
+      "check": "필요시 실제발송, 불필요시 UI축소 결정",
+      "source": "old:F15",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "auth feature flag/U14/U15; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 메일 없는 재설정501·UI 비활성 정책 채택/검사. 남은 조건: 없음: 합의한 비활성 범위. 실제 발송 구현 완료라는 의미 아님",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "메일 없는 재설정501·UI 비활성 정책 채택/검사",
+        "remaining": "없음: 합의한 비활성 범위. 실제 발송 구현 완료라는 의미 아님",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F16",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W04",
+        "W05"
+      ],
+      "criteria": [
+        "AC09",
+        "AC17"
+      ],
+      "title": "SQLiteJSON·수동스키마와 데이터모델 차이",
+      "check": "ID/관계/null/날짜·필요 세션/이력만 구현",
+      "source": "old:F16",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "models/migrations/import; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/W05/data-intake-decision.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 실제 PG migration·FK/JSON/null/날짜·Git 자료 importer 검증. 남은 조건: 없음: Git 인수 범위. 로컬 고유 자료는 F37 별도",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실제 PG migration·FK/JSON/null/날짜·Git 자료 importer 검증",
+        "remaining": "없음: Git 인수 범위. 로컬 고유 자료는 F37 별도",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W05/data-intake-decision.md"
+        ]
+      }
+    },
+    {
+      "id": "F17",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W02",
+        "W06",
+        "W10"
+      ],
+      "criteria": [
+        "AC03",
+        "AC18",
+        "AC30"
+      ],
+      "title": "직선순서·이동시간과 실제공간 차이",
+      "check": "좌표0~100유지·실제도면 비교·설명범위",
+      "source": "old:F17",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "recommendation/map·설명; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 좌표 기준 순서와 실제 통로 한계 명시, 근거 없는 이동시간 삭제. 남은 조건: 유영국 시연 배치 채택·실기기 지도/실제 동선 범위 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "좌표 기준 순서와 실제 통로 한계 명시, 근거 없는 이동시간 삭제",
+        "remaining": "유영국 시연 배치 채택·실기기 지도/실제 동선 범위 확인",
+        "nextWork": "W06 → W10",
+        "evidencePaths": [
+          "records/W06/readiness/README.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F18",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W06",
+        "W07"
+      ],
+      "criteria": [
+        "AC19",
+        "AC22"
+      ],
+      "title": "평가 입력 재현·유영국 추천 구별력",
+      "check": "캡처40장/WikiArt79장은 Git에 있음. 새 전시표본·원본라벨·보정 재현/품질 검증",
+      "source": "Git tree ae0e58e 및 bb83a86 / ai-service/evaluation/images",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "ai-service/evaluation/유영국평가; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 40점 실제 기준선·평가자 민감도·유영국 독립 라벨 도구 준비. 남은 조건: 독립 응답 및 유영국 구별력의 사전 목표 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "40점 실제 기준선·평가자 민감도·유영국 독립 라벨 도구 준비",
+        "remaining": "독립 응답 및 유영국 구별력의 사전 목표 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W07-preparation/tag-baseline-2026-11-09/README.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F19",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC22",
+        "AC26"
+      ],
+      "title": "160초 보고·운영지연 미측정",
+      "check": "같은환경 반복·동시요청·p50/p95 표본수",
+      "source": "old:F19",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "providers/timeouts/evaluation; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 실모델 기동·동시성·재시작·시간/RSS 제한 실측. 남은 조건: 대표 반복 표본·지연 목표와 배포환경 검증. 현재 수치를 p95/SLA로 사용 금지",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실모델 시간/RSS 경계 및 모델 제외 1/2GiB 웹·PG 혼합/지속 부하·실제 HTTP 분석 중 조회 검증",
+        "remaining": "대표 실모델·실제 AWS CPU credit/WAN/대형 이미지·장시간 반복 품질/지연 인수는 남음",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F20",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC11"
+      ],
+      "title": "원문·요약·맞춤설명·가이드 혼용",
+      "check": "콘텐츠4종·B안필드/상태 확정",
+      "source": "old:F20",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "sources/public DTO/provider; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W02/decisions.md",
+        "records/W05/gate-review.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 원문/요약/가이드/대화 분리와 독립 확정·재분석 보호 검증. 남은 조건: 없음: 콘텐츠 상태 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "원문/요약/가이드/대화 분리와 독립 확정·재분석 보호 검증",
+        "remaining": "없음: 콘텐츠 상태 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/W05/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F21",
+      "priority": "P2",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W10"
+      ],
+      "criteria": [
+        "AC04",
+        "AC31"
+      ],
+      "title": "원설계 알고리즘과 현 기준선 차이",
+      "check": "임베딩/최적보행 미구현 명시·변경기록",
+      "source": "old:F21",
+      "status": "open",
+      "owner": "준억 통합 조율",
+      "fixLocation": "설계변경/trace설명,새모델학습제외; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": false,
+      "observation": "2026-11-09 재정합화: 좌표 최근접 기준선·최단 보행 미구현 한계를 명시. 남은 조건: 설계 대비 최종 범위 결정·발표 설명 AC31",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "좌표 최근접 기준선·최단 보행 미구현 한계를 명시",
+        "remaining": "설계 대비 최종 범위 결정·발표 설명 AC31",
+        "nextWork": "W10",
+        "evidencePaths": [
+          "records/W02/decisions.md",
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F22",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W12",
+        "W08"
+      ],
+      "criteria": [
+        "AC33",
+        "AC23"
+      ],
+      "title": "AWS·선택 PostgreSQL 운영환경 미검증",
+      "check": "지역/예산/권한/버전·API연결 확인",
+      "source": "new:AWS",
+      "status": "open",
+      "owner": "준억 통합 조율",
+      "fixLocation": "ops결정/deploy env; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 로컬 PG 검증, AWS 운영 구성 미결. 남은 조건: 권한·리전·비용·DB 방식 결정 후 실제 시험환경",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 PG 검증, AWS 운영 구성 미결",
+        "remaining": "권한·리전·비용·DB 방식 결정 후 실제 시험환경",
+        "nextWork": "W12 → W08",
+        "evidencePaths": [
+          "06-operations.md"
+        ]
+      }
+    },
+    {
+      "id": "F23",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W08"
+      ],
+      "criteria": [
+        "AC24"
+      ],
+      "title": "로컬 업로드와 S3/모델 읽기 경로 차이",
+      "check": "제한열람·파일보존·모델입력·URL만료",
+      "source": "new:media",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "media permissions/storage adapter; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 로컬 제한 미디어·권한·복원 경계 확인. 남은 조건: AWS 저장/모델 읽기·서버 재생성 후 보존",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 제한 미디어·권한·복원 경계 확인",
+        "remaining": "AWS 저장/모델 읽기·서버 재생성 후 보존",
+        "nextWork": "W08",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/backup-restore/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F24",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W11",
+        "W04"
+      ],
+      "criteria": [
+        "AC07",
+        "AC09"
+      ],
+      "title": "GitHub Actions CI 미구성",
+      "check": "PR빌드·계약·Postgres 검사/실제AI별도",
+      "source": "new:CI",
+      "status": "verification_pending",
+      "owner": "준억 통합 조율",
+      "fixLocation": ".github/workflows/ci.yml; records/W11/README.md",
+      "resolutionEvidence": [
+        "records/W11/remote-run-1.json",
+        "records/W11/README.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록. 남은 조건: 최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록",
+        "remaining": "최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
+        "nextWork": "W11",
+        "evidencePaths": [
+          "records/W11/local-current-2026-11-09/README.md",
+          "records/push-review/2026-11-09/remote-ci.json"
+        ]
+      }
+    },
+    {
+      "id": "F25",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W09"
+      ],
+      "criteria": [
+        "AC27",
+        "AC28"
+      ],
+      "title": "CD·마이그레이션·복귀 미구성",
+      "check": "OIDC범위·digest·직렬화·배포실패복귀",
+      "source": "new:CD",
+      "status": "open",
+      "owner": "준억 통합 조율",
+      "fixLocation": "deployworkflow/runbook; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: CD 미구현. CI와 로컬 복원 검사를 배포 성공으로 해석하지 않음. 남은 조건: 운영 구성 후 OIDC/digest/직렬 migration/복귀 실제 시험",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CD 미구현. CI와 로컬 복원 검사를 배포 성공으로 해석하지 않음",
+        "remaining": "운영 구성 후 OIDC/digest/직렬 migration/복귀 실제 시험",
+        "nextWork": "W09",
+        "evidencePaths": [
+          "06-operations.md"
+        ]
+      }
+    },
+    {
+      "id": "F26",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W12",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC33",
+        "AC22",
+        "AC26"
+      ],
+      "title": "로컬 모델 메모리/로딩·운영위치 미결",
+      "check": "README9GB는 안내치·실측후상시/작업시 결정",
+      "source": "new:model",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "model boundary/readiness/운영결정; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: CLIP/mDeBERTa 준비/메모리/단일 프로세스 운용 실측. 남은 조건: 모델 위치·외부 용량·유영국 정식 품질 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "CLIP/mDeBERTa 실제 프로세스 RSS 확인, 모델 제외 1GB 최소 시험 후보/2GB 운영 여유 권장 측정",
+        "remaining": "실제 호스트 선택·외부/사전 분석 결과 전달/검수·클라우드 자원/백업 여유 검증·유영국 정식 품질 평가",
+        "nextWork": "W12 → W07/W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F27",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W06",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC19",
+        "AC20",
+        "AC26"
+      ],
+      "title": "180/300초 요청과 배포 timeout 차이",
+      "check": "레이어별예산·작업ID/상태조회 채택여부",
+      "source": "new:timeout",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "provider hardtimeout/배포프록시; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 모델 HTTP30초·timeout 저장 보호, legacy 장기 timeout과 분리. 남은 조건: 관리자 전체 요청/프록시/배포 제한의 총 지연 검증",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "공유60초·남은 호출 timeout·저장 전 만료 확인, Nginx/Gunicorn 전체60.133초504/무저장·중단 후409 검증",
+        "remaining": "DNS/지속 소량 전송·DB 잠금·동시 AI worker 큐 대기와 실제 TLS/배포 시간 예산은 미검증",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W02/decisions.md",
+          "records/W12/capacity-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F28",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05",
+        "W08",
+        "W10"
+      ],
+      "criteria": [
+        "AC25",
+        "AC30"
+      ],
+      "title": "개발프록시·공개주소·OAuth·영수증CORS",
+      "check": "SPA직접진입·HTTPS·callback·이미지저장",
+      "source": "new:web",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "frontendenv/media/render/deploy; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: Django 개발 프록시와 격리 화면 여정 확인. 남은 조건: 배포 HTTPS/SPA 재진입·이미지 저장/공유·실기기 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Django 개발 프록시와 격리 화면 여정 확인",
+        "remaining": "배포 HTTPS/SPA 재진입·이미지 저장/공유·실기기 확인",
+        "nextWork": "W08 → W10",
+        "evidencePaths": [
+          "records/journey/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F29",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W06",
+        "W07",
+        "W05"
+      ],
+      "criteria": [
+        "AC18",
+        "AC21",
+        "AC11"
+      ],
+      "title": "동명작품/연도치수 충돌·출처변경",
+      "check": "작품ID고정·근거충돌관리·AI재검수",
+      "source": "new:data",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "sourceVersions/importmanifest; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 16점 식별·출처 충돌 구분, 007 근거 보강·조건부 비공개 인수. 남은 조건: 사람 확인·개별 출처/표시 조건·정식 콘텐츠 평가",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "16점 식별·출처 충돌 구분, 007 근거 보강·조건부 비공개 인수",
+        "remaining": "사람 확인·개별 출처/표시 조건·정식 콘텐츠 평가",
+        "nextWork": "W06 → W07",
+        "evidencePaths": [
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F30",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W05",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC12",
+        "AC20",
+        "AC24"
+      ],
+      "title": "모델내부접근·외부이미지URL·자료속지시",
+      "check": "공개추론차단·URL/크기제한·권한불변 확인",
+      "source": "new:boundary",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "permissions/media/provider; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 공개 권한·임의 이미지 fetch 제한·provider 경계·자료 지시 방어 일부 검사. 남은 조건: 실제 근거 질문셋 및 배포 내부접근/파일경로 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "공개 권한·임의 이미지 fetch 제한·provider 경계·자료 지시 방어 일부 검사",
+        "remaining": "실제 근거 질문셋 및 배포 내부접근/파일경로 확인",
+        "nextWork": "W07 → W08",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F31",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W08"
+      ],
+      "criteria": [
+        "AC26"
+      ],
+      "title": "readiness·관측·비용·백업복원 미검증",
+      "check": "프로세스/모델준비 분리·비밀제거·복원연습",
+      "source": "new:ops",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "/ready/logging/opsbackup; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 로컬 DB/모델 readiness·실패 복구·합성 백업복원 확인. 남은 조건: 배포 접근제한·비용/관측·복원 시험",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "실제 DB/모델 readiness·중단/정합 복원 경계와 1/2GiB 로컬 용량·정적 HTTP 프록시 준비 검증",
+        "remaining": "실제 계정/권한·TLS·클라우드 백업/복원·관측·전체 비용/종료 결정",
+        "nextWork": "W12 → W08",
+        "evidencePaths": [
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/backup-restore/2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F32",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W05",
+        "W09"
+      ],
+      "criteria": [
+        "AC17",
+        "AC28"
+      ],
+      "title": "코드복귀와 DB복구의 차이",
+      "check": "호환schema·migration단일실행·백업복구범위",
+      "source": "new:rollback",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "import/migration/rollbackrunbook; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: Git 비파괴 인수·합성 DB/파일 복원 절차 검증. 남은 조건: 배포 이미지 복귀와 schema/데이터 복구의 실제 한계 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Git 비파괴 인수·합성 DB/파일 복원 절차 검증",
+        "remaining": "배포 이미지 복귀와 schema/데이터 복구의 실제 한계 확인",
+        "nextWork": "W09",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md",
+          "records/backup-restore/2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F33",
+      "priority": "P0",
+      "evidence": "code",
+      "works": [
+        "W04",
+        "W08"
+      ],
+      "criteria": [
+        "AC10",
+        "AC23",
+        "AC26"
+      ],
+      "title": "빈DB 자동시드의 알려진 데모/관리자 계정",
+      "check": "DEMO_MODE=false와 별개로 seed실행됨. 운영시드 차단·안전한 초기관리자·초기배포 접근제한",
+      "source": "new:backend/src/db.ts:99,108,180",
+      "status": "in_progress",
+      "owner": "준억 통합 조율",
+      "fixLocation": "bootstrap명령/fixture분리; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 로컬 빈기동 계정0·명시 bootstrap·운영 fixture 차단 검증. 남은 조건: AWS에서 고정 계정/자동 fixture 차단과 접근제한 확인",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "로컬 빈기동 계정0·명시 bootstrap·운영 fixture 차단 검증",
+        "remaining": "AWS에서 고정 계정/자동 fixture 차단과 접근제한 확인",
+        "nextWork": "W08",
+        "evidencePaths": [
+          "records/W04/gate-review.md"
+        ]
+      }
+    },
+    {
+      "id": "F34",
+      "title": "확정 요약의 재분석 덮어쓰기",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC11"
+      ],
+      "check": "가이드 미확정이면 confirmed 요약이 새 글/suggested로 바뀜. 산출물별 보호/명시재생성",
+      "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
+      "status": "closed",
+      "owner": "준억 통합 조율",
+      "fixLocation": "analysisservice component보호; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [
+        "records/W05/gate-review.md",
+        "records/W07-preparation/model-operations-2026-11-09/README.md"
+      ],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 독립 확정·재생성·provider 실패·버전 충돌에서 확정 요약 보존. 남은 조건: 없음: 현 검수 계약 범위",
+      "resolvedCommit": "7e8ec2e7b063cb849ebf1eff99e62b087379850a",
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "독립 확정·재생성·provider 실패·버전 충돌에서 확정 요약 보존",
+        "remaining": "없음: 현 검수 계약 범위",
+        "nextWork": "유지 회귀",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W07-preparation/model-operations-2026-11-09/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F35",
+      "title": "출처 URL·시드 재실행의 재검수 누락",
+      "priority": "P1",
+      "evidence": "executed",
+      "works": [
+        "W05",
+        "W06"
+      ],
+      "criteria": [
+        "AC11",
+        "AC18"
+      ],
+      "check": "URL만 변경 시 확정유지 재현. seed-captures 해설변경 시 guide재검수 누락은 코드확인",
+      "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "sourceVersion/importstale; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 원문/출처 변경 시 source_check·제안화 및 재승인 분리 구현. 남은 조건: 유영국 실자료 사람 검수/출처 채택",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "원문/출처 변경 시 source_check·제안화 및 재승인 분리 구현",
+        "remaining": "유영국 실자료 사람 검수/출처 채택",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F36",
+      "title": "40점 AI초안·시연좌표의 자동 approved/running",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W04",
+        "W06"
+      ],
+      "criteria": [
+        "AC10",
+        "AC18"
+      ],
+      "check": "테스트시드와 실제자료 적재 분리, pending/source_check에서 사람 검수",
+      "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "testfixture실자료import분리; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": true,
+      "observation": "2026-11-09 재정합화: 명시 testfixture·실자료 importer 분리, 실제16점 draft/source_check 유지. 남은 조건: 실자료 사람 검수/시연 구성 채택. 자동 승인 금지",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "명시 testfixture·실자료 importer 분리, 실제16점 draft/source_check 유지",
+        "remaining": "실자료 사람 검수/시연 구성 채택. 자동 승인 금지",
+        "nextWork": "W06",
+        "evidencePaths": [
+          "records/W05/gate-review.md",
+          "records/W06/readiness/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F37",
+      "title": "기존 로컬 DB의 확정상태·고유파일 인수",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W01",
+        "W05"
+      ],
+      "criteria": [
+        "AC02",
+        "AC17"
+      ],
+      "check": "기존 guide confirmed를 새코드가 되돌리지 않음. 고유값 export/파일manifest 후 이관판단",
+      "source": "ae0e58e handoff and code / research/merge-ae0e58e/handoff-audit.json",
+      "status": "blocked",
+      "owner": "준억 통합 조율",
+      "fixLocation": "manifest/export/import비파괴; records/W02/issue-implementation-map.md",
+      "resolutionEvidence": [],
+      "releaseRequired": false,
+      "observation": "2026-11-09 재정합화: Git 기준 인수 통과, 로컬 원본 보존 후 별도 인수 결정. 남은 조건: 제공자 DB/uploads 고유값 존재·제공 여부 unknown",
+      "resolvedCommit": null,
+      "currentReview": {
+        "asOf": "2026-11-09",
+        "implemented": "Git 기준 인수 통과, 로컬 원본 보존 후 별도 인수 결정",
+        "remaining": "제공자 DB/uploads 고유값 존재·제공 여부 unknown",
+        "nextWork": "별도 인수: Git 기준 릴리스 선행조건 아님",
+        "evidencePaths": [
+          "records/W05/data-intake-decision.md"
+        ]
+      },
+      "scopeDecision": "records/W05/data-intake-decision.md"
+    }
+  ],
+  "baseline": {
+    "repository": "2026-2-zolp/arti",
+    "branch": "dev/김동섭-1106-merge",
+    "commit": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+    "adoption": "사용자 확정",
+    "handoff": "docs/1107_김동섭_(리팩토링전)프론트_백_통합.md",
+    "handoffCurrentPath": "docs/작업기록/1107_김동섭_(리팩토링전)프론트_백_통합.md"
+  },
+  "operations": {
+    "postgresDeployment": "undecided",
+    "rds": "candidate",
+    "cloudBudget": "undecided",
+    "note": "W12/GOPS에서 확정; 로컬 개발 G1의 선행조건 아님"
+  },
+  "personaReview": {
+    "asOf": "2026-11-07",
+    "type": "evidence-grounded AI role review; not real stakeholder/user approval",
+    "personas": [
+      {
+        "id": "TEAM",
+        "name": "팀 협업·인수"
+      },
+      {
+        "id": "PROF",
+        "name": "교수 평가 관점"
+      },
+      {
+        "id": "VISITOR",
+        "name": "초보 관람객"
+      },
+      {
+        "id": "CONTENT",
+        "name": "콘텐츠 운영·검수"
+      },
+      {
+        "id": "EVALUATOR",
+        "name": "외부 평가위원 관점 (AI 역할 검토)"
+      },
+      {
+        "id": "SENIOR",
+        "name": "시니어 개발자 관점 (AI 역할 검토)"
+      }
+    ],
+    "improvements": [
+      {
+        "id": "PI01",
+        "personas": [
+          "TEAM"
+        ],
+        "works": [
+          "W02",
+          "W04",
+          "W05"
+        ],
+        "criteria": [
+          "AC03",
+          "AC08",
+          "AC15"
+        ],
+        "title": "프론트 인수용 계약 변경 요약",
+        "change": "API·타입이 화면에 영향을 줄 때 영향화면/이전→새계약/유지사항/재현법을 기존 기록에 작성",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI02",
+        "personas": [
+          "TEAM",
+          "CONTENT"
+        ],
+        "works": [
+          "W01",
+          "W05",
+          "W06"
+        ],
+        "criteria": [
+          "AC02",
+          "AC17",
+          "AC18"
+        ],
+        "title": "작품별 최소 인수 묶음",
+        "change": "식별/출품상태/공식근거/원문·이미지·도면 경로/미확인충돌을 하나의 manifest에 연결",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI03",
+        "personas": [
+          "TEAM"
+        ],
+        "works": [
+          "W02",
+          "W05"
+        ],
+        "criteria": [
+          "AC03",
+          "AC13",
+          "AC16"
+        ],
+        "title": "U05/06 임시 유지 경계",
+        "change": "현10점최대5독립쌍→태그확인/수정→회원저장취향 재사용을 기준 사례로 고정. 최종합의는 별도",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI04",
+        "personas": [
+          "PROF"
+        ],
+        "works": [
+          "W02",
+          "W07",
+          "W10"
+        ],
+        "criteria": [
+          "AC03",
+          "AC20",
+          "AC31"
+        ],
+        "title": "한 작품 입력→처리→출력 추적",
+        "change": "선택/빈도/시간·추천계산·승인근거·U10진입맥락·실제답변을 한 사례로 연결. 내부추론문은 수집하지 않음",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI05",
+        "personas": [
+          "PROF",
+          "VISITOR"
+        ],
+        "works": [
+          "W02",
+          "W06",
+          "W07"
+        ],
+        "criteria": [
+          "AC03",
+          "AC19",
+          "AC20",
+          "AC21"
+        ],
+        "title": "명시 요청에 따른 설명 깊이 조절",
+        "change": "같은 작품의 쉽게/더깊게 2대화를 고정. 취향태그로 이해수준 추정·새설문 도입 없음",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI06",
+        "personas": [
+          "PROF",
+          "VISITOR"
+        ],
+        "works": [
+          "W06",
+          "W07",
+          "W10"
+        ],
+        "criteria": [
+          "AC19",
+          "AC21",
+          "AC29",
+          "AC31"
+        ],
+        "title": "감상 도움의 작은 비교",
+        "change": "고정해설만 vs 관찰질문/맥락대화의 구체관찰근거·혼란/도움·실패 비교. 실제시험과 AI모의검토 구별",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI07",
+        "personas": [
+          "VISITOR",
+          "CONTENT"
+        ],
+        "works": [
+          "W02",
+          "W05",
+          "W10"
+        ],
+        "criteria": [
+          "AC03",
+          "AC14",
+          "AC29"
+        ],
+        "title": "회원/비회원 저장 정책 분리",
+        "change": "회원은중복방지 DB저장, guest는가입없이완주/영수증제공·DB미저장 안내. 바뀌면 계약변경",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI08",
+        "personas": [
+          "VISITOR"
+        ],
+        "works": [
+          "W05",
+          "W07"
+        ],
+        "criteria": [
+          "AC15",
+          "AC20"
+        ],
+        "title": "사용자가 느끼는 도슨트 연속성",
+        "change": "보던질문/해설에서 시작됨이 드러나고 입력하지않은 감상을 AI가 지어내지 않음",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI09",
+        "personas": [
+          "CONTENT",
+          "VISITOR"
+        ],
+        "works": [
+          "W05",
+          "W06"
+        ],
+        "criteria": [
+          "AC16",
+          "AC18"
+        ],
+        "title": "후보 0과 전시 부재 구분",
+        "change": "approved+position 후보집계0을 전시전체소재 부재로 오기하지 않음. 준비부족/추천불가 안내로 수정",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI10",
+        "personas": [
+          "EVALUATOR",
+          "PROF"
+        ],
+        "works": [
+          "W06",
+          "W07",
+          "W10"
+        ],
+        "criteria": [
+          "AC18",
+          "AC19",
+          "AC22",
+          "AC31"
+        ],
+        "title": "전시구성·추천·동선의 주장과 증거 일치",
+        "change": "실제/시연 도면·작품후보 선정·관람순서·실통로·시간가정을 분리해 증명.16점이나3점 시연만으로 전체품질을 통과하지 않음",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      },
+      {
+        "id": "PI11",
+        "personas": [
+          "SENIOR",
+          "CONTENT"
+        ],
+        "works": [
+          "W05",
+          "W06",
+          "W10"
+        ],
+        "criteria": [
+          "AC11",
+          "AC16",
+          "AC18",
+          "AC31"
+        ],
+        "title": "관리자 배치에서 사용자 추천까지 경계 검토",
+        "change": "도면교체 좌표초기화·버전충돌·다전시격리·보존/복원·실제통로 미반영을 확인. API회귀와 실제브라우저/현장시험을 구분",
+        "planStatus": "applied",
+        "productStatus": "not_run"
+      }
+    ]
+  }
+}

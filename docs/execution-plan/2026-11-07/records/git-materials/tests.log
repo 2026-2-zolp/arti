@@ -1,0 +1,12 @@
+test_ambiguous_fallback_escape_and_declared_priority (test_git_materials.GitMaterialTests.test_ambiguous_fallback_escape_and_declared_priority) ... ok
+test_duplicate_missing_and_invalid_labels_fail (test_git_materials.GitMaterialTests.test_duplicate_missing_and_invalid_labels_fail) ... ok
+test_empty_draft_missing_source_and_extra_id_fail (test_git_materials.GitMaterialTests.test_empty_draft_missing_source_and_extra_id_fail) ... ok
+test_export_needs_no_legacy_directory_or_node (test_git_materials.GitMaterialTests.test_export_needs_no_legacy_directory_or_node) ... ok
+test_missing_or_changed_assets_and_reference_fail (test_git_materials.GitMaterialTests.test_missing_or_changed_assets_and_reference_fail) ... ok
+test_reference_is_exact_pinned_git_blob (test_git_materials.GitMaterialTests.test_reference_is_exact_pinned_git_blob) ... ok
+test_source_and_existing_destination_rejected (test_git_materials.GitMaterialTests.test_source_and_existing_destination_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.884s
+
+OK

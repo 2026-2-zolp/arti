@@ -1,0 +1,44 @@
+{
+  "scope": "isolated in-memory backend, fake model provider; no actual AI or team local DB",
+  "freshDatabase": {
+    "exhibitions": 2,
+    "artworks": 12,
+    "guideStatuses": [
+      "none"
+    ]
+  },
+  "newExhibition": {
+    "status": 201,
+    "id": "ex-bada9a3e7523",
+    "draftPublicStatus": 200
+  },
+  "pendingArtwork": {
+    "created": 201,
+    "publicGet": 200,
+    "ask": 200
+  },
+  "recommendationConditions": {
+    "pendingCount": 0,
+    "approvedWithoutPosition": 0,
+    "approvedWithPosition": 1
+  },
+  "confirmedSummaryReanalysis": {
+    "provider": "test-double",
+    "status": 200,
+    "beforeSummary": "AUDIT_OLD_SUMMARY",
+    "beforeStatus": "confirmed",
+    "afterSummary": "AUDIT_NEW_SUMMARY",
+    "afterStatus": "suggested",
+    "guideStatus": "suggested"
+  },
+  "sourceChanges": {
+    "referenceOnly": {
+      "summaryStatus": "confirmed",
+      "guideStatus": "confirmed"
+    },
+    "description": {
+      "summaryStatus": "suggested",
+      "guideStatus": "suggested"
+    }
+  }
+}

@@ -1,0 +1,565 @@
+{
+  "loadSeconds": 4.613590900000418,
+  "items": {
+    "01": {
+      "scores": {
+        "landscape": 0.848,
+        "people": 0.488,
+        "abstract": 0.015,
+        "light": 0.992,
+        "vivid": 0.021,
+        "cool": 0.008,
+        "warm": 0.992,
+        "soft": 0.264
+      },
+      "seconds": 0.2948816000134684,
+      "imageSha256": "d9eefe39b877166c55589462162f7bfa99ce05cba67b81bfd920d99aeb8f24d8"
+    },
+    "02": {
+      "scores": {
+        "landscape": 0.998,
+        "people": 0.111,
+        "abstract": 0.032,
+        "light": 0.99,
+        "vivid": 0.104,
+        "cool": 0.056,
+        "warm": 0.944,
+        "soft": 0.19
+      },
+      "seconds": 0.052885000011883676,
+      "imageSha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e"
+    },
+    "03": {
+      "scores": {
+        "landscape": 0.984,
+        "people": 0.011,
+        "abstract": 0.011,
+        "light": 0.797,
+        "vivid": 0.011,
+        "cool": 0.108,
+        "warm": 0.892,
+        "soft": 0.091
+      },
+      "seconds": 0.04524259999743663,
+      "imageSha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c"
+    },
+    "04": {
+      "scores": {
+        "landscape": 0.916,
+        "people": 0.159,
+        "abstract": 0.008,
+        "light": 0.993,
+        "vivid": 0.296,
+        "cool": 0.035,
+        "warm": 0.965,
+        "soft": 0.052
+      },
+      "seconds": 0.047715799999423325,
+      "imageSha256": "8803f9badee211355b8be5625a5db2c32a98805fb07883a16e5ff902af2dd7b2"
+    },
+    "05": {
+      "scores": {
+        "landscape": 0.995,
+        "people": 0.041,
+        "abstract": 0.982,
+        "light": 0.569,
+        "vivid": 0.968,
+        "cool": 0.001,
+        "warm": 0.999,
+        "soft": 0.018
+      },
+      "seconds": 0.043285699997795746,
+      "imageSha256": "0efcae8a348bd9713e455173d956a6fb2878e5b30393ebdc35ac35f484a9c930"
+    },
+    "06": {
+      "scores": {
+        "landscape": 0.0,
+        "people": 0.957,
+        "abstract": 0.01,
+        "light": 0.805,
+        "vivid": 0.058,
+        "cool": 0.556,
+        "warm": 0.444,
+        "soft": 0.024
+      },
+      "seconds": 0.04604860002291389,
+      "imageSha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7"
+    },
+    "07": {
+      "scores": {
+        "landscape": 0.075,
+        "people": 0.886,
+        "abstract": 0.203,
+        "light": 0.253,
+        "vivid": 0.097,
+        "cool": 0.228,
+        "warm": 0.772,
+        "soft": 0.275
+      },
+      "seconds": 0.047154100000625476,
+      "imageSha256": "d3a1fc3d33e4c3e3fe23673f9a866ee98b0aa22d83e1ae60ed7186bd8975d9bf"
+    },
+    "08": {
+      "scores": {
+        "landscape": 0.003,
+        "people": 0.848,
+        "abstract": 0.101,
+        "light": 0.989,
+        "vivid": 0.747,
+        "cool": 0.005,
+        "warm": 0.995,
+        "soft": 0.001
+      },
+      "seconds": 0.04872079999768175,
+      "imageSha256": "1cfa8ace037f5acfeae3275472e87c70c74f4f04c604e66d22d3817d349267b2"
+    },
+    "09": {
+      "scores": {
+        "landscape": 0.0,
+        "people": 0.818,
+        "abstract": 0.007,
+        "light": 0.574,
+        "vivid": 0.204,
+        "cool": 0.195,
+        "warm": 0.805,
+        "soft": 0.076
+      },
+      "seconds": 0.04408219998003915,
+      "imageSha256": "82715722511e6d044ca22a9c47214cccab431552bc7bba3fb4ec5e9bdba1b168"
+    },
+    "10": {
+      "scores": {
+        "landscape": 0.13,
+        "people": 0.794,
+        "abstract": 0.342,
+        "light": 0.429,
+        "vivid": 0.005,
+        "cool": 0.328,
+        "warm": 0.672,
+        "soft": 0.431
+      },
+      "seconds": 0.04476379998959601,
+      "imageSha256": "8e978a5474d7e4807610914273d9044aeabdf0614cb57730bfdab7df11e5cef7"
+    },
+    "11": {
+      "scores": {
+        "landscape": 0.043,
+        "people": 0.503,
+        "abstract": 0.992,
+        "light": 0.729,
+        "vivid": 0.927,
+        "cool": 0.308,
+        "warm": 0.692,
+        "soft": 0.025
+      },
+      "seconds": 0.04359320001094602,
+      "imageSha256": "f45d58840b15b060c3509ff01d1aa8c4791bf15cff85a29b3516b467d5337e26"
+    },
+    "12": {
+      "scores": {
+        "landscape": 0.15,
+        "people": 0.058,
+        "abstract": 0.998,
+        "light": 0.11,
+        "vivid": 0.79,
+        "cool": 0.015,
+        "warm": 0.985,
+        "soft": 0.024
+      },
+      "seconds": 0.04735949999303557,
+      "imageSha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90"
+    },
+    "13": {
+      "scores": {
+        "landscape": 0.182,
+        "people": 0.163,
+        "abstract": 0.909,
+        "light": 0.658,
+        "vivid": 0.285,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.036
+      },
+      "seconds": 0.04430790001060814,
+      "imageSha256": "bb78e0f1f538507d4bc19004fe0e708e0c3bd00ed5475619fe08c060c5f50514"
+    },
+    "14": {
+      "scores": {
+        "landscape": 0.538,
+        "people": 0.157,
+        "abstract": 0.769,
+        "light": 0.295,
+        "vivid": 0.48,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.075
+      },
+      "seconds": 0.03968489999533631,
+      "imageSha256": "c4a1458034d44478847105ef4e5c60008a48f20e1420991b92abfe70c52086f6"
+    },
+    "15": {
+      "scores": {
+        "landscape": 0.409,
+        "people": 0.083,
+        "abstract": 0.356,
+        "light": 0.92,
+        "vivid": 0.012,
+        "cool": 0.668,
+        "warm": 0.332,
+        "soft": 0.004
+      },
+      "seconds": 0.04475790000287816,
+      "imageSha256": "5d1b0ce9598b73e994bdd6ab42f53934426c91731e71e12108990b3f9f9bdbc9"
+    },
+    "16": {
+      "scores": {
+        "landscape": 0.567,
+        "people": 0.63,
+        "abstract": 0.043,
+        "light": 0.901,
+        "vivid": 0.452,
+        "cool": 0.464,
+        "warm": 0.536,
+        "soft": 0.187
+      },
+      "seconds": 0.0467357000161428,
+      "imageSha256": "f2abd398d5eec58a835edca0fa6d370da75b8330b71b7cd41947df952bb8aa8c"
+    },
+    "17": {
+      "scores": {
+        "landscape": 0.007,
+        "people": 0.912,
+        "abstract": 0.143,
+        "light": 0.972,
+        "vivid": 0.589,
+        "cool": 0.016,
+        "warm": 0.984,
+        "soft": 0.123
+      },
+      "seconds": 0.0425501000136137,
+      "imageSha256": "f9bfffb742d077998ee0eb64d9779bd23f4578a9d4a587cb08424149e7fb48ae"
+    },
+    "18": {
+      "scores": {
+        "landscape": 0.956,
+        "people": 0.645,
+        "abstract": 0.006,
+        "light": 0.994,
+        "vivid": 0.225,
+        "cool": 0.004,
+        "warm": 0.996,
+        "soft": 0.961
+      },
+      "seconds": 0.04680800001369789,
+      "imageSha256": "bd495166958c376ebe0b38c148980cf0c2b59281cfb4bfbe6db90b9a84f3f3b3"
+    },
+    "19": {
+      "scores": {
+        "landscape": 0.003,
+        "people": 0.96,
+        "abstract": 0.004,
+        "light": 0.991,
+        "vivid": 0.072,
+        "cool": 0.019,
+        "warm": 0.981,
+        "soft": 0.009
+      },
+      "seconds": 0.04140049999114126,
+      "imageSha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08"
+    },
+    "20": {
+      "scores": {
+        "landscape": 0.983,
+        "people": 0.058,
+        "abstract": 0.003,
+        "light": 0.955,
+        "vivid": 0.11,
+        "cool": 0.705,
+        "warm": 0.295,
+        "soft": 0.12
+      },
+      "seconds": 0.04619150000507943,
+      "imageSha256": "bd5ae59c50534f9d395b6b12262caeb74dc6ea1b53507063477dd1029b602d73"
+    },
+    "21": {
+      "scores": {
+        "landscape": 0.063,
+        "people": 0.715,
+        "abstract": 0.822,
+        "light": 0.183,
+        "vivid": 0.921,
+        "cool": 0.247,
+        "warm": 0.753,
+        "soft": 0.015
+      },
+      "seconds": 0.046634099999209866,
+      "imageSha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70"
+    },
+    "22": {
+      "scores": {
+        "landscape": 0.081,
+        "people": 0.076,
+        "abstract": 0.497,
+        "light": 0.839,
+        "vivid": 0.992,
+        "cool": 0.181,
+        "warm": 0.819,
+        "soft": 0.099
+      },
+      "seconds": 0.05328630001167767,
+      "imageSha256": "95b7974d77ca85ba6d080e93da82a3d0a34e4598efe2e014b2c1ed6efb3c21ef"
+    },
+    "23": {
+      "scores": {
+        "landscape": 0.023,
+        "people": 0.726,
+        "abstract": 0.029,
+        "light": 0.583,
+        "vivid": 0.897,
+        "cool": 0.008,
+        "warm": 0.992,
+        "soft": 0.005
+      },
+      "seconds": 0.054024499986553565,
+      "imageSha256": "b935baff5f5e7b9a73e25acc957e9cee893d50b8816b0f99879519c180ebf594"
+    },
+    "24": {
+      "scores": {
+        "landscape": 0.014,
+        "people": 0.946,
+        "abstract": 0.415,
+        "light": 0.825,
+        "vivid": 0.964,
+        "cool": 0.111,
+        "warm": 0.889,
+        "soft": 0.031
+      },
+      "seconds": 0.04540350000024773,
+      "imageSha256": "a102db03f0f6fa375cd57e8937d5144e1cc684bb1553aa9c07f65bf5af4e8c79"
+    },
+    "25": {
+      "scores": {
+        "landscape": 0.023,
+        "people": 0.788,
+        "abstract": 0.281,
+        "light": 0.276,
+        "vivid": 0.933,
+        "cool": 0.974,
+        "warm": 0.026,
+        "soft": 0.096
+      },
+      "seconds": 0.046281900024041533,
+      "imageSha256": "fb5aef17492e2c698d36f9f6ad85dcb0cf9d839ec177e430dc206cbb246c1a06"
+    },
+    "26": {
+      "scores": {
+        "landscape": 0.001,
+        "people": 0.923,
+        "abstract": 0.181,
+        "light": 0.704,
+        "vivid": 0.038,
+        "cool": 0.978,
+        "warm": 0.022,
+        "soft": 0.117
+      },
+      "seconds": 0.04532549998839386,
+      "imageSha256": "0d61e06fed0f1f8e971c08c2c4b6db14e73959f76519f50dfc065874aa8db737"
+    },
+    "27": {
+      "scores": {
+        "landscape": 0.083,
+        "people": 0.142,
+        "abstract": 0.017,
+        "light": 0.641,
+        "vivid": 0.003,
+        "cool": 0.866,
+        "warm": 0.134,
+        "soft": 0.682
+      },
+      "seconds": 0.044792600005166605,
+      "imageSha256": "e785b9eec80b2b3f3c37f1b17a064e6acae64d437a80c73b6643a2d8240159ba"
+    },
+    "28": {
+      "scores": {
+        "landscape": 0.985,
+        "people": 0.228,
+        "abstract": 0.094,
+        "light": 0.707,
+        "vivid": 0.923,
+        "cool": 0.968,
+        "warm": 0.032,
+        "soft": 0.078
+      },
+      "seconds": 0.07965559998410754,
+      "imageSha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c"
+    },
+    "29": {
+      "scores": {
+        "landscape": 0.647,
+        "people": 0.183,
+        "abstract": 0.166,
+        "light": 0.975,
+        "vivid": 0.91,
+        "cool": 0.97,
+        "warm": 0.03,
+        "soft": 0.171
+      },
+      "seconds": 0.09821870000450872,
+      "imageSha256": "916e8dfdb34fe9529d810fba3c23b01b9a27ec469bc9d94861d4b0897508da81"
+    },
+    "30": {
+      "scores": {
+        "landscape": 0.563,
+        "people": 0.067,
+        "abstract": 0.844,
+        "light": 0.591,
+        "vivid": 0.922,
+        "cool": 0.998,
+        "warm": 0.002,
+        "soft": 0.004
+      },
+      "seconds": 0.0825677000102587,
+      "imageSha256": "9edc07602018b6128b905deea47cb8993448a2b542f16e6f964c560d1428f0b3"
+    },
+    "31": {
+      "scores": {
+        "landscape": 0.008,
+        "people": 0.601,
+        "abstract": 0.012,
+        "light": 0.823,
+        "vivid": 0.952,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.223
+      },
+      "seconds": 0.07415140001103282,
+      "imageSha256": "a3b4069d4eedd765a6e4d27daf1f9c6caa239d85b6d129e139ecdb18dccd7c91"
+    },
+    "32": {
+      "scores": {
+        "landscape": 0.01,
+        "people": 0.923,
+        "abstract": 0.345,
+        "light": 0.873,
+        "vivid": 0.914,
+        "cool": 0.003,
+        "warm": 0.997,
+        "soft": 0.039
+      },
+      "seconds": 0.05911259999265894,
+      "imageSha256": "44d91070f52f874f13c5fbd6dd4baf4f7ddb702a4850d1953eb6e5be41b50258"
+    },
+    "33": {
+      "scores": {
+        "landscape": 0.947,
+        "people": 0.019,
+        "abstract": 0.1,
+        "light": 0.932,
+        "vivid": 0.22,
+        "cool": 0.643,
+        "warm": 0.357,
+        "soft": 0.992
+      },
+      "seconds": 0.05368260000250302,
+      "imageSha256": "cbba2f55fa5df3314dd3ac3f8b84f85a2c2f5afeff8fa90b117147d124e3b2f7"
+    },
+    "34": {
+      "scores": {
+        "landscape": 0.1,
+        "people": 0.138,
+        "abstract": 0.064,
+        "light": 0.958,
+        "vivid": 0.947,
+        "cool": 0.008,
+        "warm": 0.992,
+        "soft": 0.275
+      },
+      "seconds": 0.04858880001120269,
+      "imageSha256": "c8e7ff08c516866b792925c02592379a4461849b6b8d432bf5c133f563757d41"
+    },
+    "35": {
+      "scores": {
+        "landscape": 0.059,
+        "people": 0.536,
+        "abstract": 0.033,
+        "light": 0.101,
+        "vivid": 0.695,
+        "cool": 0.004,
+        "warm": 0.996,
+        "soft": 0.294
+      },
+      "seconds": 0.043013300019083545,
+      "imageSha256": "7d1c1198a2d50ad137443228368f1d2a2942178578f50896eb22450fa980dd07"
+    },
+    "36": {
+      "scores": {
+        "landscape": 0.653,
+        "people": 0.834,
+        "abstract": 0.003,
+        "light": 0.99,
+        "vivid": 0.576,
+        "cool": 0.857,
+        "warm": 0.143,
+        "soft": 0.742
+      },
+      "seconds": 0.0522571999754291,
+      "imageSha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b"
+    },
+    "37": {
+      "scores": {
+        "landscape": 0.007,
+        "people": 0.934,
+        "abstract": 0.005,
+        "light": 0.936,
+        "vivid": 0.986,
+        "cool": 0.066,
+        "warm": 0.934,
+        "soft": 0.878
+      },
+      "seconds": 0.04440620000241324,
+      "imageSha256": "6b720d7d9a20608771b336992a8129a330763701811dcea3c3d70acb84eccd19"
+    },
+    "38": {
+      "scores": {
+        "landscape": 0.005,
+        "people": 0.942,
+        "abstract": 0.026,
+        "light": 0.536,
+        "vivid": 0.491,
+        "cool": 0.813,
+        "warm": 0.187,
+        "soft": 0.209
+      },
+      "seconds": 0.04352780000772327,
+      "imageSha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01"
+    },
+    "39": {
+      "scores": {
+        "landscape": 0.266,
+        "people": 0.766,
+        "abstract": 0.011,
+        "light": 0.731,
+        "vivid": 0.071,
+        "cool": 0.183,
+        "warm": 0.817,
+        "soft": 0.879
+      },
+      "seconds": 0.04157960001612082,
+      "imageSha256": "5ec645070841ef2e9e48828965f2ed5ec1dd9b5b8aa4c014b3c6d328e10ce868"
+    },
+    "40": {
+      "scores": {
+        "landscape": 0.855,
+        "people": 0.068,
+        "abstract": 0.014,
+        "light": 0.92,
+        "vivid": 0.644,
+        "cool": 0.551,
+        "warm": 0.449,
+        "soft": 0.911
+      },
+      "seconds": 0.04493970001931302,
+      "imageSha256": "e5c8c6988cd625cf0fa8f77db67077098e92f854578d283965a39bd4104d4e9a"
+    }
+  }
+}

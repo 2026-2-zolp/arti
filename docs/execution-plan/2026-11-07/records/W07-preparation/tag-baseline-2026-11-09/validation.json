@@ -1,0 +1,20 @@
+{
+  "tests": {
+    "passed": 16,
+    "seconds": 4.734,
+    "scope": "scripts tests only; no product code changes",
+    "finalSeconds": 4.905
+  },
+  "frozenScoresSha256": "5b6f9fdc7a85dde5e090d9477b5bf5ed604700dc1398680c564df7ff9a65ba5e",
+  "reportScriptSha256": "2984d0e535de52a39c440460a7fe114a1328b767704abf241192fb116a1539ba",
+  "metricProtocolChanges": "after inference: validation guards added; scoring definitions unchanged",
+  "source": "previous runtime result pinned downloads and versions",
+  "gate": "W07 preparatory baseline pass; formal acceptance unchanged",
+  "planValidation": {
+    "errors": 0,
+    "protectedFiles": 38,
+    "guardrailCases": 25,
+    "W02Errors": 0
+  },
+  "byteIdenticalMetricsReplay": true
+}

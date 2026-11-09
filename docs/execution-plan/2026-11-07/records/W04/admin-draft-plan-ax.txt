@@ -1,0 +1,45 @@
+Browser tab: 2, Title: "ARTI", URL: "http://127.0.0.1:5178/admin/map?exhibition=fixture-draft".
+1 AXWebArea ARTI, URL: 127.0.0.1:5178/admin/map?exhibition=fixture-draft
+	2 container root
+		3 container
+			4 text ARTI 관리자 관리자 계정
+			5 button 로그아웃
+		6 container 관리자 메뉴
+			7 link Description: 대시보드, Value: 127.0.0.1:5178/admin
+			8 link Description: 전시 관리, Value: 127.0.0.1:5178/admin/exhibitions
+			9 link Description: 작품 관리, Value: 127.0.0.1:5178/admin/artworks
+			10 link Description: 위치·지도 관리, Value: 127.0.0.1:5178/admin/map
+			11 link Description: 회원 조회, Value: 127.0.0.1:5178/admin/members
+			12 link Description: 평가, Value: 127.0.0.1:5178/admin/reactions
+		13 container
+			14 heading 위치·지도 관리, Value: 1
+				15 text 위치·지도 관리
+			16 text 미술관 평면도 위에 작품 위치와 입구를 지정합니다. 이 위치로 사용자의 추천 관람 순서와 경로를 계산해요.
+			17 pop up button (collapsed, settable) Description: 전시 선택, Value: 비공개 검증 전시, Secondary Actions: Expand
+				18 menu
+					19 (selected) 비공개 검증 전시
+					28 ARTI 개발 검증 전시
+			20 heading 미술관 평면도, Value: 2
+				29 text 미술관 평면도
+			30 text 평면도 이미지를 사용 중이에요
+			31 text 1×1px · 비율이 다른 이미지로 바꾸면 작품 위치를 다시 확인해야 해요.
+			32 text 다른 평면도로 바꾸기
+			21 button 평면도 삭제
+			33 container 비공개 검증 전시 평면도
+			34 text 번호 마커와 「입구」를 끌어서 옮기면 바로 저장돼요. 위치가 없는 작품은 오른쪽 목록에서 고른 뒤 지도를 클릭하세요.
+			22 heading 작품 위치, Value: 2
+				35 text 작품 위치
+			23 content list
+				24 button 1 검증용 작품 13 · 전시실 미지정 미등록
+					36 text 1
+					37 text 검증용 작품 13
+					38 text  · 
+					39 text 전시실 미지정
+					40 text 미등록
+			25 heading 전시실, Value: 2
+				41 text 전시실
+			26 text field (settable)
+			27 button 추가
+			42 button (disabled) 전시실 목록 저장
+
+The focused UI element is 1 AXWebArea ARTI, URL: 127.0.0.1:5178/admin/map?exhibition=fixture-draft

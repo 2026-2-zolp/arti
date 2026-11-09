@@ -1,0 +1,70 @@
+Found 51 test(s).
+Creating test database for alias 'default' ('test_arti')...
+Operations to perform:
+  Synchronize unmigrated apps: rest_framework
+  Apply all migrations: arti, contenttypes
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying arti.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+System check identified no issues (0 silenced).
+test_admin_reads_retain_drafts_and_suggested_text (arti.tests.test_foundation.FoundationTests.test_admin_reads_retain_drafts_and_suggested_text) ... ok
+test_bootstrap_hashes_and_never_overwrites (arti.tests.test_foundation.FoundationTests.test_bootstrap_hashes_and_never_overwrites) ... ok
+test_bootstrap_rejects_weak_password (arti.tests.test_foundation.FoundationTests.test_bootstrap_rejects_weak_password) ... ok
+test_counts_computed_from_server_not_client_and_weighted (arti.tests.test_foundation.FoundationTests.test_counts_computed_from_server_not_client_and_weighted) ... ok
+test_coverage_counts_positioned_approved_only (arti.tests.test_foundation.FoundationTests.test_coverage_counts_positioned_approved_only) ... ok
+test_database_constraints_enforce_coordinates_status_and_dates (arti.tests.test_foundation.FoundationTests.test_database_constraints_enforce_coordinates_status_and_dates) ... ok
+test_database_is_actual_postgres (arti.tests.test_foundation.FoundationTests.test_database_is_actual_postgres) ... ok
+test_fixture_is_repeatable_without_accounts (arti.tests.test_foundation.FoundationTests.test_fixture_is_repeatable_without_accounts) ... ok
+test_fk_json_null_and_timezone_round_trip (arti.tests.test_foundation.FoundationTests.test_fk_json_null_and_timezone_round_trip) ... ok
+test_flag_is_required_for_development_fixture (arti.tests.test_foundation.FoundationTests.test_flag_is_required_for_development_fixture) ... ok
+test_health_readiness_and_unimplemented_are_honest (arti.tests.test_foundation.FoundationTests.test_health_readiness_and_unimplemented_are_honest) ... ok
+test_invalid_profile_returns_400_not_500 (arti.tests.test_foundation.FoundationTests.test_invalid_profile_returns_400_not_500) ... ok
+test_media_permissions_and_public_show_image (arti.tests.test_foundation.FoundationTests.test_media_permissions_and_public_show_image) ... ok
+test_model_clean_rejects_foreign_room_and_mismatched_hints (arti.tests.test_foundation.FoundationTests.test_model_clean_rejects_foreign_room_and_mismatched_hints) ... ok
+test_no_default_accounts_or_sessions (arti.tests.test_foundation.FoundationTests.test_no_default_accounts_or_sessions) ... ok
+test_pending_and_draft_artwork_hidden_in_all_public_reads (arti.tests.test_foundation.FoundationTests.test_pending_and_draft_artwork_hidden_in_all_public_reads) ... ok
+test_pool_exact_ten_or_explicit_not_ready (arti.tests.test_foundation.FoundationTests.test_pool_exact_ten_or_explicit_not_ready) ... ok
+test_production_refuses_test_fixture_even_with_flag (arti.tests.test_foundation.FoundationTests.test_production_refuses_test_fixture_even_with_flag) ... ok
+test_public_dto_removes_suggested_content_with_ui_safe_defaults (arti.tests.test_foundation.FoundationTests.test_public_dto_removes_suggested_content_with_ui_safe_defaults) ... ok
+test_public_exhibition_policy_and_camel_case (arti.tests.test_foundation.FoundationTests.test_public_exhibition_policy_and_camel_case) ... ok
+test_recommendation_response_shape_duration_and_exclusions (arti.tests.test_foundation.FoundationTests.test_recommendation_response_shape_duration_and_exclusions) ... ok
+test_role_specific_opaque_token_and_logout (arti.tests.test_foundation.FoundationTests.test_role_specific_opaque_token_and_logout) ... ok
+test_saved_profile_requires_authenticated_owner (arti.tests.test_foundation.FoundationTests.test_saved_profile_requires_authenticated_owner) ... ok
+test_visit_identity_has_real_database_unique_constraint (arti.tests.test_foundation.FoundationTests.test_visit_identity_has_real_database_unique_constraint) ... ok
+test_analysis_preserves_confirmed_independently_and_conflicts (arti.tests.test_integration.IntegrationTests.test_analysis_preserves_confirmed_independently_and_conflicts) ... ok
+test_analysis_timeout_remains_504 (arti.tests.test_integration.IntegrationTests.test_analysis_timeout_remains_504) ... ok
+test_authenticated_ai_rate_limit_and_timeout (arti.tests.test_integration.IntegrationTests.test_authenticated_ai_rate_limit_and_timeout) ... ok
+test_capture_import_hash_draft_and_no_overwrite (arti.tests.test_integration.IntegrationTests.test_capture_import_hash_draft_and_no_overwrite) ... ok
+test_confirm_batch_is_atomic_and_explicit (arti.tests.test_integration.IntegrationTests.test_confirm_batch_is_atomic_and_explicit) ... ok
+test_docent_context_is_server_reconstructed_and_history_bounded (arti.tests.test_integration.IntegrationTests.test_docent_context_is_server_reconstructed_and_history_bounded) ... ok
+test_docent_hidden_content_and_generic_tip (arti.tests.test_integration.IntegrationTests.test_docent_hidden_content_and_generic_tip) ... ok
+test_explicit_cors_origin_supports_version_headers_not_auth_bypass (arti.tests.test_integration.IntegrationTests.test_explicit_cors_origin_supports_version_headers_not_auth_bypass) ... ok
+test_explicit_regeneration_only_selected (arti.tests.test_integration.IntegrationTests.test_explicit_regeneration_only_selected) ... ok
+test_guest_interpret_validation_precedes_provider (arti.tests.test_integration.IntegrationTests.test_guest_interpret_validation_precedes_provider) ... ok
+test_guest_member_and_invalid_token_are_distinct (arti.tests.test_integration.IntegrationTests.test_guest_member_and_invalid_token_are_distinct) ... ok
+test_idempotency_reasons_snapshot_and_ai_independence (arti.tests.test_integration.IntegrationTests.test_idempotency_reasons_snapshot_and_ai_independence) ... ok
+test_image_version_checked_before_write_and_source_stales (arti.tests.test_integration.IntegrationTests.test_image_version_checked_before_write_and_source_stales) ... ok
+test_invalid_provider_output_does_not_write (arti.tests.test_integration.IntegrationTests.test_invalid_provider_output_does_not_write) ... ok
+test_malformed_payloads_return_400_without_writes (arti.tests.test_integration.IntegrationTests.test_malformed_payloads_return_400_without_writes) ... ok
+test_member_other_owner_logout_and_dormant (arti.tests.test_integration.IntegrationTests.test_member_other_owner_logout_and_dormant) ... ok
+test_member_reactions_are_central_and_guest_not_collected (arti.tests.test_integration.IntegrationTests.test_member_reactions_are_central_and_guest_not_collected) ... ok
+test_missing_version_and_full_edit_fields (arti.tests.test_integration.IntegrationTests.test_missing_version_and_full_edit_fields) ... ok
+test_postgres_is_real (arti.tests.test_integration.IntegrationTests.test_postgres_is_real) ... ok
+test_profile_only_same_request_retry_and_admin_receipt (arti.tests.test_integration.IntegrationTests.test_profile_only_same_request_retry_and_admin_receipt) ... ok
+test_roundtrip_guide_and_independent_confirmation (arti.tests.test_integration.IntegrationTests.test_roundtrip_guide_and_independent_confirmation) ... ok
+test_saved_profile_provenance_and_server_counts_cross_pool (arti.tests.test_integration.IntegrationTests.test_saved_profile_provenance_and_server_counts_cross_pool) ... ok
+test_signup_login_no_plaintext_and_reset_disabled (arti.tests.test_integration.IntegrationTests.test_signup_login_no_plaintext_and_reset_disabled) ... ok
+test_source_change_forces_separate_approval_and_stale (arti.tests.test_integration.IntegrationTests.test_source_change_forces_separate_approval_and_stale) ... ok
+test_visit_scope_validation (arti.tests.test_integration.IntegrationTests.test_visit_scope_validation) ... ok
+test_analysis_slot_is_cross_connection_exclusive (arti.tests.test_integration.ConcurrentVisitTests.test_analysis_slot_is_cross_connection_exclusive) ... ok
+test_simultaneous_same_visit_is_one_row (arti.tests.test_integration.ConcurrentVisitTests.test_simultaneous_same_visit_is_one_row) ... ok
+
+----------------------------------------------------------------------
+Ran 51 tests in 19.138s
+
+OK
+Destroying test database for alias 'default' ('test_arti')...

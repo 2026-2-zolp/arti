@@ -1,0 +1,146 @@
+{
+  "asOf": "2026-11-09 KST",
+  "commits": [
+    {
+      "commit": "530291a8e0fd715ba136f3be6904d2450be577e3",
+      "title": "docs: 다음 과업 확인과 커밋 본문 작성 기준 정리",
+      "fileCount": 6,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 847
+    },
+    {
+      "commit": "ad81f7c28ada16a1d6ca9e456daedd735a9d35dd",
+      "title": "docs: 자료 대기 중 개발 실행·인수·복구 보완 계획 구체화",
+      "fileCount": 3,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 623
+    },
+    {
+      "commit": "858b62921fb7bc5fdc7cd17ff8bb8a036166f4b9",
+      "title": "fix: Django 기준 개발 실행과 관리자 경로 일관화",
+      "fileCount": 45,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1009
+    },
+    {
+      "commit": "858b2bb18eb39f31551dd7dae9a52edde6d2479f",
+      "title": "refactor: 현재 구조 안내와 Git 자료의 legacy 백엔드 의존 분리",
+      "fileCount": 28,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1272
+    },
+    {
+      "commit": "4a9dbe9cc3d72376421bb2c26666094fdd369a25",
+      "title": "docs: 유영국 전달 자료 검토와 시연 준비 순서 정리",
+      "fileCount": 4,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 449
+    },
+    {
+      "commit": "f181b238c4e986a33cb6508c2d2a3db1d169a296",
+      "title": "docs: W06 유영국16점 식별 출처표와 시연 후보 정리",
+      "fileCount": 10,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 662
+    },
+    {
+      "commit": "a46694f131e6a3f5a4c313681a661297007ea99c",
+      "title": "fix: W06 도면 교체와 배치 관리 보호 및 후속 계획 정리",
+      "fileCount": 15,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 701
+    },
+    {
+      "commit": "2f974188a0848e7068c9af317cd262ec615297a4",
+      "title": "docs: 코드 한글 역할 주석과 GPT 환경설정 가이드 보완",
+      "fileCount": 96,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 539
+    },
+    {
+      "commit": "6e2ea401ec74b9f1131080b371cc3f2e43991375",
+      "title": "docs: GPT 실제 연결 smoke와 후속 대화 검증 기록",
+      "fileCount": 11,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 665
+    },
+    {
+      "commit": "38dd3a674cfe5f6d569a34ebb9548567ba8770f9",
+      "title": "fix: GPT 관찰 안내 품질 평가와 프롬프트 보완",
+      "fileCount": 15,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 672
+    },
+    {
+      "commit": "d3a2f76755d5f401f65e3a76174fc981ca3a4f58",
+      "title": "docs: 합성 백업 복원 검증과 유영국 콘텐츠 검수 준비",
+      "fileCount": 13,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 993
+    },
+    {
+      "commit": "3ff20d690b7aa200bd2c373d084daa936e0ed8c4",
+      "title": "feat: W06 전시 자료 인수 도구와 핵심3점 비공개 적재",
+      "fileCount": 16,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1277
+    },
+    {
+      "commit": "afe46ee8e0b93ab2a174f1670945d8feff93d6c0",
+      "title": "feat: W06 나머지13점 검토와 비공개12점 추가 인수",
+      "fileCount": 17,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1436
+    },
+    {
+      "commit": "3a20624f6bf3b24b34fb11f9c7b60d976e35b243",
+      "title": "docs: W06 007 재단 공식 출처와 제목 표기 차이 확인",
+      "fileCount": 5,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 618
+    },
+    {
+      "commit": "49126ba1bac7895a4c2cfaf9b4195890c02daccd",
+      "title": "feat: W06 007 비공개 인수와16점 후속 계획 정리",
+      "fileCount": 14,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1132
+    },
+    {
+      "commit": "2fcae9263c2c8cf6a6876eb633c0afa1d6827948",
+      "title": "feat: W06 준비 자료 검증과 시연 평가 계획 수립",
+      "fileCount": 24,
+      "decision": "scope/context/validation/limits consistent; retain historical SHA and detailed evidence",
+      "messageChars": 1421
+    }
+  ],
+  "pendingCommits": 16,
+  "uniqueNewBlobsScanned": 317,
+  "actualLocalSecretsFound": false,
+  "historyPolicy": "Preserve existing commit SHA per agreed rule; add concise handoff for team scan",
+  "notIncluded": [
+    "private DB/dumps",
+    "Yoo source images",
+    "actual API keys/env"
+  ],
+  "sensitiveValuesPrinted": false,
+  "validation": {
+    "frontendTests": 20,
+    "frontendTypecheck": "pass",
+    "frontendBuild": "pass",
+    "djangoPostgresqlTests": 85,
+    "djangoSeconds": 35.364,
+    "paidModelCalls": 0,
+    "remoteCI": "not yet executed for this push"
+  },
+  "messageReview": {
+    "titles": "all16 retain type: Korean summary and appropriate W number",
+    "finding": "Bodies explain actual changes/tests/limits. Some recent bodies are long and dense; detail supports intake history but a short handoff is easier to scan.",
+    "action": "Keep historical hashes under prior no-rewrite agreement and cross-references; add concise team handoff rather than rewrite messages. Future bodies should use normal spacing and put repeated procedure detail in worklogs.",
+    "blockingMismatchFound": false,
+    "messageRangeChars": [
+      449,
+      1436
+    ]
+  }
+}

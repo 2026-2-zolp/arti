@@ -10,6 +10,7 @@ import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute'
 import { TASTE_LABEL } from '../../data/mock';
 import type { Artwork } from '../../types';
 
+/** 취향·시간에 따른 추천 작품을 확인하는 화면 */
 export default function U08Recommend() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
@@ -17,42 +18,32 @@ export default function U08Recommend() {
   const to = useExhibitionPath();
   const { tastes, duration, recommendations } = state;
   const [error, setError] = useState<string | null>(null);
-  const { data: artworks } = useAsync(() => api.listArtworks(exhibitionId), [exhibitionId]);
+  const [attempt, setAttempt] = useState(0);
+  const { data: artworks, error: artworkError, reload: reloadArtworks } = useAsync(() => api.listArtworks(exhibitionId), [exhibitionId]);
   // 태그별로 이 전시에서 추천할 수 있는 작품 수 — 고른 취향 중 0점인 태그는 안내만 한다 (다른 태그로 바꿔 넣지 않음)
-  const { data: coverage } = useAsync(() => api.tagCoverage(exhibitionId), [exhibitionId]);
+  const { data: coverage, error: coverageError, reload: reloadCoverage } = useAsync(() => api.tagCoverage(exhibitionId), [exhibitionId]);
   const missing = coverage ? tastes.filter((t) => !coverage[t]) : [];
 
   // 추천 목록이 비어 있을 때만 요청 (U-09에서 뒤로 돌아온 경우 진행 상태 유지)
   const needFetch = recommendations.length === 0;
   useEffect(() => {
-    if (!needFetch || !duration || tastes.length === 0) return;
+    if (!needFetch || !duration) return;
+    setError(null);
     let cancelled = false;
     api
-      .recommend(exhibitionId, tastes, duration)
+      .recommend(exhibitionId, tastes, duration, state.tasteProfile)
       .then((recs) => {
         if (cancelled) return;
-        if (recs.length === 0) setError('지금 추천할 수 있는 작품이 없어요. 전시 데이터를 확인해 주세요.');
-        else dispatch({ type: 'setRecommendations', recs });
+        if (recs.length === 0) setError('지금 추천할 수 있는 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요. 전시 데이터를 확인해 주세요.');
+        else dispatch({ type: 'setRecommendations', recs, generation: state.requestGeneration });
       })
       .catch((e: Error) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
     };
-  }, [needFetch, exhibitionId, tastes, duration, dispatch]);
+  }, [needFetch, exhibitionId, tastes, duration, dispatch, state.tasteProfile, state.requestGeneration, attempt]);
 
   if (!duration) return <Navigate to={to('/time')} replace />;
-
-  // 취향 태그가 없으면 추천을 요청하지 않으므로, 계속 기다리게 두지 않고 안내한다
-  if (tastes.length === 0 && needFetch) {
-    return (
-      <MobileShell screenId="U-08" title="추천 작품" back={to('/time')}>
-        <Lead title="취향 태그가 없어요" desc="고른 작품에서 취향 태그를 만들지 못해 추천할 수 없어요." />
-        <button className="btn primary block mt-24" onClick={() => navigate(to('/taste'))}>
-          취향 다시 고르기
-        </button>
-      </MobileShell>
-    );
-  }
 
   const byId = new Map<string, Artwork>((artworks ?? []).map((w) => [w.id, w]));
   const ready = recommendations.length > 0 && artworks;
@@ -74,11 +65,14 @@ export default function U08Recommend() {
       />
       {missing.length > 0 && (
         <p className="missing-note" role="note">
-          이 전시에는 {missing.map((t) => `「${TASTE_LABEL[t]}」`).join(' · ')} 작품이 없어요.
+          현재 추천 가능한 작품 중 {missing.map((t) => `「${TASTE_LABEL[t]}」`).join(' · ')} 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요.
         </p>
       )}
-      {error && <p className="error-text">{error}</p>}
-      {!ready && !error && <Spinner label="취향에 맞는 작품을 찾는 중…" />}
+      {artworkError && <p className="error-text" role="alert">작품 목록을 불러오지 못했어요. {artworkError}<button onClick={reloadArtworks}>작품 목록 다시 불러오기</button></p>}
+      {coverageError && <p role="alert">태그별 추천 후보 수를 확인하지 못했어요.<button onClick={reloadCoverage}>후보 수 다시 확인</button></p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={() => setAttempt(n => n + 1)}>다시 시도</button><button onClick={() => navigate(to('/taste'))}>취향 다시 선택</button></p>}
+      {ready && recommendations.length < (duration === '30m' ? 3 : duration === '60m' ? 5 : 7) && <p>준비된 추천 후보가 적어 가능한 작품만 안내해요.</p>}
+      {!ready && !error && !artworkError && <Spinner label="취향에 맞는 작품을 찾는 중…" />}
 
       {ready && (
         <ol className="rec-list">

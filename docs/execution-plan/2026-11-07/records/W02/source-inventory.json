@@ -1,0 +1,730 @@
+{
+  "baseline": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "scope": "Static route registrations and direct api calls; not runtime coverage",
+  "sources": [
+    {
+      "path": "backend/src/app.ts",
+      "sha256": "5e402137633c3afefffcde8a9ad3fa5945d40e5760a46f15d34d352283fbd48a"
+    },
+    {
+      "path": "backend/src/config.ts",
+      "sha256": "4268d41603df2e39777d9179bb381e6f448032b47f2a9d4e2683a0533d6f8bfe"
+    },
+    {
+      "path": "backend/src/db.ts",
+      "sha256": "8fc946a6dd3408080840149f572aac1ccabfc2a4ce22e17f920f05b9f65524c8"
+    },
+    {
+      "path": "backend/src/http.ts",
+      "sha256": "f50189ea595564e7fbac8c8939ac690526fccd807dc6c635fb4550781b459164"
+    },
+    {
+      "path": "backend/src/index.ts",
+      "sha256": "5a16e67d74b9f6016899da12d0fa2e66d74775cb52d5a9c37ebfd8e860078123"
+    },
+    {
+      "path": "backend/src/lib/ai.ts",
+      "sha256": "344b0bb474408d034118d2172a1ef723de7344438d90e8aaaf206560365b6405"
+    },
+    {
+      "path": "backend/src/lib/emotion.ts",
+      "sha256": "8218f41200fdeef295a98b05311a4a30a2c4a5e130cd45c1c850668e2b23f6b2"
+    },
+    {
+      "path": "backend/src/lib/emotionClient.ts",
+      "sha256": "a90d64c57482a59a9f118a72fa6ec652d54aaa88593435cce90cc63808a0dbe4"
+    },
+    {
+      "path": "backend/src/lib/josa.ts",
+      "sha256": "533df259deb8cc658a6ca52199a25e6ce2e65a2235a51364edfff2dba18ad423"
+    },
+    {
+      "path": "backend/src/lib/password.ts",
+      "sha256": "c992b06cfd93a7c9b81faa5f81ad762b3aa75c064915c451430fe51b9d5a0e8e"
+    },
+    {
+      "path": "backend/src/lib/recommend.ts",
+      "sha256": "78c39686cc95a2819120edc606d20dbde94fd1a12ffb92ffc794cd0da7abd3af"
+    },
+    {
+      "path": "backend/src/lib/tags.ts",
+      "sha256": "354bdfaf5423b32f755752e1f19b3822088cc931ff1b4f7cf44b6d3c4bf9aee3"
+    },
+    {
+      "path": "backend/src/repo.ts",
+      "sha256": "e6833e9b3941d238f1349c290db11b80b840085b49126ecd0abc6f3daf42dba7"
+    },
+    {
+      "path": "backend/src/routes/admin.ts",
+      "sha256": "1d3fc034e590387d8ee67262516c24f09fe0d01deb427f6baa80f6498c1bc0e1"
+    },
+    {
+      "path": "backend/src/routes/auth.ts",
+      "sha256": "827df59c0c2a633f66eb82f8c4ac79ac2d4935f5aeea1eeb9217b8c8f7978296"
+    },
+    {
+      "path": "backend/src/routes/catalog.ts",
+      "sha256": "0922eaed1eb04de027f55ba6370dec1cd8e5121dc4932bfd6e7e7855f607f09f"
+    },
+    {
+      "path": "backend/src/routes/visits.ts",
+      "sha256": "65b6001ec0386bae067770547d12ad2c1f9efee3b0478c94ecb9d6d666ade265"
+    },
+    {
+      "path": "backend/src/schemas.ts",
+      "sha256": "63c97d0a003d592fbec6fe2f8476e1cde16d9ef7e5504c8e3399c3b0c4ad790e"
+    },
+    {
+      "path": "backend/src/seed.ts",
+      "sha256": "cba52cc11a56e11e34c3dd7db05e2d8294abc926a280c4c8c6dcd397d048f8fe"
+    },
+    {
+      "path": "backend/src/types.ts",
+      "sha256": "fab66aa3a2a5baf58f3d4613808da7ff84499aeefd97df74649cc86cdf9b09f5"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "sha256": "b43ddbecbddac71fa7bd83b1210ce0b955acb2fb1afa1673d782f2e39a8e3893"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "sha256": "b3af7750ac442c1390fdb586a9d63dd357fec50944bcd37c81ba8e9195dd68f6"
+    },
+    {
+      "path": "frontend/src/components/ArtImage.tsx",
+      "sha256": "247fd831762564cb3042bde7c09fa52d88b1ab5ef25078eda8c7f47f01d78553"
+    },
+    {
+      "path": "frontend/src/components/EmotionBars.tsx",
+      "sha256": "6e582c544e613281e20e77830f8a2e437c1ce05953b85a0cf1c14eceb258812e"
+    },
+    {
+      "path": "frontend/src/components/Field.tsx",
+      "sha256": "1303869c555bde42170ca05383de04c3b7ca879670c92fea96fc570f36ef6a32"
+    },
+    {
+      "path": "frontend/src/components/FloorMap.tsx",
+      "sha256": "3b145c405b6b9f24c033e96cc94bd7971d69843466cf3846641714761c698b52"
+    },
+    {
+      "path": "frontend/src/components/Icon.tsx",
+      "sha256": "2cd84787f8cc2e615a4d5b83c9c7002e3ffdab553486f9545fa2c201ba76034a"
+    },
+    {
+      "path": "frontend/src/components/MobileShell.tsx",
+      "sha256": "8e0724c2cecf081e85f27bd37f2098c125a09f9a68db379b45f5299bf3484543"
+    },
+    {
+      "path": "frontend/src/components/ReceiptImageSave.tsx",
+      "sha256": "a957d6179e9b026056c19190f6639a1635079b6932c1f60bc84bf4e1c5c14b86"
+    },
+    {
+      "path": "frontend/src/data/mock.ts",
+      "sha256": "396ee24a695f7626699de05812c98f0d9f87ad404aca3fc229bc4259fcd0a816"
+    },
+    {
+      "path": "frontend/src/lib/josa.ts",
+      "sha256": "533df259deb8cc658a6ca52199a25e6ce2e65a2235a51364edfff2dba18ad423"
+    },
+    {
+      "path": "frontend/src/lib/reactionLog.ts",
+      "sha256": "25c44331ee9ab75ced78cedd21275398f4ed3c219f467853e2f8bd1beb9d1926"
+    },
+    {
+      "path": "frontend/src/lib/recommend.ts",
+      "sha256": "5965543481f88d77ef278bf75fc841a938f5300654b591019496aa914de29f73"
+    },
+    {
+      "path": "frontend/src/lib/storage.ts",
+      "sha256": "50347739d9133c96fbbe320a984bd2aeba60f52ffcbaf3bbf062e4a67db98617"
+    },
+    {
+      "path": "frontend/src/lib/tasteFromPicks.ts",
+      "sha256": "577a7b7f69e22cfa53355089f51e180bc9de6895b00b7abfb6ce090de87d33e0"
+    },
+    {
+      "path": "frontend/src/lib/useAsync.ts",
+      "sha256": "28197a0c36dab55f3d30317551a21de1566cbcc7c056d9f17963d177bd738890"
+    },
+    {
+      "path": "frontend/src/lib/useSpeech.ts",
+      "sha256": "ce43a4de363f0736b88f40613f272f7f20d31599bf33b5717d2ebd39907d6a9a"
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "sha256": "367b38d739c9a78ce53438d9f567721d05f6892fb7a00b3fe0e780112acdb127"
+    },
+    {
+      "path": "frontend/src/pages/admin/A01Login.tsx",
+      "sha256": "674f0bcd5e72ffa8a1a95719919e95b31bfbed654df4feb59da810a628d9cf3c"
+    },
+    {
+      "path": "frontend/src/pages/admin/A02Dashboard.tsx",
+      "sha256": "0c241309b806c0860e12c7792dac5605aae437ceecacd995c765c681b1c21f1b"
+    },
+    {
+      "path": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "sha256": "a6cca173e92e6141053d37cdaf700bbdfd0790916f6071e576395a147e37c87e"
+    },
+    {
+      "path": "frontend/src/pages/admin/A04Artworks.tsx",
+      "sha256": "ae05730bfcabb2dcdd58eef65493d19175dbbfd7e46cb2c1fc195e377fae32da"
+    },
+    {
+      "path": "frontend/src/pages/admin/A05Map.tsx",
+      "sha256": "3dee5f51a6cf1321bd72211e2613f59f72ff2266764dad924f5bd61e0234f6c9"
+    },
+    {
+      "path": "frontend/src/pages/admin/A06Members.tsx",
+      "sha256": "4aa50d1a8bb91e4f2d10bc3e646abea881afbe8bb6d34390182833f09b59cfba"
+    },
+    {
+      "path": "frontend/src/pages/admin/A07Reactions.tsx",
+      "sha256": "0c4079bd9796a6a3c2e28aab40a024737e7d38ad737fb6e438f5aa25ec3ecf9f"
+    },
+    {
+      "path": "frontend/src/pages/admin/AdminLayout.tsx",
+      "sha256": "e2fa3f60a3ea9a19a257d43d4530aeba9fb5e21e2ed37ffa5d4e475565a276be"
+    },
+    {
+      "path": "frontend/src/pages/user/U01Start.tsx",
+      "sha256": "1c31429d60c2d0427b6d4b8e1802e561becf807e522fe695f05d634c16cf0536"
+    },
+    {
+      "path": "frontend/src/pages/user/U02Entry.tsx",
+      "sha256": "f7a798bc0298a520818130f354d9a065e8adc809389e38ba000d8348490b6b3b"
+    },
+    {
+      "path": "frontend/src/pages/user/U03Login.tsx",
+      "sha256": "41f4f64533bf9fe5f435c356bb970036661711c562eba75f5a4a76779fe62dd3"
+    },
+    {
+      "path": "frontend/src/pages/user/U04Signup.tsx",
+      "sha256": "3815d1193fa8216126aca987955c23b77cae84bd664316e11b3d3f5993f0a7e5"
+    },
+    {
+      "path": "frontend/src/pages/user/U05Taste.tsx",
+      "sha256": "bd108a134ec4512013869f6762f1e4ae59c32c9887ad3e68313e4415a437dd1b"
+    },
+    {
+      "path": "frontend/src/pages/user/U06SavedTaste.tsx",
+      "sha256": "202b4d243e65270a78871cc1ff3c22bfd674ad1645cb06329e0e7156c197d4e0"
+    },
+    {
+      "path": "frontend/src/pages/user/U07Time.tsx",
+      "sha256": "3964d6ffd50b1bd7a29af2aee4c6da07fdce2393accb7a8333962fc2ebf2f4b9"
+    },
+    {
+      "path": "frontend/src/pages/user/U08Recommend.tsx",
+      "sha256": "803a037192970455663469af5511de8e9a80cd1de986ab6f7959f73ae0f8524c"
+    },
+    {
+      "path": "frontend/src/pages/user/U09Route.tsx",
+      "sha256": "ddb3217b1885b8595119c8299f511c3146bd630bc272d60ab5a8a1c27f22a992"
+    },
+    {
+      "path": "frontend/src/pages/user/U10Artwork.tsx",
+      "sha256": "2b6386dc002cd108544b88e22a3e1937d96a013909b496fdabe4c318103cdb73"
+    },
+    {
+      "path": "frontend/src/pages/user/U11AskAI.tsx",
+      "sha256": "2022ff285d6022a4d857bc031617087a910fba2e909d5bef93149dbaea4b60c3"
+    },
+    {
+      "path": "frontend/src/pages/user/U12Receipt.tsx",
+      "sha256": "c35142d830e6c8c247326a6455d9d9d5c2f28c55773610270384e8472a5ff792"
+    },
+    {
+      "path": "frontend/src/pages/user/U13MyPage.tsx",
+      "sha256": "c85de6477a6f66d3fe16986a9edce09bec11fa102a58b0de7be3e0d17721fd35"
+    },
+    {
+      "path": "frontend/src/pages/user/U14ForgotPassword.tsx",
+      "sha256": "f99ae70cf2cc63a19122d242bf9e9994c70a816f42336876fbb5f49f6a4816a0"
+    },
+    {
+      "path": "frontend/src/pages/user/U15ResetPassword.tsx",
+      "sha256": "946f6daa22f0ce50ba0e131dd7ecb2d781f81578eca12c69234b063ce9fe8673"
+    },
+    {
+      "path": "frontend/src/store/ExhibitionRoute.tsx",
+      "sha256": "bd93f11a91278d412fc98628da2c0f3e25f2e99834947d8bf2a0067b03b9562e"
+    },
+    {
+      "path": "frontend/src/store/VisitContext.tsx",
+      "sha256": "86ccd517d741e95388f0e31a54e7f32b8cb5393d53bc1232c253e67df63ca75d"
+    },
+    {
+      "path": "frontend/src/types.ts",
+      "sha256": "905ac0153216812cc1e556cea30a1098cbbc8e57fd7f3b55bc91559c57381db1"
+    },
+    {
+      "path": "frontend/src/vite-env.d.ts",
+      "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+    }
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "source": "backend/src/app.ts",
+      "line": 29
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/login",
+      "source": "backend/src/routes/admin.ts",
+      "line": 25
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/logout",
+      "source": "backend/src/routes/admin.ts",
+      "line": 37
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/exhibitions",
+      "source": "backend/src/routes/admin.ts",
+      "line": 45
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/exhibitions/:id",
+      "source": "backend/src/routes/admin.ts",
+      "line": 50
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/artworks",
+      "source": "backend/src/routes/admin.ts",
+      "line": 67
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/artworks/:id",
+      "source": "backend/src/routes/admin.ts",
+      "line": 73
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/artworks/:id/analyze",
+      "source": "backend/src/routes/admin.ts",
+      "line": 144
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/exhibitions/:id/analyze",
+      "source": "backend/src/routes/admin.ts",
+      "line": 152
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/exhibitions/:id/confirm-ai",
+      "source": "backend/src/routes/admin.ts",
+      "line": 176
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/artworks/:id/image",
+      "source": "backend/src/routes/admin.ts",
+      "line": 237
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/artworks/:id/image",
+      "source": "backend/src/routes/admin.ts",
+      "line": 245
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/exhibitions/:id/floor-plan",
+      "source": "backend/src/routes/admin.ts",
+      "line": 257
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/admin/exhibitions/:id/floor-plan",
+      "source": "backend/src/routes/admin.ts",
+      "line": 267
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/members",
+      "source": "backend/src/routes/admin.ts",
+      "line": 275
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/signup",
+      "source": "backend/src/routes/auth.ts",
+      "line": 29
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "source": "backend/src/routes/auth.ts",
+      "line": 39
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "source": "backend/src/routes/auth.ts",
+      "line": 47
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "source": "backend/src/routes/auth.ts",
+      "line": 53
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/:id/tastes",
+      "source": "backend/src/routes/auth.ts",
+      "line": 59
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/password-reset/request",
+      "source": "backend/src/routes/auth.ts",
+      "line": 71
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/password-reset/confirm",
+      "source": "backend/src/routes/auth.ts",
+      "line": 89
+    },
+    {
+      "method": "GET",
+      "path": "/api/exhibitions",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 19
+    },
+    {
+      "method": "GET",
+      "path": "/api/exhibitions/:id",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 23
+    },
+    {
+      "method": "GET",
+      "path": "/api/exhibitions/:id/tag-coverage",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 28
+    },
+    {
+      "method": "GET",
+      "path": "/api/artworks",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 33
+    },
+    {
+      "method": "GET",
+      "path": "/api/artworks/:id",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 38
+    },
+    {
+      "method": "POST",
+      "path": "/api/recommendations",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 43
+    },
+    {
+      "method": "POST",
+      "path": "/api/artworks/:id/explanation",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 60
+    },
+    {
+      "method": "POST",
+      "path": "/api/artworks/:id/ask",
+      "source": "backend/src/routes/catalog.ts",
+      "line": 67
+    },
+    {
+      "method": "POST",
+      "path": "/api/visits",
+      "source": "backend/src/routes/visits.ts",
+      "line": 23
+    },
+    {
+      "method": "POST",
+      "path": "/api/visits/interpret",
+      "source": "backend/src/routes/visits.ts",
+      "line": 36
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/:id/visits",
+      "source": "backend/src/routes/visits.ts",
+      "line": 61
+    },
+    {
+      "method": "GET",
+      "path": "/api/visits/:id",
+      "source": "backend/src/routes/visits.ts",
+      "line": 66
+    }
+  ],
+  "calls": [
+    {
+      "method": "adminLogin",
+      "source": "frontend/src/pages/admin/A01Login.tsx",
+      "line": 22
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/admin/A02Dashboard.tsx",
+      "line": 8
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/admin/A02Dashboard.tsx",
+      "line": 8
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "line": 27
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "line": 27
+    },
+    {
+      "method": "saveExhibition",
+      "source": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "line": 31
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 23
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 23
+    },
+    {
+      "method": "analyzeExhibition",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 34
+    },
+    {
+      "method": "confirmExhibitionAi",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 52
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 197
+    },
+    {
+      "method": "getArtwork",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 197
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 218
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 230
+    },
+    {
+      "method": "uploadArtworkImage",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 392
+    },
+    {
+      "method": "deleteArtworkImage",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 402
+    },
+    {
+      "method": "analyzeArtwork",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 477
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A04Artworks.tsx",
+      "line": 523
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 24
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 27
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 64
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 75
+    },
+    {
+      "method": "saveArtwork",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 85
+    },
+    {
+      "method": "saveExhibition",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 93
+    },
+    {
+      "method": "uploadFloorPlan",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 279
+    },
+    {
+      "method": "deleteFloorPlan",
+      "source": "frontend/src/pages/admin/A05Map.tsx",
+      "line": 291
+    },
+    {
+      "method": "listMembers",
+      "source": "frontend/src/pages/admin/A06Members.tsx",
+      "line": 12
+    },
+    {
+      "method": "listVisits",
+      "source": "frontend/src/pages/admin/A06Members.tsx",
+      "line": 14
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/admin/A07Reactions.tsx",
+      "line": 20
+    },
+    {
+      "method": "adminLogout",
+      "source": "frontend/src/pages/admin/AdminLayout.tsx",
+      "line": 25
+    },
+    {
+      "method": "getExhibition",
+      "source": "frontend/src/pages/user/U01Start.tsx",
+      "line": 56
+    },
+    {
+      "method": "listExhibitions",
+      "source": "frontend/src/pages/user/U01Start.tsx",
+      "line": 115
+    },
+    {
+      "method": "login",
+      "source": "frontend/src/pages/user/U03Login.tsx",
+      "line": 28
+    },
+    {
+      "method": "signup",
+      "source": "frontend/src/pages/user/U04Signup.tsx",
+      "line": 41
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U05Taste.tsx",
+      "line": 32
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U08Recommend.tsx",
+      "line": 20
+    },
+    {
+      "method": "tagCoverage",
+      "source": "frontend/src/pages/user/U08Recommend.tsx",
+      "line": 22
+    },
+    {
+      "method": "getExhibition",
+      "source": "frontend/src/pages/user/U09Route.tsx",
+      "line": 27
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U09Route.tsx",
+      "line": 27
+    },
+    {
+      "method": "getArtwork",
+      "source": "frontend/src/pages/user/U10Artwork.tsx",
+      "line": 56
+    },
+    {
+      "method": "getArtwork",
+      "source": "frontend/src/pages/user/U11AskAI.tsx",
+      "line": 31
+    },
+    {
+      "method": "askAI",
+      "source": "frontend/src/pages/user/U11AskAI.tsx",
+      "line": 47
+    },
+    {
+      "method": "getExhibition",
+      "source": "frontend/src/pages/user/U12Receipt.tsx",
+      "line": 68
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U12Receipt.tsx",
+      "line": 68
+    },
+    {
+      "method": "getVisit",
+      "source": "frontend/src/pages/user/U12Receipt.tsx",
+      "line": 178
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U12Receipt.tsx",
+      "line": 178
+    },
+    {
+      "method": "listVisits",
+      "source": "frontend/src/pages/user/U13MyPage.tsx",
+      "line": 29
+    },
+    {
+      "method": "listArtworks",
+      "source": "frontend/src/pages/user/U13MyPage.tsx",
+      "line": 138
+    },
+    {
+      "method": "requestPasswordReset",
+      "source": "frontend/src/pages/user/U14ForgotPassword.tsx",
+      "line": 21
+    },
+    {
+      "method": "resetPassword",
+      "source": "frontend/src/pages/user/U15ResetPassword.tsx",
+      "line": 27
+    },
+    {
+      "method": "logout",
+      "source": "frontend/src/store/VisitContext.tsx",
+      "line": 168
+    }
+  ],
+  "uploadMount": "/api/uploads (app.use, outside authentication in baseline)"
+}

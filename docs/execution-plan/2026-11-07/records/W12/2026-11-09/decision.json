@@ -1,0 +1,96 @@
+{
+  "asOfKST": "2026-11-09",
+  "scope": "operating decision draft, no AWS resources or account inspection",
+  "status": "prepared_pending_owner_budget_selection",
+  "selectedOption": null,
+  "recommendedOption": "C",
+  "recommendationCondition": "크레딧 없는 소규모 교내 프로젝트의 비용 우선 후보. 자체PG 백업·VM 장애 복원·접근/배포 인증을 검증하고 예산을 확정하는 경우",
+  "accountOwner": null,
+  "monthlyBudgetUsd": null,
+  "shutdownDate": null,
+  "awsAccessVerified": false,
+  "deploymentAllowed": false,
+  "regionCandidate": "ap-northeast-2",
+  "publicHostAndTls": null,
+  "initialAccessScope": "시험자 IP 제한·HTTPS; 구체 범위는 담당자와 확인",
+  "options": {
+    "A": {
+      "database": "self_managed",
+      "hostRate": "t3.medium",
+      "ec2Hours": 720,
+      "databaseHours": 0
+    },
+    "B": {
+      "database": "rds",
+      "hostRate": "t3.medium",
+      "ec2Hours": 720,
+      "databaseHours": 720
+    },
+    "C": {
+      "database": "self_managed",
+      "host": "Lightsail Linux public IPv4 4GB bundle",
+      "maintainedHours": 720,
+      "runOrStopBilled": true,
+      "backup": "operator temporary credentials/off-host upload; no instance credential assumption"
+    },
+    "localFallback": {
+      "scope": "교내 LAN/동일 기기 보조 시연",
+      "satisfiesAwsGate": false,
+      "newHostingBillAssumedUsd": 0,
+      "conditions": [
+        "기관 네트워크/방화벽·접속망 확인",
+        "현재 보유 장비·전원/절전·인터넷 확인",
+        "실제 AWS 인수 대체 시 별도 범위 결정"
+      ]
+    }
+  },
+  "assumptions": {
+    "days": 30,
+    "ebsGiB": 40,
+    "retainedIpv4Hours": 720,
+    "s3BackupBillingGB": 5,
+    "rdsStorageGiB": 20,
+    "scheduledHoursExample": 176,
+    "route53ZoneOptional": true,
+    "modelLocation": "EC2 내부 별도 프로세스, 관리자 분석에만 사용; 같은 호스트 자원 경쟁은 W08 확인",
+    "modelWorkers": 1,
+    "modelWriterEnabled": false,
+    "appMediaPrimary": "encrypted persistent EBS volume, API authorization retained",
+    "s3Role": "private off-host backup only, not direct application media storage",
+    "freeCreditsIncluded": false,
+    "lightsailIpv4Included": true,
+    "lightsailStoppedBilled": true
+  },
+  "unpricedItems": [
+    "external LLM tokens",
+    "EC2/RDS burst CPU credits",
+    "S3 requests/versions/restore retention",
+    "EBS/RDS snapshot/extra backups",
+    "data transfer and cross-AZ traffic",
+    "ECR/logging/secret/KMS usage",
+    "DNS queries/domain/certificate operations",
+    "tax/FX"
+  ],
+  "proposalsNotEnforced": {
+    "budgetAlertPercent": [
+      50,
+      80,
+      100
+    ],
+    "backupRpoHours": 24,
+    "recoveryRtoMinutes": 60,
+    "extraRdsRestoreHoursForComparison": 4,
+    "note": "비용 상한·복구 목표의 제안이며 실측/담당 확인 전 보장하지 않음"
+  },
+  "pendingDecisions": [
+    "AWS account/permissions and operator",
+    "monthly total cost cap including LLM and retention",
+    "A/B/C selection and DB major/minor availability",
+    "public domain/TLS renewal and tester network",
+    "shutdown and retained backup deletion date",
+    "backup/restore owner and actual RPO/RTO"
+  ],
+  "formalGatePromotion": false,
+  "creditsAvailable": false,
+  "creditsEvidence": "사용자2026-11-09 회신: 크레딧 없음, AWS 또는 대응책 조사 요청"
+}

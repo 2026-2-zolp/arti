@@ -5,6 +5,7 @@ import { Icon } from '../../components/Icon';
 import { useLogout, useVisit } from '../../store/VisitContext';
 import { useExhibitionPath, withRedirect } from '../../store/ExhibitionRoute';
 
+/** 회원·비회원 관람 진입 화면 */
 export default function U02Entry() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();

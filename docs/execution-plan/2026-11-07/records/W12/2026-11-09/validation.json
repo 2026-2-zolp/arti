@@ -1,0 +1,36 @@
+{
+  "asOfKST": "2026-11-09",
+  "sourceHead": "d43f81227189122ea1f679776e815ccb9bfb86b1",
+  "scope": "operating draft only",
+  "creditsUnavailableConfirmedByUser": true,
+  "actualAwsAccountInspected": false,
+  "cloudResourcesCreated": false,
+  "selectedOption": null,
+  "recommendedOption": "C conditional for cost-first comparison",
+  "draftLocalLinksChecked": 8,
+  "onlyTaskStateChange": [
+    [
+      "W12",
+      "planned",
+      "in_progress"
+    ]
+  ],
+  "gatesCriteriaIssuesAndActualOperationsUnchanged": true,
+  "preparedPriceCount": 10,
+  "negativeCalculationCases": 9,
+  "applicationTestsRerun": false,
+  "nextWork": "W07 preparation / W05 maintenance: total analysis time budget and abort/retry",
+  "productSourceHashes": {
+    "backend-django/config/settings.py": "9a3410921b295effe3815ecf3f99dfa5f7c63dca52d325c5feacb271aebb425d",
+    "backend-django/arti/editing.py": "3d59a8f9ba91a61a3c41d803487993f524938abbb2bb5e2957ccfae7e2fd0e3d",
+    "backend-django/arti/llm.py": "14e12a090d76264233fe8e20a2922a19abaf6ef781ace90cb3de2fa455e90c4d",
+    "backend-django/arti/model_service.py": "b555a8a746fd7d42bc4bb6e2a349b7add65390b43672b2c7c3b55f693543df4c",
+    "backend-django/Dockerfile": "7b6f185e09211842f23accf135c9af7c739c8e00fbf017539cae597357acf10a",
+    "frontend/src/api/client.ts": "c851f246b29c63ba63524969c388c5efe485aec6abda83c4506ec0adcc3e7eb9",
+    "compose.yaml": "a81f57b295635387c72bb732204c8a0f2dcca78627ecf0c8241a334fd5dc040d"
+  },
+  "draftPreparationCriteriaPass": true,
+  "planErrors": 0,
+  "guardrailsPassed": 32,
+  "protectedFilesPreserved": 38
+}

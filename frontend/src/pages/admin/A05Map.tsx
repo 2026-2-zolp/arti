@@ -1,3 +1,5 @@
+/** 전시 도면·입구·작품 배치와 전시실 소속을 관리하는 화면 */
+import {useConfirm} from '../../components/Confirmation';
 /**
  * A-05 위치·지도 관리
  * - 미술관 평면도(안내도) 캡처 이미지를 올리면 그 이미지가 지도가 된다 (없으면 전시실 사각형 기본 평면도)
@@ -5,7 +7,8 @@
  * - 전시실 이름 목록 편집 (작품마다 어느 전시실인지 고른다)
  * 여기서 저장한 좌표가 사용자 U-09 추천 경로와 관람 순서 계산에 쓰인다.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { createMapOperationGate } from '../../lib/mapOperationGate';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -19,12 +22,13 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
     ? undefined
     : ex.rooms.find((r) => r.rect && p.x >= r.rect.x && p.x <= r.rect.x + r.rect.w && p.y >= r.rect.y && p.y <= r.rect.y + r.rect.h);
 
+/** 전시 도면·입구·작품 배치와 전시실 소속을 관리하는 화면 */
 export default function A05Map() {
   const [params, setParams] = useSearchParams();
-  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listExhibitions(), []);
+  const { data: exhibitions, setData: setExhibitions, error: exError, reload: reloadEx } = useAsync(() => api.listAdminExhibitions(), []);
   const exId = params.get('exhibition') ?? exhibitions?.[0]?.id ?? '';
-  const { data: artworks, setData: setArtworks } = useAsync(
-    () => (exId ? api.listArtworks(exId) : Promise.resolve([] as Artwork[])),
+  const { data: artworks, setData: setArtworks, error: artError, reload: reloadArt } = useAsync(
+    () => (exId ? api.listAdminArtworks(exId) : Promise.resolve([] as Artwork[])),
     [exId],
   );
   const [selectedId, setSelectedId] = useState<string | null>(params.get('artwork'));
@@ -37,6 +41,7 @@ export default function A05Map() {
   }, [selectedId]);
 
   const ex = exhibitions?.find((e) => e.id === exId);
+  if (exError || artError) return <><PageHead title="위치·지도 관리" desc={exError ?? artError ?? ''} /><button onClick={() => {reloadEx(); reloadArt();}}>다시 조회</button></>;
   if (!ex || !artworks) return <PageHead title="위치·지도 관리" desc="불러오는 중…" />;
 
   const selected = artworks.find((w) => w.id === selectedId) ?? null;
@@ -122,17 +127,23 @@ export default function A05Map() {
       <div className="a-map-layout">
         <div className="stack gap-24">
           <FloorPlanField
+            key={ex.id}
             ex={ex}
             positioned={artworks.filter((w) => w.position).length}
+            hasDraft={draft !== null}
             onSaved={(saved, text) => {
-              applyExhibition(saved);
-              setMsg({ type: 'ok', text });
+              setDraft(null);
+              setSelectedId(null);
+              setArtworks(artworks.map((w) => ({ ...w, position: null })));
+              applyExhibition(saved); reloadArt();
+              setMsg({ type: 'ok', text: text + ' 작품 좌표는 새 도면 기준으로 다시 확인해 주세요.' });
             }}
             onError={fail}
           />
 
           <section className="a-card pad">
             <FloorMap
+              forAdmin
               exhibition={ex}
               markers={markers}
               aspect={1.55}
@@ -248,49 +259,65 @@ function readImageSize(file: File): Promise<{ width: number; height: number }> {
 function FloorPlanField({
   ex,
   positioned,
+  hasDraft,
   onSaved,
   onError,
 }: {
   ex: Exhibition;
   positioned: number;
+  hasDraft: boolean;
   onSaved: (ex: Exhibition, text: string) => void;
   onError: (e: unknown) => void;
 }) {
+  const confirmAction = useConfirm();
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
+  const [operation] = useState(createMapOperationGate);
+  useLayoutEffect(() => {
+    operation.activate();
+    return () => operation.dispose();
+  }, [operation]);
   const plan = ex.floorPlan;
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return onError(new Error('PNG, JPG, WEBP 이미지만 올릴 수 있어요.'));
     if (file.size > 10 * 1024 * 1024) return onError(new Error('이미지는 10MB 이하로 올려 주세요.'));
+    const ticket = operation.begin();
+    if (ticket === null) return;
     setBusy(true);
     try {
       const { width, height } = await readImageSize(file);
-      // 좌표는 이미지 기준 퍼센트라 가로세로 비율이 달라지면 마커가 실제 위치와 어긋난다
-      const oldRatio = plan ? plan.width / plan.height : null;
-      const ratioChanged = oldRatio !== null && Math.abs(width / height - oldRatio) / oldRatio > 0.02;
+      if (!operation.isCurrent(ticket)) return;
+      // 서버는 모든 도면 업로드에서 좌표를 초기화한다. 같은 비율의 다른 도면도 재배치가 필요하다.
       if (
-        positioned > 0 &&
-        (ratioChanged || !plan) &&
-        !confirm(`이미 위치를 지정한 작품이 ${positioned}점 있어요. 새 평면도를 올리면 위치가 어긋날 수 있으니 올린 뒤 마커 위치를 확인해 주세요. 계속할까요?`)
+        (positioned > 0 || hasDraft) &&
+        !(await confirmAction('평면도를 바꾸면 저장된 작품 좌표와 미저장 위치가 초기화돼요. 입구와 전시실 소속도 다시 확인해 주세요. 바꿀까요?'))
       )
         return;
+      if (!operation.isCurrent(ticket)) return;
       const saved = await api.uploadFloorPlan(ex.id, file, width, height);
-      onSaved(saved, positioned > 0 ? '평면도를 올렸어요. 작품 마커와 입구가 실제 위치에 있는지 확인해 주세요.' : '평면도를 올렸어요. 이제 작품 위치를 지정해 주세요.');
+      if (operation.isCurrent(ticket)) onSaved(saved, positioned > 0 ? '평면도를 올렸어요. 작품 마커와 입구가 실제 위치에 있는지 확인해 주세요.' : '평면도를 올렸어요. 이제 작품 위치를 지정해 주세요.');
     } catch (e) {
-      onError(e);
+      if (operation.isCurrent(ticket)) onError(e);
     } finally {
-      setBusy(false);
+      if (operation.finish(ticket)) setBusy(false);
     }
   };
 
   const remove = async () => {
-    if (!confirm('평면도 이미지를 삭제할까요? 지도는 전시실 사각형 기본 평면도로 돌아가요.')) return;
+    const ticket = operation.begin();
+    if (ticket === null) return;
+    setBusy(true);
     try {
-      onSaved(await api.deleteFloorPlan(ex.id), '평면도 이미지를 삭제했어요.');
+      if (!(await confirmAction('평면도 이미지를 삭제할까요? 저장된 작품 좌표와 미저장 위치가 초기화돼요. 입구와 전시실 소속도 다시 확인해 주세요.'))) return;
+      if (!operation.isCurrent(ticket)) return;
+      const saved = await api.deleteFloorPlan(ex.id);
+      if (operation.isCurrent(ticket)) onSaved(saved, '평면도 이미지를 삭제했어요.');
     } catch (e) {
-      onError(e);
+      if (operation.isCurrent(ticket)) onError(e);
+    } finally {
+      if (operation.finish(ticket)) setBusy(false);
     }
   };
 
@@ -314,7 +341,7 @@ function FloorPlanField({
           <strong>{plan ? '평면도 이미지를 사용 중이에요' : '평면도를 넣어 주세요'}</strong>
           <span className="muted small">
             {plan
-              ? `${plan.width}×${plan.height}px · 비율이 다른 이미지로 바꾸면 작품 위치를 다시 확인해야 해요.`
+              ? `${plan.width}×${plan.height}px · 평면도를 바꾸면 작품 좌표가 초기화돼요. 입구도 다시 확인해 주세요.`
               : '미술관 안내도를 캡처해 올리면 그 위에서 작품 위치를 옮길 수 있어요. 끌어다 놓아도 돼요 (PNG·JPG·WEBP, 10MB 이하)'}
           </span>
           <span className="a-inline">
@@ -332,7 +359,7 @@ function FloorPlanField({
               />
             </label>
             {plan && (
-              <button type="button" className="a-btn sm" onClick={remove}>
+              <button type="button" className="a-btn sm" disabled={busy} onClick={remove}>
                 평면도 삭제
               </button>
             )}
@@ -364,13 +391,13 @@ function RoomsEditor({ ex, artworks, onSave }: { ex: Exhibition; artworks: Artwo
 
   const remove = (r: Room) => {
     const n = count(r.id);
-    if (n > 0 && !confirm(`'${r.name}'에 작품 ${n}점이 있어요. 삭제하면 이 작품들은 「전시실 미지정」이 돼요. 삭제할까요?`)) return;
+    if (n > 0) return; // Move artworks explicitly before removing a room.
     setRooms(rooms.filter((x) => x.id !== r.id));
   };
 
   return (
     <div className="a-card pad">
-      <h2>전시실</h2>
+      <h2>전시실</h2><p className="muted small">작품이 배정된 전시실은 작품을 먼저 옮긴 뒤 삭제할 수 있어요.</p>
       <ul className="a-room-list">
         {rooms.map((r) => (
           <li key={r.id}>
@@ -381,7 +408,7 @@ function RoomsEditor({ ex, artworks, onSave }: { ex: Exhibition; artworks: Artwo
               onChange={(e) => setRooms(rooms.map((x) => (x.id === r.id ? { ...x, name: e.target.value } : x)))}
             />
             <span className="muted small">{count(r.id)}점</span>
-            <button type="button" className="a-btn sm" onClick={() => remove(r)}>
+            <button type="button" className="a-btn sm" disabled={count(r.id) > 0} title={count(r.id) > 0 ? '작품을 먼저 다른 전시실이나 미지정으로 옮겨 주세요.' : undefined} onClick={() => remove(r)}>
               삭제
             </button>
           </li>

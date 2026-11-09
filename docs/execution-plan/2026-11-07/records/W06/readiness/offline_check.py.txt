@@ -1,0 +1,35 @@
+import sys,os,json,hashlib
+from pathlib import Path
+from types import SimpleNamespace
+sys.path.insert(0,'/app');os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from arti.models import Artwork,Exhibition,Account,Session,Visit,VisitReaction
+from arti.recommendations import make_pool,recommend
+from rest_framework.test import APIClient
+models=[Exhibition,Artwork,Account,Session,Visit,VisitReaction]
+def digest():return hashlib.sha256(json.dumps({m.__name__:list(m.objects.order_by('pk').values()) for m in models},default=str,sort_keys=True).encode()).hexdigest()
+before=digest();works=list(Artwork.objects.order_by('id'));assert len(works)==16
+r=Path('/readiness');plan=json.loads((r/'evaluation-plan.json').read_text(encoding='utf-8'));layout=json.loads((r/'layout-draft.json').read_text(encoding='utf-8'));pool=json.loads((r/'pool-decision.json').read_text(encoding='utf-8'))
+positions={v['id']:v for v in layout['items']};hyp={v['id']:v['tagHypotheses'] for v in plan['items']}
+# 리스트 안의 가설값으로만 계약을 검사하며 DB에는 쓰지 않습니다.
+fixtures=[SimpleNamespace(id=w.id,title=w.title,tags=hyp[w.id],show_image=True,image_file=w.image_file,image_url='',source_version=w.source_version,content_version=w.content_version,tag_status='none',tag_scores=None,position_x=positions[w.id]['x'],position_y=positions[w.id]['y']) for w in works]
+selected,version=make_pool(fixtures);assert [v.id for v in selected]==pool['selectedIds']
+ex=SimpleNamespace(entrance_x=layout['entrance']['x'],entrance_y=layout['entrance']['y'])
+results={}
+for taste in ['warm','cool','abstract','people']:
+ results[taste]={}
+ for duration,count in [('30m',3),('60m',5),('relaxed',7)]:
+  output=recommend(fixtures,ex,[taste],duration)
+  assert len(output)==len({v['artworkId'] for v in output})==count
+  assert all(v['artworkId'] in {w.id for w in works} for v in output)
+  assert output==recommend(list(reversed(fixtures)),ex,[taste],duration)
+  if taste=='people':assert all(not v['matchedTags'] and v['matchedCard'] is None for v in output)
+  results[taste][duration]={'ids':[v['artworkId'] for v in output],'matchedCount':sum(bool(v['matchedTags']) for v in output)}
+assert results['warm']['30m']['ids']!=results['cool']['30m']['ids']
+actualPool,_=make_pool(works);assert not actualPool
+client=APIClient(HTTP_HOST='localhost');assert client.get('/api/exhibitions').json()==client.get('/api/artworks').json()==[]
+assert not Artwork.objects.filter(id__startswith='cap-').exists() and not Exhibition.objects.filter(pk='ex-capture').exists()
+assert all(w.review_status=='source_check' and not w.show_image and w.position_x is None and w.tags==[] and w.summary_status=='suggested' and w.guide_status=='suggested' for w in works)
+assert digest()==before
+print('CHECK='+json.dumps({'ok':True,'scope':'offline contracts withAI hypotheses and draft coordinates only; not model quality or live route','actualDatabaseUnchanged':True,'databaseDomainHash':before,'actualWorks':16,'actualPublicWorks':0,'actualReadyPool':0,'legacyCaptureRows':0,'hypotheticalPool10MatchesCurrentContract':True,'hypotheticalScenarios':results,'humanReviewsPending':16,'paidModelCalls':0},sort_keys=True))

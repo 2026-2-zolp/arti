@@ -1,0 +1,313 @@
+﻿2026-11-08T04:56:04.0314272Z Current runner version: '2.338.2'
+2026-11-08T04:56:04.0336025Z ##[group]Runner Image Provisioner
+2026-11-08T04:56:04.0336707Z Hosted Compute Agent
+2026-11-08T04:56:04.0337086Z Version: 20261028.624
+2026-11-08T04:56:04.0337556Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+2026-11-08T04:56:04.0338027Z Build Date: 2026-10-28T21:51:42Z
+2026-11-08T04:56:04.0338457Z Worker ID: {bc8b60d6-a4f2-4fe9-87f5-9f0ae0febaac}
+2026-11-08T04:56:04.0338982Z Region: southcentralus
+2026-11-08T04:56:04.0339360Z Cloud: Azure
+2026-11-08T04:56:04.0339768Z ##[endgroup]
+2026-11-08T04:56:04.0340645Z ##[group]Operating System
+2026-11-08T04:56:04.0341036Z Ubuntu
+2026-11-08T04:56:04.0341422Z 24.04.5
+2026-11-08T04:56:04.0341752Z LTS
+2026-11-08T04:56:04.0342107Z ##[endgroup]
+2026-11-08T04:56:04.0342501Z ##[group]Runner Image
+2026-11-08T04:56:04.0342907Z Image: ubuntu-24.04
+2026-11-08T04:56:04.0343306Z Version: 20261101.360.1
+2026-11-08T04:56:04.0344094Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261101.360/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-08T04:56:04.0345214Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261101.360
+2026-11-08T04:56:04.0345842Z ##[endgroup]
+2026-11-08T04:56:04.0346564Z ##[group]GITHUB_TOKEN Permissions
+2026-11-08T04:56:04.0347931Z Contents: read
+2026-11-08T04:56:04.0348345Z Metadata: read
+2026-11-08T04:56:04.0348700Z ##[endgroup]
+2026-11-08T04:56:04.0350160Z Secret source: Actions
+2026-11-08T04:56:04.0350817Z Cache mode: write
+2026-11-08T04:56:04.0351300Z Prepare workflow directory
+2026-11-08T04:56:04.0658833Z Prepare all required actions
+2026-11-08T04:56:04.0694221Z Getting action download info
+2026-11-08T04:56:04.3145814Z Download action repository 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+2026-11-08T04:56:04.4404280Z Download action repository 'actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38' (SHA:249970729cb0ef3589644e2896645e5dc5ba9c38)
+2026-11-08T04:56:04.5987215Z Complete job name: Frontend checks
+2026-11-08T04:56:04.6573907Z ##[group]Run actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+2026-11-08T04:56:04.6574452Z with:
+2026-11-08T04:56:04.6574885Z   persist-credentials: false
+2026-11-08T04:56:04.6575180Z   repository: 2026-2-zolp/arti
+2026-11-08T04:56:04.6577387Z   token: ***
+2026-11-08T04:56:04.6577630Z   ssh-strict: true
+2026-11-08T04:56:04.6577878Z   ssh-user: git
+2026-11-08T04:56:04.6578117Z   clean: true
+2026-11-08T04:56:04.6578370Z   sparse-checkout-cone-mode: true
+2026-11-08T04:56:04.6578668Z   fetch-depth: 1
+2026-11-08T04:56:04.6578912Z   fetch-tags: false
+2026-11-08T04:56:04.6579168Z   show-progress: true
+2026-11-08T04:56:04.6579418Z   lfs: false
+2026-11-08T04:56:04.6579657Z   submodules: false
+2026-11-08T04:56:04.6579915Z   set-safe-directory: true
+2026-11-08T04:56:04.6580206Z   allow-unsafe-pr-checkout: false
+2026-11-08T04:56:04.6580583Z ##[endgroup]
+2026-11-08T04:56:04.8479726Z Syncing repository: 2026-2-zolp/arti
+2026-11-08T04:56:04.8481499Z ##[group]Getting Git version info
+2026-11-08T04:56:04.8482241Z Working directory is '/home/runner/work/arti/arti'
+2026-11-08T04:56:04.8483145Z [command]/usr/bin/git version
+2026-11-08T04:56:04.8543649Z git version 2.56.0
+2026-11-08T04:56:04.8561283Z ##[endgroup]
+2026-11-08T04:56:04.8574209Z Temporarily overriding HOME='/home/runner/work/_temp/0cc556f1-2408-4ed7-800b-dc390cb76d12' before making global git config changes
+2026-11-08T04:56:04.8575791Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:04.8579283Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:04.8635134Z Deleting the contents of '/home/runner/work/arti/arti'
+2026-11-08T04:56:04.8644052Z ##[group]Determining repository object format
+2026-11-08T04:56:04.8645285Z ##[endgroup]
+2026-11-08T04:56:04.8654231Z ##[group]Initializing the repository
+2026-11-08T04:56:04.8655037Z [command]/usr/bin/git init /home/runner/work/arti/arti
+2026-11-08T04:56:04.8723528Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-08T04:56:04.8724333Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-08T04:56:04.8724995Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-08T04:56:04.8725526Z hint: call:
+2026-11-08T04:56:04.8725774Z hint:
+2026-11-08T04:56:04.8726083Z hint: 	git config --global init.defaultBranch <name>
+2026-11-08T04:56:04.8726421Z hint:
+2026-11-08T04:56:04.8726747Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-08T04:56:04.8727369Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-08T04:56:04.8728046Z hint:
+2026-11-08T04:56:04.8728390Z hint: 	git branch -m <name>
+2026-11-08T04:56:04.8728799Z hint:
+2026-11-08T04:56:04.8729331Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-08T04:56:04.8740060Z Initialized empty Git repository in /home/runner/work/arti/arti/.git/
+2026-11-08T04:56:04.8741457Z [command]/usr/bin/git remote add origin https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:04.8787287Z ##[endgroup]
+2026-11-08T04:56:04.8788046Z ##[group]Disabling automatic garbage collection
+2026-11-08T04:56:04.8790808Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-08T04:56:04.8856569Z ##[endgroup]
+2026-11-08T04:56:04.8857707Z ##[group]Setting up auth
+2026-11-08T04:56:04.8858284Z Removing SSH command configuration
+2026-11-08T04:56:04.8863968Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:04.8905590Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:04.9279792Z Removing HTTP extra header
+2026-11-08T04:56:04.9286672Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:04.9327180Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:04.9527783Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:04.9533074Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:04.9572907Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:04.9780552Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-08T04:56:04.9826568Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:04.9864873Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:04.9910326Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:04.9949700Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:04.9985471Z ##[endgroup]
+2026-11-08T04:56:04.9985955Z ##[group]Fetching the repository
+2026-11-08T04:56:04.9992289Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3750e13215db86c2b437c83ea0e410cbe289ed36:refs/remotes/origin/dev/임준억
+2026-11-08T04:56:05.9546476Z From https://github.com/2026-2-zolp/arti
+2026-11-08T04:56:05.9548083Z  * [new ref]         3750e13215db86c2b437c83ea0e410cbe289ed36 -> origin/dev/임준억
+2026-11-08T04:56:05.9556944Z [command]/usr/bin/git branch --list --remote origin/dev/임준억
+2026-11-08T04:56:05.9595380Z   origin/dev/임준억
+2026-11-08T04:56:05.9605461Z [command]/usr/bin/git rev-parse refs/remotes/origin/dev/임준억
+2026-11-08T04:56:05.9643162Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:05.9658357Z ##[endgroup]
+2026-11-08T04:56:05.9659042Z ##[group]Determining the checkout info
+2026-11-08T04:56:05.9659771Z ##[endgroup]
+2026-11-08T04:56:05.9660222Z [command]/usr/bin/git sparse-checkout disable
+2026-11-08T04:56:05.9720143Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-08T04:56:05.9767593Z ##[group]Checking out the ref
+2026-11-08T04:56:05.9770973Z [command]/usr/bin/git checkout --progress --force -B dev/임준억 refs/remotes/origin/dev/임준억
+2026-11-08T04:56:06.0439098Z Switched to a new branch 'dev/임준억'
+2026-11-08T04:56:06.0440871Z branch 'dev/임준억' set up to track 'origin/dev/임준억'.
+2026-11-08T04:56:06.0451164Z ##[endgroup]
+2026-11-08T04:56:06.0499961Z [command]/usr/bin/git log -1 --format=%H
+2026-11-08T04:56:06.0534994Z 3750e13215db86c2b437c83ea0e410cbe289ed36
+2026-11-08T04:56:06.0546279Z ##[group]Removing auth
+2026-11-08T04:56:06.0547305Z Removing SSH command configuration
+2026-11-08T04:56:06.0550038Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:06.0596727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:06.0806407Z Removing HTTP extra header
+2026-11-08T04:56:06.0809094Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:06.0850237Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:06.1053176Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:06.1055443Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:06.1094884Z includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:06.1096368Z includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:06.1097724Z includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:06.1098870Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:06.1104933Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git.path
+2026-11-08T04:56:06.1137593Z /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1148959Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git.path /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1191278Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path
+2026-11-08T04:56:06.1223406Z /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1231514Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/arti/arti/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1271780Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-08T04:56:06.1303200Z /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1310579Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1348211Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-08T04:56:06.1377723Z /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1385487Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config
+2026-11-08T04:56:06.1424410Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:06.1619749Z Removing credentials config '/home/runner/work/_temp/git-credentials-fd4060db-297f-457f-9cba-7d6a4dc378ad.config'
+2026-11-08T04:56:06.1627841Z ##[endgroup]
+2026-11-08T04:56:06.1962596Z ##[group]Run actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+2026-11-08T04:56:06.1963488Z with:
+2026-11-08T04:56:06.1963928Z   node-version: 22
+2026-11-08T04:56:06.1964405Z   cache: npm
+2026-11-08T04:56:06.1965079Z   cache-dependency-path: frontend/package-lock.json
+2026-11-08T04:56:06.1965789Z   check-latest: false
+2026-11-08T04:56:06.1970535Z   token: ***
+2026-11-08T04:56:06.1971019Z   package-manager-cache: true
+2026-11-08T04:56:06.1971587Z ##[endgroup]
+2026-11-08T04:56:06.3050262Z Found in cache @ /opt/hostedtoolcache/node/22.23.4/x64
+2026-11-08T04:56:06.3053546Z ##[group]Environment details
+2026-11-08T04:56:06.5835295Z node: v22.23.4
+2026-11-08T04:56:06.5841199Z npm: 10.9.9
+2026-11-08T04:56:06.5842367Z yarn: 1.22.22
+2026-11-08T04:56:06.5844274Z ##[endgroup]
+2026-11-08T04:56:06.5852624Z [command]/opt/hostedtoolcache/node/22.23.4/x64/bin/npm config get cache
+2026-11-08T04:56:06.6663356Z /home/runner/.npm
+2026-11-08T04:56:06.8283289Z npm cache is not found
+2026-11-08T04:56:06.8425246Z ##[group]Run npm ci --ignore-scripts --no-audit --no-fund
+2026-11-08T04:56:06.8425780Z [36;1mnpm ci --ignore-scripts --no-audit --no-fund[0m
+2026-11-08T04:56:06.8451242Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:06.8451598Z ##[endgroup]
+2026-11-08T04:56:08.4475803Z 
+2026-11-08T04:56:08.4481938Z added 78 packages in 2s
+2026-11-08T04:56:08.4904640Z ##[group]Run npm test
+2026-11-08T04:56:08.4904995Z [36;1mnpm test[0m
+2026-11-08T04:56:08.4922868Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:08.4923031Z ##[endgroup]
+2026-11-08T04:56:08.5660431Z 
+2026-11-08T04:56:08.5661177Z > arti-frontend@0.1.0 test
+2026-11-08T04:56:08.5661545Z > tsx --test tests/*.test.mts
+2026-11-08T04:56:08.5661671Z 
+2026-11-08T04:56:08.6618103Z TAP version 13
+2026-11-08T04:56:08.9331881Z # Subtest: late 401 from previous token cannot erase a newer account token
+2026-11-08T04:56:08.9336161Z ok 1 - late 401 from previous token cannot erase a newer account token
+2026-11-08T04:56:08.9336624Z   ---
+2026-11-08T04:56:08.9336939Z   duration_ms: 25.547672
+2026-11-08T04:56:08.9337256Z   type: 'test'
+2026-11-08T04:56:08.9337478Z   ...
+2026-11-08T04:56:08.9337876Z # Subtest: pending receipt cannot POST when token changes during same-owner verification
+2026-11-08T04:56:08.9339115Z ok 2 - pending receipt cannot POST when token changes during same-owner verification
+2026-11-08T04:56:08.9339551Z   ---
+2026-11-08T04:56:08.9339820Z   duration_ms: 0.60719
+2026-11-08T04:56:08.9340779Z   type: 'test'
+2026-11-08T04:56:08.9341189Z   ...
+2026-11-08T04:56:08.9341561Z # Subtest: same-owner explicit recovery transmits the original frozen payload once
+2026-11-08T04:56:08.9363714Z ok 3 - same-owner explicit recovery transmits the original frozen payload once
+2026-11-08T04:56:08.9373061Z   ---
+2026-11-08T04:56:08.9373673Z   duration_ms: 0.67416
+2026-11-08T04:56:08.9373918Z   type: 'test'
+2026-11-08T04:56:08.9374116Z   ...
+2026-11-08T04:56:08.9374658Z # Subtest: inactive receipt scope stops POST after successful account check
+2026-11-08T04:56:08.9375731Z ok 4 - inactive receipt scope stops POST after successful account check
+2026-11-08T04:56:08.9376104Z   ---
+2026-11-08T04:56:08.9376412Z   duration_ms: 0.364406
+2026-11-08T04:56:08.9376744Z   type: 'test'
+2026-11-08T04:56:08.9376939Z   ...
+2026-11-08T04:56:08.9377381Z # Subtest: late logout completion cannot erase a newer login
+2026-11-08T04:56:08.9377951Z ok 5 - late logout completion cannot erase a newer login
+2026-11-08T04:56:08.9378895Z   ---
+2026-11-08T04:56:08.9379017Z   duration_ms: 0.218497
+2026-11-08T04:56:08.9379219Z   type: 'test'
+2026-11-08T04:56:08.9379346Z   ...
+2026-11-08T04:56:08.9379737Z # Subtest: failed login credentials do not expire an existing valid session
+2026-11-08T04:56:08.9380071Z ok 6 - failed login credentials do not expire an existing valid session
+2026-11-08T04:56:08.9380358Z   ---
+2026-11-08T04:56:08.9380540Z   duration_ms: 0.344275
+2026-11-08T04:56:08.9380752Z   type: 'test'
+2026-11-08T04:56:08.9380958Z   ...
+2026-11-08T04:56:08.9517455Z # Subtest: incomplete artwork dwell/reactions cannot enter a canonical receipt
+2026-11-08T04:56:08.9518875Z ok 7 - incomplete artwork dwell/reactions cannot enter a canonical receipt
+2026-11-08T04:56:08.9519337Z   ---
+2026-11-08T04:56:08.9519602Z   duration_ms: 1.845765
+2026-11-08T04:56:08.9519837Z   type: 'test'
+2026-11-08T04:56:08.9520045Z   ...
+2026-11-08T04:56:08.9520720Z # Subtest: zero completed works form an empty valid receipt instead of claiming a viewed work
+2026-11-08T04:56:08.9521771Z ok 8 - zero completed works form an empty valid receipt instead of claiming a viewed work
+2026-11-08T04:56:08.9522525Z   ---
+2026-11-08T04:56:08.9522902Z   duration_ms: 0.2669
+2026-11-08T04:56:08.9523335Z   type: 'test'
+2026-11-08T04:56:08.9523830Z   ...
+2026-11-08T04:56:08.9524498Z # Subtest: HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+2026-11-08T04:56:08.9525439Z ok 9 - HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+2026-11-08T04:56:08.9530678Z   ---
+2026-11-08T04:56:08.9531082Z   duration_ms: 3.749998
+2026-11-08T04:56:08.9531450Z   type: 'test'
+2026-11-08T04:56:08.9531810Z   ...
+2026-11-08T04:56:08.9532469Z # Subtest: taste/time invalidation rejects a late previous-generation recommendation
+2026-11-08T04:56:08.9533230Z ok 10 - taste/time invalidation rejects a late previous-generation recommendation
+2026-11-08T04:56:08.9533744Z   ---
+2026-11-08T04:56:08.9534640Z   duration_ms: 0.635763
+2026-11-08T04:56:08.9536106Z   type: 'test'
+2026-11-08T04:56:08.9536432Z   ...
+2026-11-08T04:56:08.9536972Z # Subtest: explicit new visit with same duration replaces ID and clears progress
+2026-11-08T04:56:08.9537656Z ok 11 - explicit new visit with same duration replaces ID and clears progress
+2026-11-08T04:56:08.9538128Z   ---
+2026-11-08T04:56:08.9538448Z   duration_ms: 1.161069
+2026-11-08T04:56:08.9538796Z   type: 'test'
+2026-11-08T04:56:08.9539156Z   ...
+2026-11-08T04:56:08.9539993Z # Subtest: same-work navigation refresh preserves state; actor/exhibition changes isolate it
+2026-11-08T04:56:08.9540778Z ok 12 - same-work navigation refresh preserves state; actor/exhibition changes isolate it
+2026-11-08T04:56:08.9541436Z   ---
+2026-11-08T04:56:08.9541772Z   duration_ms: 0.668282
+2026-11-08T04:56:08.9542131Z   type: 'test'
+2026-11-08T04:56:08.9542451Z   ...
+2026-11-08T04:56:08.9543023Z # Subtest: frequency provenance survives selection and recommendation storage
+2026-11-08T04:56:08.9543850Z ok 13 - frequency provenance survives selection and recommendation storage
+2026-11-08T04:56:08.9544406Z   ---
+2026-11-08T04:56:08.9544856Z   duration_ms: 0.295042
+2026-11-08T04:56:08.9545256Z   type: 'test'
+2026-11-08T04:56:08.9545587Z   ...
+2026-11-08T04:56:08.9545938Z 1..13
+2026-11-08T04:56:08.9546296Z # tests 13
+2026-11-08T04:56:08.9546686Z # suites 0
+2026-11-08T04:56:08.9547058Z # pass 13
+2026-11-08T04:56:08.9547429Z # fail 0
+2026-11-08T04:56:08.9547794Z # cancelled 0
+2026-11-08T04:56:08.9548162Z # skipped 0
+2026-11-08T04:56:08.9548524Z # todo 0
+2026-11-08T04:56:08.9548894Z # duration_ms 307.630442
+2026-11-08T04:56:08.9771032Z ##[group]Run npm run typecheck
+2026-11-08T04:56:08.9771266Z [36;1mnpm run typecheck[0m
+2026-11-08T04:56:08.9787904Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:08.9788066Z ##[endgroup]
+2026-11-08T04:56:09.0489642Z 
+2026-11-08T04:56:09.0490386Z > arti-frontend@0.1.0 typecheck
+2026-11-08T04:56:09.0490803Z > tsc -b --noEmit
+2026-11-08T04:56:09.0490974Z 
+2026-11-08T04:56:11.5799667Z ##[group]Run npm run build
+2026-11-08T04:56:11.5800007Z [36;1mnpm run build[0m
+2026-11-08T04:56:11.5817579Z shell: /usr/bin/bash -e {0}
+2026-11-08T04:56:11.5817734Z ##[endgroup]
+2026-11-08T04:56:11.6508265Z 
+2026-11-08T04:56:11.6509084Z > arti-frontend@0.1.0 build
+2026-11-08T04:56:11.6509376Z > tsc -b && vite build
+2026-11-08T04:56:11.6509467Z 
+2026-11-08T04:56:14.2464006Z [36mvite v6.4.4 [32mbuilding for production...[36m[39m
+2026-11-08T04:56:14.2970297Z transforming...
+2026-11-08T04:56:15.2892725Z [32m✓[39m 89 modules transformed.
+2026-11-08T04:56:15.4138372Z rendering chunks...
+2026-11-08T04:56:15.5036864Z computing gzip size...
+2026-11-08T04:56:15.5148529Z [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.83 kB[22m[1m[22m[2m │ gzip:   0.51 kB[22m
+2026-11-08T04:56:15.5150131Z [2mdist/[22m[2massets/[22m[35mindex-BFp8mqBW.css  [39m[1m[2m 31.25 kB[22m[1m[22m[2m │ gzip:   6.84 kB[22m
+2026-11-08T04:56:15.5151399Z [2mdist/[22m[2massets/[22m[36mindex-CBupdyC4.js   [39m[1m[2m 23.56 kB[22m[1m[22m[2m │ gzip:   9.12 kB[22m
+2026-11-08T04:56:15.5152512Z [2mdist/[22m[2massets/[22m[36mindex-huA25BeV.js   [39m[1m[2m392.77 kB[22m[1m[22m[2m │ gzip: 123.67 kB[22m
+2026-11-08T04:56:15.5154977Z [32m✓ built in 1.25s[39m
+2026-11-08T04:56:15.5600942Z Post job cleanup.
+2026-11-08T04:56:15.6694346Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/arti/arti --files-from manifest.txt --use-compress-program zstdmt
+2026-11-08T04:56:16.6784542Z Sent 22676016 of 22676016 (100.0%), 27.3 MBs/sec
+2026-11-08T04:56:16.8566511Z Cache saved with the key: node-cache-Linux-x64-npm-732c56563ef938f310fe2fffa63bf73d53d91b4dbf6ec78c9c395c7390a4e489
+2026-11-08T04:56:16.8708051Z Post job cleanup.
+2026-11-08T04:56:16.9338033Z [command]/usr/bin/git version
+2026-11-08T04:56:16.9406388Z git version 2.56.0
+2026-11-08T04:56:16.9436332Z Temporarily overriding HOME='/home/runner/work/_temp/6c8c349d-e29d-4f85-a594-7628cf107ee0' before making global git config changes
+2026-11-08T04:56:16.9437212Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-08T04:56:16.9441011Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/arti/arti
+2026-11-08T04:56:16.9481199Z Removing SSH command configuration
+2026-11-08T04:56:16.9488590Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-08T04:56:16.9525998Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-08T04:56:16.9761875Z Removing HTTP extra header
+2026-11-08T04:56:16.9766737Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-08T04:56:16.9811992Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-08T04:56:17.0032587Z Removing includeIf entries pointing to credentials config files
+2026-11-08T04:56:17.0040399Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-08T04:56:17.0082523Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-08T04:56:17.0453556Z Cleaning up orphan processes

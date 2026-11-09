@@ -1,0 +1,112 @@
+Browser tab: 2, Title: "ARTI", URL: "http://127.0.0.1:5178/admin/artworks/fixture-art11".
+1 AXWebArea ARTI, URL: 127.0.0.1:5178/admin/artworks/fixture-art11
+	2 container root
+		3 container
+			4 text ARTI 관리자 관리자 계정
+			5 button 로그아웃
+		6 container 관리자 메뉴
+			7 link Description: 대시보드, Value: 127.0.0.1:5178/admin
+			8 link Description: 전시 관리, Value: 127.0.0.1:5178/admin/exhibitions
+			9 link Description: 작품 관리, Value: 127.0.0.1:5178/admin/artworks
+			10 link Description: 위치·지도 관리, Value: 127.0.0.1:5178/admin/map
+			11 link Description: 회원 조회, Value: 127.0.0.1:5178/admin/members
+			12 link Description: 평가, Value: 127.0.0.1:5178/admin/reactions
+		13 container
+			14 heading 작품 등록·수정, Value: 1
+				15 text 작품 등록·수정
+			16 text 작품 정보와 설명, 출처·참고자료, 검수 상태를 함께 관리합니다.
+			17 link Description: 목록으로, Value: 127.0.0.1:5178/admin/artworks
+			18 heading 기본 정보, Value: 2
+				19 text 기본 정보
+			20 container
+				21 text 작품명
+				22 text field (settable) 작품명, Value: 검증용 작품 11
+			23 container
+				24 text 작가
+				25 text field (settable) 작가, Value: 가상 작가
+			26 container
+				27 text 제작연도
+				28 text field (settable) 제작연도, Value: 연도 미상
+			29 container
+				30 text 전시
+				31 pop up button (collapsed, settable) 전시, Value: ARTI 개발 검증 전시, Secondary Actions: Expand
+					32 menu
+						33 비공개 검증 전시
+						34 (selected) ARTI 개발 검증 전시
+			35 container
+				36 text 전시실 / 위치
+				37 pop up button (collapsed, settable) 전시실 / 위치, Value: 검증실, Secondary Actions: Expand
+					38 menu
+						39 선택
+						40 (selected) 검증실
+			41 text 작품 이미지
+			42 image 작품 이미지 미리보기
+			43 text 다른 이미지로 바꾸기
+			44 button 파일 삭제
+			45 text 캡처 이미지를 끌어다 놓아도 돼요 (PNG·JPG·WEBP, 10MB 이하)
+			46 text field (settable)
+			47 checkbox (settable, integer) Description: 사용자 화면에 이미지 표시 (끄면 AI 분석에만 사용하고 화면에는 자리표시 그림), Value: 1
+			48 text 취향 태그 (추천에 사용)
+			49 checkbox 풍경, Value: 1
+			50 checkbox 인물, Value: 0
+			51 checkbox 추상, Value: 0
+			52 checkbox 빛, Value: 0
+			53 checkbox 강렬한 색감, Value: 0
+			54 checkbox 차가운 색감, Value: 0
+			55 checkbox 따뜻한 색감, Value: 0
+			56 checkbox 부드러운 색감, Value: 0
+			57 text 아래 「AI 분석 실행」을 하면 AI가 태그마다 점수를 매겨 제안해요. 지금은 켠 태그만 추천에 쓰여요. 평면도 위치 미등록
+			58 link Description: 위치·지도 관리, Value: 127.0.0.1:5178/admin/map?exhibition=fixture-ex01&artwork=fixture-art11
+			59 heading 설명 및 검수, Value: 2
+				60 text 설명 및 검수
+			61 container
+				62 text 작품 해설 (미술관 공식 해설 원문 — 사용자 「작품 해설」 탭에 그대로 표시)
+				63 text entry area (settable) 작품 해설 (미술관 공식 해설 원문 — 사용자 「작품 해설」 탭에 그대로 표시), Value: 실제 전시 자료가 아닌 개발 검증용 원문입니다.
+			64 text 요약과 관람가이드(쉬운 설명 · 관찰 질문 · 힌트)는 아래 「AI 분석 · 요약 · 가이드」에서 만들고 확정해요.
+			65 container
+				66 text 출처
+				67 text field (settable) 출처, Value: ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION
+			68 container
+				69 text 참고자료 URL
+				70 text field (settable) 참고자료 URL
+			71 container
+				72 text 검수 상태
+				73 pop up button (collapsed, settable) 검수 상태, Value: 검수 대기, Secondary Actions: Expand
+					74 menu
+						75 (selected) 검수 대기
+						76 출처 확인
+						77 검수 완료
+			78 button 저장
+			79 text 검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.
+			80 heading AI 분석 · 요약 · 가이드, Value: 2
+				81 text AI 분석 · 요약 · 가이드
+			82 container
+				83 text 저장된 작품 해설 과 이미지 를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후 「확정」해야 사용자 화면과 추천에 반영돼요.
+			84 checkbox (settable, integer) Description: 이미지도 분석, Value: 1
+			85 button AI 분석 실행
+			86 heading 감정 분석 (작품 분위기 설명용), Value: 3
+				87 text 감정 분석 (작품 분위기 설명용)
+			88 text 분석 전
+			89 text 아직 분석하지 않았어요. 「AI 분석 실행」을 눌러 주세요.
+			90 heading 요약 (사용자 「작품 해설」 탭의 「AI 요약 보기」), Value: 3
+				91 text 요약 (사용자 「작품 해설」 탭의 「AI 요약 보기」)
+			92 text 분석 전
+			93 container
+				94 text 요약 (직접 고칠 수 있어요)
+				95 text entry area (settable) 요약 (직접 고칠 수 있어요)
+			96 container
+				97 text 키워드 (쉼표로 구분)
+				98 text field (settable) 키워드 (쉼표로 구분)
+			99 button (disabled) 요약 확정 (수정 내용 포함 저장)
+			100 heading 관람가이드 (사용자 「관람가이드」 탭), Value: 3
+				101 text 관람가이드 (사용자 「관람가이드」 탭)
+			102 text 분석 전
+			103 container
+				104 text 쉬운 설명 (그림을 보기 전에 읽는 2~3문장)
+				105 text entry area (settable) 쉬운 설명 (그림을 보기 전에 읽는 2~3문장)
+			106 container
+				107 text 관찰 질문 — 한 줄에 하나, 「질문 | 힌트」
+				108 text entry area (settable) 관찰 질문 — 한 줄에 하나, 「질문 | 힌트」
+			109 button (disabled) 가이드 확정 (수정 내용 포함 저장)
+
+The focused UI element is 1 AXWebArea ARTI, URL: 127.0.0.1:5178/admin/artworks/fixture-art11

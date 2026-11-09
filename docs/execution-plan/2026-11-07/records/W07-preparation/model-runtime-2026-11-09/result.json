@@ -1,0 +1,389 @@
+{
+  "versions": {
+    "torch": "2.15.0+cpu",
+    "transformers": "4.57.6",
+    "fastapi": "0.162.0",
+    "uvicorn": "0.54.0",
+    "psutil": "7.2.2"
+  },
+  "system": {
+    "logicalCpuCount": 8,
+    "totalMemoryGiB": 31.510456085205078
+  },
+  "scope": "local real model technical probe; no DB or approval changes",
+  "runs": [
+    {
+      "id": "yyk-demo-001",
+      "repeat": 1,
+      "secondsIncludingDjangoProcess": 2.1906462000042666,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.022,
+            "people": 0.39,
+            "abstract": 0.724,
+            "light": 0.248,
+            "vivid": 0.237,
+            "cool": 0.94,
+            "warm": 0.033,
+            "soft": 0.002
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.207,
+            "joy": 0.36,
+            "sadness": 1.0,
+            "tension": 0.814,
+            "awe": 0.083,
+            "nostalgia": 0.597
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.022,
+            "people": 0.39,
+            "abstract": 0.724,
+            "light": 0.248,
+            "vivid": 0.237,
+            "cool": 0.94,
+            "warm": 0.033,
+            "soft": 0.002
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    },
+    {
+      "id": "yyk-demo-004",
+      "repeat": 1,
+      "secondsIncludingDjangoProcess": 1.9430025999899954,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.254,
+            "people": 0.181,
+            "abstract": 0.989,
+            "light": 0.088,
+            "vivid": 0.615,
+            "cool": 0.218,
+            "warm": 0.434,
+            "soft": 0.003
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.414,
+            "joy": 1.0,
+            "sadness": 0.502,
+            "tension": 0.48,
+            "awe": 0.264,
+            "nostalgia": 0.482
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.254,
+            "people": 0.181,
+            "abstract": 0.989,
+            "light": 0.088,
+            "vivid": 0.615,
+            "cool": 0.218,
+            "warm": 0.434,
+            "soft": 0.003
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    },
+    {
+      "id": "yyk-demo-010",
+      "repeat": 1,
+      "secondsIncludingDjangoProcess": 2.0271695999836084,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.998,
+            "people": 0.019,
+            "abstract": 0.991,
+            "light": 0.032,
+            "vivid": 0.386,
+            "cool": 0.999,
+            "warm": 0.001,
+            "soft": 0.141
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.971,
+            "joy": 0.318,
+            "sadness": 0.507,
+            "tension": 0.481,
+            "awe": 0.129,
+            "nostalgia": 1.0
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.998,
+            "people": 0.019,
+            "abstract": 0.991,
+            "light": 0.032,
+            "vivid": 0.386,
+            "cool": 0.999,
+            "warm": 0.001,
+            "soft": 0.141
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    },
+    {
+      "id": "yyk-demo-001",
+      "repeat": 2,
+      "secondsIncludingDjangoProcess": 1.8139957000094,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.022,
+            "people": 0.39,
+            "abstract": 0.724,
+            "light": 0.248,
+            "vivid": 0.237,
+            "cool": 0.94,
+            "warm": 0.033,
+            "soft": 0.002
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.207,
+            "joy": 0.36,
+            "sadness": 1.0,
+            "tension": 0.814,
+            "awe": 0.083,
+            "nostalgia": 0.597
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.022,
+            "people": 0.39,
+            "abstract": 0.724,
+            "light": 0.248,
+            "vivid": 0.237,
+            "cool": 0.94,
+            "warm": 0.033,
+            "soft": 0.002
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    },
+    {
+      "id": "yyk-demo-004",
+      "repeat": 2,
+      "secondsIncludingDjangoProcess": 1.9958874000003561,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.254,
+            "people": 0.181,
+            "abstract": 0.989,
+            "light": 0.088,
+            "vivid": 0.615,
+            "cool": 0.218,
+            "warm": 0.434,
+            "soft": 0.003
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.414,
+            "joy": 1.0,
+            "sadness": 0.502,
+            "tension": 0.48,
+            "awe": 0.264,
+            "nostalgia": 0.482
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.254,
+            "people": 0.181,
+            "abstract": 0.989,
+            "light": 0.088,
+            "vivid": 0.615,
+            "cool": 0.218,
+            "warm": 0.434,
+            "soft": 0.003
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    },
+    {
+      "id": "yyk-demo-010",
+      "repeat": 2,
+      "secondsIncludingDjangoProcess": 1.6976742999977432,
+      "exitCode": 0,
+      "result": {
+        "tag": {
+          "scores": {
+            "landscape": 0.998,
+            "people": 0.019,
+            "abstract": 0.991,
+            "light": 0.032,
+            "vivid": 0.386,
+            "cool": 0.999,
+            "warm": 0.001,
+            "soft": 0.141
+          }
+        },
+        "emotion": {
+          "emotions": {
+            "calm": 0.971,
+            "joy": 0.318,
+            "sadness": 0.507,
+            "tension": 0.481,
+            "awe": 0.129,
+            "nostalgia": 1.0
+          },
+          "models": {
+            "image": "openai/clip-vit-base-patch32",
+            "text": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+          },
+          "usedImage": true,
+          "usedText": true,
+          "tags": {
+            "landscape": 0.998,
+            "people": 0.019,
+            "abstract": 0.991,
+            "light": 0.032,
+            "vivid": 0.386,
+            "cool": 0.999,
+            "warm": 0.001,
+            "soft": 0.141
+          },
+          "tagSource": "image",
+          "imageError": null
+        }
+      }
+    }
+  ],
+  "httpReadySeconds": 0.5926402999903075,
+  "modelReadySecondsOffline": 5.674672599998303,
+  "health": {
+    "ok": true,
+    "modelsLoaded": true,
+    "calibration": [
+      "text"
+    ],
+    "tagThresholds": {
+      "landscape": 0.5,
+      "people": 0.5,
+      "abstract": 0.5,
+      "light": 0.95,
+      "vivid": 0.9,
+      "cool": 0.5,
+      "warm": 0.9,
+      "soft": 0.5
+    },
+    "writer": {
+      "enabled": false,
+      "model": "kakaocorp/kanana-1.5-2.1b-instruct-2505",
+      "loaded": false
+    }
+  },
+  "modelRevisions": [
+    {
+      "repo": "openai/clip-vit-base-patch32",
+      "revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+      "files": [
+        "config.json",
+        "merges.txt",
+        "preprocessor_config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer.json",
+        "tokenizer_config.json",
+        "vocab.json"
+      ]
+    },
+    {
+      "repo": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+      "revision": "8adb042d524ecd5c26d3e3ba0e3fbcf7e2d0864c",
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "spm.model",
+        "tokenizer.json",
+        "tokenizer_config.json"
+      ]
+    }
+  ],
+  "allCallsSucceeded": true,
+  "peakServerRssMiB": 1260.8671875,
+  "cpuThreads": 4,
+  "revisionEvidence": "download metadata at pinned resolve SHA; unused HF cache snapshots excluded",
+  "repeatResultsIdentical": true,
+  "memoryScope": "sampled 0.2s sum of server launcher and child RSS; excludes Django caller and system-wide usage; not GPU/production measurement",
+  "startupScope": "one offline process startup after files downloaded; warm OS cache possible, not uncached boot distribution",
+  "dataPolicy": "team draft calibration samples, no DB writes or approval changes",
+  "configurationHashes": {
+    "ai-service/app/config.py": "26cb7721515fd51ad4c8eecbee768a0670b28616afc6f5141f4c2935dd27be57",
+    "ai-service/app/calibration.json": "4a76c0964c177f6ccb804fed877d533675a38e8d88a631336522d33bd026678a",
+    "ai-service/app/tag_calibration.json": "4ec6dfdf53e1c72cc7c1bd867e62c0cbbe625b5f30331485a5353b1b6bd98980",
+    "ai-service/app/tags.py": "d58c1f7f9360d114163a2964679fc488adfcea28b782c34c4b04cb2de1108b31",
+    "ai-service/app/emotions.py": "003556b0a6b44c58d6c5b543538b66ea4e1f0d1c4b74b3b85f4084bc2bebbf66",
+    "ai-service/app/analyzer.py": "0c2a9926430708f42ef68dd1e6dd8e7122ef70e0a9ece728128ca16061b425d1"
+  },
+  "inputs": [
+    {
+      "id": "yyk-demo-001",
+      "sha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "descriptionSha256": "134839917575bff2c064aad49b212cc62d875911cf4300297f025ea8f6ca022d"
+    },
+    {
+      "id": "yyk-demo-004",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "descriptionSha256": "5772ae814b9de9ed9490cde249d3c989462899c0b767e1680d53cfcbdcdd847d"
+    },
+    {
+      "id": "yyk-demo-010",
+      "sha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "descriptionSha256": "4e40a126711ba7c9863ecbe3398f1158542f769c78c0d86b61a5a9620b144038"
+    }
+  ]
+}

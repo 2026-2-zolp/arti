@@ -1,0 +1,4 @@
+migrate-1  | Operations to perform:
+migrate-1  |   Apply all migrations: arti, contenttypes
+migrate-1  | Running migrations:
+migrate-1  |   No migrations to apply.

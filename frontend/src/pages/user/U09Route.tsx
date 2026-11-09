@@ -10,11 +10,11 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
-import { walkMinutes } from '../../lib/recommend';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork, MapPoint } from '../../types';
 
+/** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
@@ -52,7 +52,7 @@ export default function U09Route() {
     );
   }
 
-  // 이동 시간·경로는 바로 앞에서 위치가 있는 작품(없으면 입구)부터
+  // 현재 구간은 바로 앞의 좌표가 있는 작품(없으면 입구)부터 표시합니다.
   const from: MapPoint = (() => {
     for (let i = current - 1; i >= 0; i--) {
       const prev = byId.get(recommendations[i].artworkId);
@@ -100,6 +100,7 @@ export default function U09Route() {
         </div>
       </div>
 
+      <p className="muted small">작품 좌표를 잇는 참고 경로예요. 실제 통로와 이동 시간은 반영하지 않아요.</p>
       <div className="map-card">
         <FloorMap
           exhibition={ex}
@@ -130,7 +131,7 @@ export default function U09Route() {
                 <strong>
                   {target.title} · {roomName(target)}
                 </strong>
-                <span className="muted small">{target.position ? `약 ${walkMinutes(from, target.position)}분` : '위치 미등록'}</span>
+                <span className="muted small">{target.position ? '좌표 기준 위치 안내' : '위치 미등록'}</span>
               </div>
             </>
           )}

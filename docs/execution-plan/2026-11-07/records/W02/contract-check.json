@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "sourceFiles": 65,
+  "baselineRoutes": 34,
+  "directFrontendCalls": 51,
+  "contractCases": 35,
+  "wireExamples": 6,
+  "mappedIssues": 37,
+  "errors": [],
+  "scope": "Static examples/pinned Git baseline/map integrity only; current worktree and target API acceptance are separate."
+}

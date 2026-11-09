@@ -1,3 +1,5 @@
+/** 작품 쌍 선택으로 취향을 파악하는 화면 */
+import {useConfirm} from '../../components/Confirmation';
 /**
  * U-05 취향 파악 — 작품 약 10점을 두 점씩 보여 주고 하나만 고르게 한다.
  * 다 고르면 고른 작품에 붙은 태그로 취향 태그를 만들어 보여 주고(lib/tasteFromPicks.ts), 확인하면 관람 시간으로 간다.
@@ -13,24 +15,23 @@ import { tastesFromPicks } from '../../lib/tasteFromPicks';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Artwork, TasteTag } from '../../types';
+import type { Artwork, TasteTag, TasteProfile } from '../../types';
 
-const POOL = 10;
 
-function pairsOf(works: Artwork[]): [Artwork, Artwork][] {
-  const even = works.slice(0, works.length - (works.length % 2));
-  const pairs: [Artwork, Artwork][] = [];
-  for (let i = 0; i < even.length; i += 2) pairs.push([even[i], even[i + 1]]);
-  return pairs;
-}
 
+
+/** 작품 쌍 선택으로 취향을 파악하는 화면 */
 export default function U05Taste() {
+  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
-  const { data, loading, error } = useAsync(() => api.listArtworks(exhibitionId), [exhibitionId]);
-  const pairs = useMemo(() => pairsOf((data ?? []).slice(0, POOL)), [data]);
+  const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(exhibitionId), [exhibitionId]);
+  const data = pool?.artworks;
+  const pairs = useMemo(() => pool?.ready ? pool.pairs.map(p => [pool.artworks.find(w => w.id === p.leftId)!, pool.artworks.find(w => w.id === p.rightId)!] as [Artwork, Artwork]) : [], [pool]);
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(0);
   /** 지금까지 고른 작품 id (한 단계에 하나씩) */
   const [picks, setPicks] = useState<string[]>([]);
@@ -76,20 +77,19 @@ export default function U05Taste() {
     setStep((n) => n - 1);
   };
 
-  const confirm = () => {
-    if (!result || result.length === 0) return;
-    dispatch({ type: 'finishTaste', tastes: result });
-    // 회원이면 계정의 저장 취향을 이번 결과로 바꾼다 (U-06에 다음부터 보임).
-    // 저장에 실패해도 이번 관람은 그대로 진행한다.
-    const user = state.user;
-    if (user) {
-      const tastes = result;
-      api
-        .updateTastes(user.id, tastes)
-        .then(() => dispatch({ type: 'setUserTastes', tastes }))
-        .catch(() => undefined);
+  const confirm = async () => {
+    if (!result?.length || !pool?.ready || saving) return;
+    if (state.startedAt && !(await confirmAction('새 취향으로 관람을 다시 시작하면 현재 진행과 반응이 초기화됩니다. 계속할까요?'))) return;
+    const counts: TasteProfile['counts'] = {};
+    for (const id of picks) for (const t of data?.find(w => w.id === id)?.tags ?? []) counts[t] = (counts[t] ?? 0) + 1;
+    const profile: TasteProfile = { version: 1, source: 'picks', poolVersion: pool.poolVersion, picks: picks.map((artworkId, pairIndex) => ({ pairIndex, artworkId })), counts, selectedTags: result };
+    setSaving(true); setSaveError('');
+    dispatch({ type: 'finishTaste', tastes: result, profile });
+    if (state.user) {
+      try { await api.updateTastes(state.user.id, result, profile, exhibitionId); dispatch({type: 'login', user: await api.me()}); }
+      catch (e) { setSaveError(`이번 관람에는 적용됐지만 계정 저장에 실패했어요. ${e instanceof Error ? e.message : ''}`); setSaving(false); return; }
     }
-    navigate(to('/time'));
+    setSaving(false); navigate(to('/time'));
   };
 
   const pair = pairs[step];
@@ -107,7 +107,7 @@ export default function U05Taste() {
       }
       footer={
         result ? (
-          <button className="btn primary block" onClick={confirm} disabled={result.length === 0}>
+          <button className="btn primary block" onClick={confirm} disabled={result.length === 0 || saving}>
             이 취향으로 계속
           </button>
         ) : undefined
@@ -120,9 +120,10 @@ export default function U05Taste() {
       )}
 
       {loading && <Spinner label="작품을 불러오는 중…" />}
-      {error && <p className="muted">{error}</p>}
+      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {saveError && <p role="alert">{saveError}<button onClick={() => navigate(to('/time'))}>계정 저장 없이 계속</button><button onClick={confirm}>저장 재시도</button></p>}
       {!loading && !error && pairs.length === 0 && (
-        <p className="muted">비교할 작품이 아직 부족해요. 작품이 두 점 이상 등록되면 고를 수 있어요.</p>
+        <p className="muted">취향 선택용 작품 10점이 아직 준비되지 않았어요. 승인된 이미지와 태그를 확인하고 다시 시도해 주세요.<button onClick={reload}>다시 확인</button><button onClick={() => navigate(to(state.user?.tastes.length ? '/taste/saved' : '/entry'))}>이전으로</button></p>
       )}
 
       {result && (

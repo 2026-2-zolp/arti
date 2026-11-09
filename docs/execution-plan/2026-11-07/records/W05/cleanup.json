@@ -1,0 +1,9 @@
+{
+  "source": "transcribed from actual cleanup command output",
+  "syntheticMemberSessionsRemoved": 2,
+  "syntheticMemberDisabled": 1,
+  "viteStopped": true,
+  "composeProject": "arti-w05",
+  "containersRemoved": true,
+  "volumesPreserved": true
+}

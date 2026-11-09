@@ -1,0 +1,1030 @@
+{
+  "documentType": "research_intake_not_import_bundle",
+  "version": 1,
+  "asOf": "2026-11-09",
+  "baselineCommit": "4a9dbe9",
+  "artistDecision": "유영국 유지 (2026-11-09 사용자 결정)",
+  "bundleSha256": "e95d5c864393a4da507104842cc344a9a2bec1a49e1e33e5e5eecb680a4afb83",
+  "descriptionFile": {
+    "originalName": "유영국 전시전/유영국-작품설명-16점.txt",
+    "bytes": 23478,
+    "sha256": "690a7da13db2c3f4d66533fae64950b31fe260fee99c877d5b90ec30c0039fbd"
+  },
+  "idPolicy": "recordId와 assetId는 인수 기록/파일 식별자. DB 작품ID·전시ID나 공식 작품번호가 아님. 파일명/제목 변경 시 재발급하지 않는다.",
+  "states": {
+    "visual_match_catalogue": "이미지 대응 및 개별 소장품 메타데이터 후보 확보; 사람 승인 아님",
+    "visual_match_metadata_partial": "이미지/캡션 대응; 일부 기본정보 미제공",
+    "motif_match_edition_unverified": "같은 판화 도상 후보; 해당 개별 판본으로 확정 금지",
+    "unresolved": "공식 개별 식별 미해결"
+  },
+  "sources": [
+    {
+      "id": "MMCA-C-10399",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10399",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "2ce20dc0c060832b9191d2191f785f0170b0974e4cbfc15576e5d9c62d92ae14",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10399.html"
+    },
+    {
+      "id": "MMCA-C-10396",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10396",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "a7c3d35291adb74b2e60c0d03e9a8df077c9b07aa302baecc54dd9c3082a0b69",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10396.html"
+    },
+    {
+      "id": "MMCA-C-10387",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10387",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "034c7ce35d7beb33104aabe69bbe57c4da96a01b58cdd45636ffb714ad68feac",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10387.html"
+    },
+    {
+      "id": "MMCA-C-10392",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "fbd190a51edd940d5e99c403b0e2c74f95d2ce5bf6ac411e66557ee026cc3e0c",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10392.html"
+    },
+    {
+      "id": "MMCA-C-7917",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=7917",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "127a86a1617a60e95e0053cb7d97f3ba1946be3ecba1d0e8cf8a4a0236a70af5",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-7917.html"
+    },
+    {
+      "id": "MMCA-C-10391",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10391",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "4c48cfcf37f0c6b0d7aad15e5fe33a9e32ef2b43a5e8cbe1ed73e05cbebde808",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10391.html"
+    },
+    {
+      "id": "MMCA-C-10389",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10389",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "dded4f6b754fbe9d189556aff2053d3ef056113eb75f7294b9e55be2c96cfc09",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10389.html"
+    },
+    {
+      "id": "MMCA-C-10401",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10401",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "74863504fed5bb2d0b448080c5bdae8a557b9b4721d8d3a1a81a6c33676cd199",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10401.html"
+    },
+    {
+      "id": "MMCA-C-10383",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10383",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "be0c960cab3c9ccabed3f3b94851c47f72b3a7d302ba8c571fb6e6e43c0dd634",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10383.html"
+    },
+    {
+      "id": "MMCA-E-201603150000405",
+      "publisher": "국립현대미술관",
+      "type": "exhibition_caption",
+      "url": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=201603150000405",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "9747933372cf2ecac82bc79d92a4526893ed361345d75da755ee956c83a842bd",
+      "metadataScope": "게시 캡션의 제목·연도·소장처만; 재료·치수·작품번호 미제공",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-ex2016.html"
+    },
+    {
+      "id": "MMCA-C-10567",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10567",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "1be5a6692023007fdc4f9bd3808c6796b8ee13f4c79d5a036996c0ce9a4503c1",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10567.html"
+    },
+    {
+      "id": "MMCA-C-10537",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10537",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "f6d7f3b8dffb28b521743e82f1b83b3fcc4475ed414b4b0d70f2267c6f0d9c78",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10537.html"
+    },
+    {
+      "id": "MMCA-C-10405",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10405",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "2658369e0ef7358127fdd49f0826bf54b4f5540b882750d3992d3acd9f223436",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10405.html"
+    },
+    {
+      "id": "MMCA-C-10403",
+      "publisher": "국립현대미술관",
+      "type": "collection_detail",
+      "url": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10403",
+      "checkedAt": "2026-11-09",
+      "metadataEvidenceSha256": "ed950ed67870b3788241290e6a3f2adfad0b864951082c4ba87cafff8d755cbb",
+      "metadataScope": "개별 소장품 레코드; 다른 판본에 전용 금지",
+      "reusePermission": "not_established",
+      "metadataEvidenceRef": "data/private/yoo-intake-20261109/mmca-10403.html"
+    }
+  ],
+  "items": [
+    {
+      "recordId": "yyk-intake-20261109-001",
+      "assetId": "asset-a183733183371ed4da150e69",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1960_바다.png",
+      "sha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "bytes": 516942,
+      "widthPx": 475,
+      "heightPx": 479,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10399",
+        "catalogueFacts": {
+          "title": "바다",
+          "year": "1960",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "130.5×130.5",
+          "category": "회화 II",
+          "accessionNumber": "09644",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_376a8faa-d8d0-4b79-9117-73bfaa5e706b-20240111112823840.jpg",
+        "comparisonImageSha256": "ea23a309903eec85ce4fe39ed828a3b9534736d34005e2ffe39c614b83d5ca35",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10399.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": 1,
+      "notes": [
+        "거친 질감과 색 대비를 보여줄 핵심 시연 후보."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1960_바다",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/01.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-002",
+      "assetId": "asset-92e905f05a2fc7ac27821911",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1966_새벽.png",
+      "sha256": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+      "bytes": 261687,
+      "widthPx": 381,
+      "heightPx": 475,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10396",
+        "catalogueFacts": {
+          "title": "새벽",
+          "year": "1966",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "162×130.5",
+          "category": "회화 II",
+          "accessionNumber": "09641",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_9e64483c-e690-44d0-8bad-6c3750e05cea-20231227112932772.jpg",
+        "comparisonImageSha256": "1b885f470dc299e8107176d22bd0c5939ca55654bb48b97e63ca23f7718f221e",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10396.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "관련 작품 목록에는1956 표기가 있었으나 개별 상세 페이지와2025 공식 전시 해설은1966. 상세 페이지 기준 후보값1966 유지; 목록 오류는 수정하지 않음."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1966_새벽",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/02.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-003",
+      "assetId": "asset-71981c51983ffeb242ea9358",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1966_정상.png",
+      "sha256": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+      "bytes": 398632,
+      "widthPx": 576,
+      "heightPx": 458,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10387",
+        "catalogueFacts": {
+          "title": "정상",
+          "year": "1966",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "129.5×161",
+          "category": "회화 II",
+          "accessionNumber": "09632",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_24e101bc-7f79-4748-be76-becc6bb9e331-20231227112902818.jpg",
+        "comparisonImageSha256": "1ca79cc3d7c908118dc8cea081da2c9b720d89f8f6ed800f38c36e76b772c678",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10387.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1966_정상",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/03.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-004",
+      "assetId": "asset-ef978212ba3912443781d995",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1968_산(남).png",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "bytes": 220129,
+      "widthPx": 472,
+      "heightPx": 475,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10392",
+        "catalogueFacts": {
+          "title": "산(남)",
+          "year": "1968",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "129×129",
+          "category": "회화 II",
+          "accessionNumber": "09637",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_5c042a4f-ba5f-4956-9ca6-3abd8eb42089-20231227112920401.jpg",
+        "comparisonImageSha256": "e3089827b49772e3d22ae90c0740cdb98c09a4964d1baa6ecd6467e361812d6e",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10392.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": 2,
+      "notes": [],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1968_산(남)",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/04.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-005",
+      "assetId": "asset-8be3cbce01b25c2d8944c01e",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1968_산.png",
+      "sha256": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+      "bytes": 316261,
+      "widthPx": 474,
+      "heightPx": 480,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-7917",
+        "catalogueFacts": {
+          "title": "작품(산)",
+          "year": "1968",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "135×135",
+          "category": "회화 II",
+          "accessionNumber": "07904",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_1516947527793.jpg",
+        "comparisonImageSha256": "0562cbac3ffbb309207e1c0b06d76f56f790b7a38b278faea71779f4b46fa5fd",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-7917.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "전달 제목 산과 공식 제목 작품(산)을 구분. 공식 썸네일/전시 이미지와 전달 이미지의 색 재현 차이가 보이며 색상값의 정답 근거로 사용하지 않음."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1968_산",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/05.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-006",
+      "assetId": "asset-87d02099700f60c8bad40575",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1968_산2.png",
+      "sha256": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+      "bytes": 234674,
+      "widthPx": 473,
+      "heightPx": 471,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10391",
+        "catalogueFacts": {
+          "title": "산",
+          "year": "1968",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "136×136",
+          "category": "회화 II",
+          "accessionNumber": "09636",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_b9a54dab-6496-4112-b1db-38bce55c3f52-20231227112914545.jpg",
+        "comparisonImageSha256": "bba5353f6cc77fad264778f88ec58b5ee480134754592ae9e08dacc5e188c4d4",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10391.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "산2의 숫자2는 파일 구분자. 공식 제목은 산."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1968_산2",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/06.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-007",
+      "assetId": "asset-95bf3130e16845b8f1db2fb2",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1968_작품.png",
+      "sha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "bytes": 418484,
+      "widthPx": 706,
+      "heightPx": 701,
+      "identityState": "unresolved",
+      "catalogueCandidate": null,
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "공식 작품 식별 미해결. MMCA2016 산3점과 Pace1968 작품2점을 비교했으나 대응하지 않음. 제목·연도만 같은136×136cm 등의 수치를 연결하지 않음."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1968_작품",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/07.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-008",
+      "assetId": "asset-24f6cb9a43cc57fe9e55fb97",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1972_산.png",
+      "sha256": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+      "bytes": 266539,
+      "widthPx": 470,
+      "heightPx": 475,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10389",
+        "catalogueFacts": {
+          "title": "산",
+          "year": "1972",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "133×133",
+          "category": "회화 II",
+          "accessionNumber": "09634",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_5d157c55-293b-4bb9-b10b-653ac71e5e87-20231227112911552.jpg",
+        "comparisonImageSha256": "8271f5b2ad1cc688cffdab38d0005ee205e7eaec657230885e2379da2608ffd9",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10389.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1972_산",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/08.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-009",
+      "assetId": "asset-0bf5816f949ff1ad644a1a6a",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1974_작품.png",
+      "sha256": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+      "bytes": 237403,
+      "widthPx": 472,
+      "heightPx": 474,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10401",
+        "catalogueFacts": {
+          "title": "작품",
+          "year": "1974",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "65×64.5",
+          "category": "회화 II",
+          "accessionNumber": "09646",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_430abed5-f87f-4014-9313-c47afcfd84c8-20240111112811976.jpg",
+        "comparisonImageSha256": "dcc8849a47f86fad89c9c45a5895c9ba5303092d33b21fa3999d68e589b283ca",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/final-candidate-0.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "이전 비교 대상09639/09640과 다른 작품. 관리번호09646의 이미지가 대응하므로 해당 후보로 연결."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1974_작품",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/09.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-010",
+      "assetId": "asset-ccbc459cbdfa953d935b9972",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1984_산.png",
+      "sha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "bytes": 272707,
+      "widthPx": 576,
+      "heightPx": 422,
+      "identityState": "visual_match_catalogue",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10383",
+        "catalogueFacts": {
+          "title": "산",
+          "year": "1984",
+          "medium": "캔버스에 유화 물감",
+          "dimensionsAsPublished": "97.5×130",
+          "category": "회화 II",
+          "accessionNumber": "09628",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr/jsp/upload/00001/slide/detA/maxi_bed5c460-38e1-460e-8337-565a06fb1b24-20231227112841033.jpg",
+        "comparisonImageSha256": "44423f2fa9f5101abc00d84b7ef130203ffab210b25e1b90943bd82b37a527d1",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/mmca-extra-2.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": 3,
+      "notes": [],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1984_산",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/10.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-011",
+      "assetId": "asset-0f8633ea2669af803769df13",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1994_산(BLUE).png",
+      "sha256": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+      "bytes": 236445,
+      "widthPx": 348,
+      "heightPx": 455,
+      "identityState": "visual_match_metadata_partial",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-E-201603150000405",
+        "catalogueFacts": {
+          "title": "산-Blue",
+          "year": "1994",
+          "medium": null,
+          "dimensionsAsPublished": null,
+          "category": null,
+          "accessionNumber": null,
+          "holdingInstitution": "유영국미술문화재단"
+        },
+        "comparisonImageUrl": "https://www.mmca.go.kr/upload/exhibition/2016/11/dse_2016110303161971111410.jpg",
+        "comparisonImageSha256": "516c337c775ddf49028fd99a95b5cd88c0b876a9a6a13e7a4e67dc2359e96162",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/mmca-1.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "공식 전시 캡션으로 제목·연도·소장처 확인. 재료·치수·독립 작품번호 미확인."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1994_산(BLUE)",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/11.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-012",
+      "assetId": "asset-a6aab09fc250a048a4814f42",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1994_산(RED).png",
+      "sha256": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+      "bytes": 274483,
+      "widthPx": 350,
+      "heightPx": 456,
+      "identityState": "visual_match_metadata_partial",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-E-201603150000405",
+        "catalogueFacts": {
+          "title": "산-Red",
+          "year": "1994",
+          "medium": null,
+          "dimensionsAsPublished": null,
+          "category": null,
+          "accessionNumber": null,
+          "holdingInstitution": "유영국미술문화재단"
+        },
+        "comparisonImageUrl": "https://www.mmca.go.kr/upload/exhibition/2016/11/dse_201611030316567031939.jpg",
+        "comparisonImageSha256": "e818f2471304a824d8cf7a6cfa63730f3654cbd0e5dec2a9d598cf5e0a1fffbb",
+        "exactPrintEditionConfirmed": null,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/final-candidate-4.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "공식 산-Red 이미지를 직접 비교해 대응 확인. Blue와 짝 관계/낮과 밤이라는 작가 의도는 미확정."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력"
+      ],
+      "submittedFileLabel": "1994_산(RED)",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/12.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-013",
+      "assetId": "asset-58835735ce9610533067ca00",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1994_산.png",
+      "sha256": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+      "bytes": 519284,
+      "widthPx": 719,
+      "heightPx": 567,
+      "identityState": "motif_match_edition_unverified",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10567",
+        "catalogueFacts": {
+          "title": "작품001",
+          "year": "1994",
+          "medium": "종이에 인타글리오 프린트",
+          "dimensionsAsPublished": "53×66.2",
+          "category": "판화",
+          "accessionNumber": "09812",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_ea70de8d-602e-4c81-aeac-b808340823fb-20240102145802441.jpg",
+        "comparisonImageSha256": "d80d6821ce79cb600ba90c3d24789094390b33eba3554b5a937d3c849090adb0",
+        "exactPrintEditionConfirmed": false,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10567.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "전달 제목 산과 공식 도상 후보 제목 작품001이 다름. 동일 도상의 다수 판본이 존재해 관리번호09812의 개별 판본과 동일하다고 확정하지 않음."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력",
+        "개별 판본 번호·종이/도판 치수·서명 대조"
+      ],
+      "submittedFileLabel": "1994_산",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/13.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-014",
+      "assetId": "asset-e53649373a3d4beabb919872",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1994_작품002.png",
+      "sha256": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+      "bytes": 298553,
+      "widthPx": 472,
+      "heightPx": 481,
+      "identityState": "motif_match_edition_unverified",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10537",
+        "catalogueFacts": {
+          "title": "작품002",
+          "year": "1994",
+          "medium": "종이에 인타글리오 프린트",
+          "dimensionsAsPublished": "54×55",
+          "category": "판화",
+          "accessionNumber": "09782",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_568a3820-4495-4f1e-b06e-c7bd2e32b810-20240102145620977.jpg",
+        "comparisonImageSha256": "adbc6b964ebe761b20b77afff497c18747e09dfe8a5c4d68703cde647def4cc1",
+        "exactPrintEditionConfirmed": false,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10537.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "동일 도상의 다수 판본이 존재. 후보 관리번호09782의 개별 판본 동일성 미확정."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력",
+        "개별 판본 번호·종이/도판 치수·서명 대조"
+      ],
+      "submittedFileLabel": "1994_작품002",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/14.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-015",
+      "assetId": "asset-4d27dfd4e2bb7f09b23ae9a6",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1994_작품003.png",
+      "sha256": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+      "bytes": 361786,
+      "widthPx": 524,
+      "heightPx": 482,
+      "identityState": "motif_match_edition_unverified",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10405",
+        "catalogueFacts": {
+          "title": "작품003",
+          "year": "1994",
+          "medium": "종이에 인타글리오 프린트",
+          "dimensionsAsPublished": "53×61",
+          "category": "판화",
+          "accessionNumber": "09650",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_fb9bd787-b7da-4480-afa4-c24d75877d40-20240102144934004.jpg",
+        "comparisonImageSha256": "341f8b26784a8599bb66b96425c4f762f50b5e13faf1dbab468480135449a809",
+        "exactPrintEditionConfirmed": false,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10405.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "동일 도상의 다수 판본이 존재. 후보 관리번호09650의 개별 판본 동일성 미확정."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력",
+        "개별 판본 번호·종이/도판 치수·서명 대조"
+      ],
+      "submittedFileLabel": "1994_작품003",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/15.png"
+    },
+    {
+      "recordId": "yyk-intake-20261109-016",
+      "assetId": "asset-1709b0ebc77220648a4f9b21",
+      "linkedArtworkId": null,
+      "originalName": "유영국 전시전/1995_작품.png",
+      "sha256": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f",
+      "bytes": 332854,
+      "widthPx": 479,
+      "heightPx": 478,
+      "identityState": "motif_match_edition_unverified",
+      "catalogueCandidate": {
+        "sourceId": "MMCA-C-10403",
+        "catalogueFacts": {
+          "title": "작품",
+          "year": "1995",
+          "medium": "종이에 인타글리오 프린트",
+          "dimensionsAsPublished": "84.5×84",
+          "category": "판화",
+          "accessionNumber": "09648",
+          "holdingInstitution": "국립현대미술관"
+        },
+        "comparisonImageUrl": "https://umss.mmca.go.kr:443/jsp/upload/00001/slide/detC/maxi_35b67e78-d399-4492-bb76-1ccaa1c707c2-20231226153827915.jpg",
+        "comparisonImageSha256": "72bf2aac29a54f9162b047d97a5be4d959e8960905b8574fc170cac03b7c0b1a",
+        "exactPrintEditionConfirmed": false,
+        "comparisonImageEvidenceRef": "data/private/yoo-intake-20261109/thumb-10403.jpg"
+      },
+      "exhibitionAssignments": [],
+      "rights": {
+        "status": "not_established",
+        "originalAcquisitionUrl": null,
+        "permissionEvidence": null
+      },
+      "review": {
+        "humanStatus": "pending",
+        "reviewer": null,
+        "contentStatus": "unreviewed",
+        "modelStatus": "not_run",
+        "readyForImport": false
+      },
+      "demoCandidateRank": null,
+      "notes": [
+        "공식 후보 재료는 종이에 인타글리오 프린트. 유화 원작과 구별하며 판본/원작 제작연도는 별도 확인."
+      ],
+      "pendingChecks": [
+        "팀 담당자의 작품 동일성·출처 검수",
+        "전달 이미지의 원래 취득URL와 이용 조건",
+        "팀이 사용할 전시의 실제 출품 근거 또는 시연용 재구성 결정",
+        "해설 사실/해석 구분과 콘텐츠 검수",
+        "실제/시연 도면 및 배치 근거",
+        "태그·감정 검수와 추천 구별력",
+        "개별 판본 번호·종이/도판 치수·서명 대조"
+      ],
+      "submittedFileLabel": "1995_작품",
+      "originalImageEvidenceRef": "data/private/yoo-intake-20261109/16.png"
+    }
+  ],
+  "localEvidence": {
+    "root": "data/private/yoo-intake-20261109/",
+    "availability": "ignored_local_only; not available in a fresh Git checkout",
+    "originalImages": "01.png through 16.png; manifest.json maps original names and hashes",
+    "originalDescriptions": "17.txt; UTF-8-sig",
+    "permissionScope": "research comparison only; not approved media or import data"
+  }
+}

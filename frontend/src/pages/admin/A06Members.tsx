@@ -5,6 +5,7 @@ import { useAsync } from '../../lib/useAsync';
 import { TASTE_LABEL } from '../../data/mock';
 import { PageHead } from './AdminLayout';
 
+/** 관리자용 회원 조회 화면 */
 export default function A06Members() {
   const [input, setInput] = useState('');
   const [query, setQuery] = useState('');

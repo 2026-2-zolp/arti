@@ -1,0 +1,42 @@
+{
+  "scope": "operational baseline only, no real content/quality gate",
+  "modelFakeTests": {
+    "windowsIntermediate": {
+      "passed": 23,
+      "seconds": 0.61
+    },
+    "linuxFinal": {
+      "passed": 24,
+      "seconds": 2.62,
+      "torchInstalled": false,
+      "writerEnabled": false
+    }
+  },
+  "postgresTests": {
+    "passed": 97,
+    "seconds": 47.183
+  },
+  "realModelProbe": {
+    "pass": true,
+    "cases": 5
+  },
+  "changedAfterLiveProbe": [
+    "backend-django/arti/model_service.py"
+  ],
+  "changeExplanation": "HTTPTransportError/IncompleteRead normalization added after native probe, separately covered by final PostgreSQL regression; inference/runtime code unchanged",
+  "sourceHashScope": "local execution file bytes, not cross-platform normalized hash",
+  "generalDevelopmentMutation": false,
+  "modelWeightsOrThresholdChanges": false,
+  "paidLLMCalls": 0,
+  "formalGateChanges": false,
+  "gateDecision": "local single-process operational checks pass; W07/G5 not promoted",
+  "planChecks": {
+    "errors": 0,
+    "protectedFiles": 38,
+    "guardrailCases": 25,
+    "W02Errors": 0
+  },
+  "warnings": [
+    "Starlette/httpx deprecation remains; not a failed check"
+  ]
+}

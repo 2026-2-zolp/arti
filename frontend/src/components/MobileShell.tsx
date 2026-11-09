@@ -15,6 +15,7 @@ interface Props {
   screenId?: string; // 설계서 화면 ID (data 속성으로 남겨 테스트·디버깅에 활용)
 }
 
+/** 사용자 화면의 공통 틀·제목·하단 동작을 구성합니다. */
 export function MobileShell({ title, back, right, footer, children, screenId }: Props) {
   const navigate = useNavigate();
 

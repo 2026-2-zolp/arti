@@ -1,0 +1,41 @@
+Browser tab: 1, Title: "ARTI", URL: "http://localhost:5178/mypage".
+1 AXWebArea ARTI, URL: localhost:5178/mypage
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 마이페이지, Value: 1
+				6 text 마이페이지
+			7 button 로그아웃
+		8 container
+			9 container 미저장 기록 복구
+				10 container
+					11 text 이 탭에 미저장 관람기록이 있어요.  ARTI 개발 검증 전시  ·  1 점 
+					12 button 기록 확인 후 복구
+					13 button 버리기
+			14 heading W05 시험회원님, 안녕하세요, Value: 2
+				15 text W05 시험회원님, 안녕하세요
+			16 tab group
+				17 tab (selected, settable, boolean) 관람기록, Value: 1
+				18 tab (selectable, settable, boolean) 좋아요 목록, Value: 0
+			19 content list
+				20 button 가상 전시실 2026.11.08 ARTI 개발 검증 전시 작품 3점 관람 1분 👍 1 아트 영수증 보기
+					21 text 가상 전시실
+					22 text 2026.11.08
+					23 text ARTI 개발 검증 전시
+					24 text 작품 
+					25 text 3
+					26 text 점
+					27 text 관람 
+					28 text 1
+					29 text 분
+					30 text 👍 
+					31 text 1
+					32 text 아트 영수증 보기
+		33 container 진행하기 전에 확인해 주세요
+			34 heading 진행하기 전에 확인해 주세요, Value: 2
+				35 text 진행하기 전에 확인해 주세요
+			36 text 이 계정의 미저장 관람기록을 원래 내용 그대로 저장할까요? 현재 관람에는 합치지 않습니다.
+			37 button 취소
+			38 button 확인하고 계속
+
+The focused UI element is 37 button 취소

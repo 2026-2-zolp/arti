@@ -1,0 +1,219 @@
+{
+  "asOfKST": "2026-11-09",
+  "currency": "USD",
+  "region": "ap-northeast-2",
+  "scope": "public OnDemand selected rates; no credits/tax/FX or account quote",
+  "sources": {
+    "ec2": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/ap-northeast-2/index.csv",
+      "publication": "2026-11-07T00:28:52Z",
+      "version": "20261107002852",
+      "selectedRowsSha256": "3a907f28dca5550c35a70c13b51f4b4d4a588b754053934ad1a4b77ae23ff540",
+      "scannedRows": 176525
+    },
+    "rds": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonRDS/current/ap-northeast-2/index.json",
+      "publication": "2026-10-29T07:06:35Z",
+      "version": "20261029070635",
+      "rawSha256": "d9b4a6e0ee6a0426dc696f49e170c3eb764d102da2e1f9b395e6dd6eae4407ea"
+    },
+    "s3": {
+      "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/ap-northeast-2/index.json",
+      "publication": "2026-11-04T17:44:45Z",
+      "version": "20261104174445",
+      "rawSha256": "79a24da33c51bba3fa4e148b69fc0ac46daabba72684bdb3369d12449daee3fb"
+    },
+    "ipv4": {
+      "url": "https://aws.amazon.com/vpc/pricing/",
+      "checked": "2026-11-09",
+      "method": "official pricing webpage: in-use and idle public IPv4 hourly rates"
+    },
+    "dns": {
+      "url": "https://aws.amazon.com/route53/pricing/",
+      "checked": "2026-11-09",
+      "method": "official pricing webpage: first25 hosted zones, not prorated"
+    },
+    "lightsail": {
+      "url": "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html",
+      "checked": "2026-11-09",
+      "method": "official Linux/Unix public IPv4 Medium4GB bundle table; account/region orderability remains pending",
+      "billingSource": "https://aws.amazon.com/lightsail/faq/"
+    }
+  },
+  "rates": {
+    "t3.large": {
+      "usd": "0.1040000000",
+      "unit": "Hrs",
+      "sku": "822X28N5YHCZG5KZ",
+      "rateCode": "822X28N5YHCZG5KZ.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-11-01",
+      "description": "$0.104 per On Demand Linux t3.large Instance Hour",
+      "source": "ec2",
+      "selectedAttributes": {
+        "Product Family": "Compute Instance",
+        "Instance Type": "t3.large",
+        "Operating System": "Linux",
+        "Tenancy": "Shared",
+        "Pre Installed S/W": "NA",
+        "CapacityStatus": "Used",
+        "Location": "Asia Pacific (Seoul)"
+      }
+    },
+    "t3.medium": {
+      "usd": "0.0520000000",
+      "unit": "Hrs",
+      "sku": "G5CAZXC4M5ENHEZN",
+      "rateCode": "G5CAZXC4M5ENHEZN.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-11-01",
+      "description": "$0.052 per On Demand Linux t3.medium Instance Hour",
+      "source": "ec2",
+      "selectedAttributes": {
+        "Product Family": "Compute Instance",
+        "Instance Type": "t3.medium",
+        "Operating System": "Linux",
+        "Tenancy": "Shared",
+        "Pre Installed S/W": "NA",
+        "CapacityStatus": "Used",
+        "Location": "Asia Pacific (Seoul)"
+      }
+    },
+    "ebs-gp3": {
+      "usd": "0.0912000000",
+      "unit": "GB-Mo",
+      "sku": "MTK7D9SGKGYR3JD6",
+      "rateCode": "MTK7D9SGKGYR3JD6.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-11-01",
+      "description": "$0.0912 per GB-month of General Purpose (gp3) provisioned storage - Asia Pacific (Seoul)",
+      "source": "ec2",
+      "selectedAttributes": {
+        "Product Family": "Storage",
+        "Volume API Name": "gp3",
+        "Location": "Asia Pacific (Seoul)"
+      }
+    },
+    "t3.small": {
+      "usd": "0.0260000000",
+      "unit": "Hrs",
+      "sku": "PZHVQ3KFPA3RHA5V",
+      "rateCode": "PZHVQ3KFPA3RHA5V.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-11-01",
+      "description": "$0.026 per On Demand Linux t3.small Instance Hour",
+      "source": "ec2",
+      "selectedAttributes": {
+        "Product Family": "Compute Instance",
+        "Instance Type": "t3.small",
+        "Operating System": "Linux",
+        "Tenancy": "Shared",
+        "Pre Installed S/W": "NA",
+        "CapacityStatus": "Used",
+        "Location": "Asia Pacific (Seoul)"
+      }
+    },
+    "rds-gp3": {
+      "usd": "0.1310000000",
+      "unit": "GB-Mo",
+      "sku": "8TFTRRBWJSP95DQP",
+      "rateCode": "8TFTRRBWJSP95DQP.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-10-01T00:00:00Z",
+      "description": "$0.131 per GB-month of provisioned GP3 storage running PostgreSQL",
+      "source": "rds",
+      "selectedAttributes": {
+        "servicecode": "AmazonRDS",
+        "location": "Asia Pacific (Seoul)",
+        "locationType": "AWS Region",
+        "storageMedia": "SSD",
+        "volumeType": "General Purpose-GP3",
+        "minVolumeSize": "5 GB",
+        "maxVolumeSize": "16 TB",
+        "engineCode": "14",
+        "databaseEngine": "PostgreSQL",
+        "deploymentOption": "Single-AZ",
+        "usagetype": "APN2-RDS:GP3-Storage",
+        "operation": "CreateDBInstance:0014",
+        "regionCode": "ap-northeast-2",
+        "servicename": "Amazon Relational Database Service"
+      }
+    },
+    "rds-t4g-micro": {
+      "usd": "0.0250000000",
+      "unit": "Hrs",
+      "sku": "ZBMXF2F4CYQ2FT96",
+      "rateCode": "ZBMXF2F4CYQ2FT96.JRTCKXETXF.6YS6EN2CT7",
+      "effective": "2026-10-01T00:00:00Z",
+      "description": "$ 0.025 per RDS db.t4g.micro Single-AZ instance hour (or partial hour) running PostgreSQL",
+      "source": "rds",
+      "selectedAttributes": {
+        "servicecode": "AmazonRDS",
+        "location": "Asia Pacific (Seoul)",
+        "locationType": "AWS Region",
+        "instanceType": "db.t4g.micro",
+        "currentGeneration": "Yes",
+        "instanceFamily": "General purpose",
+        "vcpu": "2",
+        "physicalProcessor": "AWS Graviton2",
+        "memory": "1 GiB",
+        "storage": "EBS Only",
+        "networkPerformance": "Up to 5 Gigabit",
+        "processorArchitecture": "64-bit",
+        "engineCode": "14",
+        "databaseEngine": "PostgreSQL",
+        "licenseModel": "No license required",
+        "deploymentOption": "Single-AZ",
+        "usagetype": "APN2-InstanceUsage:db.t4g.micro",
+        "operation": "CreateDBInstance:0014",
+        "instanceTypeFamily": "T4G",
+        "normalizationSizeFactor": "0.5",
+        "regionCode": "ap-northeast-2",
+        "servicename": "Amazon Relational Database Service",
+        "unbundledLicensing": "FALSE"
+      }
+    },
+    "s3-standard": {
+      "usd": "0.0250000000",
+      "unit": "GB-Mo",
+      "sku": "3JSN7K7UDDNCYCDM",
+      "rateCode": "3JSN7K7UDDNCYCDM.JRTCKXETXF.PGHJ3S3EYE",
+      "effective": "2026-10-01T00:00:00Z",
+      "description": "$0.025 per GB - first 50 TB / month of storage used",
+      "source": "s3",
+      "selectedAttributes": {
+        "servicecode": "AmazonS3",
+        "location": "Asia Pacific (Seoul)",
+        "locationType": "AWS Region",
+        "availability": "99.99%",
+        "storageClass": "General Purpose",
+        "volumeType": "Standard",
+        "usagetype": "APN2-TimedStorage-ByteHrs",
+        "operation": "",
+        "durability": "99.999999999%",
+        "regionCode": "ap-northeast-2",
+        "servicename": "Amazon Simple Storage Service"
+      }
+    },
+    "ipv4": {
+      "usd": "0.005",
+      "unit": "Hrs",
+      "source": "ipv4",
+      "description": "one retained public IPv4, charged while in use or idle"
+    },
+    "route53-zone": {
+      "usd": "0.50",
+      "unit": "zone-month",
+      "source": "dns",
+      "description": "optional first25 public hosted zones; queries/domain registration separate"
+    },
+    "lightsail-4gb": {
+      "usd": "24.00",
+      "unit": "bundle-month",
+      "source": "lightsail",
+      "description": "Linux public IPv4 bundle monthly cap;2vCPU4GB80GBSSD; maintained full month",
+      "spec": {
+        "vcpu": 2,
+        "memoryGB": 4,
+        "diskGB": 80,
+        "ipv4Included": true,
+        "stoppedInstanceBilled": true
+      }
+    }
+  }
+}

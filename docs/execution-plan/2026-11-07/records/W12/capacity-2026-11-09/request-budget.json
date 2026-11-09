@@ -1,0 +1,35 @@
+{
+  "readsWhileAnalysis": {
+    "requests": 100,
+    "statuses": {
+      "200": 100
+    },
+    "p50Ms": 135.31,
+    "p95Ms": 168.6,
+    "maxMs": 177.24,
+    "seconds": 1.415
+  },
+  "timeout": {
+    "status": 504,
+    "seconds": 60.133,
+    "code": "AI_TIMEOUT",
+    "unchanged": true,
+    "providerCalls": [
+      "summary",
+      "guide",
+      "model"
+    ]
+  },
+  "recovery": {
+    "status": 200,
+    "seconds": 0.394,
+    "oneVersionIncrement": true
+  },
+  "disconnect": {
+    "oneVersionIncrement": true,
+    "retryStatus": 409,
+    "retryExtraProviderCalls": 0,
+    "artworks": 13
+  },
+  "passed": true
+}

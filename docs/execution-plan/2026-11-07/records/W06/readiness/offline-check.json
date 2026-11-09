@@ -1,0 +1,143 @@
+{
+  "actualDatabaseUnchanged": true,
+  "actualPublicWorks": 0,
+  "actualReadyPool": 0,
+  "actualWorks": 16,
+  "databaseDomainHash": "2e39a068480d1416e45eec11c8bae6ede06381198ef6688313db7e23f56e9036",
+  "humanReviewsPending": 16,
+  "hypotheticalPool10MatchesCurrentContract": true,
+  "hypotheticalScenarios": {
+    "abstract": {
+      "30m": {
+        "ids": [
+          "yyk-demo-003",
+          "yyk-demo-001",
+          "yyk-demo-002"
+        ],
+        "matchedCount": 3
+      },
+      "60m": {
+        "ids": [
+          "yyk-demo-003",
+          "yyk-demo-001",
+          "yyk-demo-002",
+          "yyk-demo-004",
+          "yyk-demo-005"
+        ],
+        "matchedCount": 5
+      },
+      "relaxed": {
+        "ids": [
+          "yyk-demo-006",
+          "yyk-demo-007",
+          "yyk-demo-005",
+          "yyk-demo-004",
+          "yyk-demo-002",
+          "yyk-demo-001",
+          "yyk-demo-003"
+        ],
+        "matchedCount": 7
+      }
+    },
+    "cool": {
+      "30m": {
+        "ids": [
+          "yyk-demo-005",
+          "yyk-demo-002",
+          "yyk-demo-001"
+        ],
+        "matchedCount": 3
+      },
+      "60m": {
+        "ids": [
+          "yyk-demo-008",
+          "yyk-demo-006",
+          "yyk-demo-005",
+          "yyk-demo-002",
+          "yyk-demo-001"
+        ],
+        "matchedCount": 5
+      },
+      "relaxed": {
+        "ids": [
+          "yyk-demo-008",
+          "yyk-demo-006",
+          "yyk-demo-005",
+          "yyk-demo-010",
+          "yyk-demo-011",
+          "yyk-demo-002",
+          "yyk-demo-001"
+        ],
+        "matchedCount": 7
+      }
+    },
+    "people": {
+      "30m": {
+        "ids": [
+          "yyk-demo-003",
+          "yyk-demo-001",
+          "yyk-demo-002"
+        ],
+        "matchedCount": 0
+      },
+      "60m": {
+        "ids": [
+          "yyk-demo-003",
+          "yyk-demo-001",
+          "yyk-demo-002",
+          "yyk-demo-004",
+          "yyk-demo-005"
+        ],
+        "matchedCount": 0
+      },
+      "relaxed": {
+        "ids": [
+          "yyk-demo-006",
+          "yyk-demo-007",
+          "yyk-demo-005",
+          "yyk-demo-004",
+          "yyk-demo-002",
+          "yyk-demo-001",
+          "yyk-demo-003"
+        ],
+        "matchedCount": 0
+      }
+    },
+    "warm": {
+      "30m": {
+        "ids": [
+          "yyk-demo-007",
+          "yyk-demo-004",
+          "yyk-demo-009"
+        ],
+        "matchedCount": 3
+      },
+      "60m": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-009",
+          "yyk-demo-004",
+          "yyk-demo-007",
+          "yyk-demo-012"
+        ],
+        "matchedCount": 5
+      },
+      "relaxed": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-009",
+          "yyk-demo-002",
+          "yyk-demo-001",
+          "yyk-demo-004",
+          "yyk-demo-007",
+          "yyk-demo-012"
+        ],
+        "matchedCount": 5
+      }
+    }
+  },
+  "legacyCaptureRows": 0,
+  "ok": true,
+  "paidModelCalls": 0,
+  "scope": "offline contracts withAI hypotheses and draft coordinates only; not model quality or live route"
+}

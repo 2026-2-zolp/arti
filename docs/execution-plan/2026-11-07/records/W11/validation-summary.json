@@ -1,0 +1,25 @@
+{
+  "workflowImplemented": true,
+  "remoteActionsRunExecuted": true,
+  "GCI": "not_run",
+  "localLinuxFrontendTests": 13,
+  "localLinuxFrontendTypecheckAndBuild": true,
+  "localLinuxFakeModelTests": 17,
+  "localLinuxPlanContractChecksPassed": true,
+  "actionlintExitCode": 0,
+  "postgresWithProviderPreparationTests": 63,
+  "paidKeysUsed": false,
+  "remotePushPerformed": true,
+  "remotePushConclusion": "success",
+  "remoteRunId": 42448758269,
+  "remoteRunUrl": "https://github.com/2026-2-zolp/arti/actions/runs/42448758269",
+  "remoteHeadSha": "3750e13215db86c2b437c83ea0e410cbe289ed36",
+  "remoteJobs": {
+    "Model service fake checks": "success",
+    "Plan and contract checks": "success",
+    "Frontend checks": "success",
+    "Django PostgreSQL checks": "success"
+  },
+  "prEventVerified": false,
+  "gateRemaining": "PR event criterion not yet executed; successful push run recorded separately"
+}

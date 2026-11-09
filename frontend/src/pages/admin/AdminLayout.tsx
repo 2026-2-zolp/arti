@@ -16,6 +16,7 @@ const MENU = [
   { to: '/admin/reactions', label: '평가' },
 ];
 
+/** 관리자 내비게이션과 공통 화면 틀을 제공합니다. */
 export default function AdminLayout() {
   const navigate = useNavigate();
   // 로그인하지 않았으면 A-01로 보낸다 (라우트 가드)
@@ -55,6 +56,7 @@ export default function AdminLayout() {
   );
 }
 
+/** 관리 화면 제목·설명·작업 버튼을 배치합니다. */
 export function PageHead({ title, desc, actions }: { title: string; desc: string; actions?: ReactNode }) {
   return (
     <div className="a-head">

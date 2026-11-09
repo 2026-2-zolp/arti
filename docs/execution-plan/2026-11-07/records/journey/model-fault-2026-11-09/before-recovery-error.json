@@ -1,0 +1,8 @@
+[
+  {
+    "level": "error",
+    "message": "TypeError: Cannot read properties of undefined (reading 'slice')\n    at AiPanel (http://localhost:5193/src/pages/admin/A04Artworks.tsx:1172:26)\n    at Object.react_stack_bottom_frame (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:20259:20)\n    at renderWithHooks (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:5918:24)\n    at updateFunctionComponent (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:7763:21)\n    at beginWork (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:8843:20)\n    at runWithFiberInDEV (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:1133:72)\n    at performUnitOfWork (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:13598:98)\n    at workLoopSync (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:13461:43)\n    at renderRootSync (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:13445:13)\n    at performWorkOnRoot (http://localhost:5193/node_modules/.vite/deps/react-dom_client.js?v=38dc5f50:12861:37)",
+    "timestamp": "2026-11-08T22:13:44.187Z",
+    "url": "http://localhost:5193/src/pages/admin/A04Artworks.tsx"
+  }
+]

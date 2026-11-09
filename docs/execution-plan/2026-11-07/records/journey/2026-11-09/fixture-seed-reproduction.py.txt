@@ -1,0 +1,16 @@
+# 재현용 정리본: 실제 첫 실행의 로그인 ID 오타를 수정하고 시험 암호는 환경변수로 분리했습니다.
+# 전용 격리 DB의 합성 자료만 구성합니다.
+import json
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from arti.models import Artwork, Exhibition, Account
+assert settings.ALLOW_TEST_FIXTURES and settings.ARTI_ENV=='test'
+assert not Artwork.objects.exclude(id__startswith='fixture-').exists()
+for w in Artwork.objects.filter(exhibition_id='fixture-ex01'):
+ w.description='개발 검증용 합성 작품입니다. 넓은 파란 사각형과 작은 노란 원이 있으며 두 색면 사이에 흰 여백이 있습니다. 실제 작가나 역사적 전시와 관련이 없습니다.'
+ if w.id=='fixture-art01':
+  w.summary='큰 파란 면과 작은 노란 원을 비교하는 합성 작품입니다.';w.summary_status='confirmed'
+  w.guide_intro='파란 면과 노란 원의 크기를 비교해 보세요.';w.guided_looking=['어느 색면에 먼저 눈이 가나요?','흰 여백이 두 색 사이에서 어떤 역할을 하나요?'];w.guided_hints=['큰 면과 작은 원을 번갈아 보세요.','두 색이 직접 닿는지 살펴보세요.'];w.guide_status='confirmed'
+ w.save()
+Account.objects.create(login_id='journey@example.test',email='journey@example.test',nickname='합성관람자',role='user',password=make_password(__import__('os').environ['JOURNEY_TEST_PASSWORD']))
+print(json.dumps({'exhibitions':Exhibition.objects.count(),'artworks':Artwork.objects.count(),'accounts':Account.objects.count(),'scope':'synthetic only'}))

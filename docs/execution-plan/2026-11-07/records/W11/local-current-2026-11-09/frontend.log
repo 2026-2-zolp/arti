@@ -1,0 +1,160 @@
+
+added 78 packages in 5s
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+
+> arti-frontend@0.1.0 test
+> tsx --test tests/*.test.mts
+
+TAP version 13
+# Subtest: late 401 from previous token cannot erase a newer account token
+ok 1 - late 401 from previous token cannot erase a newer account token
+  ---
+  duration_ms: 72.275193
+  type: 'test'
+  ...
+# Subtest: pending receipt cannot POST when token changes during same-owner verification
+ok 2 - pending receipt cannot POST when token changes during same-owner verification
+  ---
+  duration_ms: 2.511119
+  type: 'test'
+  ...
+# Subtest: same-owner explicit recovery transmits the original frozen payload once
+ok 3 - same-owner explicit recovery transmits the original frozen payload once
+  ---
+  duration_ms: 1.840678
+  type: 'test'
+  ...
+# Subtest: inactive receipt scope stops POST after successful account check
+ok 4 - inactive receipt scope stops POST after successful account check
+  ---
+  duration_ms: 1.684345
+  type: 'test'
+  ...
+# Subtest: late logout completion cannot erase a newer login
+ok 5 - late logout completion cannot erase a newer login
+  ---
+  duration_ms: 1.197287
+  type: 'test'
+  ...
+# Subtest: failed login credentials do not expire an existing valid session
+ok 6 - failed login credentials do not expire an existing valid session
+  ---
+  duration_ms: 1.846804
+  type: 'test'
+  ...
+# Subtest: default and explicit legacy share API/admin image route semantics
+ok 7 - default and explicit legacy share API/admin image route semantics
+  ---
+  duration_ms: 3.820867
+  type: 'test'
+  ...
+# Subtest: unknown or blank target and unsafe proxy fail instead of silently using legacy
+ok 8 - unknown or blank target and unsafe proxy fail instead of silently using legacy
+  ---
+  duration_ms: 0.517302
+  type: 'test'
+  ...
+# Subtest: Vite loads env-file values with process precedence and shares dev/preview target
+ok 9 - Vite loads env-file values with process precedence and shares dev/preview target
+  ---
+  duration_ms: 13.511409
+  type: 'test'
+  ...
+# Subtest: actual config reads frontend mode file and rejects mismatched preview bundle
+ok 10 - actual config reads frontend mode file and rejects mismatched preview bundle
+  ---
+  duration_ms: 2.122164
+  type: 'test'
+  ...
+# Subtest: late upload from exhibition A cannot apply after switching to B or returning to A
+ok 11 - late upload from exhibition A cannot apply after switching to B or returning to A
+  ---
+  duration_ms: 7.165612
+  type: 'test'
+  ...
+# Subtest: upload and delete cannot overlap and an old completion cannot unlock the next operation
+ok 12 - upload and delete cannot overlap and an old completion cannot unlock the next operation
+  ---
+  duration_ms: 0.200268
+  type: 'test'
+  ...
+# Subtest: late delete failure is ignored by the retired map view
+ok 13 - late delete failure is ignored by the retired map view
+  ---
+  duration_ms: 0.306553
+  type: 'test'
+  ...
+# Subtest: incomplete artwork dwell/reactions cannot enter a canonical receipt
+ok 14 - incomplete artwork dwell/reactions cannot enter a canonical receipt
+  ---
+  duration_ms: 2.711214
+  type: 'test'
+  ...
+# Subtest: zero completed works form an empty valid receipt instead of claiming a viewed work
+ok 15 - zero completed works form an empty valid receipt instead of claiming a viewed work
+  ---
+  duration_ms: 0.220387
+  type: 'test'
+  ...
+# Subtest: HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+ok 16 - HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+  ---
+  duration_ms: 16.329359
+  type: 'test'
+  ...
+# Subtest: taste/time invalidation rejects a late previous-generation recommendation
+ok 17 - taste/time invalidation rejects a late previous-generation recommendation
+  ---
+  duration_ms: 1.011303
+  type: 'test'
+  ...
+# Subtest: explicit new visit with same duration replaces ID and clears progress
+ok 18 - explicit new visit with same duration replaces ID and clears progress
+  ---
+  duration_ms: 1.068927
+  type: 'test'
+  ...
+# Subtest: same-work navigation refresh preserves state; actor/exhibition changes isolate it
+ok 19 - same-work navigation refresh preserves state; actor/exhibition changes isolate it
+  ---
+  duration_ms: 0.528694
+  type: 'test'
+  ...
+# Subtest: frequency provenance survives selection and recommendation storage
+ok 20 - frequency provenance survives selection and recommendation storage
+  ---
+  duration_ms: 0.298718
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1613.660453
+
+> arti-frontend@0.1.0 typecheck
+> tsc -b --noEmit
+
+
+> arti-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 91 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/arti-build.json              0.03 kB │ gzip:   0.05 kB
+dist/index.html                   0.85 kB │ gzip:   0.52 kB
+dist/assets/index-BFp8mqBW.css   31.25 kB │ gzip:   6.84 kB
+dist/assets/index-CBupdyC4.js    23.56 kB │ gzip:   9.12 kB
+dist/assets/index-Z1hBQD7G.js   393.40 kB │ gzip: 123.77 kB
+✓ built in 3.08s

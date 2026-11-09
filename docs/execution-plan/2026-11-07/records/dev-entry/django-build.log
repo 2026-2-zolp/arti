@@ -1,0 +1,15 @@
+
+> arti-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 90 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/arti-build.json              0.03 kB │ gzip:   0.05 kB
+dist/index.html                   0.85 kB │ gzip:   0.52 kB
+dist/assets/index-BFp8mqBW.css   31.25 kB │ gzip:   6.84 kB
+dist/assets/index-CBupdyC4.js    23.56 kB │ gzip:   9.12 kB
+dist/assets/index-DMLkFDTw.js   392.78 kB │ gzip: 123.64 kB
+✓ built in 1.36s

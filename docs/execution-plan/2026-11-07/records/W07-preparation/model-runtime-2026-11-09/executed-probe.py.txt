@@ -1,0 +1,78 @@
+# 실제 모델 서버를 격리 실행하고 다운로드/로딩과 반복 추론을 따로 측정합니다.
+import os, sys, time, json, subprocess, threading, urllib.request, base64, hashlib
+from pathlib import Path
+import psutil
+root=Path.cwd()
+out=root/'data/private/model-runtime-20261109'
+env=os.environ.copy()
+env.update(ARTI_WRITER_ENABLED='false', ARTI_PRELOAD='true', ARTI_CLIP_MODEL=str(out/'clip'), ARTI_NLI_MODEL=str(out/'nli'), HF_HUB_OFFLINE='1', HF_HOME=str(out/'hf-cache'),
+           HF_HUB_DISABLE_IMPLICIT_TOKEN='1', OMP_NUM_THREADS='4', MKL_NUM_THREADS='4')
+log=(out/'server.log').open('w',encoding='utf-8')
+start=time.perf_counter()
+server=subprocess.Popen([sys.executable,'-m','uvicorn','app.main:app','--host','127.0.0.1','--port','18061'],cwd=root/'ai-service',env=env,stdout=log,stderr=log)
+import importlib.metadata
+report={'versions':{k:importlib.metadata.version(k) for k in ['torch','transformers','fastapi','uvicorn','psutil']},'system':{'logicalCpuCount':psutil.cpu_count(),'totalMemoryGiB':psutil.virtual_memory().total/1024**3},'scope':'local real model technical probe; no DB or approval changes','runs':[]}
+stop=threading.Event();peaks=[]
+def sample():
+ while not stop.wait(.2):
+  try: process=psutil.Process(server.pid); peaks.append(sum(p.memory_info().rss for p in [process]+process.children(recursive=True)))
+  except psutil.Error: pass
+thread=threading.Thread(target=sample,daemon=True);thread.start()
+def gethealth():
+ with urllib.request.urlopen('http://127.0.0.1:18061/health',timeout=3) as r:return json.load(r)
+try:
+ ready=False
+ for _ in range(180):
+  if server.poll() is not None:raise RuntimeError('model process exited')
+  try:
+   health=gethealth()
+   if 'httpReadySeconds' not in report:report['httpReadySeconds']=time.perf_counter()-start
+   if health.get('modelsLoaded'):ready=True;break
+  except OSError:pass
+  time.sleep(1)
+ report['modelReadySecondsOffline']=time.perf_counter()-start
+ if not ready:raise RuntimeError('model readiness exceeded 900 seconds')
+ report['health']=health
+ report['modelRevisions']=json.loads((out/'downloads.json').read_text())
+ manifest=json.loads((root/'data/intake/2026-11-09-yoo-youngkuk/core3-manifest.json').read_text(encoding='utf-8'))
+ for repeat in range(2):
+  for item in manifest['items']:
+   file=root/'data/private/yyk-core3-bundle-20261109'/item['file']
+   assert hashlib.sha256(file.read_bytes()).hexdigest()==item['sha256']
+   # Django 제공자를 별도 프로세스로 호출해 실제 이미지 전달/응답 계약까지 확인합니다.
+   code="""import os,sys,json
+from pathlib import Path
+os.environ['DJANGO_SETTINGS_MODULE']='config.settings'
+os.environ['DJANGO_SECRET_KEY']='synthetic-runtime-probe-secret-at-least-32'
+os.environ['ARTI_MODEL_SERVICE_URL']='http://127.0.0.1:18061'
+os.environ['MEDIA_ROOT']=sys.argv[1]
+sys.path.insert(0,'backend-django')
+from arti.providers import generate
+item=json.loads(sys.argv[2]);cache={}
+tag=generate('tag',item,analysis_cache=cache)
+emotion=generate('emotion',item,analysis_cache=cache)
+print(json.dumps({'tag':tag,'emotion':emotion}))
+"""
+   snapshot={**item,'imageFile':item['file']}
+   t=time.perf_counter()
+   call=subprocess.run([str(root/'backend-django/.venv/Scripts/python.exe'),'-c',code,str(file.parent),json.dumps(snapshot,ensure_ascii=False)],cwd=root,capture_output=True,text=True,encoding='utf-8',timeout=45)
+   row={'id':item['id'],'repeat':repeat+1,'secondsIncludingDjangoProcess':time.perf_counter()-t,'exitCode':call.returncode}
+   if call.returncode:row['error']=call.stderr[-1800:]
+   else:row['result']=json.loads(call.stdout)
+   report['runs'].append(row)
+ report['allCallsSucceeded']=all(r['exitCode']==0 for r in report['runs'])
+except Exception as exc:
+ report['error']=type(exc).__name__+': '+str(exc)
+finally:
+ report['peakServerRssMiB']=max(peaks,default=0)/1024**2
+ report['cpuThreads']=4
+ stop.set();thread.join(timeout=2)
+ for child in psutil.Process(server.pid).children(recursive=True):
+  child.terminate()
+ server.terminate()
+ try:server.wait(timeout=10)
+ except subprocess.TimeoutExpired:server.kill();server.wait()
+ log.close()
+ (out/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+ print(json.dumps({k:v for k,v in report.items() if k not in ['runs','health']},ensure_ascii=False),flush=True)
+ print('calls',[(r['id'],r['repeat'],round(r['secondsIncludingDjangoProcess'],3),r['exitCode']) for r in report['runs']],flush=True)

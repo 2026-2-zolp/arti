@@ -1,0 +1,178 @@
+
+added 78 packages in 3s
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+
+> arti-frontend@0.1.0 test
+> tsx --test tests/*.test.mts
+
+TAP version 13
+# Subtest: late 401 from previous token cannot erase a newer account token
+ok 1 - late 401 from previous token cannot erase a newer account token
+  ---
+  duration_ms: 50.456703
+  type: 'test'
+  ...
+# Subtest: pending receipt cannot POST when token changes during same-owner verification
+ok 2 - pending receipt cannot POST when token changes during same-owner verification
+  ---
+  duration_ms: 2.282947
+  type: 'test'
+  ...
+# Subtest: same-owner explicit recovery transmits the original frozen payload once
+ok 3 - same-owner explicit recovery transmits the original frozen payload once
+  ---
+  duration_ms: 1.656841
+  type: 'test'
+  ...
+# Subtest: inactive receipt scope stops POST after successful account check
+ok 4 - inactive receipt scope stops POST after successful account check
+  ---
+  duration_ms: 3.988055
+  type: 'test'
+  ...
+# Subtest: late logout completion cannot erase a newer login
+ok 5 - late logout completion cannot erase a newer login
+  ---
+  duration_ms: 0.393484
+  type: 'test'
+  ...
+# Subtest: failed login credentials do not expire an existing valid session
+ok 6 - failed login credentials do not expire an existing valid session
+  ---
+  duration_ms: 1.2695
+  type: 'test'
+  ...
+# Subtest: recovery preserves unsaved confirmed text while applying fresh analysis
+ok 7 - recovery preserves unsaved confirmed text while applying fresh analysis
+  ---
+  duration_ms: 9.853045
+  type: 'test'
+  ...
+# Subtest: edits during inference and newer saved versions cannot be overwritten
+ok 8 - edits during inference and newer saved versions cannot be overwritten
+  ---
+  duration_ms: 0.629727
+  type: 'test'
+  ...
+# Subtest: status-specific recovery guidance and old missing timestamps stay renderable
+ok 9 - status-specific recovery guidance and old missing timestamps stay renderable
+  ---
+  duration_ms: 5.657156
+  type: 'test'
+  ...
+# Subtest: default and explicit legacy share API/admin image route semantics
+ok 10 - default and explicit legacy share API/admin image route semantics
+  ---
+  duration_ms: 2.978442
+  type: 'test'
+  ...
+# Subtest: unknown or blank target and unsafe proxy fail instead of silently using legacy
+ok 11 - unknown or blank target and unsafe proxy fail instead of silently using legacy
+  ---
+  duration_ms: 0.338524
+  type: 'test'
+  ...
+# Subtest: Vite loads env-file values with process precedence and shares dev/preview target
+ok 12 - Vite loads env-file values with process precedence and shares dev/preview target
+  ---
+  duration_ms: 4.09569
+  type: 'test'
+  ...
+# Subtest: actual config reads frontend mode file and rejects mismatched preview bundle
+ok 13 - actual config reads frontend mode file and rejects mismatched preview bundle
+  ---
+  duration_ms: 3.58144
+  type: 'test'
+  ...
+# Subtest: late upload from exhibition A cannot apply after switching to B or returning to A
+ok 14 - late upload from exhibition A cannot apply after switching to B or returning to A
+  ---
+  duration_ms: 50.008769
+  type: 'test'
+  ...
+# Subtest: upload and delete cannot overlap and an old completion cannot unlock the next operation
+ok 15 - upload and delete cannot overlap and an old completion cannot unlock the next operation
+  ---
+  duration_ms: 0.180254
+  type: 'test'
+  ...
+# Subtest: late delete failure is ignored by the retired map view
+ok 16 - late delete failure is ignored by the retired map view
+  ---
+  duration_ms: 3.167137
+  type: 'test'
+  ...
+# Subtest: incomplete artwork dwell/reactions cannot enter a canonical receipt
+ok 17 - incomplete artwork dwell/reactions cannot enter a canonical receipt
+  ---
+  duration_ms: 2.778514
+  type: 'test'
+  ...
+# Subtest: zero completed works form an empty valid receipt instead of claiming a viewed work
+ok 18 - zero completed works form an empty valid receipt instead of claiming a viewed work
+  ---
+  duration_ms: 0.277413
+  type: 'test'
+  ...
+# Subtest: HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+ok 19 - HTTP LAN-compatible UUIDv4 uses secure getRandomValues
+  ---
+  duration_ms: 12.811381
+  type: 'test'
+  ...
+# Subtest: taste/time invalidation rejects a late previous-generation recommendation
+ok 20 - taste/time invalidation rejects a late previous-generation recommendation
+  ---
+  duration_ms: 0.72488
+  type: 'test'
+  ...
+# Subtest: explicit new visit with same duration replaces ID and clears progress
+ok 21 - explicit new visit with same duration replaces ID and clears progress
+  ---
+  duration_ms: 0.804372
+  type: 'test'
+  ...
+# Subtest: same-work navigation refresh preserves state; actor/exhibition changes isolate it
+ok 22 - same-work navigation refresh preserves state; actor/exhibition changes isolate it
+  ---
+  duration_ms: 0.42612
+  type: 'test'
+  ...
+# Subtest: frequency provenance survives selection and recommendation storage
+ok 23 - frequency provenance survives selection and recommendation storage
+  ---
+  duration_ms: 0.188742
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1454.179025
+
+> arti-frontend@0.1.0 typecheck
+> tsc -b --noEmit
+
+
+> arti-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/arti-build.json              0.03 kB │ gzip:   0.05 kB
+dist/index.html                   0.85 kB │ gzip:   0.52 kB
+dist/assets/index-BFp8mqBW.css   31.25 kB │ gzip:   6.84 kB
+dist/assets/index-CBupdyC4.js    23.56 kB │ gzip:   9.12 kB
+dist/assets/index-BuWHWuX2.js   394.86 kB │ gzip: 124.32 kB
+✓ built in 1.79s

@@ -1,5 +1,7 @@
 # 💻 Windows에서 ARTI 실행하기 (VS Code 기준)
 
+이 문서는 기존 Express/FastAPI 비교용 legacy 안내입니다. 현재 dev/임준억의 기본 실행은 [Django 실행 안내](개발실행-Django.md)를 따릅니다. 프론트로 legacy 서버를 사용할 때 VITE_API_TARGET=express와 VITE_API_PROXY=http://127.0.0.1:4000을 명시해야 합니다.
+
 [← 문서 안내](README.md) · [AI·추천 정리](AI-감정분석-추천-정리.md)
 
 `dev/김광권` 구현본(화면 + 백엔드 + 감정 분석 AI 서버)을 내 컴퓨터에서 처음부터 실행하는 방법입니다. 서버 3개를 각각 다른 터미널에서 켭니다.

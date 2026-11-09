@@ -2,6 +2,7 @@
 import { EMOTION_KEYS, EMOTION_LABEL } from '../data/mock';
 import type { EmotionScores } from '../types';
 
+/** 작품·관람의 감정 점수를 막대 형태로 표시합니다. */
 export function EmotionBars({ scores, highlight = 2 }: { scores: EmotionScores; highlight?: number }) {
   const top = new Set([...EMOTION_KEYS].sort((a, b) => scores[b] - scores[a]).slice(0, highlight));
   return (

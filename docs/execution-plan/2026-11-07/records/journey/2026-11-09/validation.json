@@ -1,0 +1,46 @@
+{
+  "scope": "isolated synthetic technical journey; not Yoo content acceptance",
+  "pass": true,
+  "browser": [
+    "guest 5pairs->3works->route->summary",
+    "two actual GPT calls with summary then guide/history",
+    "guide tab/hint preserved on return+reload",
+    "different work and actor chat isolated",
+    "disabled AI error preserves input",
+    "guest completion noDB",
+    "member completion+reload persisted"
+  ],
+  "apiRecommendationCases": 9,
+  "postgresTests": {
+    "passed": 93,
+    "seconds": 39.725
+  },
+  "frontend": {
+    "tests": 20,
+    "typecheck": "pass",
+    "build": "pass"
+  },
+  "llm": {
+    "realCalls": 2,
+    "source": "synthetic text only",
+    "notModelQualityAcceptance": true
+  },
+  "remaining": [
+    "Yoo team review",
+    "physical floorplan routing",
+    "real mobile/TTS/image quality",
+    "formal G5"
+  ],
+  "generalDevelopmentUnchanged": true,
+  "cleanup": {
+    "containers": "stopped and removed",
+    "volumes": "preserved",
+    "generalEnvironment": "not recreated"
+  },
+  "planChecks": {
+    "errors": 0,
+    "protectedFiles": 38,
+    "guardrails": 25,
+    "W02Errors": 0
+  }
+}

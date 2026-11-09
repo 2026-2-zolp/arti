@@ -1,8 +1,9 @@
+/** 화면 옵션과 개발용 예시 값을 정의합니다. 실제 전시 데이터와 구분합니다. */
 import type { AiStatus, EmotionKey, TasteTag, VisitDuration } from '../types';
 
 /**
  * 화면 공통 상수 (취향 라벨, 취향 파악 카드, 관람 시간 옵션).
- * 전시·작품·회원 데이터는 이제 백엔드 DB에 있다 → backend/src/seed.ts
+ * 전시·작품·회원 데이터는 현재 Django/PostgreSQL에서 조회한다. 이 파일은 화면 표시 상수다.
  * (서버의 TASTE_LABEL·DURATION_OPTIONS와 값이 같아야 한다)
  */
 
@@ -17,10 +18,10 @@ export const TASTE_LABEL: Record<TasteTag, string> = {
   soft: '부드러운 색감',
 };
 
-/** 취향 태그 순서 (화면 표시용, backend/src/lib/tags.ts 의 TAG_KEYS 와 같다) */
+/** 취향 태그 순서 (화면 표시용, backend-django/arti/constants.py 의 TAGS 와 같다) */
 export const TAG_KEYS = Object.keys(TASTE_LABEL) as TasteTag[];
 
-/** AI 태그 점수가 이 값 이상이면 "해당함" (backend/src/lib/tags.ts 의 TAG_THRESHOLD 와 같다) */
+/** AI 태그 점수가 이 값 이상이면 "해당함" (화면 표시 기준이며 서버의 태그 확정/추천 계약과 구분한다) */
 export const TAG_THRESHOLD = 0.5;
 
 /**
@@ -47,7 +48,7 @@ export const DURATION_OPTIONS: { value: VisitDuration; label: string; desc: stri
   { value: 'relaxed', label: '여유롭게', desc: '추천 작품 7점을 충분히 즐겨요', count: 7 },
 ];
 
-/** AI 감정 분석 항목 (backend/src/lib/emotion.ts, ai-service/app/emotions.py 와 같은 키·순서) */
+/** AI 감정 분석 항목 (backend-django/arti/constants.py, ai-service/app/emotions.py 와 같은 키·순서) */
 export const EMOTION_LABEL: Record<EmotionKey, string> = {
   calm: '평온',
   joy: '기쁨',

@@ -5,6 +5,7 @@ import { api } from '../../api/client';
 import { save } from '../../lib/storage';
 import { ADMIN_KEY, isAdminLoggedIn } from './AdminLayout';
 
+/** 관리자 로그인 화면 */
 export default function A01Login() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
@@ -49,7 +50,11 @@ export default function A01Login() {
         <button className="a-btn primary block" disabled={submitting || !id || !pw}>
           {submitting ? '확인 중…' : '로그인'}
         </button>
-        <p className="demo-hint">데모: admin / admin1234</p>
+        <p className="demo-hint">
+          {import.meta.env.VITE_API_TARGET === 'django'
+            ? '관리자가 발급한 계정으로 로그인하세요.'
+            : '데모: admin / admin1234'}
+        </p>
       </form>
     </div>
   );

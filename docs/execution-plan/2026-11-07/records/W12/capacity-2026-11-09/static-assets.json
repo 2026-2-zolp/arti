@@ -1,0 +1,21 @@
+{
+  "assets": [
+    "/assets/index-ByCZInlT.js",
+    "/assets/index-BFp8mqBW.css"
+  ],
+  "statuses": [
+    200,
+    200
+  ],
+  "assetLoad": {
+    "requests": 100,
+    "statuses": {
+      "200": 100
+    },
+    "p50Ms": 44.9,
+    "p95Ms": 107.59,
+    "maxMs": 175.85
+  },
+  "unknownApi": 404,
+  "passed": true
+}

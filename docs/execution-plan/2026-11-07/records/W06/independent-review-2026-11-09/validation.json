@@ -1,0 +1,45 @@
+{
+  "asOf": "2026-11-09",
+  "scope": "preparation/tool format checks only",
+  "pass": true,
+  "tests": {
+    "passed": 27,
+    "seconds": 5.905
+  },
+  "browser": [
+    "wrong image rejected",
+    "16 exact hashes recognized",
+    "model/candidate content hidden",
+    "TEST partial draft exported and CLI validated"
+  ],
+  "sample": {
+    "forTesting": true,
+    "responseStatus": "draft",
+    "completeCount": 1,
+    "validTagJudgments": 0,
+    "uncertain": 8,
+    "unanswered": 120
+  },
+  "actualHumanResponses": 0,
+  "pendingTeamReviews": 16,
+  "formalGatesChanged": false,
+  "checks": {
+    "frozenPacket": "unchanged",
+    "planErrors": 0,
+    "protectedFiles": 38,
+    "guardrails": 25,
+    "W02Errors": 0
+  },
+  "developmentDB": {
+    "works": 16,
+    "source_check": 16,
+    "imageVisible": 0,
+    "positioned": 0,
+    "summarySuggested": 16,
+    "guideSuggested": 16
+  },
+  "usageInputRecorded": "web capture, campus graduation project period only",
+  "individualUsageConditions": "pending",
+  "sourceCheck": "MMCA policy checked; foundation web lookup502, no inference of permission",
+  "localServer": "stopped"
+}

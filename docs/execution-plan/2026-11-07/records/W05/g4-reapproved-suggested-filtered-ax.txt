@@ -1,0 +1,7 @@
+Browser tab: 4, Title: "localhost:5178/api/artworks/fixture-art01", URL: "http://localhost:5178/api/artworks/fixture-art01".
+1 AXWebArea localhost:5178/api/artworks/fixture-art01
+	2 text {"id":"fixture-art01","exhibitionId":"fixture-ex01","title":"검증용 작품 01","artist":"가상 작가","year":"연도 미상","roomId":"room-1","position":{"x":5.0,"y":3.0},"palette":["#334455","#c5b39b"],"imageUrl":"","imageFile":"fixture-public.png","showImage":true,"tags":["landscape"],"tagScores":null,"tagStatus":"none","description":"G4 원문 변경 검증입니다. 실제 작품 자료가 아닌 시험 원문입니다.","guidedLooking":[],"guidedHints":[],"guideIntro":"","guideStatus":"none","source":"ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION","referenceUrl":"","reviewStatus":"approved","updatedAt":"2026-11-08T04:15:53.231746+00:00","analysis":null,"emotionStatus":"none","summary":"","summaryKeywords":[],"summaryStatus":"none","version":5,"sourceVersion":2,"contentVersion":5,"summaryRevision":3,"guideRevision":3}
+	3 container
+		4 checkbox 0
+
+The focused UI element is 1 AXWebArea localhost:5178/api/artworks/fixture-art01

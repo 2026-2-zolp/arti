@@ -1,3 +1,4 @@
+# 모델 서비스: 이미지·텍스트 분석 모델을 묶어 결과를 구성합니다.
 """
 감정 분석 로직
 
@@ -84,6 +85,7 @@ def apply_prior(scores: Scores, prior: Scores | None) -> Scores:
     return {k: v - low for k, v in adjusted.items()}
 
 
+# 태그·감정 모델 점수 계산의 공통 인터페이스입니다.
 class Scorer(Protocol):
     """실제 모델(HuggingFaceScorer)과 테스트용 가짜 모델이 같은 모양을 갖도록 정의"""
 
@@ -126,6 +128,7 @@ def combine(image: Scores | None, text: Scores | None, image_weight: float) -> S
     return scale_to_max({k: a[k] * image_weight + b[k] * (1 - image_weight) for k in EMOTION_KEYS})
 
 
+# Hugging Face 모델로 분석 점수를 계산합니다.
 class HuggingFaceScorer:
     """Hugging Face transformers로 CLIP·mDeBERTa를 CPU에서 실행"""
 
@@ -149,9 +152,11 @@ class HuggingFaceScorer:
                 return
             from transformers import CLIPModel, CLIPProcessor, pipeline
 
-            self._clip = CLIPModel.from_pretrained(self.clip_name).eval()
-            self._clip_processor = CLIPProcessor.from_pretrained(self.clip_name)
-            self._nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            # 모두 성공한 뒤에만 게시해 부분 초기화를 ready로 오인하지 않습니다.
+            clip = CLIPModel.from_pretrained(self.clip_name).eval()
+            processor = CLIPProcessor.from_pretrained(self.clip_name)
+            nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            self._clip, self._clip_processor, self._nli = clip, processor, nli
 
     def image_scores(self, image: Image.Image) -> Scores:
         import torch
@@ -207,6 +212,7 @@ class HuggingFaceScorer:
         return {t["key"]: round(float(by_label[t["nli"]]), 3) for t in TAGS}
 
 
+# 분석 결과의 태그·감정·근거 정보를 묶습니다.
 @dataclass
 class AnalysisResult:
     emotions: Scores

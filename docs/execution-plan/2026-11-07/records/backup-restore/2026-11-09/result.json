@@ -1,0 +1,90 @@
+{
+  "asOf": "2026-11-09 KST",
+  "scope": "synthetic local backup/restore only; not team unique DB intake or AWS recovery",
+  "sourceProject": "arti-backup-src",
+  "destinationProject": "arti-backup-dst",
+  "sourceBeforeEqualsRestoredEqualsSourceAfter": true,
+  "snapshots": {
+    "sourceBefore": {
+      "counts": {
+        "Account": 2,
+        "Artwork": 13,
+        "Exhibition": 2,
+        "Session": 1,
+        "Visit": 1,
+        "VisitReaction": 1
+      },
+      "logicalDatabaseSha256": "e873b8710784b23556075b63fb723e83f63017a978027014682c468b28ac73ba",
+      "media": {
+        "backup-floor.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-private.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-public.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390"
+      }
+    },
+    "restored": {
+      "counts": {
+        "Account": 2,
+        "Artwork": 13,
+        "Exhibition": 2,
+        "Session": 1,
+        "Visit": 1,
+        "VisitReaction": 1
+      },
+      "logicalDatabaseSha256": "e873b8710784b23556075b63fb723e83f63017a978027014682c468b28ac73ba",
+      "media": {
+        "backup-floor.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-private.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-public.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390"
+      }
+    },
+    "sourceAfter": {
+      "counts": {
+        "Account": 2,
+        "Artwork": 13,
+        "Exhibition": 2,
+        "Session": 1,
+        "Visit": 1,
+        "VisitReaction": 1
+      },
+      "logicalDatabaseSha256": "e873b8710784b23556075b63fb723e83f63017a978027014682c468b28ac73ba",
+      "media": {
+        "backup-floor.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-private.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-public.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390"
+      }
+    },
+    "restoredAfterRestart": {
+      "counts": {
+        "Account": 2,
+        "Artwork": 13,
+        "Exhibition": 2,
+        "Session": 1,
+        "Visit": 1,
+        "VisitReaction": 1
+      },
+      "logicalDatabaseSha256": "e873b8710784b23556075b63fb723e83f63017a978027014682c468b28ac73ba",
+      "media": {
+        "backup-floor.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-private.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+        "fixture-public.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390"
+      }
+    }
+  },
+  "checks": {
+    "publicReviewFilter": true,
+    "protectedImage": true,
+    "visitRelations": true,
+    "confirmedAndSuggestedPreserved": true,
+    "missingMediaDetected": true,
+    "missingMediaApi404": true,
+    "restartPreserved": true
+  },
+  "archiveHashes": {
+    "arti.dump": "ad84209b19e2b2d086e2e758d3aa73aa668d79ca26e0c736771ab4d90709bdc4",
+    "media.tar": "35663146b7c2fa9f9e3c0a2cdb38b7745ce37b88162d651aa6335e82c67da129",
+    "media-manifest.json": "25eed627e71f6c4f3e70f3de535b248544db3adb4af3afd400a50e7550edf4b5"
+  },
+  "rawBackupLocation": "data/private/backup-20261109/ (ignored, not in Git)",
+  "mediaOwnership": "restored destination set to service UID10001",
+  "originalVolumes": "arti-w04/arti-w05 and other original volumes untouched"
+}

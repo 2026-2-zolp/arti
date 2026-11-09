@@ -1,0 +1,1291 @@
+{
+  "version": "1.0",
+  "asOf": "2026-11-06",
+  "scope": "실행계획; 서비스 구현 미착수",
+  "tasks": [
+    {
+      "id": "W01",
+      "title": "기준선·재현 공간",
+      "dependsOn": [],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC01",
+        "AC02"
+      ]
+    },
+    {
+      "id": "W02",
+      "title": "계약·기술 결정",
+      "dependsOn": [
+        "W01"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC03",
+        "AC04",
+        "AC05"
+      ]
+    },
+    {
+      "id": "W03",
+      "title": "회귀·기본CI",
+      "dependsOn": [
+        "W02"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC06",
+        "AC07"
+      ]
+    },
+    {
+      "id": "W04",
+      "title": "스택·PostgreSQL·Docker",
+      "dependsOn": [
+        "W03"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC08",
+        "AC09",
+        "AC10"
+      ]
+    },
+    {
+      "id": "W05",
+      "title": "핵심 흐름·관리·인증·기록",
+      "dependsOn": [
+        "W04"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17"
+      ]
+    },
+    {
+      "id": "W06",
+      "title": "공식 자료·선택풀·평가 입력",
+      "dependsOn": [
+        "W02"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC18",
+        "AC19"
+      ]
+    },
+    {
+      "id": "W07",
+      "title": "실제 AI·품질·자원",
+      "dependsOn": [
+        "W05",
+        "W06"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC20",
+        "AC21",
+        "AC22"
+      ]
+    },
+    {
+      "id": "W08",
+      "title": "AWS 첫 배포",
+      "dependsOn": [
+        "W04"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26"
+      ]
+    },
+    {
+      "id": "W09",
+      "title": "CD·배포·복귀",
+      "dependsOn": [
+        "W05",
+        "W07",
+        "W08"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC27",
+        "AC28"
+      ]
+    },
+    {
+      "id": "W10",
+      "title": "실환경 인수·설명",
+      "dependsOn": [
+        "W06",
+        "W09"
+      ],
+      "status": "planned",
+      "owner": "미지정(준억 조율 제안)",
+      "criteria": [
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "G0",
+      "dependsOn": [],
+      "status": "not_run",
+      "criteria": [
+        "AC01",
+        "AC02"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G1",
+      "dependsOn": [
+        "G0"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC03",
+        "AC04",
+        "AC05"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G2",
+      "dependsOn": [
+        "G1"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC06",
+        "AC07"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G3",
+      "dependsOn": [
+        "G2"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC08",
+        "AC09",
+        "AC10"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G4",
+      "dependsOn": [
+        "G3"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G5",
+      "dependsOn": [
+        "G4"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC18",
+        "AC19",
+        "AC20",
+        "AC21",
+        "AC22"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G6",
+      "dependsOn": [
+        "G3",
+        "G5"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26",
+        "AC27",
+        "AC28"
+      ],
+      "reviewEvidence": []
+    },
+    {
+      "id": "G7",
+      "dependsOn": [
+        "G5",
+        "G6"
+      ],
+      "status": "not_run",
+      "criteria": [
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ],
+      "reviewEvidence": []
+    }
+  ],
+  "criteria": [
+    {
+      "id": "AC01",
+      "gate": "G0",
+      "work": "W01",
+      "criterion": "정식 소스·ZIP·SHA·변경 목록과 실행 버전이 기록되고 원본이 보존됨",
+      "evidence": "baseline.md 및 소스 diff",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC02",
+      "gate": "G0",
+      "work": "W01",
+      "criterion": "빌드/타입/기존테스트 및 결함 재현을 새 작업 공간에서 실행하고 데이터 존재 여부 확인",
+      "evidence": "명령·종료코드·로그/재현표",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC03",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "8태그·10점5쌍·빈도·수정 취향·4종 콘텐츠·검수·ID·좌표의 정상/실패 예시가 일치",
+      "evidence": "계약 예시·대조표",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC04",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "스택·인증·모델위치·AWS범위/예산·지원모바일·지연예산을 결정하고 미결의 영향 격리",
+      "evidence": "결정기록·담당·수치/조건",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC05",
+      "gate": "G1",
+      "work": "W02",
+      "criterion": "모든 이슈에 수정 위치·담당·검사 연결, 이중 구현 방지 경계 명시",
+      "evidence": "이슈 추적표·작업계획",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC06",
+      "gate": "G2",
+      "work": "W03",
+      "criterion": "알려진 결함의 재현 입력/기대/실제 결과가 있고 조사 내부 구현에 과결합되지 않음",
+      "evidence": "회귀 검사·실패 로그",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC07",
+      "gate": "G2",
+      "work": "W03",
+      "criterion": "PR CI 실행 성공/실패 증거와 required/탐지 검사 구분, 비밀/유료AI 없이 기본 검사",
+      "evidence": "Actions run·job 정의",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC08",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "합의한 API fixture를 대상 API에서 검증, 기존 결함 수정은 의도적 차이로 명시",
+      "evidence": "계약 검사·차이표",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC09",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "Postgres 빈DB migration·동일fixture 재적재·ID/JSON/null/날짜/관계 제약 확인",
+      "evidence": "DB 검사 로그·모델/migration",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC10",
+      "gate": "G3",
+      "work": "W04",
+      "criterion": "Compose 새 환경 기동·DB준비·재시작 후 DB/파일 보존, 키 없는 설정 예시 재현. 운영모드에서 데모 자동시드·고정 관리자 자격이 생성되지 않음",
+      "evidence": "시작/재시작 로그",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC11",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "생성→별도항목수정→저장→재조회 후 guide/summary/tag/emotion의 값·검수 상태 보존. 승인 원문/출처 버전 변경 시 기존 summary/guide를 stale 또는 확정해제로 처리하고 공개/AI근거에서 제외, 재검수 후에만 재노출",
+      "evidence": "API round-trip와 화면 증거",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC12",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "pending/source_check 작품 및 suggested AI필드가 공개 목록·상세·질문·해설에서 차단되고 관리자만 미리보기",
+      "evidence": "상태 조합 API 검사",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC13",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "취향/시간/전시 변경시 추천·진행 상태 정책 적용, 늦은 응답이 최신 결과를 덮지 않음. 고정 선택·반대 빈도·사용자수정 예시의 기대 프로필/점수/추천근거가 계약과 일치하고 선택 원본 저장·재조회 일치. 추천 목록이 반드시 달라야 한다는 조건은 사용하지 않음",
+      "evidence": "경합 검사·화면 기록",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC14",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "같은 visit 중복POST/재시도로 1건 저장, AI실패와 무관하게 기록 저장·재조회, 합의필드 보존",
+      "evidence": "DB건수·재시도/오류 검사",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC15",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "회원/관리자 구분·타인기록차단·401복구·로그아웃·관람/계정별 대화 격리",
+      "evidence": "2계정/guest 권한 검사",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC16",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "정확한 10점5쌍·중복/누락 선택 제어·선택풀 부족·후보0·404·오프라인·저장실패에 명시 안내/재시도, 무한로딩 없음. 비밀번호 재설정은 실제 발송/재설정 성공 또는 명시적인 기능 제거·비활성 및 안내를 확인",
+      "evidence": "실패별 화면 결과",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC17",
+      "gate": "G4",
+      "work": "W05",
+      "criterion": "기존 데이터 있으면 보존/변환/관계/해시정책/복구 검증, 없으면 확인근거와 재생성 정책",
+      "evidence": "이전·복구 로그 또는 부재확인",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC18",
+      "gate": "G5",
+      "work": "W06",
+      "criterion": "전시작품과 취향풀이 분리되고 작품 식별·출처·자료 버전·검수·이미지 노출 범위가 기록됨",
+      "evidence": "data-manifest·사람검수 기록",
+      "reviewer": "데이터",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC19",
+      "gate": "G5",
+      "work": "W06",
+      "criterion": "대상전시/태그/질문 평가 입력과 판정 기준을 실행 전에 고정, 기존 저장출력과 구별",
+      "evidence": "입력해시·평가계획",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC20",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "실제 LLM 정상·키없음·오류·timeout이 구별되고 model/mode/출처 검증, 자료밖 유보·후속대화·지시문 방어 확인",
+      "evidence": "실제/강제실패 호출·평가표",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC21",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "필수 질문셋에서 잘못된 작품/유효하지 않은 출처인용 0건, 미검수 자료사용 0건, 지연예산 충족",
+      "evidence": "질문별 판정·지연·원본근거",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC22",
+      "gate": "G5",
+      "work": "W07",
+      "criterion": "모델 startup/readiness·메모리·반복/동시추론 측정, 고정 전시표본 태그별 결과와 실패 사례 기록",
+      "evidence": "자원 로그·태그평가표",
+      "reviewer": "AI",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC23",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "실제 AWS에서 API→RDS 연결·TLS/접근범위·migration 확인, DB/모델 포트 무분별 공개 안됨. 운영 데모 자동시드·고정 관리자 자격 차단 및 초기관리자 안전한 생성 확인",
+      "evidence": "민감값 제거 설정·연결검사",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC24",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "미디어 업로드→공개/제한열람→모델읽기→서버재생성 후 보존을 AWS에서 확인",
+      "evidence": "파일조회·권한·영속성 검사",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC25",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "HTTPS 공개주소·SPA상세재진입·API경로·인증callback/설정·모델내부주소가 배포환경과 일치",
+      "evidence": "URL별 smoke·인증검사",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC26",
+      "gate": "G6",
+      "work": "W08",
+      "criterion": "process와 model readiness 구분, 지연/실패 로그·비밀차단·백업복원·비용정리/종료절차 확인. W05 전 초기배포는 접근 제한·비실사용 fixture만 허용하고 알려진 데모계정 노출 금지",
+      "evidence": "상태·로그·복원·예산 기록",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC27",
+      "gate": "G6",
+      "work": "W09",
+      "criterion": "제한된 OIDC역할로 검증커밋 이미지 배포, 배포직렬화·migration단일실행·실패시후속중단",
+      "evidence": "Actions run·digest·migration로그",
+      "reviewer": "운영",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC28",
+      "gate": "G6",
+      "work": "W09",
+      "criterion": "배포후 핵심API smoke와 이전이미지 복귀를 확인하고 schema/데이터 복구 한계를 기록",
+      "evidence": "배포/복귀 연습 결과",
+      "reviewer": "기술",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC29",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "정한 모바일 환경에서 guest/회원의 진입→5쌍→추천→감상/질문→영수증 완주 및 재진입 확인",
+      "evidence": "환경별 E2E 기록",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC30",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "다른 기기 평가가 서버 관리자 조회에 반영되고 지도·이미지저장/공유·오류·계정전환 확인",
+      "evidence": "2기기 결과·영수증 이미지",
+      "reviewer": "사용자",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC31",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "releaseRequired=true 이슈가 closed이고 증거 연결, 실제스택·AI·추천/동선의 제한이 설명과 일치. F21 고급 알고리즘은 미구현·변경사유 설명과 범위결정으로 관리",
+      "evidence": "이슈종결표·시연/설계변경",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "AC32",
+      "gate": "G7",
+      "work": "W10",
+      "criterion": "작성자 외 검토자가 문서만으로 실행·등록검수·배포/복구 절차를 따라 확인",
+      "evidence": "독립 재현·인수 기록",
+      "reviewer": "정합성",
+      "status": "not_run",
+      "evidencePaths": []
+    }
+  ],
+  "issues": [
+    {
+      "id": "F01",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC13"
+      ],
+      "title": "빈도·선택 원본 소실",
+      "check": "풍경2/따뜻함1과 반대 입력의 계산을 계약대로 검증",
+      "source": "old:F01",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F02",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC13"
+      ],
+      "title": "변경 후 이전 추천 유지",
+      "check": "입력 무효화·늦은 응답 경합을 API/화면으로 확인",
+      "source": "old:F02",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F03",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC11"
+      ],
+      "title": "생성 가이드 저장 소실",
+      "check": "생성→다른항목수정→저장→재조회 round-trip",
+      "source": "old:F03",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F04",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC12"
+      ],
+      "title": "미검수 작품·AI필드 공개",
+      "check": "상태 조합별 공개/관리자 API 검사",
+      "source": "old:F04",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F05",
+      "priority": "P0",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W07"
+      ],
+      "criteria": [
+        "AC03",
+        "AC20"
+      ],
+      "title": "실제AI·fallback·실패 구분 부족",
+      "check": "정상/키없음/오류/timeout 응답과 UI",
+      "source": "old:F05",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F06",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W06",
+        "W07"
+      ],
+      "criteria": [
+        "AC18",
+        "AC20",
+        "AC21"
+      ],
+      "title": "승인 근거·출처 버전·검증 미완성",
+      "check": "승인 sourceIds 서버검증·자료밖 유보",
+      "source": "old:F06",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F07",
+      "priority": "P0",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W04"
+      ],
+      "criteria": [
+        "AC04",
+        "AC08"
+      ],
+      "title": "실제 스택과 설계 차이",
+      "check": "Django 권장/Express대안 결정을 기록 후 전환",
+      "source": "old:F07",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F08",
+      "priority": "P1",
+      "evidence": "executed",
+      "works": [
+        "W02",
+        "W06",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC18",
+        "AC16"
+      ],
+      "title": "5쌍 선택풀·버전·부족 처리",
+      "check": "전시앞10개 의존 제거/정당화 및 부족 안내",
+      "source": "old:F08",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F09",
+      "priority": "P0",
+      "evidence": "code",
+      "works": [
+        "W06",
+        "W10"
+      ],
+      "criteria": [
+        "AC18",
+        "AC29"
+      ],
+      "title": "유명작품 시드와 실제 전시 혼재",
+      "check": "demo/실제 출처manifest·시연 구별",
+      "source": "old:F09",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F10",
+      "priority": "P1",
+      "evidence": "executed",
+      "works": [
+        "W03",
+        "W05"
+      ],
+      "criteria": [
+        "AC06",
+        "AC14"
+      ],
+      "title": "반응 이유 서버 저장 누락",
+      "check": "저장→재조회→다른기기 관리자 확인",
+      "source": "old:F10",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F11",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC14",
+        "AC16"
+      ],
+      "title": "영수증 저장 손실·중복 위험",
+      "check": "AI와 저장분리·idempotency·실패재시도",
+      "source": "old:F11",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F12",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05",
+        "W07"
+      ],
+      "criteria": [
+        "AC15",
+        "AC20"
+      ],
+      "title": "관람/계정 대화 혼입·history 부재",
+      "check": "새관람/로그아웃/2계정·후속질문",
+      "source": "old:F12",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F13",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC15",
+        "AC16"
+      ],
+      "title": "401복구·404/오프라인 무한로딩",
+      "check": "토큰만료와 React상태·오류UI 재현",
+      "source": "old:F13",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F14",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC04",
+        "AC15",
+        "AC17"
+      ],
+      "title": "현 Bearer·scrypt와 목표 인증 차이",
+      "check": "JWT로 오기 금지·인증선택·해시이관정책",
+      "source": "old:F14",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F15",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05"
+      ],
+      "criteria": [
+        "AC15",
+        "AC16"
+      ],
+      "title": "비밀번호 재설정 메일 미구현",
+      "check": "필요시 실제발송, 불필요시 UI축소 결정",
+      "source": "old:F15",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F16",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W04",
+        "W05"
+      ],
+      "criteria": [
+        "AC09",
+        "AC17"
+      ],
+      "title": "SQLiteJSON·수동스키마와 데이터모델 차이",
+      "check": "ID/관계/null/날짜·필요 세션/이력만 구현",
+      "source": "old:F16",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F17",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W02",
+        "W06",
+        "W10"
+      ],
+      "criteria": [
+        "AC03",
+        "AC18",
+        "AC30"
+      ],
+      "title": "직선순서·이동시간과 실제공간 차이",
+      "check": "좌표0~100유지·실제도면 비교·설명범위",
+      "source": "old:F17",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F18",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W06",
+        "W07"
+      ],
+      "criteria": [
+        "AC19",
+        "AC22"
+      ],
+      "title": "기존 태그평가 입력/전시검증 부족",
+      "check": "40장이미지 인계·고정전시표본 평가",
+      "source": "old:F18",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F19",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC22",
+        "AC26"
+      ],
+      "title": "160초 보고·운영지연 미측정",
+      "check": "같은환경 반복·동시요청·p50/p95 표본수",
+      "source": "old:F19",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F20",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W05"
+      ],
+      "criteria": [
+        "AC03",
+        "AC11"
+      ],
+      "title": "원문·요약·맞춤설명·가이드 혼용",
+      "check": "콘텐츠4종·B안필드/상태 확정",
+      "source": "old:F20",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F21",
+      "priority": "P2",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W10"
+      ],
+      "criteria": [
+        "AC04",
+        "AC31"
+      ],
+      "title": "원설계 알고리즘과 현 기준선 차이",
+      "check": "임베딩/최적보행 미구현 명시·변경기록",
+      "source": "old:F21",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": false
+    },
+    {
+      "id": "F22",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W02",
+        "W08"
+      ],
+      "criteria": [
+        "AC04",
+        "AC23"
+      ],
+      "title": "AWS계정·RDS·네트워크·TLS 미검증",
+      "check": "지역/예산/권한/버전·API연결 확인",
+      "source": "new:AWS",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F23",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W08"
+      ],
+      "criteria": [
+        "AC24"
+      ],
+      "title": "로컬 업로드와 S3/모델 읽기 경로 차이",
+      "check": "제한열람·파일보존·모델입력·URL만료",
+      "source": "new:media",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F24",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W03",
+        "W04"
+      ],
+      "criteria": [
+        "AC07",
+        "AC09"
+      ],
+      "title": "GitHub Actions CI 미구성",
+      "check": "PR빌드·계약·Postgres 검사/실제AI별도",
+      "source": "new:CI",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F25",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W09"
+      ],
+      "criteria": [
+        "AC27",
+        "AC28"
+      ],
+      "title": "CD·마이그레이션·복귀 미구성",
+      "check": "OIDC범위·digest·직렬화·배포실패복귀",
+      "source": "new:CD",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F26",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W02",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC04",
+        "AC22",
+        "AC26"
+      ],
+      "title": "로컬 모델 메모리/로딩·운영위치 미결",
+      "check": "README9GB는 안내치·실측후상시/작업시 결정",
+      "source": "new:model",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F27",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W02",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC04",
+        "AC20",
+        "AC26"
+      ],
+      "title": "180/300초 요청과 배포 timeout 차이",
+      "check": "레이어별예산·작업ID/상태조회 채택여부",
+      "source": "new:timeout",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F28",
+      "priority": "P1",
+      "evidence": "code",
+      "works": [
+        "W05",
+        "W08",
+        "W10"
+      ],
+      "criteria": [
+        "AC25",
+        "AC30"
+      ],
+      "title": "개발프록시·공개주소·OAuth·영수증CORS",
+      "check": "SPA직접진입·HTTPS·callback·이미지저장",
+      "source": "new:web",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F29",
+      "priority": "P1",
+      "evidence": "documented",
+      "works": [
+        "W06",
+        "W07",
+        "W05"
+      ],
+      "criteria": [
+        "AC18",
+        "AC21",
+        "AC11"
+      ],
+      "title": "동명작품/연도치수 충돌·출처변경",
+      "check": "작품ID고정·근거충돌관리·AI재검수",
+      "source": "new:data",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F30",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W05",
+        "W07",
+        "W08"
+      ],
+      "criteria": [
+        "AC12",
+        "AC20",
+        "AC24"
+      ],
+      "title": "모델내부접근·외부이미지URL·자료속지시",
+      "check": "공개추론차단·URL/크기제한·권한불변 확인",
+      "source": "new:boundary",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F31",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W08"
+      ],
+      "criteria": [
+        "AC26"
+      ],
+      "title": "readiness·관측·비용·백업복원 미검증",
+      "check": "프로세스/모델준비 분리·비밀제거·복원연습",
+      "source": "new:ops",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F32",
+      "priority": "P1",
+      "evidence": "unverified",
+      "works": [
+        "W05",
+        "W09"
+      ],
+      "criteria": [
+        "AC17",
+        "AC28"
+      ],
+      "title": "코드복귀와 DB복구의 차이",
+      "check": "호환schema·migration단일실행·백업복구범위",
+      "source": "new:rollback",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    },
+    {
+      "id": "F33",
+      "priority": "P0",
+      "evidence": "code",
+      "works": [
+        "W04",
+        "W08"
+      ],
+      "criteria": [
+        "AC10",
+        "AC23",
+        "AC26"
+      ],
+      "title": "빈DB 자동시드의 알려진 데모/관리자 계정",
+      "check": "DEMO_MODE=false와 별개로 seed실행됨. 운영시드 차단·안전한 초기관리자·초기배포 접근제한",
+      "source": "new:backend/src/db.ts:99,108,180",
+      "status": "open",
+      "owner": "미지정(준억 통합 조율 제안)",
+      "fixLocation": "W02에서 결정",
+      "resolutionEvidence": [],
+      "releaseRequired": true
+    }
+  ]
+}
+

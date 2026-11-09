@@ -1,0 +1,135 @@
+Browser tab: 12, Title: "ARTI", URL: "http://localhost:5193/admin/artworks/fixture-art01".
+1 AXWebArea ARTI, URL: localhost:5193/admin/artworks/fixture-art01
+	2 container root
+		3 container
+			4 text ARTI 관리자 관리자 계정
+			5 button 로그아웃
+		6 container 관리자 메뉴
+			7 link Description: 대시보드, Value: localhost:5193/admin
+			8 link Description: 전시 관리, Value: localhost:5193/admin/exhibitions
+			9 link Description: 작품 관리, Value: localhost:5193/admin/artworks
+			10 link Description: 위치·지도 관리, Value: localhost:5193/admin/map
+			11 link Description: 회원 조회, Value: localhost:5193/admin/members
+			12 link Description: 평가, Value: localhost:5193/admin/reactions
+		13 container
+			14 heading 작품 등록·수정, Value: 1
+				15 text 작품 등록·수정
+			16 text 작품 정보와 설명, 출처·참고자료, 검수 상태를 함께 관리합니다.
+			17 link Description: 목록으로, Value: localhost:5193/admin/artworks
+			18 heading 기본 정보, Value: 2
+				19 text 기본 정보
+			20 container
+				21 text 작품명
+				22 text field (settable) 작품명, Value: 미저장 작품명 유지
+			23 container
+				24 text 작가
+				25 text field (settable) 작가, Value: 가상 작가
+			26 container
+				27 text 제작연도
+				28 text field (settable) 제작연도, Value: 연도 미상
+			29 container
+				30 text 전시
+				31 pop up button (collapsed, settable) 전시, Value: ARTI 개발 검증 전시, Secondary Actions: Expand
+					32 menu
+						33 비공개 검증 전시
+						34 (selected) ARTI 개발 검증 전시
+			35 container
+				36 text 전시실 / 위치
+				37 pop up button (collapsed, settable) 전시실 / 위치, Value: 검증실, Secondary Actions: Expand
+					38 menu
+						39 선택
+						40 (selected) 검증실
+			41 text 작품 이미지
+			42 image 작품 이미지 미리보기
+			43 text 다른 이미지로 바꾸기
+			44 button 파일 삭제
+			45 text 캡처 이미지를 끌어다 놓아도 돼요 (PNG·JPG·WEBP, 10MB 이하)
+			46 text field (settable)
+			47 checkbox (settable, integer) Description: 사용자 화면에 이미지 표시 (끄면 AI 분석에만 사용하고 화면에는 자리표시 그림), Value: 1
+			48 text 취향 태그 (추천에 사용) AI 제안
+			49 checkbox 풍경 0.50, Value: 1
+			50 checkbox 인물 0.50, Value: 0
+			51 checkbox 추상 0.50, Value: 0
+			52 checkbox 빛 0.50, Value: 0
+			53 checkbox 강렬한 색감 0.50, Value: 0
+			54 checkbox 차가운 색감 0.50, Value: 0
+			55 checkbox 따뜻한 색감 0.50, Value: 0
+			56 checkbox 부드러운 색감 0.50, Value: 0
+			57 text AI 제안( 그림으로 판단 ): 풍경 · 인물 · 추상 · 빛 · 강렬한 색감 · 차가운 색감 · 따뜻한 색감 · 부드러운 색감
+			58 button AI 제안대로 켜기
+			59 button 태그 확정 (켠 태그 기준)
+			60 text 평면도 위치 x 5, y 3
+			61 link Description: 위치·지도 관리, Value: localhost:5193/admin/map?exhibition=fixture-ex01&artwork=fixture-art01
+			62 heading 설명 및 검수, Value: 2
+				63 text 설명 및 검수
+			64 container
+				65 text 작품 해설 원문 (출처 확인 후 사용자 「작품 해설」 탭에 표시)
+				66 text entry area (settable) 작품 해설 원문 (출처 확인 후 사용자 「작품 해설」 탭에 표시), Value: 실제 전시 자료가 아닌 개발 검증용 원문입니다.
+			67 text 요약과 관람가이드(쉬운 설명 · 관찰 질문 · 힌트)는 아래 「AI 분석 · 요약 · 가이드」에서 만들고 확정해요.
+			68 container
+				69 text 출처
+				70 text field (settable) 출처, Value: ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION
+			71 container
+				72 text 참고자료 URL
+				73 text field (settable) 참고자료 URL
+			74 container
+				75 text 검수 상태
+				76 pop up button (collapsed, settable) 검수 상태, Value: 검수 완료, Secondary Actions: Expand
+					77 menu
+						78 검수 대기
+						79 출처 확인
+						80 (selected) 검수 완료
+			81 button 저장
+			82 text 검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.
+			83 heading AI 분석 · 요약 · 가이드, Value: 2
+				84 text AI 분석 · 요약 · 가이드
+			85 container
+				86 text 저장된 작품 해설 과 이미지 를 기준으로 분석합니다. AI 결과는 「AI 제안」으로 저장되고, 확인 후 「확정」해야 사용자 화면과 추천에 반영돼요.
+			87 checkbox (settable, integer) Description: 이미지도 분석, Value: 1
+			88 button AI 다시 분석
+			130 container
+				131 text 분석 응답 시간이 초과됐어요. 잠시 후 다시 시도해 주세요. 입력한 내용은 유지돼요.
+				132 button 분석 다시 시도
+			89 heading 감정 분석 (작품 분위기 설명용), Value: 3
+				90 text 감정 분석 (작품 분위기 설명용)
+			91 text AI 제안
+			92 content list 감정 분석 점수
+				93 container
+					94 text 평온 0.50
+				95 container
+					96 text 기쁨 0.50
+				97 container
+					98 text 슬픔 0.50
+				99 container
+					100 text 긴장 0.50
+				101 container
+					102 text 경외 0.50
+				103 container
+					104 text 그리움 0.50
+			105 container
+				106 text 분석 재료:  이미지 + 해설  · 추천에는 쓰지 않고 작품 화면·아트 영수증에 표시
+				107 text 모델:  synthetic-clip  ·  synthetic-nli
+				108 text 분석 시각:  기록 없음
+			109 button 감정 분석 확정
+			110 heading 요약 (사용자 「작품 해설」 탭의 「AI 요약 보기」), Value: 3
+				111 text 요약 (사용자 「작품 해설」 탭의 「AI 요약 보기」)
+			112 text 확정
+			113 container
+				114 text 요약 (직접 고칠 수 있어요)
+				115 text entry area (settable) 요약 (직접 고칠 수 있어요), Value: 미저장 요약 유지
+			116 container
+				117 text 키워드 (쉼표로 구분)
+				118 text field (settable) 키워드 (쉼표로 구분)
+			119 button 확정 해제
+			120 heading 관람가이드 (사용자 「관람가이드」 탭), Value: 3
+				121 text 관람가이드 (사용자 「관람가이드」 탭)
+			122 text 확정
+			123 container
+				124 text 쉬운 설명 (그림을 보기 전에 읽는 2~3문장)
+				125 text entry area (settable) 쉬운 설명 (그림을 보기 전에 읽는 2~3문장), Value: 미저장 도입 유지
+			126 container
+				127 text 관찰 질문 — 한 줄에 하나, 「질문 | 힌트」
+				128 text entry area (settable) 관찰 질문 — 한 줄에 하나, 「질문 | 힌트」, Value: 미저장 질문 |
+			129 button 확정 해제
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5193/admin/artworks/fixture-art01

@@ -1,0 +1,176 @@
+{
+  "asOf": "2026-11-09 KST",
+  "exhibitionId": "ex-yyk-demo-20261109",
+  "kind": "demo_reconstruction_draft",
+  "appliedToDatabase": false,
+  "physicalRouteClaim": false,
+  "widthMeters": null,
+  "entrance": {
+    "x": 50,
+    "y": 92
+  },
+  "zones": [
+    {
+      "id": "A",
+      "name": "질감과 색의 대비",
+      "conceptual": true
+    },
+    {
+      "id": "B",
+      "name": "선과 색면",
+      "conceptual": true
+    },
+    {
+      "id": "C",
+      "name": "겹침과 반복",
+      "conceptual": true
+    }
+  ],
+  "items": [
+    {
+      "id": "yyk-demo-001",
+      "recordId": "yyk-intake-20261109-001",
+      "assetId": "asset-a183733183371ed4da150e69",
+      "title": "바다",
+      "zoneId": "A",
+      "x": 14,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-002",
+      "recordId": "yyk-intake-20261109-002",
+      "assetId": "asset-92e905f05a2fc7ac27821911",
+      "title": "새벽",
+      "zoneId": "A",
+      "x": 26,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-003",
+      "recordId": "yyk-intake-20261109-003",
+      "assetId": "asset-71981c51983ffeb242ea9358",
+      "title": "정상",
+      "zoneId": "A",
+      "x": 14,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-004",
+      "recordId": "yyk-intake-20261109-004",
+      "assetId": "asset-ef978212ba3912443781d995",
+      "title": "산(남)",
+      "zoneId": "B",
+      "x": 44,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-005",
+      "recordId": "yyk-intake-20261109-005",
+      "assetId": "asset-8be3cbce01b25c2d8944c01e",
+      "title": "작품(산)",
+      "zoneId": "B",
+      "x": 56,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-006",
+      "recordId": "yyk-intake-20261109-006",
+      "assetId": "asset-87d02099700f60c8bad40575",
+      "title": "산",
+      "zoneId": "B",
+      "x": 44,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-007",
+      "recordId": "yyk-intake-20261109-007",
+      "assetId": "asset-95bf3130e16845b8f1db2fb2",
+      "title": "작품 (Work)",
+      "zoneId": "B",
+      "x": 56,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-008",
+      "recordId": "yyk-intake-20261109-008",
+      "assetId": "asset-24f6cb9a43cc57fe9e55fb97",
+      "title": "산",
+      "zoneId": "B",
+      "x": 50,
+      "y": 68
+    },
+    {
+      "id": "yyk-demo-009",
+      "recordId": "yyk-intake-20261109-009",
+      "assetId": "asset-0bf5816f949ff1ad644a1a6a",
+      "title": "작품",
+      "zoneId": "A",
+      "x": 26,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-010",
+      "recordId": "yyk-intake-20261109-010",
+      "assetId": "asset-ccbc459cbdfa953d935b9972",
+      "title": "산",
+      "zoneId": "C",
+      "x": 74,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-011",
+      "recordId": "yyk-intake-20261109-011",
+      "assetId": "asset-0f8633ea2669af803769df13",
+      "title": "산-Blue",
+      "zoneId": "C",
+      "x": 86,
+      "y": 28
+    },
+    {
+      "id": "yyk-demo-012",
+      "recordId": "yyk-intake-20261109-012",
+      "assetId": "asset-a6aab09fc250a048a4814f42",
+      "title": "산-Red",
+      "zoneId": "C",
+      "x": 74,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-013",
+      "recordId": "yyk-intake-20261109-013",
+      "assetId": "asset-58835735ce9610533067ca00",
+      "title": "작품001 (도상 후보)",
+      "zoneId": "C",
+      "x": 86,
+      "y": 48
+    },
+    {
+      "id": "yyk-demo-014",
+      "recordId": "yyk-intake-20261109-014",
+      "assetId": "asset-e53649373a3d4beabb919872",
+      "title": "작품002 (도상 후보)",
+      "zoneId": "A",
+      "x": 14,
+      "y": 68
+    },
+    {
+      "id": "yyk-demo-015",
+      "recordId": "yyk-intake-20261109-015",
+      "assetId": "asset-4d27dfd4e2bb7f09b23ae9a6",
+      "title": "작품003 (도상 후보)",
+      "zoneId": "A",
+      "x": 26,
+      "y": 68
+    },
+    {
+      "id": "yyk-demo-016",
+      "recordId": "yyk-intake-20261109-016",
+      "assetId": "asset-1709b0ebc77220648a4f9b21",
+      "title": "작품 (도상 후보)",
+      "zoneId": "C",
+      "x": 80,
+      "y": 68
+    }
+  ],
+  "basis": "ARTI 시연용 독자 재구성. 공식2016실제 도면·출품 목록·작품별좌표를 전용하지 않음. 점은 감상 구획 초안이며 벽/문/통로·미터·보행시간을 모델링하지 않음. 운영자 사람 확인 후 별도 DB반영."
+}

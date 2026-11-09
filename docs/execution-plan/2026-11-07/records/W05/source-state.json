@@ -1,0 +1,196 @@
+{
+  "branch": "dev/임준억",
+  "startingCommit": "b1fa103",
+  "gate": "G4 pass",
+  "capture": "pre-commit product/test hashes; containing commit identifies committed tree",
+  "files": [
+    {
+      "path": ".env.compose.example",
+      "sha256": "1fff32374f69ce528ccb6b6edcb9289f3e35e8cde0172cd8797611f8a2e7d468"
+    },
+    {
+      "path": "backend-django/README.md",
+      "sha256": "2723255766a91192b6605db7a9dfba3d945f3a195654e5bfd34830fa4e1bf622"
+    },
+    {
+      "path": "backend-django/arti/docent.py",
+      "sha256": "2b9c11b6dc3f7c08b557a5b699edafcc68ff6e7ba788dc74f258aa795c36166f"
+    },
+    {
+      "path": "backend-django/arti/editing.py",
+      "sha256": "a974b7c6bb0eeb55a0436a0dbb8c1d6a66104383940a2d2401ab9d6d71161b32"
+    },
+    {
+      "path": "backend-django/arti/http.py",
+      "sha256": "cc77d3436bfe07affb68a97877a44a2dceed8b8f883df1e815e29b9daa76074b"
+    },
+    {
+      "path": "backend-django/arti/management/commands/import_capture_bundle.py",
+      "sha256": "22d8c7ecf579143b0923de65e52046298fbefc4b6ae0c8187fa00ea9ff473e91"
+    },
+    {
+      "path": "backend-django/arti/member.py",
+      "sha256": "4b29d7ec7937a2f0aabead0fd087301113484ad010deb67495d78ff280380358"
+    },
+    {
+      "path": "backend-django/arti/models.py",
+      "sha256": "b9a84396464fe48accb3782c4001773a07879f7859cc9835d015d463821024e8"
+    },
+    {
+      "path": "backend-django/arti/providers.py",
+      "sha256": "e1ea696f50d9b5978708aa28ebb5606dc057bdd1d1ea78b232fd4616432c4bfb"
+    },
+    {
+      "path": "backend-django/arti/recommendations.py",
+      "sha256": "57dd5f3d7a1f072ee23f98524139be4aa60355e8435a7e97392c0d9a9471eba0"
+    },
+    {
+      "path": "backend-django/arti/records.py",
+      "sha256": "6841e3fd93c1886c34fe298d9bb1cf01b59f5d2b5cba5eaa0c6c04d86cdfd434"
+    },
+    {
+      "path": "backend-django/arti/tests/test_foundation.py",
+      "sha256": "3d0a84f2b7c4aef8245425bcbb109ea0b99a06cf65a57cef5f50fb34d66df35f"
+    },
+    {
+      "path": "backend-django/arti/tests/test_integration.py",
+      "sha256": "3c03357e80e84fbe5ee70148774044114aed26aa51956a9e8a0cbf0c83869933"
+    },
+    {
+      "path": "backend-django/arti/views.py",
+      "sha256": "a12986dfe44f7ae57619b0905ee7bc141b92f2a1b1072e2eb7a2fb9803a7b40f"
+    },
+    {
+      "path": "backend-django/config/settings.py",
+      "sha256": "bcf9d9b130dac1c017d6e1e138fcf313ab1804e151d4c37bd1f6984e3aa100a2"
+    },
+    {
+      "path": "backend-django/config/urls.py",
+      "sha256": "e9ffc6fdadfcd21260570b075f8ab237e8062d39dde23f1aee26c9935736c0e5"
+    },
+    {
+      "path": "compose.yaml",
+      "sha256": "079f6786f2a24fa8fd6e707a9f002067529a0c739755720eea8748ed3c7dd269"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "sha256": "af246c49d1f7aa9db49913c26677e8f5044cc2d6ce566ea0220dbcf68641df00"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "sha256": "917e8d7ec5e8a57dad929ae3f9bd4fc60043a58212b2dc9255691c91e662f5c8"
+    },
+    {
+      "path": "frontend/src/components/Confirmation.tsx",
+      "sha256": "8a6ef03f84d3921b296e2390d972d1a17dcf09c55689dcc19b9e6af0494384f8"
+    },
+    {
+      "path": "frontend/src/components/PendingReceipts.tsx",
+      "sha256": "a16c055bcc64b675870e4875bfeaeeeb4a04b9a93530ce3749402f4115fe8ad7"
+    },
+    {
+      "path": "frontend/src/lib/receiptPayload.ts",
+      "sha256": "83382fd5c343dfc59b20894376886c595806baf949f9b55e4e32e2dce463cbea"
+    },
+    {
+      "path": "frontend/src/lib/useAsync.ts",
+      "sha256": "ddd1a818792ba028ddb5adf7676b364952c8b2b76f2f0658198d1d536619f65e"
+    },
+    {
+      "path": "frontend/src/lib/visitScope.ts",
+      "sha256": "374a547f4ae87a1c9d8be9ba6fbc49028428992669e63da10799dee56c10e439"
+    },
+    {
+      "path": "frontend/src/pages/admin/A04Artworks.tsx",
+      "sha256": "5bbefbb42a9f2f0e347d9730afcca3034db96e77e8373c67a18862ebefad7873"
+    },
+    {
+      "path": "frontend/src/pages/admin/A05Map.tsx",
+      "sha256": "c1e39534e5a51eeeb9c719fc42c7201ab70dfeea980f4782cb956877a54c86c6"
+    },
+    {
+      "path": "frontend/src/pages/admin/A07Reactions.tsx",
+      "sha256": "fa618a5b95f2d232487a853a7a9e3a35bd7400640101193f4db119ec1f243e4c"
+    },
+    {
+      "path": "frontend/src/pages/user/U01Start.tsx",
+      "sha256": "2ae75b881dc416c0d6c9ee45ec4db0e10779a8ed8d841f9a903b884e6b98f5a8"
+    },
+    {
+      "path": "frontend/src/pages/user/U03Login.tsx",
+      "sha256": "978fa334f943499e27836ae1e931171c011c75039090bd824de2e43c28c3f168"
+    },
+    {
+      "path": "frontend/src/pages/user/U05Taste.tsx",
+      "sha256": "3ac87a39e5e803c93c52f8f3bc658598413f0cd5911686e8f5966c4a25e772ca"
+    },
+    {
+      "path": "frontend/src/pages/user/U06SavedTaste.tsx",
+      "sha256": "d4e79a28838f948bb422eb75aa262c16fd2607550a1a98141fd26ac3ffbb0ec6"
+    },
+    {
+      "path": "frontend/src/pages/user/U07Time.tsx",
+      "sha256": "d412312760457cedf8ac599ff127a346ef240848a45bb01381b82abd8b859dc8"
+    },
+    {
+      "path": "frontend/src/pages/user/U08Recommend.tsx",
+      "sha256": "44cc21b3e6ad83484b96c18c2260b87efca55190a9aebefaa533c192de749c81"
+    },
+    {
+      "path": "frontend/src/pages/user/U10Artwork.tsx",
+      "sha256": "d8fefeb55d8178a259b15c826667eab9f53d280d3e56e387e794fffc897f6c6d"
+    },
+    {
+      "path": "frontend/src/pages/user/U11AskAI.tsx",
+      "sha256": "feaeac5e5f99df1f576a11d72ba89395e8ba6c939e8d9c46a4a496c9cfe8670c"
+    },
+    {
+      "path": "frontend/src/pages/user/U12Receipt.tsx",
+      "sha256": "b229bb8dcb01583aec8bc3b7a231293e6a5357cbf2acd5676dfa2a0dc0220f78"
+    },
+    {
+      "path": "frontend/src/pages/user/U13MyPage.tsx",
+      "sha256": "5c31b3e2ecde1187f1258c6e490901c5aa48461b7870a00c2fb47aaa02c8e160"
+    },
+    {
+      "path": "frontend/src/pages/user/U14ForgotPassword.tsx",
+      "sha256": "c0d01471d2660f2425d91555594d83d3d04e95c21411551a6cc25fbcc407cf55"
+    },
+    {
+      "path": "frontend/src/pages/user/U15ResetPassword.tsx",
+      "sha256": "00a2366386b9a1f5449c0ac5dc474366675eaf1e8179218813b4d008f4f29d6f"
+    },
+    {
+      "path": "frontend/src/store/VisitContext.tsx",
+      "sha256": "7ede7b85ba41677bd40258936239cdd0af1dc8c8fa487ef91e8014e9301b65d3"
+    },
+    {
+      "path": "frontend/src/store/visitReducer.ts",
+      "sha256": "f8def43ef0085056a604183346f456807dc55c7ac275d125c4c05180567e5f8b"
+    },
+    {
+      "path": "frontend/src/styles/app.css",
+      "sha256": "6f7d25d2388b8c7a78e4fb5b6221963d5f8524f2bf10be51715180095a31f690"
+    },
+    {
+      "path": "frontend/src/types.ts",
+      "sha256": "6658e5ac3e73b7fe895d7df3f0687747f42561be2b3aa9f8b7cad03185c029b3"
+    },
+    {
+      "path": "frontend/tests/actorRequests.test.mts",
+      "sha256": "29052c259a0ed3acc55cf5dd762398e06c0439bdce4bd82e0019bfe82b359677"
+    },
+    {
+      "path": "frontend/tests/receiptPayload.test.mts",
+      "sha256": "c626be1a1e082feb0077e02500fddba97ab1f159ff4287ae2ff714061bf7d64b"
+    },
+    {
+      "path": "frontend/tests/visitReducer.test.mts",
+      "sha256": "4df38a5c5e518a15f958d0f84d38e7788654b9c8a6016e9757a7ee13c628ff1f"
+    },
+    {
+      "path": "scripts/export_git_captures.py",
+      "sha256": "9f61a3946224cfc5f2b2f2d55500172c6f2077a8f5c3095588ce0e1906db622e"
+    }
+  ]
+}

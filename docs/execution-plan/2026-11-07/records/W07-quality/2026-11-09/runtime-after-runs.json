@@ -1,0 +1,18 @@
+{
+  "capturedAfterRuns": true,
+  "project": "arti-dev",
+  "provider": "openai_compatible",
+  "requestedModels": {
+    "answer": "gpt-6-luna",
+    "explanation": "gpt-6-luna",
+    "summary": "gpt-6-luna",
+    "guide": "gpt-6-luna",
+    "interpret": "gpt-6-luna"
+  },
+  "jsonMode": true,
+  "tokenParameter": "max_completion_tokens",
+  "timeoutSeconds": 25,
+  "upstreamResolvedModelAndUsage": "not captured",
+  "adapterWorkingFileSha256": "14e12a090d76264233fe8e20a2922a19abaf6ef781ace90cb3de2fa455e90c4d",
+  "historicalSettingsCaveat": "post-run nonsecret snapshot; not contemporaneous upstream response metadata"
+}

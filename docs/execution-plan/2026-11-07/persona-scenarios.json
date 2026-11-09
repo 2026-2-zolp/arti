@@ -1,0 +1,124 @@
+{
+  "asOf": "2026-11-09",
+  "type": "acceptance-design examples; no actual user/model test",
+  "scenarios": [
+    {
+      "id": "PS01",
+      "title": "비회원 완주·미저장안내",
+      "criteria": [
+        "AC14",
+        "AC29"
+      ],
+      "expectation": "가입없이 관람/도슨트/영수증. DB미저장과 UI안내 일치",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS02",
+      "title": "회원 중복저장·AI실패",
+      "criteria": [
+        "AC14"
+      ],
+      "expectation": "같은visit 재시도1건·해석실패와 저장분리",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS03",
+      "title": "관찰답 없는 질문진입",
+      "criteria": [
+        "AC15",
+        "AC20"
+      ],
+      "expectation": "보던질문 맥락표시·미입력감상을 단정하지 않음",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS04",
+      "title": "실제 관찰답 후속대화",
+      "criteria": [
+        "AC15",
+        "AC20"
+      ],
+      "expectation": "입력한관찰로 후속질문·복귀상태 유지",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS05",
+      "title": "원문/요약에서 도슨트진입",
+      "criteria": [
+        "AC15",
+        "AC20"
+      ],
+      "expectation": "보던해설의 승인근거·탭/읽던위치 연결",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS06",
+      "title": "같은작품 쉽게/깊게",
+      "criteria": [
+        "AC19",
+        "AC20",
+        "AC21"
+      ],
+      "expectation": "명시요청에맞는깊이·동일근거범위·자료부족유보",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS07",
+      "title": "추천후보0의 안내",
+      "criteria": [
+        "AC16",
+        "AC18"
+      ],
+      "expectation": "pending→approved→위치등록→태그준비를 구별하고 전시전체부재단정 금지",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS08",
+      "title": "고정해설과 맥락대화 비교",
+      "criteria": [
+        "AC19",
+        "AC21",
+        "AC29",
+        "AC31"
+      ],
+      "expectation": "구체관찰근거/혼란/도움/실패·조건/표본/한계를 기록",
+      "status": "not_run",
+      "evidencePaths": []
+    },
+    {
+      "id": "PS09",
+      "title": "도면 교체·배치와 추천 연계",
+      "criteria": [
+        "AC16",
+        "AC18"
+      ],
+      "expectation": "같은비율 교체/미저장위치 초기화 사전안내, 취소 시 기존상태유지, 교체/삭제대기중 전시전환의늦은응답격리, 재배치/재조회 후 추천 반영, 다른전시 미변경. API/지연가드검사와 실제브라우저/유영국배치 시험을 구분",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W06/map-review/README.md"
+      ]
+    },
+    {
+      "id": "PS10",
+      "title": "평가위원의 추천·동선 증명 확인",
+      "criteria": [
+        "AC18",
+        "AC19",
+        "AC22",
+        "AC31"
+      ],
+      "expectation": "16점 준비상태·선택풀·3/5/7 선정근거·방문순서·도면/통로/시간 가정과 실제 품질의 한계를 설명. 실증없는 최적보행/개인화효과 주장금지",
+      "status": "not_run",
+      "evidencePaths": [
+        "records/W06/map-review/README.md"
+      ]
+    }
+  ]
+}

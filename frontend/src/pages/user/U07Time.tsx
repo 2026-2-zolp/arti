@@ -1,3 +1,5 @@
+/** 관람 시간을 선택하는 화면 */
+import {useConfirm} from '../../components/Confirmation';
 /** U-07 관람 시간 선택 — 시간에 따라 추천 작품 수 결정 */
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -8,7 +10,9 @@ import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { VisitDuration } from '../../types';
 
+/** 관람 시간을 선택하는 화면 */
 export default function U07Time() {
+  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
@@ -17,9 +21,10 @@ export default function U07Time() {
   // 취향 선택(양자택일 또는 저장된 태그) 없이 직접 들어온 경우 취향 화면으로 돌려보낸다
   if (!state.tasteDone && state.tastes.length === 0) return <Navigate to={to('/taste')} replace />;
 
-  const next = () => {
+  const next = async () => {
     if (!value) return;
-    dispatch({ type: 'setDuration', duration: value });
+    if (state.startedAt && !(await confirmAction('추천을 다시 받으면 현재 관람 진행과 반응이 초기화됩니다. 새 관람을 시작할까요?'))) return;
+    dispatch({ type: 'setDuration', duration: value, newVisit: !!state.startedAt });
     dispatch({ type: 'setRecommendations', recs: [] }); // 조건이 바뀌었으니 U-08에서 새로 추천
     navigate(to('/recommend'));
   };
