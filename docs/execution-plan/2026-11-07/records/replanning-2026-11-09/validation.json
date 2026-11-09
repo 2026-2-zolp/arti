@@ -9,8 +9,8 @@
   "scope": "Plan readiness only, no implementation or product/human/cloud gate promotion",
   "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
   "next": [
-    "R01 original-form reconciliation and actual submission preparation",
-    "R02 fixed journey/defect checklist",
-    "R05 current-response baseline preparation; real calls are follow-up"
+    "R04 private16 raw tags/emotions/recommendation distribution; no accuracy or approval without independent labels",
+    "R03 human-approved core3 then actual-grounded dialogue extension",
+    "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]
 }

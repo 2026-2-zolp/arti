@@ -16,7 +16,10 @@ requirements={x['id']:x for x in plan['requirements']};tasks={x['id']:x for x in
 assert len(requirements)==10 and len(tasks)==10
 covered=set()
 for t in tasks.values():
-    assert t['status']=='planned' and t['owner'] and t['acceptance']
+    assert t['status'] in ('planned','in_progress','complete','blocked') and t['owner'] and t['acceptance']
+    # 실행 묶음의 진척은 근거가 있어야 하며 공식 W/G/AC 상태를 바꾸지 않습니다.
+    if t['status']!='planned':
+        assert t.get('progressEvidence') and all((ROOT/p).is_file() for p in t['progressEvidence'])
     assert set(t['works'])<=ws
     assert t['criteria'] and all(k in acs and acs[k]['work'] in t['works'] for k in t['criteria'])
     assert t['requirements'] and set(t['requirements'])<=requirements.keys()

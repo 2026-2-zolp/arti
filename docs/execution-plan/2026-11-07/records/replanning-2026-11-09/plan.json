@@ -82,7 +82,8 @@
       "owner": "전원 확인; 취합/제출 담당 미정",
       "required": true,
       "status": "planned",
-      "acceptance": "원본 양식 대조·팀원 확인·시각 검수·실제 접수 증거. 초안만으로 완료 금지"
+      "acceptance": "원본 양식 대조·팀원 확인·시각 검수·실제 접수 증거. 초안만으로 완료 금지",
+      "userSteering": "2026-11-09 user will edit progress HWP directly; no agent document editing/submission this task"
     },
     {
       "id": "R02",
@@ -102,8 +103,13 @@
       ],
       "owner": "준억 통합; 동섭·성현 사용자 관점",
       "required": true,
-      "status": "planned",
-      "acceptance": "단계별 환경/버전·재현·중대 결함·담당·대기를 연결"
+      "status": "in_progress",
+      "acceptance": "단계별 환경/버전·재현·중대 결함·담당·대기를 연결",
+      "progress": "10-stage source/evidence inventory prepared; actual demo prerequisites still open",
+      "progressEvidence": [
+        "../../operations/2026-11-09_필수시연흐름과잔여결함.md",
+        "records/docent-baseline-2026-11-09/flow-inventory.json"
+      ]
     },
     {
       "id": "R03",
@@ -165,8 +171,13 @@
       ],
       "owner": "준억; 작성자 외 콘텐츠/이해도 검토",
       "required": true,
-      "status": "planned",
-      "acceptance": "현재 실응답 기준선 후 최소 정책 보완.4상황·근거밖/지시문, 필수 사실/출처 오류0. 실제 사용자 효과 별도"
+      "status": "in_progress",
+      "acceptance": "현재 실응답 기준선 후 최소 정책 보완.4상황·근거밖/지시문, 필수 사실/출처 오류0. 실제 사용자 효과 별도",
+      "progress": "Synthetic route/GPT baseline12 + correction/retest12 passed; actual Yoo/human/robustness pending",
+      "progressEvidence": [
+        "records/docent-baseline-2026-11-09/README.md",
+        "records/docent-baseline-2026-11-09/targeted-review.json"
+      ]
     },
     {
       "id": "R06",
@@ -336,8 +347,8 @@
     }
   },
   "next": [
-    "R01 original-form reconciliation and actual submission preparation",
-    "R02 fixed journey/defect checklist",
-    "R05 current-response baseline preparation; real calls are follow-up"
+    "R04 private16 raw tags/emotions/recommendation distribution; no accuracy or approval without independent labels",
+    "R03 human-approved core3 then actual-grounded dialogue extension",
+    "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]
 }

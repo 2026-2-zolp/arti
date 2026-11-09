@@ -1,0 +1,104 @@
+# 격리 PostgreSQL의 합성 작품을 실제 도슨트 경로로 호출하고 비밀 없이 응답·사용량을 기록합니다.
+import contextlib
+import copy
+import hashlib
+import json
+import os
+import sys
+import time
+from pathlib import Path
+from unittest.mock import patch
+
+sys.path.insert(0,'/app')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from django.core.management import call_command
+from rest_framework.test import APIClient
+from arti.models import Artwork, Visit, VisitReaction
+from arti import llm
+
+protocol_raw=Path('/input/protocol.json').read_bytes()
+protocol=json.loads(protocol_raw)
+selection=json.loads(Path('/input/selection.json').read_text())
+assert settings.ARTI_ENV=='test' and settings.ALLOW_TEST_FIXTURES
+assert settings.OPENAI_API_KEY and settings.ARTI_LLM_PROVIDER=='openai_compatible'
+assert selection['round'] in ('baseline','targeted')
+if selection['round']=='baseline':
+    call_command('migrate',verbosity=0)
+    assert not Artwork.objects.exclude(id__startswith='fixture-').exists()
+    call_command('load_test_fixture',verbosity=0)
+    for pk,injected in [('fixture-art01',False),('fixture-art02',True)]:
+        work=Artwork.objects.get(pk=pk)
+        value=protocol['artwork']
+        work.title=value['title']+(' B' if injected else '')
+        work.artist=value['artist'];work.year=value['year'];work.description=value['description']
+        if injected:work.description+=protocol['boundaries'][1]['descriptionSuffix']
+        work.review_status='approved';work.show_image=True
+        work.summary='큰 파란 바탕과 작은 노란 원, 오른쪽 흰 여백의 관계를 관찰하는 합성 그림이다.'
+        work.summary_status='confirmed';work.guide_intro='합성 평가용 관찰 가이드'
+        work.guided_looking=[value['guide']];work.guided_hints=['원·바탕·여백을 번갈아 보세요.'];work.guide_status='confirmed';work.save()
+assert not Artwork.objects.exclude(id__startswith='fixture-').exists()
+
+def snapshot():
+    rows=list(Artwork.objects.order_by('id').values())
+    digest=hashlib.sha256(json.dumps(rows,sort_keys=True,default=str).encode()).hexdigest()
+    return {'artworks':len(rows),'visits':Visit.objects.count(),'reactions':VisitReaction.objects.count(),'artworkStateSha256':digest}
+
+before=snapshot();client=APIClient(HTTP_HOST='localhost');outputs=[];count=[0];active=[None]
+real_builder=llm.build_opener
+
+class ObservedResponse:
+    def __init__(self,response):self.response=response
+    def __enter__(self):self.response.__enter__();return self
+    def __exit__(self,*args):return self.response.__exit__(*args)
+    def read(self,*args):
+        raw=self.response.read(*args)
+        try:
+            value=json.loads(raw);usage=value.get('usage') or {}
+            active[0]['upstreamModel']=value.get('model')
+            active[0]['usage']={k:v for k,v in usage.items() if k in ('prompt_tokens','completion_tokens','total_tokens') and type(v) is int}
+        except (ValueError,AttributeError):pass
+        return raw
+
+class ObservedOpener:
+    def __init__(self,*args):self.opener=real_builder(*args)
+    def open(self,request,**kwargs):
+        count[0]+=1;assert count[0]<=selection['callLimit'],'Paid call limit reached'
+        active[0]['payloadSha256']=hashlib.sha256(request.data).hexdigest()
+        return ObservedResponse(self.opener.open(request,**kwargs))
+
+def ask(cid,question,history=None,entry=True,work_id='fixture-art01'):
+    work=Artwork.objects.get(pk=work_id)
+    body={'question':question,'history':history or []}
+    if entry:body['entryContext']={'tab':'guided','kind':'guide','contentVersion':work.content_version,'questionIndex':0}
+    item={'id':cid,'question':question,'history':history or [],'workId':work_id,'entryContext':body.get('entryContext')};active[0]=item
+    start=time.monotonic()
+    try:
+        with patch('arti.llm.build_opener',ObservedOpener):response=client.post('/api/artworks/'+work_id+'/ask',body,format='json')
+        item.update(status=response.status_code,value=response.json())
+        if response.status_code==200:
+            value=item['value'];assert value['mode']=='llm' and isinstance(value['answer'],str) and 0<len(value['answer'])<=1000
+            assert value['sourceRefs'] and all(r['artworkId']==work_id for r in value['sourceRefs'])
+            item['contractPassed']=True
+    except Exception as exc:item['errorType']=type(exc).__name__
+    item['seconds']=round(time.monotonic()-start,3);outputs.append(item)
+    print(json.dumps({'case':cid,'status':item.get('status'),'seconds':item['seconds'],'contractPassed':item.get('contractPassed',False)}),flush=True)
+    return item.get('value',{}).get('answer','')
+
+scenarios={x['id']:x for x in protocol['scenarios']}
+for sid in selection['scenarioIds']:
+    s=scenarios[sid]
+    reply=ask(sid+'-first',s['first'])
+    if not reply:continue
+    ask(sid+'-followup',s['followup'],[{'role':'user','text':s['first']},{'role':'assistant','text':reply}])
+for b in protocol['boundaries']:
+    if b['id'] in selection['boundaryIds']:ask(b['id'],b['question'],work_id='fixture-art02' if b['work']=='injected' else 'fixture-art01')
+for sid in selection['ablationIds']:ask(sid+'-no-context',scenarios[sid]['followup'],entry=False)
+after=snapshot()
+result={'round':selection['round'],'protocolSha256':hashlib.sha256(protocol_raw).hexdigest(),'promptSourceSha256':hashlib.sha256(Path('/app/arti/llm.py').read_bytes()).hexdigest(),'requestedModel':settings.ARTI_LLM_MODELS.get('answer') or settings.OPENAI_MODEL,'paidCalls':count[0],'before':before,'after':after,'storageUnchanged':before==after,'outputs':outputs}
+encoded=json.dumps(result,ensure_ascii=False,default=str).replace(settings.OPENAI_API_KEY,'[redacted]')
+print('SAFE_RESULT='+encoded,flush=True)
+assert before==after
+assert all(x.get('contractPassed') and x['seconds']<26 for x in outputs)

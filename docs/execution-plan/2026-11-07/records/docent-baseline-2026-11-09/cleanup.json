@@ -1,0 +1,9 @@
+{
+  "scope": "Only fresh synthetic DB/container/network created in this task removed; no original/general data mounts",
+  "postgresVersion": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+  "removedContainer": "arti-docent-baseline-20261109-db",
+  "removedNetwork": "arti-docent-baseline-20261109",
+  "temporaryProviderEnvRemoved": true,
+  "rootEnvOrGeneralRuntimeChanged": false,
+  "reconstructableFixtureAndOutputsPreserved": true
+}
