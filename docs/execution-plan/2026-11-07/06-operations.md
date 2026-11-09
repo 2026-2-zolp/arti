@@ -2,7 +2,9 @@
 
 ## 현재와 권장안
 
-현재 코드에는 로컬 SQLite, data/uploads, localhost:8000, Vite 개발 프록시가 있다. 확인한 main 및 기준 SHA에는 Docker/Compose·Actions 설정이 없었다. AWS 실제 계정·리소스·예산·권한·배포는 미확인이다.
+2026-11-09 최신: 현재 개발 기준은 Django/DRF·PostgreSQL·Compose·CI다. [W12 운영 구성·예산 결정안](../../operations/W12_운영구성과예산결정안.md)에 실제 코드/모델 실측·서울 단가·A/B 후보·배포 차이·복원/종료 조건을 연결했다. W12는 결정안 준비 in_progress이며 계정/담당·상한·운영 선택/주소/종료일이 미확인이라 AC33/GOPS는 미통과다.
+
+통합본 출발 시점에는 SQLite/data/uploads·localhost 모델·Vite 프록시였고 당시 기준 SHA에는 Docker/Actions가 없었다. 아래 절차는 과업별 목표이며 지금 모두 미구현이라는 뜻이 아니다. 현재 S3는 직접 앱 미디어 저장소가 아니라 비공개 백업 후보로 먼저 검토한다.
 
 권장 출발 구성은 **React 정적파일 + API 컨테이너 / PostgreSQL 운영환경(RDS 후보) / 파일저장(S3 후보) / 필요한 로컬 모델 서비스 / GitHub Actions**다. API 실행은 EC2+Compose가 작은 후보이며, 모델은 같은 호스트에 무조건 배치하지 않는다. 프론트를 같은 웹서버로 제공할지 S3/CloudFront로 분리할지는 W12에서 선택한다. W02는 API경로/호출계약만 정한다. ECS·Kubernetes·ALB·NAT Gateway·벡터DB를 기본 필수로 추가하지 않는다.
 
@@ -46,7 +48,7 @@ RDS는 자동백업·시점복구·VPC/SSL 등을 지원하지만 설정과 실�
 
 태그·감정 분석은 관리자 작품 등록 과정에서 수행하고 검수결과를 저장할 수 있다. 관람객 추천마다 재추론할 필요는 없다. 외부LLM 호출은 API에서 직접 가능하다. FastAPI 유지 이유는 Python이라는 이름보다 로컬모델 로딩·자원·장애 경계에 있다. 단일머신이면 CPU/RAM 경쟁은 남으며 분리 자체가 추론을 빠르게 하지 않는다.
 
-현재 API timeout은 분석180초/글쓰기300초다. 외부프록시·웹서버·클라이언트·내부모델의 시간예산을 정렬한다. ALB를 채택하면 기본 idle60초 같은 제약을 확인한다. 단순히 모든 timeout을 늘리지 말고 관리자 분석을 작업ID+상태조회로 바꿀지 결정한다. [ALB 속성](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html).
+기준 Express의 분석180초/글쓰기300초와 현재 Django를 구분한다. 현재 LLM 호출25초·공유 모델 HTTP30초·브라우저 분석90초/일반35초·gunicorn90초다. 전체 관리자 분석과 대기·DB/프록시의 총 예산/클라이언트 중단 처리는 다음 기술 점검 항목이다. 외부 프록시/ALB를 채택하면 해당 제한도 확인하되 모든 timeout 연장이나 작업큐 도입을 자동 해법으로 두지 않는다. [ALB 속성](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html).
 
 health 응답200과 모델준비 완료는 다르다. cold start·다운로드실패·동시추론·모델정지 상황을 별도로 확인한다. worker 증가 시 모델 메모리 중복도 측정한다. [FastAPI 배포·메모리](https://fastapi.tiangolo.com/deployment/concepts/).
 

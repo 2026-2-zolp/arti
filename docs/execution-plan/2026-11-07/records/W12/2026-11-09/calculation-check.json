@@ -1,0 +1,122 @@
+{
+  "ok": true,
+  "negativeCases": [
+    {
+      "case": "unauthorized-deployment",
+      "rejected": true
+    },
+    {
+      "case": "unconfirmed-selection",
+      "rejected": true
+    },
+    {
+      "case": "missing-cost-exclusions",
+      "rejected": true
+    },
+    {
+      "case": "false-free-credit",
+      "rejected": true
+    },
+    {
+      "case": "undersized-rds-storage",
+      "rejected": true
+    },
+    {
+      "case": "idle-ip-unbilled",
+      "rejected": true
+    },
+    {
+      "case": "unused-reservation-rate",
+      "rejected": true
+    },
+    {
+      "case": "lightsail-ip-double-count",
+      "rejected": true
+    },
+    {
+      "case": "lightsail-stop-free",
+      "rejected": true
+    }
+  ],
+  "costs": {
+    "A": {
+      "720": {
+        "componentsUsd": {
+          "ec2": "37.44",
+          "retainedIpv4": "3.60",
+          "ebs": "3.65",
+          "s3BackupStorage": "0.13"
+        },
+        "coreSubtotalExactUsd": "44.8130000000",
+        "coreSubtotalUsd": "44.81",
+        "withOptionalHostedZoneUsd": "45.31",
+        "isTotalBillOrHardCap": false
+      },
+      "176": {
+        "componentsUsd": {
+          "ec2": "9.15",
+          "retainedIpv4": "3.60",
+          "ebs": "3.65",
+          "s3BackupStorage": "0.13"
+        },
+        "coreSubtotalExactUsd": "16.5250000000",
+        "coreSubtotalUsd": "16.53",
+        "withOptionalHostedZoneUsd": "17.03",
+        "isTotalBillOrHardCap": false
+      }
+    },
+    "B": {
+      "720": {
+        "componentsUsd": {
+          "ec2": "37.44",
+          "retainedIpv4": "3.60",
+          "ebs": "3.65",
+          "s3BackupStorage": "0.13",
+          "rdsCompute": "18.00",
+          "rdsStorage": "2.62"
+        },
+        "coreSubtotalExactUsd": "65.4330000000",
+        "coreSubtotalUsd": "65.43",
+        "withOptionalHostedZoneUsd": "65.93",
+        "isTotalBillOrHardCap": false
+      },
+      "176": {
+        "componentsUsd": {
+          "ec2": "9.15",
+          "retainedIpv4": "3.60",
+          "ebs": "3.65",
+          "s3BackupStorage": "0.13",
+          "rdsCompute": "4.40",
+          "rdsStorage": "2.62"
+        },
+        "coreSubtotalExactUsd": "23.5450000000",
+        "coreSubtotalUsd": "23.55",
+        "withOptionalHostedZoneUsd": "24.05",
+        "isTotalBillOrHardCap": false
+      }
+    },
+    "C": {
+      "720": {
+        "componentsUsd": {
+          "bundle": "24.00",
+          "s3BackupStorage": "0.13"
+        },
+        "coreSubtotalExactUsd": "24.1250000000",
+        "coreSubtotalUsd": "24.13",
+        "withOptionalHostedZoneUsd": "24.63",
+        "isTotalBillOrHardCap": false
+      },
+      "176": {
+        "componentsUsd": {
+          "bundle": "24.00",
+          "s3BackupStorage": "0.13"
+        },
+        "coreSubtotalExactUsd": "24.1250000000",
+        "coreSubtotalUsd": "24.13",
+        "withOptionalHostedZoneUsd": "24.63",
+        "isTotalBillOrHardCap": false
+      }
+    }
+  },
+  "scope": "draft arithmetic/safety checks, not AWS deployment/quote/approval"
+}

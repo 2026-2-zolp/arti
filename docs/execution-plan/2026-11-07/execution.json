@@ -101,6 +101,16 @@
     "formalGatesUnchanged": true,
     "nextWork": "W12 operating decision draft"
   },
+  "operationsPreparation": {
+    "record": "records/W12/2026-11-09/README.md",
+    "decision": "records/W12/2026-11-09/decision.json",
+    "status": "draft preparation reviewed; account/budget/selection pending",
+    "cloudResourcesCreated": false,
+    "actualAccountInspected": false,
+    "selectedPostgresDeployment": null,
+    "GOPSPromoted": false,
+    "nextWork": "W07 preparation/W05 maintenance: total analysis deadline and client abort/retry"
+  },
   "tasks": [
     {
       "id": "W01",
@@ -336,7 +346,7 @@
       ],
       "completionDependsOn": [],
       "completionGates": [],
-      "status": "planned",
+      "status": "in_progress",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC33"
