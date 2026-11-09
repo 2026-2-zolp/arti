@@ -1,0 +1,24 @@
+{
+  "sourceHead": "c8fa850deda2ea4197dc5b514f32a7bb98d88e64",
+  "sourceMode": "HEAD plus recorded working-tree hashes; committed after verification",
+  "docker": "{\"Platform\":{\"Name\":\"Docker Desktop 4.41.2 (191736)\"},\"Components\":[{\"Name\":\"Engine\",\"Version\":\"28.1.1\",\"Details\":{\"ApiVersion\":\"1.49\",\"Arch\":\"amd64\",\"BuildTime\":\"Fri Apr 18 09:52:57 2025\",\"Experimental\":\"false\",\"GitCommit\":\"01f442b\",\"GoVersion\":\"go1.23.8\",\"KernelVersion\":\"5.15.167.4-microsoft-standard-WSL2\",\"MinAPIVersion\":\"1.24\",\"Os\":\"linux\"}},{\"Name\":\"containerd\",\"Version\":\"1.7.27\",\"Details\":{\"GitCommit\":\"05044ec0a9a75232cad458027ca83437aae3f4da\"}},{\"Name\":\"runc\",\"Version\":\"1.2.5\",\"Details\":{\"GitCommit\":\"v1.2.5-0-g59923ef\"}},{\"Name\":\"docker-init\",\"Version\":\"0.19.0\",\"Details\":{\"GitCommit\":\"de40ad0\"}}],\"Version\":\"28.1.1\",\"ApiVersion\":\"1.49\",\"MinAPIVersion\":\"1.24\",\"GitCommit\":\"01f442b\",\"GoVersion\":\"go1.23.8\",\"Os\":\"linux\",\"Arch\":\"amd64\",\"KernelVersion\":\"5.15.167.4-microsoft-standard-WSL2\",\"BuildTime\":\"2025-04-18T09:52:57.000000000+00:00\"}",
+  "host": "{\"memory\":16512995328,\"cpus\":8,\"arch\":\"x86_64\",\"cgroup\":\"1\"}",
+  "images": {
+    "arti-capacity-api:local": "sha256:f7b0558270e73dd3b061f69675628c40e0313f2bdb5b673e853ef537fbd0df08",
+    "arti-capacity-web:local": "sha256:b0697a378ff6062de4dbf29024066664944415499bdf9c42f0d410efd93a2e2e",
+    "postgres:17-alpine": "sha256:3540c0362c809df084ffac0ae69fe794515f9de92692f02178bcdce0ef0302ac"
+  },
+  "sourceSha256": {
+    "compose.capacity.yaml": "4d30f9f9762d9bbde38357de89127b51e949edec779ececd368ac467a46c9dde",
+    "frontend/Dockerfile.static": "f0d417c8976e5903c8470e2775fac0a59e276bc60abf38628cf2925ff747ea1c",
+    "frontend/nginx.static.conf": "2f48d406cb93cbca6bb7fbed12806e962ffc7f2ba2fc0a8f1197bf24d94dff9c",
+    "backend-django/arti/budget.py": "0573ba6293f9290763a6a237d435724ddd726807a8807030696c100f907bd777",
+    "backend-django/arti/editing.py": "564b75e188ced97be366fdb92e461ceba87e07e7344af2f65f923523cd148746",
+    "backend-django/arti/llm.py": "80c15d09c6025c244c12db9a3f736584b04c4e30ef4c9bc788c00892da32b4c3",
+    "backend-django/arti/model_service.py": "93d3cb37bf970a8c12ad975330ffbbe32beb8a6148e3c7c73074ce24c695e31d",
+    "backend-django/arti/providers.py": "6e9c0f3471c83fb2db61c6f61cb6d608d880cc45613776f04819ee34c705bb4d",
+    "backend-django/arti/tests/test_budget.py": "be0cf015137e304a6ddcb7a24187c8574cab7977992d3317b624195b2e953314",
+    "scripts/capacity_probe.py": "9a2d8f02ab519f5c22f1c763ae6dfe2845590487ddf455f4bbd66b282ecc31aa",
+    "scripts/request_budget_probe.py": "78c66e61c0cd628b82d1c83074fc1c3042e0ac2b52730295706eca603cce9ba9"
+  }
+}

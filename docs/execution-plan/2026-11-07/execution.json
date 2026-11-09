@@ -1595,11 +1595,12 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "실모델 기동·동시성·재시작·시간/RSS 제한 실측",
-        "remaining": "대표 반복 표본·지연 목표와 배포환경 검증. 현재 수치를 p95/SLA로 사용 금지",
+        "implemented": "실모델 시간/RSS 경계 및 모델 제외 1/2GiB 웹·PG 혼합/지속 부하·실제 HTTP 분석 중 조회 검증",
+        "remaining": "대표 실모델·실제 AWS CPU credit/WAN/대형 이미지·장시간 반복 품질/지연 인수는 남음",
         "nextWork": "W07 → W08",
         "evidencePaths": [
-          "records/W07-preparation/model-operations-2026-11-09/README.md"
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
         ]
       }
     },
@@ -1828,11 +1829,12 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "CLIP/mDeBERTa 준비/메모리/단일 프로세스 운용 실측",
-        "remaining": "모델 위치·외부 용량·유영국 정식 품질 평가",
+        "implemented": "CLIP/mDeBERTa 실제 프로세스 RSS 확인, 모델 제외 1GB 최소 시험 후보/2GB 운영 여유 권장 측정",
+        "remaining": "실제 호스트 선택·외부/사전 분석 결과 전달/검수·클라우드 자원/백업 여유 검증·유영국 정식 품질 평가",
         "nextWork": "W12 → W07/W08",
         "evidencePaths": [
-          "records/W07-preparation/model-operations-2026-11-09/README.md"
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
         ]
       }
     },
@@ -1862,12 +1864,13 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "모델 HTTP30초·timeout 저장 보호, legacy 장기 timeout과 분리",
-        "remaining": "관리자 전체 요청/프록시/배포 제한의 총 지연 검증",
+        "implemented": "공유60초·남은 호출 timeout·저장 전 만료 확인, Nginx/Gunicorn 전체60.133초504/무저장·중단 후409 검증",
+        "remaining": "DNS/지속 소량 전송·DB 잠금·동시 AI worker 큐 대기와 실제 TLS/배포 시간 예산은 미검증",
         "nextWork": "W07 → W08",
         "evidencePaths": [
           "records/W07-preparation/model-operations-2026-11-09/README.md",
-          "records/W02/decisions.md"
+          "records/W02/decisions.md",
+          "records/W12/capacity-2026-11-09/README.md"
         ]
       }
     },
@@ -1995,12 +1998,13 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "로컬 DB/모델 readiness·실패 복구·합성 백업복원 확인",
-        "remaining": "배포 접근제한·비용/관측·복원 시험",
+        "implemented": "실제 DB/모델 readiness·중단/정합 복원 경계와 1/2GiB 로컬 용량·정적 HTTP 프록시 준비 검증",
+        "remaining": "실제 계정/권한·TLS·클라우드 백업/복원·관측·전체 비용/종료 결정",
         "nextWork": "W12 → W08",
         "evidencePaths": [
           "records/W07-preparation/model-operations-2026-11-09/README.md",
-          "records/backup-restore/2026-11-09/README.md"
+          "records/backup-restore/2026-11-09/README.md",
+          "records/W12/capacity-2026-11-09/README.md"
         ]
       }
     },

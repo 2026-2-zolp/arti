@@ -15,7 +15,7 @@ def generate(kind, snapshot, **context):
             raise cache['error']
         if 'result' not in cache:
             try:
-                cache['result'] = analyze(snapshot)
+                cache['result'] = analyze(snapshot, deadline=context.get('deadline'))
             except ContractError as exc:
                 cache['error'] = exc
                 raise

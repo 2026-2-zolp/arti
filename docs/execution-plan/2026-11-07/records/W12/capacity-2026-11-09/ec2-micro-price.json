@@ -1,0 +1,24 @@
+{
+  "url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/ap-northeast-2/index.csv",
+  "checked": "2026-11-09",
+  "metadata": [
+    "\"FormatVersion\",\"v1.0\"",
+    "\"Disclaimer\",\"This pricing list is for informational purposes only. All prices are subject to the additional terms included in the pricing pages on http://aws.amazon.com. All Free Tier prices are also subject to the terms included at https://aws.amazon.com/free/\"",
+    "\"Publication Date\",\"2026-11-07T00:28:52Z\"",
+    "\"Version\",\"20261107002852\"",
+    "\"OfferCode\",\"AmazonEC2\""
+  ],
+  "selected": {
+    "SKU": "NYVHMS44MY8N2F3M",
+    "RateCode": "NYVHMS44MY8N2F3M.JRTCKXETXF.6YS6EN2CT7",
+    "PricePerUnit": "0.0130000000",
+    "Unit": "Hrs",
+    "EffectiveDate": "2026-11-01",
+    "PriceDescription": "$0.013 per On Demand Linux t3.micro Instance Hour",
+    "Instance Type": "t3.micro",
+    "Operating System": "Linux",
+    "Tenancy": "Shared",
+    "CapacityStatus": "Used",
+    "Pre Installed S/W": "NA"
+  }
+}

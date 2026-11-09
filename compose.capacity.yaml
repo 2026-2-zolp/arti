@@ -1,0 +1,56 @@
+# 합성 자료만 쓰는 로컬 용량 검증용입니다. 일반 arti-dev와 볼륨을 공유하지 않습니다.
+services:
+  db:
+    image: postgres:17-alpine
+    mem_limit: ${CAP_DB_MB}m
+    memswap_limit: ${CAP_DB_MB}m
+    cpus: 0.5
+    command: [postgres, -c, shared_buffers=32MB, -c, work_mem=2MB, -c, max_connections=30, -c, jit=off]
+    environment:
+      POSTGRES_DB: arti
+      POSTGRES_USER: arti
+      POSTGRES_PASSWORD: capacity-synthetic-only
+    volumes: [capacity_db:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U arti]
+      interval: 2s
+      retries: 30
+  api:
+    image: arti-capacity-api:local
+    build: ./backend-django
+    mem_limit: ${CAP_API_MB}m
+    memswap_limit: ${CAP_API_MB}m
+    cpus: 1.4
+    environment:
+      ARTI_ENV: test
+      ALLOW_TEST_FIXTURES: 'true'
+      DJANGO_DEBUG: 'false'
+      DJANGO_SECRET_KEY: capacity-synthetic-only-secret-20261109
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      PGHOST: db
+      PGDATABASE: arti
+      PGUSER: arti
+      PGPASSWORD: capacity-synthetic-only
+      MEDIA_ROOT: /app/media
+      ARTI_LLM_PROVIDER: ${CAP_LLM_PROVIDER:-disabled}
+      OPENAI_API_KEY: ${CAP_LLM_KEY:-}
+      OPENAI_MODEL: synthetic-capacity-model
+      OPENAI_BASE_URL: http://127.0.0.1:18091/v1
+      ARTI_MODEL_SERVICE_URL: ${CAP_MODEL_URL:-}
+    volumes: [capacity_media:/app/media]
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    image: arti-capacity-web:local
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.static
+    mem_limit: 64m
+    memswap_limit: 64m
+    cpus: 0.1
+    ports: ['127.0.0.1:${CAP_PORT}:80']
+    depends_on: [api]
+volumes:
+  capacity_db:
+  capacity_media:

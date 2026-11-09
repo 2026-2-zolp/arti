@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from urllib.request import Request, HTTPRedirectHandler, build_opener
 from django.conf import settings
 from .http import ContractError
+from .budget import remaining
 
 TIMEOUT_SECONDS = 25
 MAX_RESPONSE_BYTES = 256 * 1024
@@ -84,8 +85,9 @@ def generate_text(kind, snapshot, **context):
             raise ContractError(400, 'VALIDATION_ERROR', 'AI에 전달할 작품 자료가 너무 길어요.')
         request = Request(base + '/chat/completions', data=encoded,
                           headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'}, method='POST')
-        with build_opener(NoRedirect()).open(request, timeout=TIMEOUT_SECONDS) as response:
+        with build_opener(NoRedirect()).open(request, timeout=remaining(context.get('deadline'), TIMEOUT_SECONDS)) as response:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
+        remaining(context.get('deadline'), TIMEOUT_SECONDS)
         if len(raw) > MAX_RESPONSE_BYTES:
             failed()
         result = json.loads(raw)

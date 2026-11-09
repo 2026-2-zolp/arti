@@ -13,7 +13,7 @@
   "gates": 10,
   "criteria": 33,
   "issues": 37,
-  "localLinks": 81,
+  "localLinks": 83,
   "protectedFilesPreserved": 38,
   "errors": [],
   "scope": "Plan integrity only; no actual service/model/cloud acceptance"

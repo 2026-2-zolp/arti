@@ -17,6 +17,7 @@ from .serializers import artwork_dto, exhibition_dto
 from .views import with_etag
 from . import providers
 from .docent import AIThrottle
+from . import budget
 
 FIELDS = {'title':'title', 'artist':'artist', 'year':'year', 'exhibitionId':'exhibition_id', 'roomId':'room_id',
           'palette':'palette', 'imageUrl':'image_url', 'showImage':'show_image', 'tags':'tags', 'description':'description',
@@ -234,6 +235,7 @@ def analyze(request,artwork_id):
     regenerate=request.data.get('regenerateFields',[])
     if not isinstance(regenerate,list) or any(f not in STATES for f in regenerate):fail()
     if w.review_status!='approved' or not w.description.strip():fail('승인된 원문을 먼저 준비해 주세요.')
+    deadline=budget.monotonic()+budget.ANALYSIS_SECONDS
     results={};updates={};model_cache={};retry_waits=[]
     with analysis_slot():
         for kind,field in STATES.items():
@@ -241,13 +243,18 @@ def analyze(request,artwork_id):
                 results[kind]={'ok':True,'source':'kept','made':False};continue
             try:
                 context = {'analysis_cache': model_cache} if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL else {}
+                budget.remaining(deadline, budget.ANALYSIS_SECONDS)
+                context['deadline']=deadline
                 value=providers.generate(kind,artwork_dto(w,True),**context)
+                budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 providers.validate(kind,value)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}
             except ContractError as e:
                 results[kind]={'ok':False,'error':str(e.detail),'code':e.contract_code,'made':False}
                 if getattr(e,'wait',None) is not None:retry_waits.append(e.wait)
+    # 전체 예산이 소진되면 앞서 받은 부분 결과도 저장하지 않습니다.
+    budget.remaining(deadline, budget.ANALYSIS_SECONDS)
     if not updates:
         if any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
@@ -258,6 +265,7 @@ def analyze(request,artwork_id):
         return Response({'artwork':artwork_dto(w,True),**results})
     with transaction.atomic():
         current=get_locked(Artwork,w.id);version(current,w.version);old=before(current)
+        budget.remaining(deadline, budget.ANALYSIS_SECONDS)
         for kind,value in updates.items():
             if not isinstance(value,dict):raise ContractError(502,'PROVIDER_ERROR','분석 결과 형식을 확인할 수 없어요.',retryable=True)
             if kind=='summary':current.summary=value.get('summary','');current.summary_keywords=value.get('keywords',[])

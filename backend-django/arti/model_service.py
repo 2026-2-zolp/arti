@@ -12,6 +12,7 @@ from django.conf import settings
 from .constants import TAGS, EMOTIONS
 from .http import ContractError
 from .llm import NoRedirect
+from .budget import remaining
 
 TIMEOUT_SECONDS = 30
 MAX_IMAGE = 10 * 1024 * 1024
@@ -22,7 +23,7 @@ def failure(status=502, code='PROVIDER_ERROR'):
     raise ContractError(status, code, '분석 서비스 응답을 확인해 주세요.', retryable=True)
 
 
-def analyze(snapshot):
+def analyze(snapshot, *, deadline=None):
     base = settings.ARTI_MODEL_SERVICE_URL.rstrip('/')
     try:
         url = urlsplit(base)
@@ -51,8 +52,9 @@ def analyze(snapshot):
         failure(503, 'AI_UNAVAILABLE')
     request = Request(base + '/analyze', data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
     try:
-        with build_opener(NoRedirect()).open(request, timeout=TIMEOUT_SECONDS) as response:
+        with build_opener(NoRedirect()).open(request, timeout=remaining(deadline, TIMEOUT_SECONDS)) as response:
             raw = response.read(MAX_RESPONSE + 1)
+        remaining(deadline, TIMEOUT_SECONDS)
         if len(raw) > MAX_RESPONSE:
             failure()
         value = json.loads(raw)
