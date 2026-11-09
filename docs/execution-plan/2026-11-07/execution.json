@@ -1,4 +1,13 @@
 {
+  "consultationReplanning": {
+    "record": "13-consultation-replan.md",
+    "executionOverlay": "records/replanning-2026-11-09/plan.json",
+    "sourceRecord": "records/replanning-2026-11-09/sources.json",
+    "asOf": "2026-11-09",
+    "status": "plan prepared; implementation/human/cloud gates unchanged",
+    "priority": "progress report and core completeness, dialogue signal adaptation, optional expansion conditional",
+    "latestPushCI": "success at 89cdc6b; PR acceptance pending"
+  },
   "version": "2.1",
   "asOf": "2026-11-09",
   "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
