@@ -151,7 +151,7 @@
       "required": true,
       "status": "in_progress",
       "progress": "R04-S:54 images/four modes/3456 conditions;contrast table21 candidates/18 pairs and model-blind review pack prepared. No final selection or independent accuracy acceptance",
-      "progressEvidence": ["records/W07-preparation/survey-comparison-2026-11-10/README.md", "records/W07-preparation/survey-comparison-2026-11-10/validation.json", "../../review/taste-survey-2026-11-10/validation.json", "records/taste-tie-contract-2026-11-11/validation.json"],
+      "progressEvidence": ["records/W07-preparation/survey-comparison-2026-11-10/README.md", "records/W07-preparation/survey-comparison-2026-11-10/validation.json", "../../review/taste-survey-2026-11-10/validation.json", "records/taste-tie-contract-2026-11-11/validation.json", "records/taste-tie-implementation-plan-2026-11-11/validation.json"],
       "acceptance": "고정8태그·원시 점수/동률·3/5/7점·없는 태그 안내. 미검수 승인 우회 금지; 정확도는 독립 라벨 후"
     },
     {
@@ -357,8 +357,8 @@
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "R04 tie contract and static frontend ZIP intake prepared;next review bounded implementation/test plan;human pilot/intake parallel,no product application or final selection",
-    "R04 proposed order:trusted score evidence -> v2 resolve/snapshot/write-CAS -> preview-first UI and ZIP hunk selection -> isolated API/PG/browser regressions;implementation needs separate authorization",
+    "R04 four-phase implementation/file/rollback/test plan prepared;product not started;next TP1a only after separate authorization;human review parallel,no final selection",
+    "TP1 nullable evidence/atomic storage -> TP2 snapshot/CAS/retry/history proof -> TP3 preview-first UI and optional team hunk merge -> TP4 isolated verification;26 future cases not run,ordinary DB stays unchanged",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]

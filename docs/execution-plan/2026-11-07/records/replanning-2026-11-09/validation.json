@@ -9,8 +9,8 @@
   "scope": "Plan readiness only, no implementation or product/human/cloud gate promotion",
   "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
   "next": [
-    "R04 tie contract and static frontend ZIP intake prepared;next review bounded implementation/test plan;human pilot/intake parallel,no product application or final selection",
-    "R04 proposed order:trusted score evidence -> v2 resolve/snapshot/write-CAS -> preview-first UI and ZIP hunk selection -> isolated API/PG/browser regressions;implementation needs separate authorization",
+    "R04 four-phase implementation/file/rollback/test plan prepared;product not started;next TP1a only after separate authorization;human review parallel,no final selection",
+    "TP1 nullable evidence/atomic storage -> TP2 snapshot/CAS/retry/history proof -> TP3 preview-first UI and optional team hunk merge -> TP4 isolated verification;26 future cases not run,ordinary DB stays unchanged",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]
