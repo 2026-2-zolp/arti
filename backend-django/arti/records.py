@@ -75,11 +75,17 @@ def canonical(data, account=None):
     return value,[{k:artwork_dto(by_id[i])[k] for k in ['id','title','artist','year','tags','analysis']} for i in ids]
 
 
+def longest_viewed(payload):
+    """체류 시간이 같으면 관람 순서를 사용해 JSON 키 순서에 영향받지 않습니다."""
+    dwell = payload['dwell']
+    return max(payload['viewedArtworkIds'], key=lambda artwork_id: dwell.get(artwork_id, -1), default=None)
+
+
 def dto(v):
     p={k: value for k, value in v.canonical_payload.items() if k != 'tasteEvidenceReceiptHash'}
     return {**p,'id':v.id,'userId':v.user_id,'persisted':True,'artworkSnapshots':v.artwork_snapshots,
             'interpretation':v.interpretation,'emotionProfile':v.emotion_profile,
-            'longestViewedArtworkId':max(p['dwell'],key=p['dwell'].get) if p['dwell'] else next(iter(p['viewedArtworkIds']),None),
+            'longestViewedArtworkId':longest_viewed(p),
             'keywords':[LABELS[t] for t in p['tastes'][:4]]}
 
 
@@ -91,7 +97,7 @@ def save_visit(request):
         public_payload = {k: value for k, value in payload.items() if k != 'tasteEvidenceReceiptHash'}
         return Response({**public_payload,'id':payload['visitId'],'userId':None,'persisted':False,'artworkSnapshots':snapshots,
                          'interpretation':None,'emotionProfile':None,'keywords':[LABELS[t] for t in payload['tastes'][:4]],
-                         'longestViewedArtworkId':max(payload['dwell'],key=payload['dwell'].get) if payload['dwell'] else None})
+                         'longestViewedArtworkId':longest_viewed(payload) if payload['dwell'] else None})
     visit_id = uuid_value(request.data.get('visitId'), visit=True)
     with taste_transaction():
         actor = locked_actor(request)

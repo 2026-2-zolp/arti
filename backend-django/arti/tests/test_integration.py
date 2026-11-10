@@ -117,6 +117,20 @@ class IntegrationTests(Helpers,TestCase):
         record=self.a.get('/api/visits/'+pk).json();self.assertEqual(record['artworkSnapshots'][0]['title'],'검증용 작품 01')
         self.assertEqual(self.a.post('/api/visits',p,format='json').status_code,200)
 
+    def test_equal_dwell_preserves_receipt_across_postgres_round_trip(self):
+        payload = self.payload()
+        payload['viewedArtworkIds'] = ['fixture-art02', 'fixture-art01']
+        payload['dwell'] = {'fixture-art02': 5, 'fixture-art01': 5}
+        created = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(created.status_code, 201, created.content)
+        self.assertEqual(created.json()['longestViewedArtworkId'], 'fixture-art02')
+        replayed = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(replayed.status_code, 200, replayed.content)
+        self.assertEqual(replayed.json(), created.json())
+        read = self.a.get('/api/visits/' + created.json()['id'])
+        self.assertEqual(read.status_code, 200, read.content)
+        self.assertEqual(read.json(), created.json())
+
     def test_visit_scope_validation(self):
         for changes in [{'visitId':'bad'},{'dwell':{'fixture-art01':-1}},{'reactionReasons':{'foreign':'x'}},{'viewedArtworkIds':['fixture-private']},{'tasteProfile':[]}]:
             self.assertEqual(self.a.post('/api/visits',{**self.payload(),**changes},format='json').status_code,400,changes)

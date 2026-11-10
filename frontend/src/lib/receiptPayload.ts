@@ -7,7 +7,10 @@ export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition):
   const dwell = Object.fromEntries(Object.entries(s.dwell).filter(([id]) => s.viewed.includes(id)));
   const reactions = Object.fromEntries(Object.entries(s.reactions).filter(([id]) => s.viewed.includes(id)));
   const reasons = Object.fromEntries(Object.entries(s.reactionReasons).filter(([id]) => s.viewed.includes(id) && reactions[id]));
-  const longest = Object.entries(dwell).sort((a, b) => b[1] - a[1])[0]?.[0] ?? s.viewed[0] ?? null;
+  let longest: string | null = null;
+  for (const id of s.viewed) {
+    if (longest === null || (dwell[id] ?? -1) > (dwell[longest] ?? -1)) longest = id;
+  }
 
   // 취향 키워드: 선택한 취향 + 👍 누른 작품의 특성
   const liked = Object.entries(s.reactions)

@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "baselineCommit": "9234371",
+  "durations": {
+    "30m": {
+      "count": 3,
+      "v1ExactResponseMatch": true,
+      "v1ResponseSha256": "1a5c19bcb70badd5719195b47d643f1320f5d647c7a47eb9a6fd873321643233",
+      "v2ActualApiResponseSha256": "1a5c19bcb70badd5719195b47d643f1320f5d647c7a47eb9a6fd873321643233",
+      "v1ArtworkIds": [
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art02"
+      ],
+      "v2ArtworkIds": [
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art02"
+      ]
+    },
+    "60m": {
+      "count": 5,
+      "v1ExactResponseMatch": true,
+      "v1ResponseSha256": "d56af129c42867d83e1679778227d28f0b98eef87542e34f5a53ba31973663cc",
+      "v2ActualApiResponseSha256": "d56af129c42867d83e1679778227d28f0b98eef87542e34f5a53ba31973663cc",
+      "v1ArtworkIds": [
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art02",
+        "fixture-art08",
+        "fixture-art10"
+      ],
+      "v2ArtworkIds": [
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art02",
+        "fixture-art08",
+        "fixture-art10"
+      ]
+    },
+    "relaxed": {
+      "count": 7,
+      "v1ExactResponseMatch": true,
+      "v1ResponseSha256": "45c3128e050074923d91d95b3e4079d43e9f8426b043eac49c49c2de7a416c0d",
+      "v2ActualApiResponseSha256": "45c3128e050074923d91d95b3e4079d43e9f8426b043eac49c49c2de7a416c0d",
+      "v1ArtworkIds": [
+        "fixture-art03",
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art08",
+        "fixture-art10"
+      ],
+      "v2ArtworkIds": [
+        "fixture-art03",
+        "fixture-art06",
+        "fixture-art04",
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art08",
+        "fixture-art10"
+      ]
+    }
+  },
+  "sameFrequencyWeights": {
+    "light": 0.5,
+    "warm": 0.5
+  },
+  "v2ServerTagOrder": [
+    "warm",
+    "light"
+  ],
+  "v2GroupRules": [
+    "ai_secondary"
+  ],
+  "scoreEvidence": "Five fixtures use identical image bytes and replay the single verified inference from the private sample.",
+  "exhibitionScope": "fixture-ex01"
+}

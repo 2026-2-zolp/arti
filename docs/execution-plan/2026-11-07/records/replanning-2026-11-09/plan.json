@@ -150,7 +150,7 @@
       "owner": "준억 실행·광권 해석·독립 평가자",
       "required": true,
       "status": "in_progress",
-      "progress": "TP1 and TP2 passed isolated server tests. TP3 preview, confirmation, save recovery and receipt replay passed frontend and synthetic browser checks. TP4 integration is pending.",
+      "progress": "TP1 through TP4 passed technical checks, including the real Django/PostgreSQL browser journey, offline cached CLIP provenance and disable/recovery. Independent artwork and tag review remains pending.",
       "progressEvidence": [
         "records/W07-preparation/survey-comparison-2026-11-10/README.md",
         "records/W07-preparation/survey-comparison-2026-11-10/validation.json",
@@ -160,7 +160,8 @@
         "records/taste-tie-implementation-results-2026-11-11/TP1a/validation.json",
         "records/taste-tie-implementation-results-2026-11-11/TP1b/validation.json",
         "records/taste-tie-implementation-results-2026-11-11/TP2/validation.json",
-        "records/taste-tie-implementation-results-2026-11-11/TP3/validation.json"
+        "records/taste-tie-implementation-results-2026-11-11/TP3/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP4/validation.json"
       ],
       "acceptance": "고정8태그·원시 점수/동률·3/5/7점·없는 태그 안내. 미검수 승인 우회 금지; 정확도는 독립 라벨 후"
     },
@@ -367,8 +368,8 @@
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "R04 next TP4 isolated PostgreSQL and browser journey, cached model provenance, and disable/recovery checks.",
-    "TP3 passed 33 frontend tests and synthetic Chrome checks. Optional team styling intake requires the latest integrated source.",
+    "R04 next independent artwork and tag review, then intake decision on the approved works and their permitted use.",
+    "TP4 technical checks cover the isolated browser journey, cached model provenance and disable/recovery. Optional team styling intake requires the latest integrated source.",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]
