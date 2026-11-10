@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-10",
+  "sourceHead": "d2d454c",
+  "scope": "Exploratory private comparison; no final selection, deployment, human approval or accuracy claim",
+  "selectionFinal": false,
+  "publicActivation": false,
+  "images": 54,
+  "inferenceReuse": {
+    "initial": 49,
+    "additional": 5,
+    "modelWeightsUnchanged": true,
+    "repeatTagMaxDelta": 0
+  },
+  "checks": {
+    "finiteTagEmotionOutputs": true,
+    "productionCalibrationAndEmotionCombination": true,
+    "uniqueImageHashes": true,
+    "surveyRecommendationDisjoint": true,
+    "preferenceScenarios": 384,
+    "recommendationConditions": 3456,
+    "sourceParityControls": 864,
+    "parityFields": [
+      "artwork IDs",
+      "rounded scores",
+      "sorted matchedTags"
+    ],
+    "replayAggregateIdentical": true,
+    "scriptUnitTestsPassed": 33,
+    "newUnitTests": 6
+  },
+  "testEnvironment": "Windows default temporary folder failed permission checks in existing tests; rerun with workspace TEMP/TMP/TMPDIR passed all33",
+  "ordinaryDevelopment": {
+    "stateUnchanged": true,
+    "after": {
+      "databaseSha256": "a97cb09ced46464673b2cb9c3c2126418ebee4540d8fa4fbc6d72377c2dc66a2",
+      "counts": {
+        "Exhibition": 2,
+        "Artwork": 25,
+        "Account": 0,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0,
+        "SurveyPool": 1,
+        "SurveyEntry": 10
+      },
+      "mediaSha256": "d979bc931979b174828a5b5c18f7561bcd61b604c81ccf7e9f57ca6857f5b245",
+      "activeSurveys": 0
+    }
+  },
+  "productChanges": false,
+  "gptCalls": 0,
+  "modelThresholdChanges": false,
+  "review": {
+    "kind": "single-author role-based self review, not independent human review",
+    "technical": "replay/parity/calibration and read-only cursor guard pass",
+    "visitor": "pair common-feature bias and unfamiliar subjects documented; user benefit unproven",
+    "dataOperations": "source gaps separated, inactive draft and DB/media unchanged",
+    "teamProfessorExternalEvaluator": "exploration separated from accuracy/approval; Yoo16 retained, comparison excludes one self-match"
+  },
+  "next": [
+    "contrast rubric and blind review pack",
+    "tie-only policy contract with missing/equal/version cases; no adoption yet"
+  ],
+  "sourceSha256": {
+    "scripts/survey_candidate_compare.py": "9163e3e2f6625ca2e52a97003e5fb7d50b74749a74aea5bcb2d581f568f072bf",
+    "scripts/tests/test_survey_candidate_compare.py": "6b3c14421edd390cbf2f6d2e30a423a8d8dc60efd3e6350ca18503380f8c894e"
+  },
+  "planChecks": {
+    "planIntegrity": true,
+    "guardrailCases": 32,
+    "replanningStatesPreserved": true,
+    "W02Contracts": true,
+    "gitMaterials125Assets": true,
+    "protectedArchiveFiles": 38
+  }
+}

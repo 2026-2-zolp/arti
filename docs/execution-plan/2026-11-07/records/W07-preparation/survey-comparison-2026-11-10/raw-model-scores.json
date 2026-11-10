@@ -1,0 +1,2841 @@
+{
+  "loadSeconds": 22.347499899973627,
+  "items": {
+    "survey-candidate-cap-03": {
+      "imageSha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c",
+      "inputSize": [
+        500,
+        370
+      ],
+      "tagsRaw": {
+        "landscape": 0.984,
+        "people": 0.011,
+        "abstract": 0.011,
+        "light": 0.797,
+        "vivid": 0.011,
+        "cool": 0.108,
+        "warm": 0.892,
+        "soft": 0.091
+      },
+      "tags": {
+        "landscape": 0.984,
+        "people": 0.011,
+        "abstract": 0.011,
+        "light": 0.419,
+        "vivid": 0.006,
+        "cool": 0.108,
+        "warm": 0.496,
+        "soft": 0.091
+      },
+      "emotions": {
+        "calm": 0.373,
+        "joy": 0.366,
+        "sadness": 0.512,
+        "tension": 0.25,
+        "awe": 0.584,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.449,
+        "joy": 0.272,
+        "sadness": 0.191,
+        "tension": 0.018,
+        "awe": 0.296,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.396,
+        "sadness": 1.0,
+        "tension": 0.664,
+        "awe": 0.954,
+        "nostalgia": 0.476
+      },
+      "seconds": 5.8225332999718376
+    },
+    "survey-candidate-cap-06": {
+      "imageSha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7",
+      "inputSize": [
+        329,
+        371
+      ],
+      "tagsRaw": {
+        "landscape": 0.0,
+        "people": 0.957,
+        "abstract": 0.01,
+        "light": 0.805,
+        "vivid": 0.058,
+        "cool": 0.556,
+        "warm": 0.444,
+        "soft": 0.024
+      },
+      "tags": {
+        "landscape": 0.0,
+        "people": 0.957,
+        "abstract": 0.01,
+        "light": 0.424,
+        "vivid": 0.032,
+        "cool": 0.556,
+        "warm": 0.247,
+        "soft": 0.024
+      },
+      "emotions": {
+        "calm": 0.206,
+        "joy": 1.0,
+        "sadness": 0.629,
+        "tension": 0.359,
+        "awe": 0.488,
+        "nostalgia": 0.831
+      },
+      "imageEmotions": {
+        "calm": 0.262,
+        "joy": 1.0,
+        "sadness": 0.473,
+        "tension": 0.101,
+        "awe": 0.088,
+        "nostalgia": 0.757
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.51,
+        "sadness": 0.614,
+        "tension": 0.666,
+        "awe": 1.0,
+        "nostalgia": 0.562
+      },
+      "seconds": 2.9604783999966457
+    },
+    "survey-candidate-cap-12": {
+      "imageSha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90",
+      "inputSize": [
+        447,
+        447
+      ],
+      "tagsRaw": {
+        "landscape": 0.15,
+        "people": 0.058,
+        "abstract": 0.998,
+        "light": 0.11,
+        "vivid": 0.79,
+        "cool": 0.015,
+        "warm": 0.985,
+        "soft": 0.024
+      },
+      "tags": {
+        "landscape": 0.15,
+        "people": 0.058,
+        "abstract": 0.998,
+        "light": 0.058,
+        "vivid": 0.439,
+        "cool": 0.015,
+        "warm": 0.925,
+        "soft": 0.024
+      },
+      "emotions": {
+        "calm": 0.15,
+        "joy": 0.771,
+        "sadness": 0.395,
+        "tension": 0.504,
+        "awe": 1.0,
+        "nostalgia": 0.589
+      },
+      "imageEmotions": {
+        "calm": 0.184,
+        "joy": 0.584,
+        "sadness": 0.151,
+        "tension": 0.261,
+        "awe": 1.0,
+        "nostalgia": 0.335
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.935,
+        "sadness": 0.859,
+        "tension": 0.923,
+        "awe": 0.591,
+        "nostalgia": 1.0
+      },
+      "seconds": 2.865319599979557
+    },
+    "survey-candidate-cap-38": {
+      "imageSha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01",
+      "inputSize": [
+        182,
+        277
+      ],
+      "tagsRaw": {
+        "landscape": 0.005,
+        "people": 0.942,
+        "abstract": 0.026,
+        "light": 0.536,
+        "vivid": 0.491,
+        "cool": 0.813,
+        "warm": 0.187,
+        "soft": 0.209
+      },
+      "tags": {
+        "landscape": 0.005,
+        "people": 0.942,
+        "abstract": 0.026,
+        "light": 0.282,
+        "vivid": 0.273,
+        "cool": 0.813,
+        "warm": 0.104,
+        "soft": 0.209
+      },
+      "emotions": {
+        "calm": 0.157,
+        "joy": 0.142,
+        "sadness": 0.434,
+        "tension": 0.411,
+        "awe": 0.16,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.127,
+        "joy": 0.181,
+        "sadness": 0.319,
+        "tension": 0.049,
+        "awe": 0.092,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.156,
+        "joy": 0.0,
+        "sadness": 0.494,
+        "tension": 1.0,
+        "awe": 0.237,
+        "nostalgia": 0.585
+      },
+      "seconds": 2.9187762000365183
+    },
+    "yyk-demo-004": {
+      "imageSha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "inputSize": [
+        472,
+        475
+      ],
+      "tagsRaw": {
+        "landscape": 0.254,
+        "people": 0.181,
+        "abstract": 0.989,
+        "light": 0.167,
+        "vivid": 0.923,
+        "cool": 0.218,
+        "warm": 0.782,
+        "soft": 0.003
+      },
+      "tags": {
+        "landscape": 0.254,
+        "people": 0.181,
+        "abstract": 0.989,
+        "light": 0.088,
+        "vivid": 0.615,
+        "cool": 0.218,
+        "warm": 0.434,
+        "soft": 0.003
+      },
+      "emotions": {
+        "calm": 0.271,
+        "joy": 1.0,
+        "sadness": 0.423,
+        "tension": 0.378,
+        "awe": 0.374,
+        "nostalgia": 0.506
+      },
+      "imageEmotions": {
+        "calm": 0.345,
+        "joy": 1.0,
+        "sadness": 0.145,
+        "tension": 0.167,
+        "awe": 0.316,
+        "nostalgia": 0.282
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.693,
+        "sadness": 1.0,
+        "tension": 0.797,
+        "awe": 0.407,
+        "nostalgia": 0.919
+      },
+      "seconds": 2.7426362999831326
+    },
+    "survey-candidate-cap-36": {
+      "imageSha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b",
+      "inputSize": [
+        498,
+        614
+      ],
+      "tagsRaw": {
+        "landscape": 0.653,
+        "people": 0.834,
+        "abstract": 0.003,
+        "light": 0.99,
+        "vivid": 0.576,
+        "cool": 0.857,
+        "warm": 0.143,
+        "soft": 0.742
+      },
+      "tags": {
+        "landscape": 0.653,
+        "people": 0.834,
+        "abstract": 0.003,
+        "light": 0.9,
+        "vivid": 0.32,
+        "cool": 0.857,
+        "warm": 0.079,
+        "soft": 0.742
+      },
+      "emotions": {
+        "calm": 0.246,
+        "joy": 0.745,
+        "sadness": 0.129,
+        "tension": 0.327,
+        "awe": 0.617,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.351,
+        "joy": 0.934,
+        "sadness": 0.152,
+        "tension": 0.01,
+        "awe": 0.18,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.187,
+        "sadness": 0.046,
+        "tension": 0.653,
+        "awe": 1.0,
+        "nostalgia": 0.612
+      },
+      "seconds": 3.119621600024402
+    },
+    "survey-candidate-cap-19": {
+      "imageSha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08",
+      "inputSize": [
+        320,
+        438
+      ],
+      "tagsRaw": {
+        "landscape": 0.003,
+        "people": 0.96,
+        "abstract": 0.004,
+        "light": 0.991,
+        "vivid": 0.072,
+        "cool": 0.019,
+        "warm": 0.981,
+        "soft": 0.009
+      },
+      "tags": {
+        "landscape": 0.003,
+        "people": 0.96,
+        "abstract": 0.004,
+        "light": 0.91,
+        "vivid": 0.04,
+        "cool": 0.019,
+        "warm": 0.905,
+        "soft": 0.009
+      },
+      "emotions": {
+        "calm": 0.281,
+        "joy": 0.318,
+        "sadness": 1.0,
+        "tension": 0.303,
+        "awe": 0.536,
+        "nostalgia": 0.667
+      },
+      "imageEmotions": {
+        "calm": 0.136,
+        "joy": 0.324,
+        "sadness": 1.0,
+        "tension": 0.472,
+        "awe": 0.333,
+        "nostalgia": 0.633
+      },
+      "textEmotions": {
+        "calm": 0.542,
+        "joy": 0.307,
+        "sadness": 1.0,
+        "tension": 0.0,
+        "awe": 0.902,
+        "nostalgia": 0.727
+      },
+      "seconds": 2.7577368000056595
+    },
+    "survey-candidate-cap-28": {
+      "imageSha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c",
+      "inputSize": [
+        738,
+        384
+      ],
+      "tagsRaw": {
+        "landscape": 0.985,
+        "people": 0.228,
+        "abstract": 0.094,
+        "light": 0.707,
+        "vivid": 0.923,
+        "cool": 0.968,
+        "warm": 0.032,
+        "soft": 0.078
+      },
+      "tags": {
+        "landscape": 0.985,
+        "people": 0.228,
+        "abstract": 0.094,
+        "light": 0.372,
+        "vivid": 0.615,
+        "cool": 0.968,
+        "warm": 0.018,
+        "soft": 0.078
+      },
+      "emotions": {
+        "calm": 0.084,
+        "joy": 0.039,
+        "sadness": 0.151,
+        "tension": 0.263,
+        "awe": 1.0,
+        "nostalgia": 0.236
+      },
+      "imageEmotions": {
+        "calm": 0.088,
+        "joy": 0.047,
+        "sadness": 0.024,
+        "tension": 0.008,
+        "awe": 1.0,
+        "nostalgia": 0.108
+      },
+      "textEmotions": {
+        "calm": 0.041,
+        "joy": 0.0,
+        "sadness": 0.51,
+        "tension": 1.0,
+        "awe": 0.648,
+        "nostalgia": 0.571
+      },
+      "seconds": 2.81183909997344
+    },
+    "survey-candidate-cap-21": {
+      "imageSha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70",
+      "inputSize": [
+        547,
+        365
+      ],
+      "tagsRaw": {
+        "landscape": 0.063,
+        "people": 0.715,
+        "abstract": 0.822,
+        "light": 0.183,
+        "vivid": 0.921,
+        "cool": 0.247,
+        "warm": 0.753,
+        "soft": 0.015
+      },
+      "tags": {
+        "landscape": 0.063,
+        "people": 0.715,
+        "abstract": 0.822,
+        "light": 0.096,
+        "vivid": 0.605,
+        "cool": 0.247,
+        "warm": 0.418,
+        "soft": 0.015
+      },
+      "emotions": {
+        "calm": 0.021,
+        "joy": 1.0,
+        "sadness": 0.142,
+        "tension": 0.274,
+        "awe": 0.243,
+        "nostalgia": 0.262
+      },
+      "imageEmotions": {
+        "calm": 0.024,
+        "joy": 1.0,
+        "sadness": 0.039,
+        "tension": 0.088,
+        "awe": 0.097,
+        "nostalgia": 0.1
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.688,
+        "sadness": 0.546,
+        "tension": 1.0,
+        "awe": 0.808,
+        "nostalgia": 0.888
+      },
+      "seconds": 6.4541129999561235
+    },
+    "survey-candidate-cap-02": {
+      "imageSha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e",
+      "inputSize": [
+        800,
+        648
+      ],
+      "tagsRaw": {
+        "landscape": 0.998,
+        "people": 0.111,
+        "abstract": 0.032,
+        "light": 0.99,
+        "vivid": 0.104,
+        "cool": 0.056,
+        "warm": 0.944,
+        "soft": 0.19
+      },
+      "tags": {
+        "landscape": 0.998,
+        "people": 0.111,
+        "abstract": 0.032,
+        "light": 0.9,
+        "vivid": 0.058,
+        "cool": 0.056,
+        "warm": 0.72,
+        "soft": 0.19
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.274,
+        "sadness": 0.046,
+        "tension": 0.163,
+        "awe": 0.526,
+        "nostalgia": 0.311
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.018,
+        "sadness": 0.048,
+        "tension": 0.001,
+        "awe": 0.257,
+        "nostalgia": 0.139
+      },
+      "textEmotions": {
+        "calm": 0.174,
+        "joy": 0.91,
+        "sadness": 0.0,
+        "tension": 0.575,
+        "awe": 1.0,
+        "nostalgia": 0.633
+      },
+      "seconds": 4.694366400013678
+    },
+    "yyk-demo-001": {
+      "imageSha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "inputSize": [
+        475,
+        479
+      ],
+      "tagsRaw": {
+        "landscape": 0.022,
+        "people": 0.39,
+        "abstract": 0.724,
+        "light": 0.471,
+        "vivid": 0.426,
+        "cool": 0.94,
+        "warm": 0.06,
+        "soft": 0.002
+      },
+      "tags": {
+        "landscape": 0.022,
+        "people": 0.39,
+        "abstract": 0.724,
+        "light": 0.248,
+        "vivid": 0.237,
+        "cool": 0.94,
+        "warm": 0.033,
+        "soft": 0.002
+      },
+      "emotions": {
+        "calm": 0.377,
+        "joy": 0.517,
+        "sadness": 1.0,
+        "tension": 0.536,
+        "awe": 0.084,
+        "nostalgia": 0.577
+      },
+      "imageEmotions": {
+        "calm": 0.075,
+        "joy": 0.364,
+        "sadness": 1.0,
+        "tension": 0.517,
+        "awe": 0.122,
+        "nostalgia": 0.614
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.818,
+        "sadness": 0.956,
+        "tension": 0.553,
+        "awe": 0.0,
+        "nostalgia": 0.473
+      },
+      "seconds": 4.720356100006029
+    },
+    "yyk-demo-002": {
+      "imageSha256": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+      "inputSize": [
+        381,
+        475
+      ],
+      "tagsRaw": {
+        "landscape": 0.699,
+        "people": 0.195,
+        "abstract": 0.774,
+        "light": 0.304,
+        "vivid": 0.029,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.058
+      },
+      "tags": {
+        "landscape": 0.699,
+        "people": 0.195,
+        "abstract": 0.774,
+        "light": 0.16,
+        "vivid": 0.016,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.058
+      },
+      "emotions": {
+        "calm": 0.442,
+        "joy": 0.215,
+        "sadness": 1.0,
+        "tension": 0.44,
+        "awe": 0.096,
+        "nostalgia": 0.551
+      },
+      "imageEmotions": {
+        "calm": 0.344,
+        "joy": 0.095,
+        "sadness": 1.0,
+        "tension": 0.201,
+        "awe": 0.132,
+        "nostalgia": 0.488
+      },
+      "textEmotions": {
+        "calm": 0.651,
+        "joy": 0.497,
+        "sadness": 0.924,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.666
+      },
+      "seconds": 3.703388200025074
+    },
+    "yyk-demo-003": {
+      "imageSha256": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+      "inputSize": [
+        576,
+        458
+      ],
+      "tagsRaw": {
+        "landscape": 0.921,
+        "people": 0.167,
+        "abstract": 0.653,
+        "light": 0.808,
+        "vivid": 0.873,
+        "cool": 0.722,
+        "warm": 0.278,
+        "soft": 0.008
+      },
+      "tags": {
+        "landscape": 0.921,
+        "people": 0.167,
+        "abstract": 0.653,
+        "light": 0.425,
+        "vivid": 0.485,
+        "cool": 0.722,
+        "warm": 0.154,
+        "soft": 0.008
+      },
+      "emotions": {
+        "calm": 0.546,
+        "joy": 0.622,
+        "sadness": 0.939,
+        "tension": 0.559,
+        "awe": 0.193,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.402,
+        "joy": 0.574,
+        "sadness": 0.768,
+        "tension": 0.171,
+        "awe": 0.265,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.583,
+        "joy": 0.471,
+        "sadness": 0.875,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.626
+      },
+      "seconds": 4.063876700005494
+    },
+    "yyk-demo-005": {
+      "imageSha256": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+      "inputSize": [
+        474,
+        480
+      ],
+      "tagsRaw": {
+        "landscape": 0.117,
+        "people": 0.069,
+        "abstract": 0.951,
+        "light": 0.439,
+        "vivid": 0.688,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.017
+      },
+      "tags": {
+        "landscape": 0.117,
+        "people": 0.069,
+        "abstract": 0.951,
+        "light": 0.231,
+        "vivid": 0.382,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.017
+      },
+      "emotions": {
+        "calm": 0.413,
+        "joy": 0.287,
+        "sadness": 0.653,
+        "tension": 0.597,
+        "awe": 0.29,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.278,
+        "joy": 0.158,
+        "sadness": 0.507,
+        "tension": 0.296,
+        "awe": 0.393,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.549,
+        "joy": 0.449,
+        "sadness": 0.736,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.691
+      },
+      "seconds": 3.5778959000017494
+    },
+    "yyk-demo-006": {
+      "imageSha256": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+      "inputSize": [
+        473,
+        471
+      ],
+      "tagsRaw": {
+        "landscape": 0.353,
+        "people": 0.109,
+        "abstract": 0.998,
+        "light": 0.13,
+        "vivid": 0.836,
+        "cool": 0.987,
+        "warm": 0.013,
+        "soft": 0.002
+      },
+      "tags": {
+        "landscape": 0.353,
+        "people": 0.109,
+        "abstract": 0.998,
+        "light": 0.068,
+        "vivid": 0.464,
+        "cool": 0.987,
+        "warm": 0.007,
+        "soft": 0.002
+      },
+      "emotions": {
+        "calm": 0.614,
+        "joy": 0.697,
+        "sadness": 0.728,
+        "tension": 1.0,
+        "awe": 0.589,
+        "nostalgia": 0.994
+      },
+      "imageEmotions": {
+        "calm": 0.507,
+        "joy": 0.75,
+        "sadness": 0.527,
+        "tension": 0.766,
+        "awe": 0.957,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.571,
+        "joy": 0.445,
+        "sadness": 0.764,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.717
+      },
+      "seconds": 4.203108400048222
+    },
+    "yyk-demo-007": {
+      "imageSha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "inputSize": [
+        706,
+        701
+      ],
+      "tagsRaw": {
+        "landscape": 0.172,
+        "people": 0.216,
+        "abstract": 0.995,
+        "light": 0.284,
+        "vivid": 0.912,
+        "cool": 0.004,
+        "warm": 0.996,
+        "soft": 0.056
+      },
+      "tags": {
+        "landscape": 0.172,
+        "people": 0.216,
+        "abstract": 0.995,
+        "light": 0.149,
+        "vivid": 0.56,
+        "cool": 0.004,
+        "warm": 0.98,
+        "soft": 0.056
+      },
+      "emotions": {
+        "calm": 0.963,
+        "joy": 0.787,
+        "sadness": 0.841,
+        "tension": 1.0,
+        "awe": 0.862,
+        "nostalgia": 0.947
+      },
+      "imageEmotions": {
+        "calm": 0.566,
+        "joy": 0.449,
+        "sadness": 0.244,
+        "tension": 0.749,
+        "awe": 1.0,
+        "nostalgia": 0.752
+      },
+      "textEmotions": {
+        "calm": 0.754,
+        "joy": 0.635,
+        "sadness": 1.0,
+        "tension": 0.562,
+        "awe": 0.0,
+        "nostalgia": 0.474
+      },
+      "seconds": 5.514016100030858
+    },
+    "yyk-demo-008": {
+      "imageSha256": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+      "inputSize": [
+        470,
+        475
+      ],
+      "tagsRaw": {
+        "landscape": 0.568,
+        "people": 0.186,
+        "abstract": 0.995,
+        "light": 0.622,
+        "vivid": 0.85,
+        "cool": 0.986,
+        "warm": 0.014,
+        "soft": 0.041
+      },
+      "tags": {
+        "landscape": 0.568,
+        "people": 0.186,
+        "abstract": 0.995,
+        "light": 0.327,
+        "vivid": 0.472,
+        "cool": 0.986,
+        "warm": 0.008,
+        "soft": 0.041
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.678,
+        "sadness": 0.505,
+        "tension": 0.633,
+        "awe": 0.315,
+        "nostalgia": 0.905
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.656,
+        "sadness": 0.211,
+        "tension": 0.133,
+        "awe": 0.414,
+        "nostalgia": 0.773
+      },
+      "textEmotions": {
+        "calm": 0.451,
+        "joy": 0.338,
+        "sadness": 0.647,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.597
+      },
+      "seconds": 4.7262853999855
+    },
+    "yyk-demo-009": {
+      "imageSha256": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+      "inputSize": [
+        472,
+        474
+      ],
+      "tagsRaw": {
+        "landscape": 0.985,
+        "people": 0.029,
+        "abstract": 0.969,
+        "light": 0.44,
+        "vivid": 0.912,
+        "cool": 0.003,
+        "warm": 0.997,
+        "soft": 0.017
+      },
+      "tags": {
+        "landscape": 0.985,
+        "people": 0.029,
+        "abstract": 0.969,
+        "light": 0.232,
+        "vivid": 0.56,
+        "cool": 0.003,
+        "warm": 0.985,
+        "soft": 0.017
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.649,
+        "sadness": 0.463,
+        "tension": 0.463,
+        "awe": 0.296,
+        "nostalgia": 0.792
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.599,
+        "sadness": 0.163,
+        "tension": 0.097,
+        "awe": 0.393,
+        "nostalgia": 0.664
+      },
+      "textEmotions": {
+        "calm": 0.632,
+        "joy": 0.506,
+        "sadness": 0.872,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.747
+      },
+      "seconds": 5.644488500023726
+    },
+    "yyk-demo-010": {
+      "imageSha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "inputSize": [
+        576,
+        422
+      ],
+      "tagsRaw": {
+        "landscape": 0.998,
+        "people": 0.019,
+        "abstract": 0.991,
+        "light": 0.06,
+        "vivid": 0.694,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.141
+      },
+      "tags": {
+        "landscape": 0.998,
+        "people": 0.019,
+        "abstract": 0.991,
+        "light": 0.032,
+        "vivid": 0.386,
+        "cool": 0.999,
+        "warm": 0.001,
+        "soft": 0.141
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.372,
+        "sadness": 0.352,
+        "tension": 0.226,
+        "awe": 0.101,
+        "nostalgia": 0.613
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.215,
+        "sadness": 0.095,
+        "tension": 0.085,
+        "awe": 0.141,
+        "nostalgia": 0.704
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.761,
+        "sadness": 0.991,
+        "tension": 0.578,
+        "awe": 0.0,
+        "nostalgia": 0.385
+      },
+      "seconds": 5.0801281000021845
+    },
+    "yyk-demo-011": {
+      "imageSha256": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+      "inputSize": [
+        348,
+        455
+      ],
+      "tagsRaw": {
+        "landscape": 0.98,
+        "people": 0.035,
+        "abstract": 0.999,
+        "light": 0.018,
+        "vivid": 0.921,
+        "cool": 0.962,
+        "warm": 0.038,
+        "soft": 0.006
+      },
+      "tags": {
+        "landscape": 0.98,
+        "people": 0.035,
+        "abstract": 0.999,
+        "light": 0.009,
+        "vivid": 0.605,
+        "cool": 0.962,
+        "warm": 0.021,
+        "soft": 0.006
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.551,
+        "sadness": 0.578,
+        "tension": 0.588,
+        "awe": 0.943,
+        "nostalgia": 0.703
+      },
+      "imageEmotions": {
+        "calm": 0.874,
+        "joy": 0.347,
+        "sadness": 0.177,
+        "tension": 0.167,
+        "awe": 1.0,
+        "nostalgia": 0.211
+      },
+      "textEmotions": {
+        "calm": 0.349,
+        "joy": 0.445,
+        "sadness": 0.815,
+        "tension": 0.855,
+        "awe": 0.0,
+        "nostalgia": 1.0
+      },
+      "seconds": 4.362370299990289
+    },
+    "yyk-demo-012": {
+      "imageSha256": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+      "inputSize": [
+        350,
+        456
+      ],
+      "tagsRaw": {
+        "landscape": 0.174,
+        "people": 0.407,
+        "abstract": 1.0,
+        "light": 0.049,
+        "vivid": 0.992,
+        "cool": 0.121,
+        "warm": 0.879,
+        "soft": 0.085
+      },
+      "tags": {
+        "landscape": 0.174,
+        "people": 0.407,
+        "abstract": 1.0,
+        "light": 0.026,
+        "vivid": 0.96,
+        "cool": 0.121,
+        "warm": 0.488,
+        "soft": 0.085
+      },
+      "emotions": {
+        "calm": 0.267,
+        "joy": 1.0,
+        "sadness": 0.266,
+        "tension": 0.363,
+        "awe": 0.143,
+        "nostalgia": 0.349
+      },
+      "imageEmotions": {
+        "calm": 0.207,
+        "joy": 1.0,
+        "sadness": 0.023,
+        "tension": 0.148,
+        "awe": 0.166,
+        "nostalgia": 0.114
+      },
+      "textEmotions": {
+        "calm": 0.353,
+        "joy": 0.542,
+        "sadness": 0.985,
+        "tension": 0.94,
+        "awe": 0.0,
+        "nostalgia": 1.0
+      },
+      "seconds": 3.8969217999838293
+    },
+    "yyk-demo-013": {
+      "imageSha256": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+      "inputSize": [
+        719,
+        567
+      ],
+      "tagsRaw": {
+        "landscape": 0.913,
+        "people": 0.169,
+        "abstract": 0.995,
+        "light": 0.294,
+        "vivid": 0.928,
+        "cool": 0.94,
+        "warm": 0.06,
+        "soft": 0.189
+      },
+      "tags": {
+        "landscape": 0.913,
+        "people": 0.169,
+        "abstract": 0.995,
+        "light": 0.155,
+        "vivid": 0.64,
+        "cool": 0.94,
+        "warm": 0.033,
+        "soft": 0.189
+      },
+      "emotions": {
+        "calm": 0.474,
+        "joy": 0.625,
+        "sadness": 0.437,
+        "tension": 0.734,
+        "awe": 0.167,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.433,
+        "joy": 0.712,
+        "sadness": 0.131,
+        "tension": 0.506,
+        "awe": 0.245,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.459,
+        "joy": 0.358,
+        "sadness": 0.893,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.818
+      },
+      "seconds": 4.594746400020085
+    },
+    "yyk-demo-014": {
+      "imageSha256": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+      "inputSize": [
+        472,
+        481
+      ],
+      "tagsRaw": {
+        "landscape": 0.965,
+        "people": 0.07,
+        "abstract": 0.986,
+        "light": 0.343,
+        "vivid": 0.813,
+        "cool": 0.315,
+        "warm": 0.685,
+        "soft": 0.097
+      },
+      "tags": {
+        "landscape": 0.965,
+        "people": 0.07,
+        "abstract": 0.986,
+        "light": 0.181,
+        "vivid": 0.452,
+        "cool": 0.315,
+        "warm": 0.381,
+        "soft": 0.097
+      },
+      "emotions": {
+        "calm": 0.471,
+        "joy": 0.63,
+        "sadness": 0.558,
+        "tension": 0.527,
+        "awe": 0.132,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.558,
+        "joy": 0.869,
+        "sadness": 0.365,
+        "tension": 0.262,
+        "awe": 0.217,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.335,
+        "joy": 0.259,
+        "sadness": 0.859,
+        "tension": 0.94,
+        "awe": 0.0,
+        "nostalgia": 1.0
+      },
+      "seconds": 4.387020600028336
+    },
+    "yyk-demo-015": {
+      "imageSha256": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+      "inputSize": [
+        524,
+        482
+      ],
+      "tagsRaw": {
+        "landscape": 0.98,
+        "people": 0.03,
+        "abstract": 0.921,
+        "light": 0.83,
+        "vivid": 0.92,
+        "cool": 0.342,
+        "warm": 0.658,
+        "soft": 0.048
+      },
+      "tags": {
+        "landscape": 0.98,
+        "people": 0.03,
+        "abstract": 0.921,
+        "light": 0.437,
+        "vivid": 0.6,
+        "cool": 0.342,
+        "warm": 0.366,
+        "soft": 0.048
+      },
+      "emotions": {
+        "calm": 0.535,
+        "joy": 0.477,
+        "sadness": 0.609,
+        "tension": 0.46,
+        "awe": 0.295,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.648,
+        "joy": 0.603,
+        "sadness": 0.454,
+        "tension": 0.193,
+        "awe": 0.494,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.368,
+        "joy": 0.291,
+        "sadness": 0.838,
+        "tension": 0.857,
+        "awe": 0.0,
+        "nostalgia": 1.0
+      },
+      "seconds": 4.647778299986385
+    },
+    "yyk-demo-016": {
+      "imageSha256": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f",
+      "inputSize": [
+        479,
+        478
+      ],
+      "tagsRaw": {
+        "landscape": 0.749,
+        "people": 0.09,
+        "abstract": 0.996,
+        "light": 0.605,
+        "vivid": 0.935,
+        "cool": 0.353,
+        "warm": 0.647,
+        "soft": 0.017
+      },
+      "tags": {
+        "landscape": 0.749,
+        "people": 0.09,
+        "abstract": 0.996,
+        "light": 0.318,
+        "vivid": 0.675,
+        "cool": 0.353,
+        "warm": 0.359,
+        "soft": 0.017
+      },
+      "emotions": {
+        "calm": 0.602,
+        "joy": 1.0,
+        "sadness": 0.58,
+        "tension": 0.581,
+        "awe": 0.341,
+        "nostalgia": 0.878
+      },
+      "imageEmotions": {
+        "calm": 0.495,
+        "joy": 1.0,
+        "sadness": 0.208,
+        "tension": 0.133,
+        "awe": 0.392,
+        "nostalgia": 0.521
+      },
+      "textEmotions": {
+        "calm": 0.37,
+        "joy": 0.281,
+        "sadness": 0.859,
+        "tension": 1.0,
+        "awe": 0.0,
+        "nostalgia": 0.914
+      },
+      "seconds": 4.373326399945654
+    },
+    "cap-01": {
+      "imageSha256": "d9eefe39b877166c55589462162f7bfa99ce05cba67b81bfd920d99aeb8f24d8",
+      "inputSize": [
+        800,
+        578
+      ],
+      "tagsRaw": {
+        "landscape": 0.848,
+        "people": 0.488,
+        "abstract": 0.015,
+        "light": 0.992,
+        "vivid": 0.021,
+        "cool": 0.008,
+        "warm": 0.992,
+        "soft": 0.264
+      },
+      "tags": {
+        "landscape": 0.848,
+        "people": 0.488,
+        "abstract": 0.015,
+        "light": 0.92,
+        "vivid": 0.012,
+        "cool": 0.008,
+        "warm": 0.96,
+        "soft": 0.264
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.325,
+        "sadness": 0.296,
+        "tension": 0.072,
+        "awe": 0.113,
+        "nostalgia": 0.553
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.376,
+        "sadness": 0.328,
+        "tension": 0.011,
+        "awe": 0.21,
+        "nostalgia": 0.715
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.266,
+        "sadness": 0.26,
+        "tension": 0.142,
+        "awe": 0.0,
+        "nostalgia": 0.365
+      },
+      "seconds": 4.27548279997427
+    },
+    "cap-04": {
+      "imageSha256": "8803f9badee211355b8be5625a5db2c32a98805fb07883a16e5ff902af2dd7b2",
+      "inputSize": [
+        800,
+        551
+      ],
+      "tagsRaw": {
+        "landscape": 0.916,
+        "people": 0.159,
+        "abstract": 0.008,
+        "light": 0.993,
+        "vivid": 0.296,
+        "cool": 0.035,
+        "warm": 0.965,
+        "soft": 0.052
+      },
+      "tags": {
+        "landscape": 0.916,
+        "people": 0.159,
+        "abstract": 0.008,
+        "light": 0.93,
+        "vivid": 0.164,
+        "cool": 0.035,
+        "warm": 0.825,
+        "soft": 0.052
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.575,
+        "sadness": 0.298,
+        "tension": 0.002,
+        "awe": 0.328,
+        "nostalgia": 0.23
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.298,
+        "sadness": 0.077,
+        "tension": 0.003,
+        "awe": 0.179,
+        "nostalgia": 0.25
+      },
+      "textEmotions": {
+        "calm": 0.575,
+        "joy": 1.0,
+        "sadness": 0.707,
+        "tension": 0.0,
+        "awe": 0.55,
+        "nostalgia": 0.083
+      },
+      "seconds": 4.184192000015173
+    },
+    "cap-07": {
+      "imageSha256": "d3a1fc3d33e4c3e3fe23673f9a866ee98b0aa22d83e1ae60ed7186bd8975d9bf",
+      "inputSize": [
+        454,
+        675
+      ],
+      "tagsRaw": {
+        "landscape": 0.075,
+        "people": 0.886,
+        "abstract": 0.203,
+        "light": 0.253,
+        "vivid": 0.097,
+        "cool": 0.228,
+        "warm": 0.772,
+        "soft": 0.275
+      },
+      "tags": {
+        "landscape": 0.075,
+        "people": 0.886,
+        "abstract": 0.203,
+        "light": 0.133,
+        "vivid": 0.054,
+        "cool": 0.228,
+        "warm": 0.429,
+        "soft": 0.275
+      },
+      "emotions": {
+        "calm": 0.367,
+        "joy": 0.741,
+        "sadness": 0.149,
+        "tension": 0.056,
+        "awe": 1.0,
+        "nostalgia": 0.307
+      },
+      "imageEmotions": {
+        "calm": 0.2,
+        "joy": 0.516,
+        "sadness": 0.099,
+        "tension": 0.072,
+        "awe": 1.0,
+        "nostalgia": 0.134
+      },
+      "textEmotions": {
+        "calm": 0.622,
+        "joy": 1.0,
+        "sadness": 0.213,
+        "tension": 0.0,
+        "awe": 0.653,
+        "nostalgia": 0.595
+      },
+      "seconds": 3.8678883999818936
+    },
+    "cap-08": {
+      "imageSha256": "1cfa8ace037f5acfeae3275472e87c70c74f4f04c604e66d22d3817d349267b2",
+      "inputSize": [
+        505,
+        385
+      ],
+      "tagsRaw": {
+        "landscape": 0.003,
+        "people": 0.848,
+        "abstract": 0.101,
+        "light": 0.989,
+        "vivid": 0.747,
+        "cool": 0.005,
+        "warm": 0.995,
+        "soft": 0.001
+      },
+      "tags": {
+        "landscape": 0.003,
+        "people": 0.848,
+        "abstract": 0.101,
+        "light": 0.89,
+        "vivid": 0.415,
+        "cool": 0.005,
+        "warm": 0.975,
+        "soft": 0.001
+      },
+      "emotions": {
+        "calm": 0.133,
+        "joy": 1.0,
+        "sadness": 0.307,
+        "tension": 0.034,
+        "awe": 0.514,
+        "nostalgia": 0.182
+      },
+      "imageEmotions": {
+        "calm": 0.006,
+        "joy": 1.0,
+        "sadness": 0.098,
+        "tension": 0.036,
+        "awe": 0.154,
+        "nostalgia": 0.067
+      },
+      "textEmotions": {
+        "calm": 0.346,
+        "joy": 0.117,
+        "sadness": 0.582,
+        "tension": 0.0,
+        "awe": 1.0,
+        "nostalgia": 0.321
+      },
+      "seconds": 3.815357599989511
+    },
+    "cap-09": {
+      "imageSha256": "82715722511e6d044ca22a9c47214cccab431552bc7bba3fb4ec5e9bdba1b168",
+      "inputSize": [
+        645,
+        475
+      ],
+      "tagsRaw": {
+        "landscape": 0.0,
+        "people": 0.818,
+        "abstract": 0.007,
+        "light": 0.574,
+        "vivid": 0.204,
+        "cool": 0.195,
+        "warm": 0.805,
+        "soft": 0.076
+      },
+      "tags": {
+        "landscape": 0.0,
+        "people": 0.818,
+        "abstract": 0.007,
+        "light": 0.302,
+        "vivid": 0.113,
+        "cool": 0.195,
+        "warm": 0.447,
+        "soft": 0.076
+      },
+      "emotions": {
+        "calm": 0.166,
+        "joy": 0.554,
+        "sadness": 0.231,
+        "tension": 0.091,
+        "awe": 1.0,
+        "nostalgia": 0.314
+      },
+      "imageEmotions": {
+        "calm": 0.044,
+        "joy": 1.0,
+        "sadness": 0.397,
+        "tension": 0.197,
+        "awe": 0.845,
+        "nostalgia": 0.567
+      },
+      "textEmotions": {
+        "calm": 0.239,
+        "joy": 0.148,
+        "sadness": 0.077,
+        "tension": 0.0,
+        "awe": 1.0,
+        "nostalgia": 0.085
+      },
+      "seconds": 4.119817200000398
+    },
+    "cap-16": {
+      "imageSha256": "f2abd398d5eec58a835edca0fa6d370da75b8330b71b7cd41947df952bb8aa8c",
+      "inputSize": [
+        444,
+        450
+      ],
+      "tagsRaw": {
+        "landscape": 0.567,
+        "people": 0.63,
+        "abstract": 0.043,
+        "light": 0.901,
+        "vivid": 0.452,
+        "cool": 0.464,
+        "warm": 0.536,
+        "soft": 0.187
+      },
+      "tags": {
+        "landscape": 0.567,
+        "people": 0.63,
+        "abstract": 0.043,
+        "light": 0.474,
+        "vivid": 0.251,
+        "cool": 0.464,
+        "warm": 0.298,
+        "soft": 0.187
+      },
+      "emotions": {
+        "calm": 0.329,
+        "joy": 1.0,
+        "sadness": 0.084,
+        "tension": 0.01,
+        "awe": 0.463,
+        "nostalgia": 0.362
+      },
+      "imageEmotions": {
+        "calm": 0.212,
+        "joy": 1.0,
+        "sadness": 0.042,
+        "tension": 0.013,
+        "awe": 0.171,
+        "nostalgia": 0.397
+      },
+      "textEmotions": {
+        "calm": 0.512,
+        "joy": 0.785,
+        "sadness": 0.157,
+        "tension": 0.0,
+        "awe": 1.0,
+        "nostalgia": 0.208
+      },
+      "seconds": 3.816394700028468
+    },
+    "cap-20": {
+      "imageSha256": "bd5ae59c50534f9d395b6b12262caeb74dc6ea1b53507063477dd1029b602d73",
+      "inputSize": [
+        643,
+        476
+      ],
+      "tagsRaw": {
+        "landscape": 0.983,
+        "people": 0.058,
+        "abstract": 0.003,
+        "light": 0.955,
+        "vivid": 0.11,
+        "cool": 0.705,
+        "warm": 0.295,
+        "soft": 0.12
+      },
+      "tags": {
+        "landscape": 0.983,
+        "people": 0.058,
+        "abstract": 0.003,
+        "light": 0.55,
+        "vivid": 0.061,
+        "cool": 0.705,
+        "warm": 0.164,
+        "soft": 0.12
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.32,
+        "sadness": 0.443,
+        "tension": 0.02,
+        "awe": 0.524,
+        "nostalgia": 0.869
+      },
+      "imageEmotions": {
+        "calm": 1.0,
+        "joy": 0.025,
+        "sadness": 0.294,
+        "tension": 0.026,
+        "awe": 0.203,
+        "nostalgia": 0.944
+      },
+      "textEmotions": {
+        "calm": 0.638,
+        "joy": 0.817,
+        "sadness": 0.592,
+        "tension": 0.0,
+        "awe": 1.0,
+        "nostalgia": 0.4
+      },
+      "seconds": 4.457303099974524
+    },
+    "cap-22": {
+      "imageSha256": "95b7974d77ca85ba6d080e93da82a3d0a34e4598efe2e014b2c1ed6efb3c21ef",
+      "inputSize": [
+        616,
+        498
+      ],
+      "tagsRaw": {
+        "landscape": 0.081,
+        "people": 0.076,
+        "abstract": 0.497,
+        "light": 0.839,
+        "vivid": 0.992,
+        "cool": 0.181,
+        "warm": 0.819,
+        "soft": 0.099
+      },
+      "tags": {
+        "landscape": 0.081,
+        "people": 0.076,
+        "abstract": 0.497,
+        "light": 0.442,
+        "vivid": 0.96,
+        "cool": 0.181,
+        "warm": 0.455,
+        "soft": 0.099
+      },
+      "emotions": {
+        "calm": 0.67,
+        "joy": 1.0,
+        "sadness": 0.431,
+        "tension": 0.1,
+        "awe": 0.298,
+        "nostalgia": 0.635
+      },
+      "imageEmotions": {
+        "calm": 0.276,
+        "joy": 0.99,
+        "sadness": 0.148,
+        "tension": 0.092,
+        "awe": 0.457,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.751,
+        "sadness": 0.681,
+        "tension": 0.085,
+        "awe": 0.017,
+        "nostalgia": 0.0
+      },
+      "seconds": 4.374329400015995
+    },
+    "cap-23": {
+      "imageSha256": "b935baff5f5e7b9a73e25acc957e9cee893d50b8816b0f99879519c180ebf594",
+      "inputSize": [
+        299,
+        236
+      ],
+      "tagsRaw": {
+        "landscape": 0.023,
+        "people": 0.726,
+        "abstract": 0.029,
+        "light": 0.583,
+        "vivid": 0.897,
+        "cool": 0.008,
+        "warm": 0.992,
+        "soft": 0.005
+      },
+      "tags": {
+        "landscape": 0.023,
+        "people": 0.726,
+        "abstract": 0.029,
+        "light": 0.307,
+        "vivid": 0.498,
+        "cool": 0.008,
+        "warm": 0.96,
+        "soft": 0.005
+      },
+      "emotions": {
+        "calm": 0.13,
+        "joy": 0.757,
+        "sadness": 0.192,
+        "tension": 0.652,
+        "awe": 0.615,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.065,
+        "joy": 1.0,
+        "sadness": 0.268,
+        "tension": 0.294,
+        "awe": 0.345,
+        "nostalgia": 0.825
+      },
+      "textEmotions": {
+        "calm": 0.189,
+        "joy": 0.089,
+        "sadness": 0.0,
+        "tension": 1.0,
+        "awe": 0.834,
+        "nostalgia": 0.926
+      },
+      "seconds": 4.018110000004526
+    },
+    "cap-24": {
+      "imageSha256": "a102db03f0f6fa375cd57e8937d5144e1cc684bb1553aa9c07f65bf5af4e8c79",
+      "inputSize": [
+        543,
+        537
+      ],
+      "tagsRaw": {
+        "landscape": 0.014,
+        "people": 0.946,
+        "abstract": 0.415,
+        "light": 0.825,
+        "vivid": 0.964,
+        "cool": 0.111,
+        "warm": 0.889,
+        "soft": 0.031
+      },
+      "tags": {
+        "landscape": 0.014,
+        "people": 0.946,
+        "abstract": 0.415,
+        "light": 0.434,
+        "vivid": 0.82,
+        "cool": 0.111,
+        "warm": 0.494,
+        "soft": 0.031
+      },
+      "emotions": {
+        "calm": 0.245,
+        "joy": 1.0,
+        "sadness": 0.382,
+        "tension": 0.214,
+        "awe": 0.305,
+        "nostalgia": 0.332
+      },
+      "imageEmotions": {
+        "calm": 0.01,
+        "joy": 1.0,
+        "sadness": 0.096,
+        "tension": 0.097,
+        "awe": 0.377,
+        "nostalgia": 0.26
+      },
+      "textEmotions": {
+        "calm": 0.777,
+        "joy": 0.631,
+        "sadness": 1.0,
+        "tension": 0.444,
+        "awe": 0.0,
+        "nostalgia": 0.4
+      },
+      "seconds": 4.920099099981599
+    },
+    "cap-25": {
+      "imageSha256": "fb5aef17492e2c698d36f9f6ad85dcb0cf9d839ec177e430dc206cbb246c1a06",
+      "inputSize": [
+        388,
+        515
+      ],
+      "tagsRaw": {
+        "landscape": 0.023,
+        "people": 0.788,
+        "abstract": 0.281,
+        "light": 0.276,
+        "vivid": 0.933,
+        "cool": 0.974,
+        "warm": 0.026,
+        "soft": 0.096
+      },
+      "tags": {
+        "landscape": 0.023,
+        "people": 0.788,
+        "abstract": 0.281,
+        "light": 0.145,
+        "vivid": 0.665,
+        "cool": 0.974,
+        "warm": 0.014,
+        "soft": 0.096
+      },
+      "emotions": {
+        "calm": 0.162,
+        "joy": 1.0,
+        "sadness": 0.176,
+        "tension": 0.921,
+        "awe": 0.687,
+        "nostalgia": 0.612
+      },
+      "imageEmotions": {
+        "calm": 0.018,
+        "joy": 1.0,
+        "sadness": 0.15,
+        "tension": 0.306,
+        "awe": 0.202,
+        "nostalgia": 0.674
+      },
+      "textEmotions": {
+        "calm": 0.227,
+        "joy": 0.142,
+        "sadness": 0.061,
+        "tension": 1.0,
+        "awe": 0.783,
+        "nostalgia": 0.0
+      },
+      "seconds": 4.803777799999807
+    },
+    "cap-26": {
+      "imageSha256": "0d61e06fed0f1f8e971c08c2c4b6db14e73959f76519f50dfc065874aa8db737",
+      "inputSize": [
+        454,
+        675
+      ],
+      "tagsRaw": {
+        "landscape": 0.001,
+        "people": 0.923,
+        "abstract": 0.181,
+        "light": 0.704,
+        "vivid": 0.038,
+        "cool": 0.978,
+        "warm": 0.022,
+        "soft": 0.117
+      },
+      "tags": {
+        "landscape": 0.001,
+        "people": 0.923,
+        "abstract": 0.181,
+        "light": 0.371,
+        "vivid": 0.021,
+        "cool": 0.978,
+        "warm": 0.012,
+        "soft": 0.117
+      },
+      "emotions": {
+        "calm": 0.215,
+        "joy": 0.213,
+        "sadness": 1.0,
+        "tension": 0.213,
+        "awe": 0.089,
+        "nostalgia": 0.343
+      },
+      "imageEmotions": {
+        "calm": 0.097,
+        "joy": 0.143,
+        "sadness": 1.0,
+        "tension": 0.23,
+        "awe": 0.142,
+        "nostalgia": 0.376
+      },
+      "textEmotions": {
+        "calm": 0.412,
+        "joy": 0.331,
+        "sadness": 1.0,
+        "tension": 0.184,
+        "awe": 0.0,
+        "nostalgia": 0.287
+      },
+      "seconds": 4.559489700011909
+    },
+    "cap-27": {
+      "imageSha256": "e785b9eec80b2b3f3c37f1b17a064e6acae64d437a80c73b6643a2d8240159ba",
+      "inputSize": [
+        389,
+        514
+      ],
+      "tagsRaw": {
+        "landscape": 0.083,
+        "people": 0.142,
+        "abstract": 0.017,
+        "light": 0.641,
+        "vivid": 0.003,
+        "cool": 0.866,
+        "warm": 0.134,
+        "soft": 0.682
+      },
+      "tags": {
+        "landscape": 0.083,
+        "people": 0.142,
+        "abstract": 0.017,
+        "light": 0.337,
+        "vivid": 0.002,
+        "cool": 0.866,
+        "warm": 0.074,
+        "soft": 0.682
+      },
+      "emotions": {
+        "calm": 0.66,
+        "joy": 0.189,
+        "sadness": 1.0,
+        "tension": 0.007,
+        "awe": 0.499,
+        "nostalgia": 0.927
+      },
+      "imageEmotions": {
+        "calm": 0.583,
+        "joy": 0.026,
+        "sadness": 0.849,
+        "tension": 0.009,
+        "awe": 0.087,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.488,
+        "joy": 0.392,
+        "sadness": 0.799,
+        "tension": 0.0,
+        "awe": 1.0,
+        "nostalgia": 0.36
+      },
+      "seconds": 4.809653999982402
+    },
+    "cap-29": {
+      "imageSha256": "916e8dfdb34fe9529d810fba3c23b01b9a27ec469bc9d94861d4b0897508da81",
+      "inputSize": [
+        629,
+        488
+      ],
+      "tagsRaw": {
+        "landscape": 0.647,
+        "people": 0.183,
+        "abstract": 0.166,
+        "light": 0.975,
+        "vivid": 0.91,
+        "cool": 0.97,
+        "warm": 0.03,
+        "soft": 0.171
+      },
+      "tags": {
+        "landscape": 0.647,
+        "people": 0.183,
+        "abstract": 0.166,
+        "light": 0.75,
+        "vivid": 0.55,
+        "cool": 0.97,
+        "warm": 0.017,
+        "soft": 0.171
+      },
+      "emotions": {
+        "calm": 0.279,
+        "joy": 0.336,
+        "sadness": 0.33,
+        "tension": 0.214,
+        "awe": 1.0,
+        "nostalgia": 0.52
+      },
+      "imageEmotions": {
+        "calm": 0.391,
+        "joy": 0.267,
+        "sadness": 0.069,
+        "tension": 0.008,
+        "awe": 1.0,
+        "nostalgia": 0.517
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.508,
+        "sadness": 0.982,
+        "tension": 0.728,
+        "awe": 1.0,
+        "nostalgia": 0.527
+      },
+      "seconds": 4.8523413999937475
+    },
+    "cap-30": {
+      "imageSha256": "9edc07602018b6128b905deea47cb8993448a2b542f16e6f964c560d1428f0b3",
+      "inputSize": [
+        334,
+        467
+      ],
+      "tagsRaw": {
+        "landscape": 0.563,
+        "people": 0.067,
+        "abstract": 0.844,
+        "light": 0.591,
+        "vivid": 0.922,
+        "cool": 0.998,
+        "warm": 0.002,
+        "soft": 0.004
+      },
+      "tags": {
+        "landscape": 0.563,
+        "people": 0.067,
+        "abstract": 0.844,
+        "light": 0.311,
+        "vivid": 0.61,
+        "cool": 0.998,
+        "warm": 0.001,
+        "soft": 0.004
+      },
+      "emotions": {
+        "calm": 1.0,
+        "joy": 0.539,
+        "sadness": 0.199,
+        "tension": 0.354,
+        "awe": 0.463,
+        "nostalgia": 0.5
+      },
+      "imageEmotions": {
+        "calm": 0.639,
+        "joy": 0.911,
+        "sadness": 0.3,
+        "tension": 0.428,
+        "awe": 1.0,
+        "nostalgia": 0.686
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.167,
+        "sadness": 0.086,
+        "tension": 0.222,
+        "awe": 0.0,
+        "nostalgia": 0.26
+      },
+      "seconds": 3.9968151999637485
+    },
+    "cap-31": {
+      "imageSha256": "a3b4069d4eedd765a6e4d27daf1f9c6caa239d85b6d129e139ecdb18dccd7c91",
+      "inputSize": [
+        330,
+        330
+      ],
+      "tagsRaw": {
+        "landscape": 0.008,
+        "people": 0.601,
+        "abstract": 0.012,
+        "light": 0.823,
+        "vivid": 0.952,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.223
+      },
+      "tags": {
+        "landscape": 0.008,
+        "people": 0.601,
+        "abstract": 0.012,
+        "light": 0.433,
+        "vivid": 0.76,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.223
+      },
+      "emotions": {
+        "calm": 0.557,
+        "joy": 0.244,
+        "sadness": 0.361,
+        "tension": 0.011,
+        "awe": 0.326,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.233,
+        "joy": 0.076,
+        "sadness": 0.337,
+        "tension": 0.014,
+        "awe": 0.249,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.492,
+        "sadness": 0.259,
+        "tension": 0.0,
+        "awe": 0.348,
+        "nostalgia": 0.575
+      },
+      "seconds": 3.9640813000150956
+    },
+    "cap-32": {
+      "imageSha256": "44d91070f52f874f13c5fbd6dd4baf4f7ddb702a4850d1953eb6e5be41b50258",
+      "inputSize": [
+        447,
+        447
+      ],
+      "tagsRaw": {
+        "landscape": 0.01,
+        "people": 0.923,
+        "abstract": 0.345,
+        "light": 0.873,
+        "vivid": 0.914,
+        "cool": 0.003,
+        "warm": 0.997,
+        "soft": 0.039
+      },
+      "tags": {
+        "landscape": 0.01,
+        "people": 0.923,
+        "abstract": 0.345,
+        "light": 0.459,
+        "vivid": 0.57,
+        "cool": 0.003,
+        "warm": 0.985,
+        "soft": 0.039
+      },
+      "emotions": {
+        "calm": 0.222,
+        "joy": 0.334,
+        "sadness": 0.161,
+        "tension": 0.071,
+        "awe": 1.0,
+        "nostalgia": 0.735
+      },
+      "imageEmotions": {
+        "calm": 0.069,
+        "joy": 0.32,
+        "sadness": 0.147,
+        "tension": 0.036,
+        "awe": 0.487,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.267,
+        "joy": 0.154,
+        "sadness": 0.082,
+        "tension": 0.07,
+        "awe": 1.0,
+        "nostalgia": 0.0
+      },
+      "seconds": 4.414756500045769
+    },
+    "cap-37": {
+      "imageSha256": "6b720d7d9a20608771b336992a8129a330763701811dcea3c3d70acb84eccd19",
+      "inputSize": [
+        389,
+        514
+      ],
+      "tagsRaw": {
+        "landscape": 0.007,
+        "people": 0.934,
+        "abstract": 0.005,
+        "light": 0.936,
+        "vivid": 0.986,
+        "cool": 0.066,
+        "warm": 0.934,
+        "soft": 0.878
+      },
+      "tags": {
+        "landscape": 0.007,
+        "people": 0.934,
+        "abstract": 0.005,
+        "light": 0.493,
+        "vivid": 0.93,
+        "cool": 0.066,
+        "warm": 0.67,
+        "soft": 0.878
+      },
+      "emotions": {
+        "calm": 0.498,
+        "joy": 1.0,
+        "sadness": 0.119,
+        "tension": 0.083,
+        "awe": 0.041,
+        "nostalgia": 0.778
+      },
+      "imageEmotions": {
+        "calm": 0.036,
+        "joy": 1.0,
+        "sadness": 0.033,
+        "tension": 0.021,
+        "awe": 0.057,
+        "nostalgia": 0.93
+      },
+      "textEmotions": {
+        "calm": 1.0,
+        "joy": 0.577,
+        "sadness": 0.202,
+        "tension": 0.143,
+        "awe": 0.0,
+        "nostalgia": 0.215
+      },
+      "seconds": 4.329160699970089
+    },
+    "met-435882": {
+      "imageSha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e",
+      "inputSize": [
+        600,
+        476
+      ],
+      "tagsRaw": {
+        "landscape": 0.017,
+        "people": 0.088,
+        "abstract": 0.105,
+        "light": 0.816,
+        "vivid": 0.78,
+        "cool": 0.879,
+        "warm": 0.121,
+        "soft": 0.137
+      },
+      "tags": {
+        "landscape": 0.017,
+        "people": 0.088,
+        "abstract": 0.105,
+        "light": 0.429,
+        "vivid": 0.433,
+        "cool": 0.879,
+        "warm": 0.067,
+        "soft": 0.137
+      },
+      "emotions": {
+        "calm": 0.519,
+        "joy": 1.0,
+        "sadness": 0.161,
+        "tension": 0.158,
+        "awe": 0.42,
+        "nostalgia": 0.532
+      },
+      "imageEmotions": {
+        "calm": 0.647,
+        "joy": 1.0,
+        "sadness": 0.256,
+        "tension": 0.022,
+        "awe": 0.229,
+        "nostalgia": 0.514
+      },
+      "textEmotions": {
+        "calm": 0.304,
+        "joy": 1.0,
+        "sadness": 0.0,
+        "tension": 0.386,
+        "awe": 0.741,
+        "nostalgia": 0.563
+      },
+      "seconds": 3.112486500001978
+    },
+    "met-436532": {
+      "imageSha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da",
+      "inputSize": [
+        502,
+        625
+      ],
+      "tagsRaw": {
+        "landscape": 0.007,
+        "people": 0.983,
+        "abstract": 0.857,
+        "light": 0.964,
+        "vivid": 0.817,
+        "cool": 0.029,
+        "warm": 0.971,
+        "soft": 0.048
+      },
+      "tags": {
+        "landscape": 0.007,
+        "people": 0.983,
+        "abstract": 0.857,
+        "light": 0.64,
+        "vivid": 0.454,
+        "cool": 0.029,
+        "warm": 0.855,
+        "soft": 0.048
+      },
+      "emotions": {
+        "calm": 0.105,
+        "joy": 1.0,
+        "sadness": 0.754,
+        "tension": 0.397,
+        "awe": 0.548,
+        "nostalgia": 0.726
+      },
+      "imageEmotions": {
+        "calm": 0.137,
+        "joy": 1.0,
+        "sadness": 0.377,
+        "tension": 0.052,
+        "awe": 0.536,
+        "nostalgia": 0.653
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.498,
+        "sadness": 1.0,
+        "tension": 0.768,
+        "awe": 0.292,
+        "nostalgia": 0.483
+      },
+      "seconds": 3.259619200020097
+    },
+    "met-435702": {
+      "imageSha256": "525c8b861d616b8c55bff075d6808a47a4a4d29de5ddadfb903be5b3b24dd16f",
+      "inputSize": [
+        599,
+        306
+      ],
+      "tagsRaw": {
+        "landscape": 0.347,
+        "people": 0.544,
+        "abstract": 0.004,
+        "light": 0.987,
+        "vivid": 0.087,
+        "cool": 0.039,
+        "warm": 0.961,
+        "soft": 0.015
+      },
+      "tags": {
+        "landscape": 0.347,
+        "people": 0.544,
+        "abstract": 0.004,
+        "light": 0.87,
+        "vivid": 0.048,
+        "cool": 0.039,
+        "warm": 0.805,
+        "soft": 0.015
+      },
+      "emotions": {
+        "calm": 0.098,
+        "joy": 1.0,
+        "sadness": 0.371,
+        "tension": 0.353,
+        "awe": 0.62,
+        "nostalgia": 0.675
+      },
+      "imageEmotions": {
+        "calm": 0.127,
+        "joy": 1.0,
+        "sadness": 0.269,
+        "tension": 0.026,
+        "awe": 0.381,
+        "nostalgia": 0.62
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.685,
+        "sadness": 0.491,
+        "tension": 1.0,
+        "awe": 0.979,
+        "nostalgia": 0.59
+      },
+      "seconds": 3.161085300031118
+    },
+    "met-437437": {
+      "imageSha256": "cd3c299d8355a994507bfac03093397080a65b281b71e3e9166126caa9b362af",
+      "inputSize": [
+        449,
+        624
+      ],
+      "tagsRaw": {
+        "landscape": 0.0,
+        "people": 0.989,
+        "abstract": 0.565,
+        "light": 0.865,
+        "vivid": 0.329,
+        "cool": 0.597,
+        "warm": 0.403,
+        "soft": 0.132
+      },
+      "tags": {
+        "landscape": 0.0,
+        "people": 0.989,
+        "abstract": 0.565,
+        "light": 0.455,
+        "vivid": 0.183,
+        "cool": 0.597,
+        "warm": 0.224,
+        "soft": 0.132
+      },
+      "emotions": {
+        "calm": 0.081,
+        "joy": 1.0,
+        "sadness": 0.438,
+        "tension": 0.282,
+        "awe": 0.203,
+        "nostalgia": 0.467
+      },
+      "imageEmotions": {
+        "calm": 0.087,
+        "joy": 1.0,
+        "sadness": 0.133,
+        "tension": 0.013,
+        "awe": 0.067,
+        "nostalgia": 0.3
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.234,
+        "sadness": 1.0,
+        "tension": 0.858,
+        "awe": 0.449,
+        "nostalgia": 0.6
+      },
+      "seconds": 3.060570999979973
+    },
+    "met-436535": {
+      "imageSha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc",
+      "inputSize": [
+        599,
+        477
+      ],
+      "tagsRaw": {
+        "landscape": 0.989,
+        "people": 0.066,
+        "abstract": 0.364,
+        "light": 0.931,
+        "vivid": 0.728,
+        "cool": 0.476,
+        "warm": 0.524,
+        "soft": 0.069
+      },
+      "tags": {
+        "landscape": 0.989,
+        "people": 0.066,
+        "abstract": 0.364,
+        "light": 0.49,
+        "vivid": 0.404,
+        "cool": 0.476,
+        "warm": 0.291,
+        "soft": 0.069
+      },
+      "emotions": {
+        "calm": 0.338,
+        "joy": 0.806,
+        "sadness": 0.107,
+        "tension": 0.056,
+        "awe": 1.0,
+        "nostalgia": 0.653
+      },
+      "imageEmotions": {
+        "calm": 0.682,
+        "joy": 0.875,
+        "sadness": 0.227,
+        "tension": 0.017,
+        "awe": 1.0,
+        "nostalgia": 0.969
+      },
+      "textEmotions": {
+        "calm": 0.031,
+        "joy": 0.745,
+        "sadness": 0.0,
+        "tension": 0.091,
+        "awe": 1.0,
+        "nostalgia": 0.371
+      },
+      "seconds": 2.934673700015992
+    },
+    "met-438817": {
+      "imageSha256": "e06ff1c9490053cf3f9c8351d0f939febf9ef92b8059a809ba541d16ebfccde0",
+      "inputSize": [
+        579,
+        624
+      ],
+      "tagsRaw": {
+        "landscape": 0.002,
+        "people": 0.853,
+        "abstract": 0.013,
+        "light": 0.802,
+        "vivid": 0.093,
+        "cool": 0.465,
+        "warm": 0.535,
+        "soft": 0.737
+      },
+      "tags": {
+        "landscape": 0.002,
+        "people": 0.853,
+        "abstract": 0.013,
+        "light": 0.422,
+        "vivid": 0.052,
+        "cool": 0.465,
+        "warm": 0.297,
+        "soft": 0.737
+      },
+      "emotions": {
+        "calm": 0.142,
+        "joy": 1.0,
+        "sadness": 0.273,
+        "tension": 0.355,
+        "awe": 0.252,
+        "nostalgia": 0.59
+      },
+      "imageEmotions": {
+        "calm": 0.157,
+        "joy": 1.0,
+        "sadness": 0.053,
+        "tension": 0.048,
+        "awe": 0.056,
+        "nostalgia": 0.419
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.308,
+        "sadness": 0.723,
+        "tension": 1.0,
+        "awe": 0.648,
+        "nostalgia": 0.677
+      },
+      "seconds": 2.961912300030235
+    },
+    "met-437881": {
+      "imageSha256": "13120aa067755f1f50d2b900417807ef9da3f8b2b63a1bbea428fe3f2d8d00a9",
+      "inputSize": [
+        555,
+        624
+      ],
+      "tagsRaw": {
+        "landscape": 0.0,
+        "people": 0.925,
+        "abstract": 0.222,
+        "light": 0.875,
+        "vivid": 0.136,
+        "cool": 0.702,
+        "warm": 0.298,
+        "soft": 0.006
+      },
+      "tags": {
+        "landscape": 0.0,
+        "people": 0.925,
+        "abstract": 0.222,
+        "light": 0.461,
+        "vivid": 0.076,
+        "cool": 0.702,
+        "warm": 0.166,
+        "soft": 0.006
+      },
+      "emotions": {
+        "calm": 0.234,
+        "joy": 0.614,
+        "sadness": 1.0,
+        "tension": 0.409,
+        "awe": 0.314,
+        "nostalgia": 0.881
+      },
+      "imageEmotions": {
+        "calm": 0.377,
+        "joy": 0.746,
+        "sadness": 0.819,
+        "tension": 0.101,
+        "awe": 0.294,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.306,
+        "sadness": 1.0,
+        "tension": 0.705,
+        "awe": 0.268,
+        "nostalgia": 0.53
+      },
+      "seconds": 4.572396799980197
+    },
+    "met-436634": {
+      "imageSha256": "431d5bb737eea3e570ab29a1c48a534b01b14c7992e7c873e03e52729b35aaff",
+      "inputSize": [
+        479,
+        625
+      ],
+      "tagsRaw": {
+        "landscape": 0.048,
+        "people": 0.351,
+        "abstract": 0.384,
+        "light": 0.761,
+        "vivid": 0.659,
+        "cool": 0.487,
+        "warm": 0.513,
+        "soft": 0.005
+      },
+      "tags": {
+        "landscape": 0.048,
+        "people": 0.351,
+        "abstract": 0.384,
+        "light": 0.401,
+        "vivid": 0.366,
+        "cool": 0.487,
+        "warm": 0.285,
+        "soft": 0.005
+      },
+      "emotions": {
+        "calm": 0.126,
+        "joy": 0.704,
+        "sadness": 0.516,
+        "tension": 0.408,
+        "awe": 0.253,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.186,
+        "joy": 0.646,
+        "sadness": 0.435,
+        "tension": 0.244,
+        "awe": 0.151,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.827,
+        "sadness": 0.685,
+        "tension": 0.753,
+        "awe": 0.468,
+        "nostalgia": 1.0
+      },
+      "seconds": 3.6987454000045545
+    },
+    "met-435809": {
+      "imageSha256": "98dc6d6e23c008b23056108d04d9143b8c7f73fe6fa2a940fd09663290135e25",
+      "inputSize": [
+        600,
+        442
+      ],
+      "tagsRaw": {
+        "landscape": 0.894,
+        "people": 0.125,
+        "abstract": 0.005,
+        "light": 0.669,
+        "vivid": 0.109,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.011
+      },
+      "tags": {
+        "landscape": 0.894,
+        "people": 0.125,
+        "abstract": 0.005,
+        "light": 0.352,
+        "vivid": 0.061,
+        "cool": 0.0,
+        "warm": 1.0,
+        "soft": 0.011
+      },
+      "emotions": {
+        "calm": 0.195,
+        "joy": 0.614,
+        "sadness": 0.814,
+        "tension": 0.579,
+        "awe": 1.0,
+        "nostalgia": 0.986
+      },
+      "imageEmotions": {
+        "calm": 0.284,
+        "joy": 0.668,
+        "sadness": 0.623,
+        "tension": 0.173,
+        "awe": 0.909,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.0,
+        "joy": 0.336,
+        "sadness": 0.839,
+        "tension": 1.0,
+        "awe": 0.815,
+        "nostalgia": 0.649
+      },
+      "seconds": 3.58183189999545
+    },
+    "met-437853": {
+      "imageSha256": "6f1c4b129cc7302098a4bfc3c835e5b932c3b0fa8566544bdb54a694ab4c7656",
+      "inputSize": [
+        599,
+        447
+      ],
+      "tagsRaw": {
+        "landscape": 0.671,
+        "people": 0.352,
+        "abstract": 0.028,
+        "light": 0.983,
+        "vivid": 0.478,
+        "cool": 0.221,
+        "warm": 0.779,
+        "soft": 0.406
+      },
+      "tags": {
+        "landscape": 0.671,
+        "people": 0.352,
+        "abstract": 0.028,
+        "light": 0.83,
+        "vivid": 0.266,
+        "cool": 0.221,
+        "warm": 0.433,
+        "soft": 0.406
+      },
+      "emotions": {
+        "calm": 0.703,
+        "joy": 1.0,
+        "sadness": 0.065,
+        "tension": 0.2,
+        "awe": 0.683,
+        "nostalgia": 0.924
+      },
+      "imageEmotions": {
+        "calm": 0.904,
+        "joy": 0.82,
+        "sadness": 0.098,
+        "tension": 0.009,
+        "awe": 0.404,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.227,
+        "joy": 1.0,
+        "sadness": 0.0,
+        "tension": 0.426,
+        "awe": 0.909,
+        "nostalgia": 0.571
+      },
+      "seconds": 3.1984147999901325
+    },
+    "met-436575": {
+      "imageSha256": "5f30ee908910e71a789447fa8b0c3eda0070602d9ddd1daa1145554d617deaef",
+      "inputSize": [
+        555,
+        625
+      ],
+      "tagsRaw": {
+        "landscape": 0.961,
+        "people": 0.144,
+        "abstract": 0.029,
+        "light": 0.449,
+        "vivid": 0.031,
+        "cool": 0.793,
+        "warm": 0.207,
+        "soft": 0.01
+      },
+      "tags": {
+        "landscape": 0.961,
+        "people": 0.144,
+        "abstract": 0.029,
+        "light": 0.236,
+        "vivid": 0.017,
+        "cool": 0.793,
+        "warm": 0.115,
+        "soft": 0.01
+      },
+      "emotions": {
+        "calm": 0.394,
+        "joy": 0.57,
+        "sadness": 0.686,
+        "tension": 0.325,
+        "awe": 0.74,
+        "nostalgia": 1.0
+      },
+      "imageEmotions": {
+        "calm": 0.452,
+        "joy": 0.118,
+        "sadness": 0.954,
+        "tension": 0.163,
+        "awe": 0.412,
+        "nostalgia": 1.0
+      },
+      "textEmotions": {
+        "calm": 0.143,
+        "joy": 1.0,
+        "sadness": 0.0,
+        "tension": 0.429,
+        "awe": 0.916,
+        "nostalgia": 0.579
+      },
+      "seconds": 3.3867336000548676
+    }
+  },
+  "repeats": {
+    "survey-candidate-cap-03": 0.0,
+    "survey-candidate-cap-06": 0.0,
+    "survey-candidate-cap-12": 0.0
+  },
+  "protocolSha256": "0137ad6e3c81d5efcda77ad7cb669320b9d70db08164755794a089139108c4e9",
+  "scope": "private image/NLI inference; no approval, database or GPT calls",
+  "versions": {
+    "torch": "2.15.0+cpu",
+    "transformers": "4.57.6",
+    "Pillow": "13.0.0"
+  },
+  "reusedRawSha256": "46a89a56ca2d3ff678630b627ad6d20dca8178d8ee63084dc0ece3ae62193cb2",
+  "reusedItemCount": 49,
+  "modelFileHashes": {
+    "clipPath/config.json": "b575ef3c36f2a057fa19e221650105052d61cc9c1a972ec15019c6261ec98770",
+    "clipPath/preprocessor_config.json": "910e70b3956ac9879ebc90b22fb3bc8a75b6a0677814500101a4c072bd7857bd",
+    "clipPath/pytorch_model.bin": "a63082132ba4f97a80bea76823f544493bffa8082296d62d71581a4feff1576f",
+    "clipPath/special_tokens_map.json": "f8c0d6c39aee3f8431078ef6646567b0aba7f2246e9c54b8b99d55c22b707cbf",
+    "clipPath/tokenizer.json": "b556ac8c99757ffb677208af34bc8c6721572114111a6e0aaf5fa69ff0b8d842",
+    "clipPath/tokenizer_config.json": "34b7336e4bee12e0a9730eaf5189f582ef3c3eea5027f65730e5717256755aad",
+    "clipPath/vocab.json": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363",
+    "nliPath/config.json": "4e4430c95100d613df80fa01276f231931e1b535557cf62fbb3cc50323e50cca",
+    "nliPath/model.safetensors": "65af59b1ff4450b09ecbf13ca35c840dbf038b26ff8e10e5ea89ca724828ed1e",
+    "nliPath/special_tokens_map.json": "9463f61e1b109a8eb4688b829260d7c6b1e6dff04c98ff7269bb89e2b92369b9",
+    "nliPath/tokenizer.json": "3aca3ce69a0a35aeb144a52c4f1d41c4246b8785f8f398315cc8fb6b24057810",
+    "nliPath/tokenizer_config.json": "df9fd3a4482cc4a866788244824573fab8e74dadd1609d4f0e5997f9e96921dc"
+  }
+}

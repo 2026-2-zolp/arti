@@ -1,0 +1,1201 @@
+{
+  "scope": "scenario sensitivity, not preference accuracy or user effectiveness",
+  "imageCount": 54,
+  "poolResults": {
+    "A_current_draft": {
+      "tagCounts": {
+        "6": 9,
+        "8": 8,
+        "7": 13,
+        "5": 2
+      },
+      "topFrequencyTies": 13,
+      "thirdBoundaryTies": 21,
+      "forcedTags": [],
+      "strategyStats": {
+        "current_all_frequency": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 22,
+              "uniqueOrders": 22,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 26,
+              "uniqueOrders": 27,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 28,
+              "uniqueOrders": 29,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 23,
+              "uniqueOrders": 23,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 21,
+              "uniqueOrders": 21,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 4,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 16,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 12,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 5,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 32,
+              "totalSlots": 224
+            }
+          }
+        },
+        "all_frequency_ai_coverage_tiebreak": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 21,
+              "uniqueOrders": 21,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 27,
+              "uniqueOrders": 27,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 27,
+              "uniqueOrders": 28,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 25,
+              "uniqueOrders": 25,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 25,
+              "uniqueOrders": 25,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 15,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 3,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 11,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 5,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 32,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_frequency_then_ai_sum": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 22,
+              "uniqueOrders": 22,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 23,
+              "uniqueOrders": 23,
+              "zeroMatchSlots": 1,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 5,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 19,
+              "uniqueOrders": 20,
+              "zeroMatchSlots": 15,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 19,
+              "uniqueOrders": 19,
+              "zeroMatchSlots": 25,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 17,
+              "zeroMatchSlots": 5,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 13,
+              "zeroMatchSlots": 30,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 5,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 80,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_signed_opponent_contrast": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 19,
+              "uniqueOrders": 19,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 26,
+              "uniqueOrders": 26,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 24,
+              "uniqueOrders": 24,
+              "zeroMatchSlots": 1,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 17,
+              "zeroMatchSlots": 9,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 22,
+              "uniqueOrders": 22,
+              "zeroMatchSlots": 16,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 24,
+              "uniqueOrders": 24,
+              "zeroMatchSlots": 26,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 19,
+              "uniqueOrders": 19,
+              "zeroMatchSlots": 14,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 15,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 44,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 6,
+              "uniqueOrders": 7,
+              "zeroMatchSlots": 99,
+              "totalSlots": 224
+            }
+          }
+        }
+      }
+    },
+    "B_three_external_swaps": {
+      "tagCounts": {
+        "6": 5,
+        "7": 18,
+        "8": 8,
+        "5": 1
+      },
+      "topFrequencyTies": 17,
+      "thirdBoundaryTies": 20,
+      "forcedTags": [
+        "abstract",
+        "light",
+        "warm"
+      ],
+      "strategyStats": {
+        "current_all_frequency": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 15,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 19,
+              "uniqueOrders": 20,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 16,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 15,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 10,
+              "uniqueOrders": 10,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 10,
+              "uniqueOrders": 10,
+              "zeroMatchSlots": 12,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 4,
+              "uniqueOrders": 4,
+              "zeroMatchSlots": 33,
+              "totalSlots": 224
+            }
+          }
+        },
+        "all_frequency_ai_coverage_tiebreak": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 16,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 20,
+              "uniqueOrders": 20,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 20,
+              "uniqueOrders": 20,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 16,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 7,
+              "uniqueOrders": 7,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 8,
+              "uniqueOrders": 8,
+              "zeroMatchSlots": 14,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 4,
+              "uniqueOrders": 4,
+              "zeroMatchSlots": 33,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_frequency_then_ai_sum": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 16,
+              "uniqueOrders": 16,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 2,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 8,
+              "uniqueOrders": 8,
+              "zeroMatchSlots": 11,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 33,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 55,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 5,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 9,
+              "uniqueOrders": 9,
+              "zeroMatchSlots": 36,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 5,
+              "uniqueOrders": 5,
+              "zeroMatchSlots": 91,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_signed_opponent_contrast": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 27,
+              "uniqueOrders": 27,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 23,
+              "uniqueOrders": 23,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 13,
+              "uniqueOrders": 13,
+              "zeroMatchSlots": 16,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 32,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 24,
+              "uniqueOrders": 24,
+              "zeroMatchSlots": 48,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 17,
+              "zeroMatchSlots": 14,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 49,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 6,
+              "uniqueOrders": 7,
+              "zeroMatchSlots": 100,
+              "totalSlots": 224
+            }
+          }
+        }
+      }
+    },
+    "C_within_subject_probe": {
+      "tagCounts": {
+        "7": 20,
+        "8": 12
+      },
+      "topFrequencyTies": 16,
+      "thirdBoundaryTies": 26,
+      "forcedTags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "vivid"
+      ],
+      "strategyStats": {
+        "current_all_frequency": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 10,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 8,
+              "uniqueOrders": 8,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 8,
+              "uniqueOrders": 8,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 5,
+              "uniqueOrders": 5,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 6,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 6,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 4,
+              "uniqueOrders": 4,
+              "zeroMatchSlots": 26,
+              "totalSlots": 224
+            }
+          }
+        },
+        "all_frequency_ai_coverage_tiebreak": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 15,
+              "uniqueOrders": 15,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 8,
+              "uniqueOrders": 8,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 13,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 9,
+              "uniqueOrders": 9,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 8,
+              "uniqueOrders": 9,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 6,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 2,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 4,
+              "uniqueOrders": 4,
+              "zeroMatchSlots": 26,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_frequency_then_ai_sum": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 0,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 9,
+              "uniqueOrders": 9,
+              "zeroMatchSlots": 9,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 10,
+              "uniqueOrders": 10,
+              "zeroMatchSlots": 27,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 45,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 2,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 10,
+              "uniqueOrders": 10,
+              "zeroMatchSlots": 21,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 5,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 59,
+              "totalSlots": 224
+            }
+          }
+        },
+        "top3_signed_opponent_contrast": {
+          "blocked": 0,
+          "targets": {
+            "mixed18/30m": {
+              "uniqueSets": 12,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "mixed18/60m": {
+              "uniqueSets": 17,
+              "uniqueOrders": 17,
+              "zeroMatchSlots": 2,
+              "totalSlots": 160
+            },
+            "mixed18/relaxed": {
+              "uniqueSets": 18,
+              "uniqueOrders": 18,
+              "zeroMatchSlots": 4,
+              "totalSlots": 224
+            },
+            "yoo15_disjoint/30m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 0,
+              "totalSlots": 96
+            },
+            "yoo15_disjoint/60m": {
+              "uniqueSets": 11,
+              "uniqueOrders": 12,
+              "zeroMatchSlots": 1,
+              "totalSlots": 160
+            },
+            "yoo15_disjoint/relaxed": {
+              "uniqueSets": 11,
+              "uniqueOrders": 11,
+              "zeroMatchSlots": 4,
+              "totalSlots": 224
+            },
+            "external8/30m": {
+              "uniqueSets": 14,
+              "uniqueOrders": 14,
+              "zeroMatchSlots": 16,
+              "totalSlots": 96
+            },
+            "external8/60m": {
+              "uniqueSets": 9,
+              "uniqueOrders": 10,
+              "zeroMatchSlots": 53,
+              "totalSlots": 160
+            },
+            "external8/relaxed": {
+              "uniqueSets": 6,
+              "uniqueOrders": 6,
+              "zeroMatchSlots": 98,
+              "totalSlots": 224
+            }
+          }
+        }
+      }
+    }
+  },
+  "strategyChanges": {
+    "A_current_draft/all_frequency_ai_coverage_tiebreak": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 14,
+        "changedOrders": 14
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 18,
+        "changedOrders": 18
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 10,
+        "changedOrders": 11
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 7,
+        "changedOrders": 7
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 13,
+        "changedOrders": 13
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 4,
+        "changedOrders": 4
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 13,
+        "changedOrders": 17
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 9,
+        "changedOrders": 9
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 0,
+        "changedOrders": 1
+      }
+    },
+    "A_current_draft/top3_frequency_then_ai_sum": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 29,
+        "changedOrders": 30
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 21,
+        "changedOrders": 21
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 28,
+        "changedOrders": 28
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 23,
+        "changedOrders": 23
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 27,
+        "changedOrders": 27
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 21,
+        "changedOrders": 22
+      }
+    },
+    "A_current_draft/top3_signed_opponent_contrast": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 24,
+        "changedOrders": 24
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 31
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 23,
+        "changedOrders": 24
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 27,
+        "changedOrders": 27
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 25,
+        "changedOrders": 25
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 19,
+        "changedOrders": 20
+      }
+    },
+    "B_three_external_swaps/all_frequency_ai_coverage_tiebreak": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 13,
+        "changedOrders": 13
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 13,
+        "changedOrders": 13
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 9,
+        "changedOrders": 9
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 6,
+        "changedOrders": 6
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 6,
+        "changedOrders": 6
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 2,
+        "changedOrders": 2
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 11,
+        "changedOrders": 11
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 7,
+        "changedOrders": 7
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 0,
+        "changedOrders": 0
+      }
+    },
+    "B_three_external_swaps/top3_frequency_then_ai_sum": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 21,
+        "changedOrders": 21
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 32
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 21,
+        "changedOrders": 21
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 24,
+        "changedOrders": 24
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 29,
+        "changedOrders": 29
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 19,
+        "changedOrders": 19
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 19,
+        "changedOrders": 19
+      }
+    },
+    "B_three_external_swaps/top3_signed_opponent_contrast": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 31
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 32
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 25,
+        "changedOrders": 25
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 31
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 28,
+        "changedOrders": 28
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 28,
+        "changedOrders": 28
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 20,
+        "changedOrders": 20
+      }
+    },
+    "C_within_subject_probe/all_frequency_ai_coverage_tiebreak": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 15,
+        "changedOrders": 15
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 16,
+        "changedOrders": 16
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 13,
+        "changedOrders": 13
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 0,
+        "changedOrders": 0
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 5,
+        "changedOrders": 6
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 6,
+        "changedOrders": 6
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 17,
+        "changedOrders": 17
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 9,
+        "changedOrders": 9
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 0,
+        "changedOrders": 0
+      }
+    },
+    "C_within_subject_probe/top3_frequency_then_ai_sum": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 16,
+        "changedOrders": 16
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 30,
+        "changedOrders": 30
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 28,
+        "changedOrders": 28
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 26,
+        "changedOrders": 26
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 21,
+        "changedOrders": 21
+      }
+    },
+    "C_within_subject_probe/top3_signed_opponent_contrast": {
+      "mixed18/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 25,
+        "changedOrders": 25
+      },
+      "mixed18/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "mixed18/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "yoo15_disjoint/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 18,
+        "changedOrders": 19
+      },
+      "yoo15_disjoint/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "yoo15_disjoint/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 29,
+        "changedOrders": 29
+      },
+      "external8/30m": {
+        "comparableScenarios": 32,
+        "changedSets": 32,
+        "changedOrders": 32
+      },
+      "external8/60m": {
+        "comparableScenarios": 32,
+        "changedSets": 31,
+        "changedOrders": 31
+      },
+      "external8/relaxed": {
+        "comparableScenarios": 32,
+        "changedSets": 17,
+        "changedOrders": 17
+      }
+    }
+  },
+  "targetCorpora": {
+    "mixed18": 18,
+    "yoo15_disjoint": 15,
+    "external8": 8
+  },
+  "dbQueries": 0,
+  "rawInferenceSeconds": 219.15064930007793,
+  "repeatMaxDelta": 0.0,
+  "exampleEvidence": "selected-examples.json",
+  "recommendationExecutions": 3456,
+  "priorityControlParityChecks": 864,
+  "approvalTransferred": false,
+  "selectionFinal": false,
+  "dbCursorGuard": "all report code executed with database cursor access forbidden"
+}
