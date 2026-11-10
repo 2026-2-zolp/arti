@@ -67,6 +67,8 @@ class Artwork(models.Model):
     show_image = models.BooleanField(default=True)
     tags = models.JSONField(default=list, blank=True)
     tag_scores = models.JSONField(null=True, default=None, blank=True)
+    tag_score_evidence = models.JSONField(null=True, default=None, blank=True)
+    tag_score_revision = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True)
     guided_looking = models.JSONField(default=list, blank=True)
     guided_hints = models.JSONField(default=list, blank=True)
@@ -118,6 +120,9 @@ class Artwork(models.Model):
         if self.tag_scores is not None:
             if not isinstance(self.tag_scores,dict) or any(k not in TAGS or type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for k,v in self.tag_scores.items()):
                 raise ValidationError('Invalid tag scores.')
+        if self.tag_score_evidence is not None:
+            from .tag_scores import validate_stored_evidence
+            validate_stored_evidence(self)
         if self.emotion_status=='confirmed' and (not isinstance(self.analysis,dict) or not isinstance(self.analysis.get('emotions'),dict)):
             raise ValidationError('Confirmed emotion requires reviewed scores.')
 

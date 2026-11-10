@@ -35,14 +35,14 @@ class TagEvidenceTransportTests(SimpleTestCase):
             self.assertEqual(set(requests[0]['body']), {'title', 'description', 'imageBase64'})
             return response
 
-    def test_wire_evidence_is_validated_but_legacy_provider_storage_shape_is_preserved(self):
+    def test_wire_evidence_is_validated_and_forwarded_only_with_tags(self):
         expected = packet(); value = self.analyze(expected)
         self.assertEqual(value['tagEvidence'], expected['tagEvidence'])
         with override_settings(ARTI_MODEL_SERVICE_URL='http://fixture.test'):
             cache = {'result': value}
             tag = providers.generate('tag', {}, analysis_cache=cache)
             emotion = providers.generate('emotion', {}, analysis_cache=cache)
-        self.assertEqual(tag, {'scores': expected['tags']})
+        self.assertEqual(tag, {'scores': expected['tags'], 'tagEvidence': expected['tagEvidence']})
         self.assertNotIn('tagEvidence', emotion)
         self.assertNotIn('signature', emotion)
         self.assertIn('analyzedAt', emotion)

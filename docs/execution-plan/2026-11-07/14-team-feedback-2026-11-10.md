@@ -74,3 +74,7 @@ W02 `records/W02/contracts.md`는 같은 전시의 승인 작품10점을 ID순�
 ## 11/11 TP1a 구현 후 갱신
 
 [TP1a 실행 기록](records/taste-tie-implementation-results-2026-11-11/TP1a/README.md): 모델/processor 고정 cache와 실제 입력·점수·보정 정의를 결합해 선택적으로 전달하고 Django가 검증한다. 구형 absent/null은 유지하며 잘못된 근거는 502, 기존 저장 JSON에는 새 근거를 넣지 않는다. 모델38/Django23/스크립트53과 합성 실제 HTTP가 통과했다. 실제 모델 품질·사람 검수 통과는 아니다. 일반 DB/실제 env/공개/원격은 유지하고 다음은 격리 TP1b의 구조·원자 저장이다. 프론트는 동섭님 종합본 수령 후 재확인한다.
+
+## 11/11 TP1b 구현 후 갱신
+
+[TP1b 실행 기록](records/taste-tie-implementation-results-2026-11-11/TP1b/README.md): 추가 열만 이관하고 점수·서버 입력에 묶은 출처·revision을 원자 저장한다. 실패/확정/원문 수정·동시 저장을 보호하고 잠금 대기2초·commit 전 예산을 검증했다. 격리 PG의 전체 Django138건(신규18)·스크립트53건 통과. 일반 DB/API·공개·원격은 변경하지 않았다. 다음은 TP2의 서버 공통 resolver/쓰기0 preview·회원 CAS/재시도·관람증거다. 새 근거를 공개하거나 AI 동점 정렬을 켠 단계는 아니다.

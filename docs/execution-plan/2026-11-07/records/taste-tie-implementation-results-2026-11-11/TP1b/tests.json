@@ -1,0 +1,82 @@
+{
+  "date": "2026-11-11",
+  "django": {
+    "passed": 138,
+    "newCases": 18,
+    "seconds": 135.914,
+    "postgresql": true,
+    "independentConnections": true,
+    "command": "backend-django/.venv/Scripts/python.exe manage.py test arti.tests --noinput -v1",
+    "systemCheck": "passed",
+    "migrationDrift": "No changes detected",
+    "cases": [
+      "test_http_success_atomically_binds_server_input_and_keeps_suggested_private",
+      "test_confirm_does_not_regenerate_and_unselected_confirmed_values_are_kept",
+      "test_legacy_missing_or_null_evidence_clears_old_binding_without_inventing_provenance",
+      "test_invalid_evidence_and_provider_failures_preserve_complete_bundle",
+      "test_failed_tag_allows_existing_independent_partial_summary_policy",
+      "test_real_http_timeout_and_late_reply_preserve_previously_bound_scores",
+      "test_total_timeout_discards_successful_tag_and_all_other_updates",
+      "test_database_failure_after_save_rolls_back_entire_bundle",
+      "test_source_edit_during_model_call_wins_and_late_bundle_is_rejected",
+      "test_confirm_during_regeneration_protects_original_confirmed_bundle",
+      "test_two_completed_analyses_same_version_commit_only_once",
+      "test_other_connection_never_sees_partially_saved_bundle",
+      "test_source_change_or_image_replacement_invalidates_binding_without_rewriting_history",
+      "test_untrusted_edit_fields_cannot_write_scores_evidence_or_revision",
+      "test_model_validation_rejects_malformed_binding_and_missing_scores",
+      "test_lock_wait_is_bounded_retryable_and_does_not_change_bundle",
+      "test_budget_expiry_after_database_save_still_rolls_back",
+      "test_additive_migration_preserves_legacy_rows_and_empty_database"
+    ]
+  },
+  "scripts": {
+    "passed": 53,
+    "seconds": 11.47,
+    "command": "python -m unittest discover -s scripts/tests -v"
+  },
+  "isolation": {
+    "name": "arti-tp1b-20261111",
+    "container": "arti-tp1b-20261111-db",
+    "image": "postgres:17-alpine",
+    "port": 58856,
+    "storage": "tmpfs",
+    "database": "test_arti_tp1b;created/destroyed by Django test runner",
+    "ordinaryVolumesAttached": false,
+    "ordinaryContainersUnchanged": true,
+    "LLM": "disabled",
+    "keys": "empty/synthetic test only",
+    "realModelCalls": 0
+  },
+  "loops": [
+    {
+      "run": "targeted first",
+      "cases": 15,
+      "result": "passed"
+    },
+    {
+      "run": "whole suite first",
+      "cases": 137,
+      "result": "2 existing Windows streamed-file cleanup errors"
+    },
+    {
+      "run": "whole suite second",
+      "cases": 138,
+      "result": "12 downstream TestCase connection errors from direct response.close cleanup;fixed by consuming streaming_content through Django closing wrapper"
+    },
+    {
+      "run": "affected stream tests",
+      "cases": 2,
+      "result": "passed"
+    },
+    {
+      "run": "whole suite final",
+      "cases": 138,
+      "result": "passed"
+    }
+  ],
+  "diagnostics": [
+    "Expected ConnectionAbortedError from local synthetic late-response handlers on Windows;test assertions passed;no production endpoint called"
+  ],
+  "scope": "TP1b database and compatibility only;no real weights/GPT/human acceptance"
+}

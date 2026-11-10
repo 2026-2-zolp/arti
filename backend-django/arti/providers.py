@@ -20,8 +20,10 @@ def generate(kind, snapshot, **context):
                 cache['error'] = exc
                 raise
         result = cache['result']
-        # TP1a는 전달 검증까지만 합니다. 새 근거의 저장은 TP1b이며 감정 JSON에도 섞지 않습니다.
-        return {'scores': result['tags']} if kind == 'tag' else {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
+        # 태그에만 선택적 근거를 전달하고 감정 JSON에는 섞지 않습니다.
+        if kind == 'tag':
+            return {'scores': result['tags']} | ({'tagEvidence': result['tagEvidence']} if result.get('tagEvidence') is not None else {})
+        return {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
     if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
         from .llm import generate_text
         return generate_text(kind, snapshot, **context)
@@ -38,7 +40,11 @@ def validate(kind,value):
     if valid:
         if kind=='summary':valid=text(value.get('summary')) and texts(value.get('keywords'))
         elif kind=='guide':valid=text(value.get('intro')) and texts(value.get('questions')) and texts(value.get('hints')) and len(value['questions'])==len(value['hints'])
-        elif kind=='tag':valid=scores(value.get('scores'),TAGS)
+        elif kind=='tag':
+            valid=scores(value.get('scores'),TAGS)
+            if valid:
+                from .tag_scores import validate_provider_evidence
+                validate_provider_evidence(value.get('tagEvidence'),value['scores'])
         elif kind=='emotion':valid=scores(value.get('emotions'),EMOTIONS)
         elif kind in ('interpret','explanation'):valid=text(value.get('text'))
         elif kind=='answer':valid=text(value.get('answer'),1000)

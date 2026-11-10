@@ -176,7 +176,10 @@ class IntegrationTests(Helpers,TestCase):
         r=self.admin.post(path,PNG,content_type='image/png',HTTP_IF_MATCH='"1"');self.assertEqual(r.status_code,200,r.content)
         self.assertEqual(r.json()['reviewStatus'],'source_check')
         self.assertEqual(self.public.get('/api/uploads/'+r.json()['imageFile']).status_code,404)
-        self.assertEqual(self.admin.get('/api/admin/uploads/'+r.json()['imageFile']).status_code,200)
+        download=self.admin.get('/api/admin/uploads/'+r.json()['imageFile'])
+        self.assertEqual(download.status_code,200)
+        # 테스트 클라이언트의 종료 wrapper를 통해 스트림·파일을 함께 닫습니다.
+        self.assertEqual(b''.join(download.streaming_content),PNG)
 
     def test_member_reactions_are_central_and_guest_not_collected(self):
         self.public.post('/api/visits',self.payload(),format='json');self.a.post('/api/visits',self.payload(),format='json')
