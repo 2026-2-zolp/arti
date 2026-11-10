@@ -139,7 +139,7 @@ class IntegrationTests(Helpers,TestCase):
 
     def test_saved_profile_provenance_and_server_counts_cross_pool(self):
         pool=self.public.get('/api/exhibitions/fixture-ex01/taste-pool').json()
-        profile={'version':1,'source':'picks','poolVersion':pool['poolVersion'],'picks':[{'pairIndex':i,'artworkId':p['leftId']} for i,p in enumerate(pool['pairs'])],'counts':{'warm':99},'selectedTags':['warm','landscape']}
+        profile={'version':1,'source':'picks','poolVersion':pool['poolVersion'],'picks':[{'pairIndex':i,'artworkId':p['rightId'] if i == 0 else p['leftId']} for i,p in enumerate(pool['pairs'])],'counts':{'warm':99},'selectedTags':['warm','landscape']}
         # Parser bounds forged client counts; a valid forged map is still ignored.
         profile['counts']={'warm':0,'landscape':0}
         r=self.a.put('/api/users/'+self.actors[0].id+'/tastes',{'tastes':['warm','landscape'],'tasteProfile':profile,'exhibitionId':'fixture-ex01'},format='json');self.assertEqual(r.status_code,204,r.content)

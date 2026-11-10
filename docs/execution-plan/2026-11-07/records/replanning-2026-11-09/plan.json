@@ -349,13 +349,13 @@
   },
   "teamFeedback20261110": {
     "record": "14-team-feedback-2026-11-10.md",
-    "surveyDirection": "user authorized exhibition-independent survey bank; runtime contract change pending",
-    "nextContract": "R04-P",
+    "surveyDirection": "C1/C2 structural checks passed; global survey implemented; real curation and general environment migration pending",
+    "nextContract": "R04-P C1 committed d5fbea9; C2 implemented",
     "currentFixes": "R06-A signup/time/image/prose",
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "R04-P amend survey-bank contract independently of recommendation exhibition; no unreviewed import",
+    "Curate10 survey candidates with identity/source/review/pair intent; R04-P structure passed, no unreviewed activation",
     "R04 private16 raw tags/emotions/recommendation distribution; no accuracy or approval without independent labels",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"

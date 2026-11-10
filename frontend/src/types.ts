@@ -208,6 +208,12 @@ export interface TasteProfile {
   counts: Partial<Record<TasteTag, number>>;
   selectedTags: TasteTag[];
   savedProfileVersion?: number;
+  // 서버가 보존하는 조사 출처입니다. 저장 취향을 현재 풀의 새 선택으로 해석하지 않습니다.
+  originSurveyId?: string;
+  originSurveyRevision?: number;
+  originExhibitionId?: string | null;
+  originalPoolVersion?: string;
+  originalPicks?: { pairIndex: number; artworkId: string }[];
 }
 export interface EntryContext {
   tab: 'desc' | 'guided'; kind: 'original' | 'summary' | 'guide' | 'generic_tip';

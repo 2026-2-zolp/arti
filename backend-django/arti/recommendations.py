@@ -4,6 +4,7 @@ import json
 import math
 from .constants import DURATION_COUNTS, LABELS, TAGS
 from .http import ContractError
+from .survey import selected_counts
 
 
 def strength(work, tag):
@@ -14,6 +15,7 @@ def strength(work, tag):
 
 
 def make_pool(works):
+    """과거 메모리 평가 재현용입니다. 공개 조사와 picks 검증은 survey 모듈을 사용합니다."""
     ready = sorted([w for w in works if w.show_image and (w.image_file or w.image_url) and w.tags], key=lambda w: w.id)[:10]
     version = hashlib.sha256(json.dumps([(w.id, w.source_version, w.content_version, w.tags, w.image_file, w.image_url) for w in ready], separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
     return ready, version
@@ -38,25 +40,7 @@ def weights_for(tastes, profile, works, account=None):
                 raise ContractError(400, 'VALIDATION_ERROR', '저장된 취향과 요청이 일치하지 않아요.')
             counts = (account.taste_profile or {}).get('counts', counts)
         elif source == 'picks':
-            pool, version = make_pool(works)
-            if profile.get('poolVersion') != version:
-                raise ContractError(409, 'VERSION_CONFLICT', '선택 작품이 변경됐어요. 다시 확인해 주세요.')
-            picks = profile.get('picks')
-            if len(pool) != 10 or not isinstance(picks, list) or len(picks) != 5:
-                raise ContractError(400, 'VALIDATION_ERROR', '다섯 쌍에서 한 작품씩 골라 주세요.')
-            seen = set()
-            for pick in picks:
-                if not isinstance(pick, dict):
-                    raise ContractError(400, 'VALIDATION_ERROR', '선택 정보를 확인해 주세요.')
-                index = pick.get('pairIndex')
-                if type(index) is not int or not 0 <= index < 5 or index in seen:
-                    raise ContractError(400, 'VALIDATION_ERROR', '선택이 중복되거나 누락됐어요.')
-                seen.add(index)
-                match = next((w for w in pool[index*2:index*2+2] if w.id == pick.get('artworkId')), None)
-                if match is None:
-                    raise ContractError(400, 'VALIDATION_ERROR', '같은 쌍의 작품을 선택해 주세요.')
-                for tag in match.tags:
-                    counts[tag] += 1
+            counts, _ = selected_counts(profile, tastes)
         elif profile.get('picks') not in ([], None) or profile.get('poolVersion') is not None:
             raise ContractError(400, 'VALIDATION_ERROR', '수동 취향에 선택 이력을 넣을 수 없어요.')
     raw = {t: max(1, counts.get(t, 0)) for t in tastes}
@@ -78,12 +62,9 @@ def profile_snapshot(tastes, profile, works, account=None, exhibition_id=None):
                                         'counts': {t: 0 for t in TAGS}, 'selectedTags': tastes}
     counts = {t: 0 for t in TAGS}
     if profile and profile['source'] == 'picks':
-        pool, _ = make_pool(works)
-        for pick in profile['picks']:
-            w = next(w for w in pool if w.id == pick['artworkId'])
-            for t in w.tags:
-                counts[t] += 1
+        counts, survey = selected_counts(profile, tastes)
         return {**profile, 'counts': counts, 'originExhibitionId': exhibition_id,
+                'originSurveyId': survey.id, 'originSurveyRevision': survey.revision,
                 'originalPoolVersion': profile['poolVersion'], 'originalPicks': profile['picks']}
     return {'version': 1, 'source': 'manual', 'picks': [], 'poolVersion': None,
             'counts': counts, 'selectedTags': tastes}

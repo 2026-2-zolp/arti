@@ -122,6 +122,34 @@ class Artwork(models.Model):
             raise ValidationError('Confirmed emotion requires reviewed scores.')
 
 
+# 전시와 독립적인 조사 작품군과 명시적 선정 순서를 저장합니다.
+class SurveyPool(models.Model):
+    id = models.CharField(primary_key=True, max_length=64, default=external_id)
+    name = models.CharField(max_length=100)
+    revision = models.PositiveIntegerField(default=1)
+    active = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(revision__gte=1), name='survey_revision_positive'),
+            models.UniqueConstraint(fields=['active'], condition=Q(active=True), name='survey_one_active'),
+        ]
+
+
+class SurveyEntry(models.Model):
+    pool = models.ForeignKey(SurveyPool, on_delete=models.CASCADE, related_name='entries')
+    artwork = models.ForeignKey(Artwork, on_delete=models.PROTECT, related_name='survey_entries')
+    position = models.PositiveSmallIntegerField()
+
+    class Meta:
+        ordering = ['position']
+        constraints = [
+            models.CheckConstraint(condition=Q(position__gte=0, position__lte=9), name='survey_position_bounds'),
+            models.UniqueConstraint(fields=['pool', 'position'], name='survey_position_unique'),
+            models.UniqueConstraint(fields=['pool', 'artwork'], name='survey_artwork_unique'),
+        ]
+
+
 # 회원·관리자 계정과 저장된 취향을 관리합니다.
 class Account(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)

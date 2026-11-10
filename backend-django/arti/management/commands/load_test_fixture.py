@@ -5,7 +5,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from arti.models import Artwork, Exhibition
+from arti.models import Artwork, Exhibition, SurveyPool, SurveyEntry
 
 FIXTURE_SOURCE = 'ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION'
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5V0AAAAASUVORK5CYII=')
@@ -41,6 +41,18 @@ class Command(BaseCommand):
                 setattr(obj, key, value)
             obj.full_clean()
             Artwork.objects.update_or_create(pk=pk, defaults=fields)
+        # 합성 환경에서만 명시적 10점 조사풀을 구성합니다. 실제 풀을 덮어쓰지 않습니다.
+        pool, created = SurveyPool.objects.get_or_create(id='fixture-survey', defaults={'name': FIXTURE_SOURCE})
+        if pool.name != FIXTURE_SOURCE:
+            raise CommandError('Refusing to overwrite a survey not owned by this fixture.')
+        other_active = SurveyPool.objects.filter(active=True).exclude(pk=pool.id).exists()
+        if not other_active:
+            if not created:
+                pool.revision += 1
+            pool.active = True
+            pool.save()
+            pool.entries.all().delete()
+            SurveyEntry.objects.bulk_create([SurveyEntry(pool=pool, artwork_id=f'fixture-art{i+1:02}', position=i) for i in range(10)])
         settings.MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
         (settings.MEDIA_ROOT/'fixture-public.png').write_bytes(PNG)
         (settings.MEDIA_ROOT/'fixture-private.png').write_bytes(PNG)

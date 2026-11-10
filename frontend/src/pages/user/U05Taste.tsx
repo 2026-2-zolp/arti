@@ -27,7 +27,7 @@ export default function U05Taste() {
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
-  const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(exhibitionId), [exhibitionId]);
+  const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), []);
   const data = pool?.artworks;
   const pairs = useMemo(() => pool?.ready ? pool.pairs.map(p => [pool.artworks.find(w => w.id === p.leftId)!, pool.artworks.find(w => w.id === p.rightId)!] as [Artwork, Artwork]) : [], [pool]);
   const [saveError, setSaveError] = useState('');
@@ -116,14 +116,14 @@ export default function U05Taste() {
       {result ? (
         <Lead title="이런 태그가 나왔어요" desc="고른 작품에서 많이 겹친 특성이에요. 이 태그로 작품을 추천합니다." />
       ) : (
-        <Lead title="둘 중 더 끌리는 작품을 골라주세요" desc="한 번에 두 점만 보여 드려요. 더 끌리는 쪽을 눌러 주세요." />
+        <Lead title="둘 중 더 끌리는 작품을 골라주세요" desc="전시와 관계없이 취향을 알아보는 작품이에요. 두 점 중 더 끌리는 쪽을 다섯 번 골라 주세요." />
       )}
 
       {loading && <Spinner label="작품을 불러오는 중…" />}
       {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
       {saveError && <p role="alert">{saveError}<button onClick={() => navigate(to('/time'))}>계정 저장 없이 계속</button><button onClick={confirm}>저장 재시도</button></p>}
       {!loading && !error && pairs.length === 0 && (
-        <p className="muted">취향 선택용 작품 10점이 아직 준비되지 않았어요. 승인된 이미지와 태그를 확인하고 다시 시도해 주세요.<button onClick={reload}>다시 확인</button><button onClick={() => navigate(to(state.user?.tastes.length ? '/taste/saved' : '/entry'))}>이전으로</button></p>
+        <p className="muted">취향 선택용 작품 10점이 아직 준비되지 않았어요. 잠시 후 다시 확인해 주세요.<button onClick={reload}>다시 확인</button><button onClick={() => navigate(to(state.user?.tastes.length ? '/taste/saved' : '/entry'))}>이전으로</button></p>
       )}
 
       {result && (

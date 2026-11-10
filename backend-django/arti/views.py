@@ -15,7 +15,8 @@ from .authentication import IsAdmin
 from .constants import TAGS
 from .http import ContractError
 from .models import Account, Artwork, Exhibition, Session
-from .recommendations import make_pool, recommend, strength
+from .recommendations import recommend, strength
+from .survey import current_pool
 from .serializers import AdminLoginInput, RecommendInput, artwork_dto, exhibition_dto
 
 DUMMY_PASSWORD = make_password('not-an-account-password')
@@ -49,6 +50,7 @@ def ready(request):
             cursor.execute('SELECT 1')
             # A live TCP connection alone is not a migrated application.
             cursor.execute('SELECT 1 FROM arti_exhibition LIMIT 1')
+            cursor.execute('SELECT 1 FROM arti_surveypool LIMIT 1')
     except Exception:
         raise ContractError(503, 'DB_NOT_READY', '데이터베이스 준비 중이에요.', retryable=True)
     return Response({'ok': True, 'database': 'postgresql'})
@@ -82,11 +84,13 @@ def coverage(request, ex_id):
 
 
 @api_view(['GET'])
-def taste_pool(request, ex_id):
-    public_exhibition(ex_id)
-    pool, version = make_pool(public_works(ex_id))
+def taste_pool(request, ex_id=None):
+    if ex_id is not None:
+        public_exhibition(ex_id)
+    survey, pool, version = current_pool()
     is_ready = len(pool) == 10
-    return Response({'poolVersion': version, 'ready': is_ready,
+    return Response({'poolId': survey.id if survey else None, 'revision': survey.revision if survey else None,
+                     'poolVersion': version, 'ready': is_ready,
                      'pairs': [{'leftId': pool[i].id, 'rightId': pool[i+1].id} for i in range(0, 10, 2)] if is_ready else [],
                      'artworks': [artwork_dto(w) for w in pool] if is_ready else []})
 
@@ -160,6 +164,9 @@ def media(request, filename):
     if Path(filename).name != filename or filename.startswith('.'):
         raise ContractError(404, 'NOT_FOUND', '파일을 찾을 수 없어요.')
     public_image = public_works().filter(image_file=filename, show_image=True).exists()
+    if not public_image and not request.path.startswith('/api/admin/'):
+        _, survey_works, _ = current_pool()
+        public_image = any(w.image_file == filename for w in survey_works)
     public_plan = Exhibition.objects.filter(status='running', floor_plan__file=filename).exists()
     # Public paths authenticate user tokens only. Admin preview has its own path/header scope.
     admin_preview = request.path.startswith('/api/admin/') and request.user and request.user.role == 'admin'

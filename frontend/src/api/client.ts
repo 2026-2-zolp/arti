@@ -159,7 +159,7 @@ export const api = {
   },
 
   me: () => request<User>('GET', '/auth/me'),
-  tastePool: (id: string) => request<{ ready: boolean; poolVersion: string; pairs: {leftId: string; rightId: string}[]; artworks: Artwork[] }>('GET', `/exhibitions/${enc(id)}/taste-pool`),
+  tastePool: () => request<{ poolId: string | null; revision: number | null; ready: boolean; poolVersion: string; pairs: {leftId: string; rightId: string}[]; artworks: Artwork[] }>('GET', '/taste-pool'),
   updateTastes: (userId: string, tastes: TasteTag[], tasteProfile?: TasteProfile, exhibitionId?: string) =>
     request<void>('PUT', `/users/${enc(userId)}/tastes`, { tastes, tasteProfile, exhibitionId }),
 
