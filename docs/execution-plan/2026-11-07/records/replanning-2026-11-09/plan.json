@@ -150,8 +150,8 @@
       "owner": "준억 실행·광권 해석·독립 평가자",
       "required": true,
       "status": "in_progress",
-      "progress": "R04-S:54 images scored offline;3 pools/four modes/3456 conditions replayed. No final selection or independent accuracy acceptance",
-      "progressEvidence": ["records/W07-preparation/survey-comparison-2026-11-10/README.md", "records/W07-preparation/survey-comparison-2026-11-10/validation.json"],
+      "progress": "R04-S:54 images/four modes/3456 conditions;contrast table21 candidates/18 pairs and model-blind review pack prepared. No final selection or independent accuracy acceptance",
+      "progressEvidence": ["records/W07-preparation/survey-comparison-2026-11-10/README.md", "records/W07-preparation/survey-comparison-2026-11-10/validation.json", "../../review/taste-survey-2026-11-10/validation.json"],
       "acceptance": "고정8태그·원시 점수/동률·3/5/7점·없는 태그 안내. 미검수 승인 우회 금지; 정확도는 독립 라벨 후"
     },
     {
@@ -357,7 +357,7 @@
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "R04-S comparison recorded; next contrast rubric and blind review pack across people/still-life/landscape/abstract; selection not final, no public activation",
+    "R04-S contrast table and blind pack prepared;next tie-only policy contract;human pilot/intake in parallel,selection not final,no public activation",
     "R04 tie-only policy contract: missing/equal/version cases and user-editable representatives; keep max8 and distinguish product adoption from exploratory top3/contrast",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"

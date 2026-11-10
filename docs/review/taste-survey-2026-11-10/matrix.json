@@ -1,0 +1,543 @@
+{
+  "version": 1,
+  "asOfKST": "2026-11-10",
+  "sourceCommit": "4988396",
+  "selectionFinal": false,
+  "activation": false,
+  "hypothesesAreLabels": false,
+  "scope": "manager-only contrast preparation; no model score, label truth or final selection",
+  "items": [
+    {
+      "id": "survey-candidate-cap-03",
+      "title": "미델하르니스의 가로수길",
+      "assetPath": "ai-service/evaluation/images/03.jpg",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c",
+      "sourceUrl": "https://www.nationalgallery.org.uk/paintings/meindert-hobbema-the-avenue-at-middelharnis",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-06",
+      "title": "우유를 따르는 여인",
+      "assetPath": "ai-service/evaluation/images/06.jpg",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7",
+      "sourceUrl": "https://www.rijksmuseum.nl/en/collection/object/The-Milkmaid--42dd0e658c2979aec8e144d2357c55c0",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "저해상도 원본: 확대·모바일 판독 검토 필요",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-12",
+      "title": "브로드웨이 부기우기",
+      "assetPath": "ai-service/evaluation/images/12.jpg",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90",
+      "sourceUrl": "https://www.moma.org/collection/works/78682",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-38",
+      "title": "아이의 목욕",
+      "assetPath": "ai-service/evaluation/images/38.jpg",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01",
+      "sourceUrl": "https://www.artic.edu/artworks/111442/the-child-s-bath",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "저해상도 원본: 확대·모바일 판독 검토 필요",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "yyk-demo-004",
+      "title": "산(남)",
+      "assetPath": "data/private/yoo-intake-20261109/04.png",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "web_capture_user_declared_graduation_project_use_no_specific_permission",
+      "qualityNote": "기존DB작품을 그대로 참조하며 메타데이터·검수 상태를 바꾸지 않음",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-36",
+      "title": "파라솔을 든 여인",
+      "assetPath": "ai-service/evaluation/images/36.jpg",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b",
+      "sourceUrl": "https://www.nga.gov/artworks/61379-woman-parasol-madame-monet-and-her-son",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-19",
+      "title": "목수 성 요셉",
+      "assetPath": "ai-service/evaluation/images/19.jpg",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08",
+      "sourceUrl": "https://collections.louvre.fr/en/ark:/53355/cl010063817",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기; warm은 촛불 주변의 색 경향 가설이며 작품 전체의 정답 분류가 아님",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-28",
+      "title": "가나가와 앞바다의 큰 파도",
+      "assetPath": "ai-service/evaluation/images/28.jpg",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/45434",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-21",
+      "title": "춤",
+      "assetPath": "ai-service/evaluation/images/21.jpg",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70",
+      "sourceUrl": "https://en.wikipedia.org/wiki/Dance_(Matisse)",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "survey-candidate-cap-02",
+      "title": "시에라네바다 산맥 속에서",
+      "assetPath": "ai-service/evaluation/images/02.jpg",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e",
+      "sourceUrl": "https://americanart.si.edu/artwork/among-sierra-nevada-california-2059",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-435882",
+      "title": "Still Life with Apples and a Pot of Primroses",
+      "assetPath": "data/private/survey-comparison-20261110/met-435882.jpg",
+      "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/435882",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-436532",
+      "title": "Self-Portrait with a Straw Hat (obverse: The Potato Peeler)",
+      "assetPath": "data/private/survey-comparison-20261110/met-436532.jpg",
+      "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/436532",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-435702",
+      "title": "The Horse Fair",
+      "assetPath": "data/private/survey-comparison-20261110/met-435702.jpg",
+      "sha256": "525c8b861d616b8c55bff075d6808a47a4a4d29de5ddadfb903be5b3b24dd16f",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/435702",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-437437",
+      "title": "Young Woman (La Servante)",
+      "assetPath": "data/private/survey-comparison-20261110/met-437437.jpg",
+      "sha256": "cd3c299d8355a994507bfac03093397080a65b281b71e3e9166126caa9b362af",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/437437",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-436535",
+      "title": "Wheat Field with Cypresses",
+      "assetPath": "data/private/survey-comparison-20261110/met-436535.jpg",
+      "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/436535",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-438817",
+      "title": "The Dance Class",
+      "assetPath": "data/private/survey-comparison-20261110/met-438817.jpg",
+      "sha256": "e06ff1c9490053cf3f9c8351d0f939febf9ef92b8059a809ba541d16ebfccde0",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/438817",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-437881",
+      "title": "Young Woman with a Water Pitcher",
+      "assetPath": "data/private/survey-comparison-20261110/met-437881.jpg",
+      "sha256": "13120aa067755f1f50d2b900417807ef9da3f8b2b63a1bbea428fe3f2d8d00a9",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/437881",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-436634",
+      "title": "A Vase of Flowers",
+      "assetPath": "data/private/survey-comparison-20261110/met-436634.jpg",
+      "sha256": "431d5bb737eea3e570ab29a1c48a534b01b14c7992e7c873e03e52729b35aaff",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/436634",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-435809",
+      "title": "The Harvesters",
+      "assetPath": "data/private/survey-comparison-20261110/met-435809.jpg",
+      "sha256": "98dc6d6e23c008b23056108d04d9143b8c7f73fe6fa2a940fd09663290135e25",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/435809",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-437853",
+      "title": "Venice, from the Porch of Madonna della Salute",
+      "assetPath": "data/private/survey-comparison-20261110/met-437853.jpg",
+      "sha256": "6f1c4b129cc7302098a4bfc3c835e5b932c3b0fa8566544bdb54a694ab4c7656",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/437853",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    },
+    {
+      "id": "met-436575",
+      "title": "View of Toledo",
+      "assetPath": "data/private/survey-comparison-20261110/met-436575.jpg",
+      "sha256": "5f30ee908910e71a789447fa8b0c3eda0070602d9ddd1daa1145554d617deaef",
+      "sourceUrl": "https://www.metmuseum.org/art/collection/search/436575",
+      "identityStatus": "official_catalogue_image_not_human_approved",
+      "rightsStatus": "Met_API_public_domain_flag_not_universal_rights_clearance",
+      "qualityNote": "공식 제공 이미지도 표시 크기·색·액자 영향의 사람 확인 대기",
+      "humanReview": "pending",
+      "selectionFinal": false
+    }
+  ],
+  "pairs": [
+    {
+      "id": "P01",
+      "items": [
+        "survey-candidate-cap-03",
+        "survey-candidate-cap-06"
+      ],
+      "origin": [
+        "A_current_draft:1"
+      ],
+      "contrastHypothesis": "넓은 원근 공간과 가까운 일상 장면",
+      "sharedFeatures": "구체적인 대상과 정적인 구성",
+      "confounds": "주제·거리·인물 유무·광원까지 함께 달라 한 축의 효과로 분리 불가",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P02",
+      "items": [
+        "survey-candidate-cap-12",
+        "survey-candidate-cap-38"
+      ],
+      "origin": [
+        "A_current_draft:2"
+      ],
+      "contrastHypothesis": "격자와 인체·곡선·무늬의 구성",
+      "sharedFeatures": "반복 무늬와 여러 색의 배치",
+      "confounds": "주제·표현 방식·해상도가 함께 달라짐;커샛 캡처의 세부 손실",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P03",
+      "items": [
+        "yyk-demo-004",
+        "survey-candidate-cap-36"
+      ],
+      "origin": [
+        "A_current_draft:3",
+        "B_three_external_swaps:3"
+      ],
+      "contrastHypothesis": "단순한 색면과 야외 붓질 장면",
+      "sharedFeatures": "큰 색 영역과 대각선의 흐름",
+      "confounds": "추상/구상·인물·하늘·재료·채도 혼재;유영국만으로 추상 전체 대표 불가",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P04",
+      "items": [
+        "survey-candidate-cap-19",
+        "survey-candidate-cap-28"
+      ],
+      "origin": [
+        "A_current_draft:4",
+        "B_three_external_swaps:4"
+      ],
+      "contrastHypothesis": "좁은 광원과 큰 곡선·파동",
+      "sharedFeatures": "명암 대비와 시선 유도",
+      "confounds": "유화/판화·가로세로 비율·서사·주제 동시변화;파도 개별판본 미확정",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P05",
+      "items": [
+        "survey-candidate-cap-21",
+        "survey-candidate-cap-02"
+      ],
+      "origin": [
+        "A_current_draft:5"
+      ],
+      "contrastHypothesis": "화면을 채우는 군상과 광대한 자연",
+      "sharedFeatures": "넓은 색 영역과 큰 화면 규모의 인상",
+      "confounds": "인물/자연·색·규모·표현방식 동시변화;춤1910판 대응 검토 대기",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P06",
+      "items": [
+        "survey-candidate-cap-03",
+        "met-436532"
+      ],
+      "origin": [
+        "B_three_external_swaps:1"
+      ],
+      "contrastHypothesis": "먼 공간과 얼굴 중심의 가까운 시점",
+      "sharedFeatures": "붓질과 배경의 구성",
+      "confounds": "유명도·얼굴에 대한 반응·캡처 품질이 작품 선호와 섞임",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P07",
+      "items": [
+        "survey-candidate-cap-12",
+        "met-437437"
+      ],
+      "origin": [
+        "B_three_external_swaps:2"
+      ],
+      "contrastHypothesis": "격자 반복과 인물 중심의 자유로운 구성",
+      "sharedFeatures": "색의 반복과 화면 분할",
+      "confounds": "주제·필치·명도 동시변화;추상 태그가 붙는지를 정답으로 제시하지 않음",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P08",
+      "items": [
+        "met-435702",
+        "survey-candidate-cap-02"
+      ],
+      "origin": [
+        "B_three_external_swaps:5"
+      ],
+      "contrastHypothesis": "밀집된 움직임과 넓게 펼쳐진 공간",
+      "sharedFeatures": "다수의 작은 요소와 깊이",
+      "confounds": "동물·군중·규모·프레임·풍경이 혼재;동물 전용 취향 해석은 미정",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P09",
+      "items": [
+        "survey-candidate-cap-03",
+        "survey-candidate-cap-02"
+      ],
+      "origin": [
+        "C_within_subject_probe:1"
+      ],
+      "contrastHypothesis": "길을 따른 깊이와 산·수면의 넓은 공간",
+      "sharedFeatures": "둘 다 야외 풍경",
+      "confounds": "풍경 선택 자체를 새 취향으로 누적하지 않도록 공통성 분리;색·시간·밀도 교란",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P10",
+      "items": [
+        "survey-candidate-cap-06",
+        "survey-candidate-cap-38"
+      ],
+      "origin": [
+        "C_within_subject_probe:2"
+      ],
+      "contrastHypothesis": "한 사람의 작업과 가까운 두 사람의 상호작용",
+      "sharedFeatures": "일상 인물·실내·하향 시선",
+      "confounds": "인물 선호로 자동 해석 금지;시대·필치·복식·화질 차이",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P11",
+      "items": [
+        "survey-candidate-cap-12",
+        "yyk-demo-004"
+      ],
+      "origin": [
+        "C_within_subject_probe:3"
+      ],
+      "contrastHypothesis": "작은 격자 리듬과 큰 삼각형 색면",
+      "sharedFeatures": "비구상적 기하 형태",
+      "confounds": "추상 공통성 누적 주의;선·색·구성 밀도 동시에 변화",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P12",
+      "items": [
+        "survey-candidate-cap-19",
+        "survey-candidate-cap-36"
+      ],
+      "origin": [
+        "C_within_subject_probe:4"
+      ],
+      "contrastHypothesis": "실내 좁은 빛과 야외의 넓은 빛",
+      "sharedFeatures": "인물이 있는 회화",
+      "confounds": "인물 공통성 누적 주의;실내외·인물 수·구도·의복 교란",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P13",
+      "items": [
+        "survey-candidate-cap-21",
+        "survey-candidate-cap-28"
+      ],
+      "origin": [
+        "C_within_subject_probe:5"
+      ],
+      "contrastHypothesis": "인체 고리와 파도 곡선의 리듬",
+      "sharedFeatures": "반복되는 곡선·움직임",
+      "confounds": "주제·색·재료·판본이 다름;춤/파도를 특정 감정 정답으로 강요하지 않음",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P14",
+      "items": [
+        "met-435882",
+        "met-436634"
+      ],
+      "origin": [
+        "breadth_extension_proposal_not_scored_pair"
+      ],
+      "contrastHypothesis": "큰 덩어리의 정물과 밀집된 꽃 구성",
+      "sharedFeatures": "식물·정물·정지된 대상",
+      "confounds": "밝기·배경·필치·장식성이 혼재;꽃/사과를 현재8태그에 억지 대응하지 않음",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P15",
+      "items": [
+        "met-436532",
+        "met-437881"
+      ],
+      "origin": [
+        "breadth_extension_proposal_not_scored_pair"
+      ],
+      "contrastHypothesis": "얼굴 중심의 가까운 시점과 일상 행동 장면",
+      "sharedFeatures": "한 인물과 의복·배경",
+      "confounds": "성별·작가 유명도·크롭·시대 차이;단순 인물 선호로 환원 금지",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P16",
+      "items": [
+        "met-436535",
+        "met-436575"
+      ],
+      "origin": [
+        "breadth_extension_proposal_not_scored_pair"
+      ],
+      "contrastHypothesis": "밝은 농경지의 곡선과 어두운 도시·하늘",
+      "sharedFeatures": "수목·자연과 공간의 깊이",
+      "confounds": "색·명도·도시·필치가 동시에 달라 한 속성의 인과효과로 해석 불가",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P17",
+      "items": [
+        "met-437853",
+        "met-435809"
+      ],
+      "origin": [
+        "breadth_extension_proposal_not_scored_pair"
+      ],
+      "contrastHypothesis": "도시 수경과 일하는 사람들이 있는 자연",
+      "sharedFeatures": "넓은 공간과 작은 인물",
+      "confounds": "시대·활동·거리·빛이 혼재;도시/자연만을 측정했다고 주장하지 않음",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    },
+    {
+      "id": "P18",
+      "items": [
+        "met-438817",
+        "met-435702"
+      ],
+      "origin": [
+        "breadth_extension_proposal_not_scored_pair"
+      ],
+      "contrastHypothesis": "실내 사람들의 동작과 야외 동물·군상의 동작",
+      "sharedFeatures": "여러 대상·움직임·공간 배치",
+      "confounds": "인간/동물·실내외·성별·화면 비율이 함께 변화",
+      "axisIsolation": "not_isolated",
+      "status": "review_pending_not_final"
+    }
+  ],
+  "remainingGaps": [
+    "외부 추상 이미지 접근 근거 보강",
+    "비서양·현대·여성 작가/매체 다양성의 추가 검토",
+    "비율·화질·유명도 및 좌우 교란;독립 사람 응답 미수집",
+    "추가5쌍은 새 모델/추천 비교를 실행한 것이 아님"
+  ]
+}

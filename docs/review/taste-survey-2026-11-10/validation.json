@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-10",
+  "baselineCommit": "4988396",
+  "status": "preparation_passed_human_review_pending",
+  "selectionFinal": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "candidates": 21,
+  "pairs": 18,
+  "existingPairs": 13,
+  "newProposedPairs": 5,
+  "packDigest": "d85202dd52d2559f7c7499099d432f4da274e45ecb009661fc55bb8e6ca31e6e",
+  "criteria": {
+    "CP1": "pass:21 source/status/hash records and18 contrast/shared/confound records",
+    "CP2": "pass:anonymous payload21 decoded image hashes and no manager titles/IDs/paths/URLs/hypotheses/model results",
+    "CP3": "pass:reverse orders and swapped sides,neutral/unanswered choices,exposure record,draft/complete export,JSON paste restore,wrong variant rejection",
+    "CP4": "pass:preparation separated from human acceptance;test responses excluded;no production/model/database changes"
+  },
+  "tests": {
+    "newUnitCases": 11,
+    "allScriptCases": 44,
+    "environment": "workspace TEMP/TMP/TMPDIR",
+    "storedArtifactCheck": true,
+    "generatedVariantsChecked": 2
+  },
+  "browser": {
+    "environment": "localhost Chrome",
+    "imagesLoaded": 57,
+    "defaultAnswers": 0,
+    "gatedStageTransition": true,
+    "incompleteSubmissionRejected": true,
+    "draftAndCompletedDownloadsPythonValidated": true,
+    "pasteDraftRestored": true,
+    "wrongVariantRejected": true,
+    "comparisonImagesContainFitVisuallyChecked": true,
+    "fileChooserAutomation": "extension file URL access unavailable; native path not completed; no security settings changed; paste restore tested as alternative",
+    "mobileDeviceTested": false,
+    "automationDownloadEvent": "timed out;actual downloaded files separately verified"
+  },
+  "humanResponses": 0,
+  "testResponses": "TEST_BROWSER draft/submitted retained only in ignored data/private;not independent human opinions",
+  "reviewers": {
+    "technicalSenior": "hashes,paths,digest,order,orientation,blank/uncertain/test/duplicate/extra/tampered responses and no overwrite checked",
+    "visitor": "no expected answer/default choice;both/neither/unsure;exposure,familiarity,quality;draft restore reduces interruption loss",
+    "dataOperations": "manager mapping separated from reviewer export;private output only;original image bytes unchanged;no approval or network writes",
+    "teamProfessorExternalEvaluator": "21/18 review materials distinct from final10/5;preference distinct from tag truth;remaining representation/rights/independence limits explicit"
+  },
+  "scope": "same-author role-based self review;no independent human acceptance/model accuracy claim",
+  "next": [
+    "tie-only policy contract with missing/equal/version/user override/backward compatibility",
+    "human pilot and separate response intake;then candidate/pair revision proposal without automatic final selection"
+  ],
+  "planChecks": {
+    "planIntegrity": true,
+    "guardrails32": true,
+    "originalArchive38Preserved": true,
+    "formalW_G_ACUnchanged": true,
+    "localDocumentLinks": 8
+  },
+  "sourceSha256": {
+    "scripts/survey_blind_review.py": "27d45682fc109319555e4f4e8a8b1b84e52a43f2a9184eeb65c3666df170a8df",
+    "scripts/tests/test_survey_blind_review.py": "db06980cdd6f7652777177eea257b01e2ffd9b922c94ceb8cc0415d8de8627e3",
+    "docs/review/taste-survey-2026-11-10/review-template.html": "dd0b6ef6ba5c549c79bdd6c45bea7f15e372c1f884cbbfe840aaa65a6ea6f713",
+    "docs/review/taste-survey-2026-11-10/matrix.json": "d4254cd66df8c00e8a96f939cbffa77554d5586bb4d203195708c94b94ff9cec"
+  }
+}
