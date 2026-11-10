@@ -362,4 +362,5 @@ class TagEvidenceMigrationTests(TransactionTestCase):
             self.assertEqual(apps.get_model('arti', 'Artwork').objects.count(), 0)
             self.assertEqual(apps.get_model('arti', 'SurveyPool').objects.count(), 0)
         finally:
-            MigrationExecutor(connection).migrate(after_target)
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes())

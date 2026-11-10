@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/exhibitions', views.exhibitions), path('api/exhibitions/<str:ex_id>', views.exhibitions),
     path('api/exhibitions/<str:ex_id>/tag-coverage', views.coverage),
     path('api/taste-pool', views.taste_pool),
+    path('api/taste-profiles/resolve', views.resolve_taste),
     path('api/exhibitions/<str:ex_id>/taste-pool', views.taste_pool),
     path('api/artworks', views.artworks), path('api/artworks/<str:artwork_id>', views.artworks),
     path('api/recommendations', views.recommendations),

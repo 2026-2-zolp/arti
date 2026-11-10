@@ -167,6 +167,7 @@ class Account(models.Model):
     tastes = models.JSONField(default=list, blank=True)
     taste_profile = models.JSONField(null=True, default=None, blank=True)
     taste_profile_version = models.PositiveIntegerField(default=1)
+    taste_write_receipt = models.JSONField(blank=True, default=None, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     @property

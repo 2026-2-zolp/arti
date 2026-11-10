@@ -5,6 +5,7 @@ import math
 from .constants import DURATION_COUNTS, LABELS, TAGS
 from .http import ContractError
 from .survey import selected_counts
+from .taste_resolution import stored_counts
 
 
 def strength(work, tag):
@@ -38,7 +39,7 @@ def weights_for(tastes, profile, works, account=None):
                 raise ContractError(409, 'VERSION_CONFLICT', '저장된 취향이 변경됐어요.')
             if set(account.tastes) != set(tastes):
                 raise ContractError(400, 'VALIDATION_ERROR', '저장된 취향과 요청이 일치하지 않아요.')
-            counts = (account.taste_profile or {}).get('counts', counts)
+            counts = stored_counts(account.taste_profile)
         elif source == 'picks':
             counts, _ = selected_counts(profile, tastes)
         elif profile.get('picks') not in ([], None) or profile.get('poolVersion') is not None:
@@ -70,15 +71,23 @@ def profile_snapshot(tastes, profile, works, account=None, exhibition_id=None):
             'counts': counts, 'selectedTags': tastes}
 
 
-def recommend(works, exhibition, tastes, duration, profile=None, account=None):
+def recommend(works, exhibition, tastes, duration, profile=None, account=None, *, resolution=None):
     ordered_tags = [t for t in TAGS if t in tastes]
-    weights = weights_for(ordered_tags, profile, works, account)
+    if resolution is None:
+        weights = weights_for(ordered_tags, profile, works, account)
+        coverage_order = sorted(ordered_tags, key=lambda tag: (-weights[tag], TAGS.index(tag)))
+    else:
+        _, counts, groups = resolution
+        raw = {tag: max(1, counts[tag]) for tag in ordered_tags}
+        total = sum(raw.values())
+        weights = {tag: raw[tag] / total for tag in ordered_tags}
+        coverage_order = [tag for group in groups for tag in group['tags']]
     candidates = [w for w in works if w.position_x is not None]
     scored = [(w, sum(weights[t]*strength(w, t) for t in ordered_tags)) for w in candidates]
     ranked = sorted(scored, key=lambda item: (-item[1], item[0].id))
     count = DURATION_COUNTS[duration]
     picked = []
-    for tag in sorted(ordered_tags, key=lambda t: (-weights[t], TAGS.index(t)))[:count]:
+    for tag in coverage_order[:count]:
         best = next((v for v in ranked if strength(v[0], tag) >= .5 and v not in picked), None)
         if best:
             picked.append(best)

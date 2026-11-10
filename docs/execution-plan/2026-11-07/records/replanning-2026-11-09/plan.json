@@ -150,7 +150,7 @@
       "owner": "준억 실행·광권 해석·독립 평가자",
       "required": true,
       "status": "in_progress",
-      "progress": "TP1a model transport and TP1b isolated PostgreSQL atomic score/evidence/revision storage passed. TP2 server contract,TP3 UI and TP4 full acceptance pending;no final selection/independent quality acceptance.",
+      "progress": "TP1a model transport, TP1b atomic score storage and TP2 server preview, conflicts and visit evidence passed isolated tests. TP3 UI and TP4 full acceptance are pending.",
       "progressEvidence": [
         "records/W07-preparation/survey-comparison-2026-11-10/README.md",
         "records/W07-preparation/survey-comparison-2026-11-10/validation.json",
@@ -158,7 +158,8 @@
         "records/taste-tie-contract-2026-11-11/validation.json",
         "records/taste-tie-implementation-plan-2026-11-11/validation.json",
         "records/taste-tie-implementation-results-2026-11-11/TP1a/validation.json",
-        "records/taste-tie-implementation-results-2026-11-11/TP1b/validation.json"
+        "records/taste-tie-implementation-results-2026-11-11/TP1b/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP2/validation.json"
       ],
       "acceptance": "고정8태그·원시 점수/동률·3/5/7점·없는 태그 안내. 미검수 승인 우회 금지; 정확도는 독립 라벨 후"
     },
@@ -365,8 +366,8 @@
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "R04 next TP2 server resolver/readonly preview and CAS/retry/history protection in isolation. TP1b138 Django tests passed;ordinary DB/public activation/remote push unchanged;Dongseop integrated frontend pending.",
-    "TP2 snapshot/CAS/retry/history -> TP3 preview-first UI and optional team hunk merge -> TP4 isolated journey/real cached model acceptance. TP1 execution coverage recorded separately;do not promote untouched formal W/G/AC.",
+    "R04 next TP3 preview-first confirmation, account save and visit state. TP2 passed 150 Django tests and 30 contract cases in isolation. Recheck the integrated frontend before selecting changes.",
+    "TP3 preview-first UI and optional team changes -> TP4 isolated journey and cached model acceptance.",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]

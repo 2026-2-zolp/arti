@@ -3,7 +3,7 @@ import hashlib
 import json
 from .constants import TAGS
 from .http import ContractError
-from .models import SurveyPool
+from .models import Artwork, SurveyPool
 
 
 def eligible(work):
@@ -15,13 +15,26 @@ def eligible(work):
             and len(set(work.tags)) == len(work.tags))
 
 
-def current_pool():
+def current_pool(*, lock=False):
     """10점 전부 준비되어야 공개하며, 누락 작품을 임의 보충하지 않습니다."""
-    pool = SurveyPool.objects.filter(active=True).first()
+    if lock:
+        pools = list(SurveyPool.objects.select_for_update().order_by('id'))
+        pool = next((pool for pool in pools if pool.active), None)
+        # 잠금 대기 중 새 활성 행이 삽입되면 처음 SELECT의 행 집합에 없을 수 있습니다.
+        if pool is None and SurveyPool.objects.filter(active=True).exists():
+            raise ContractError(409, 'VERSION_CONFLICT', '취향 조사 작품이 변경됐어요. 다시 확인해 주세요.')
+    else:
+        pool = SurveyPool.objects.filter(active=True).first()
     if pool is None:
         return None, [], hashlib.sha256(b'no-active-survey').hexdigest()
-    entries = list(pool.entries.select_related('artwork').order_by('position'))
-    works = [e.artwork for e in entries]
+    if lock:
+        entries = list(pool.entries.order_by('position'))
+        locked = {work.id: work for work in Artwork.objects.select_for_update().filter(
+            pk__in=[entry.artwork_id for entry in entries]).order_by('id')}
+        works = [locked[entry.artwork_id] for entry in entries]
+    else:
+        entries = list(pool.entries.select_related('artwork').order_by('position'))
+        works = [entry.artwork for entry in entries]
     payload = [pool.id, pool.revision, [(e.position, w.id, w.exhibition_id, w.source_version,
                 w.content_version, w.review_status, w.show_image, w.tag_status, w.tags,
                 w.image_file, w.image_url) for e, w in zip(entries, works)]]
@@ -30,8 +43,8 @@ def current_pool():
     return pool, works if ready else [], version
 
 
-def selected_counts(profile, tastes):
-    pool, works, version = current_pool()
+def selected_counts(profile, tastes, *, pool=None):
+    pool, works, version = current_pool() if pool is None else pool
     if len(works) != 10 or profile.get('poolVersion') != version:
         raise ContractError(409, 'VERSION_CONFLICT', '취향 조사 작품이 변경됐거나 준비 중이에요. 다시 확인해 주세요.')
     picks = profile.get('picks')

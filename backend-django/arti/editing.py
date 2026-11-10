@@ -14,6 +14,7 @@ from .authentication import IsAdmin
 from .http import ContractError
 from .models import Artwork, Exhibition
 from .serializers import artwork_dto, exhibition_dto
+from .taste_resolution import taste_transaction
 from .views import with_etag
 from . import providers
 from .docent import AIThrottle
@@ -207,11 +208,13 @@ def image(request, artwork_id=None, ex_id=None):
 def confirm_ai(request, ex_id):
     items=request.data.get('items')
     if not isinstance(items,list) or not 1<=len(items)<=100:fail('검토한 작품과 필드를 선택해 주세요.')
-    if len({i.get('id') for i in items if isinstance(i,dict)})!=len(items):fail()
-    with transaction.atomic():
+    if any(not isinstance(item, dict) or not isinstance(item.get('id'), str) for item in items):
+        fail()
+    if len({item['id'] for item in items}) != len(items):
+        fail()
+    with taste_transaction():
         works=[]
-        for item in items:
-            if not isinstance(item,dict):fail()
+        for item in sorted(items, key=lambda item: item['id']):
             w=get_locked(Artwork,item.get('id'))
             if w.exhibition_id!=ex_id:fail('다른 전시의 작품이 포함됐어요.')
             version(w,item.get('version'))

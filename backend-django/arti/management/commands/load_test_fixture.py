@@ -19,6 +19,7 @@ class Command(BaseCommand):
         if settings.ARTI_ENV not in ('development', 'test') or not settings.ALLOW_TEST_FIXTURES:
             raise CommandError('Test fixtures require development/test AND ALLOW_TEST_FIXTURES=true.')
         data = json.loads((settings.BASE_DIR/'development_fixture.json').read_text(encoding='utf-8'))
+        list(SurveyPool.objects.select_for_update().order_by('id'))
         for ex in data['exhibitions']:
             pk = ex.pop('id')
             if not pk.startswith('fixture-'):

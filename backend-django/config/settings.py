@@ -57,3 +57,5 @@ ARTI_LLM_TOKEN_PARAMETER = os.environ.get('ARTI_LLM_TOKEN_PARAMETER', 'max_compl
 
 # 내부 CLIP·mDeBERTa 서비스 주소. 빈 값이면 비활성, GPT와 독립입니다.
 ARTI_MODEL_SERVICE_URL = os.environ.get('ARTI_MODEL_SERVICE_URL', '')
+ARTI_TASTE_PROFILE_V2_ENABLED = os.environ.get('ARTI_TASTE_PROFILE_V2_ENABLED', 'false').lower() == 'true'
+ARTI_TASTE_APPROVED_SIGNATURE_SHA256 = os.environ.get('ARTI_TASTE_APPROVED_SIGNATURE_SHA256', '')
