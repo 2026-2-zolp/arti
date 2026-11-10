@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "checks": [
+    "portrait and landscape viewport images use contain",
+    "edit retires late preview and reload restores draft without changing visit",
+    "cancel, conflict, lost PUT, identical mutation retry, me-only recovery",
+    "original and summary paragraphs and 100-character nickname limit",
+    "first duration retains signed ID and receipt reload resends original body",
+    "same meaning keeps existing visit and manual visit-only skips account write"
+  ],
+  "previews": 7,
+  "puts": 3,
+  "receiptAttempts": 2,
+  "date": "2026-11-11",
+  "baseCommit": "ba3b6dc",
+  "status": "passed_tp3_only",
+  "frontendTests": 33,
+  "newTests": 8,
+  "productionBuild": "passed",
+  "browser": "isolated Chrome with loopback synthetic API",
+  "criteria": {
+    "P3-01": "cancel and same-taste continuation preserve visit; order-only equality tested",
+    "P3-02": "delayed preview retired after edit in Chrome; stale PUT and me guards tested",
+    "P3-03": "empty selection rejected; added tag uses manual equal weights",
+    "P3-04": "409, ambiguous 504, identical mutation replay, me-only recovery and visit-only verified",
+    "P3-05": "portrait and landscape contain, original and summary paragraphs, nickname limit and global API verified; team styling intake deferred",
+    "P3-06": "draft and exact receipt replay after reload, owner mismatch rejected in reducer"
+  },
+  "generalDbChanged": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "next": "TP4 isolated integration"
+}

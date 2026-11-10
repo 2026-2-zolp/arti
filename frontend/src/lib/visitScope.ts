@@ -11,7 +11,7 @@ export function scopeKey(s: { user: {id: string} | null; visitId: string; exhibi
 }
 export function clearPrivateCaches(includePending = true) {
   for (const storage of [sessionStorage, localStorage]) for (const key of Object.keys(storage)) {
-    if (key.startsWith('arti.scope.') || key.startsWith('arti.chat.') || key.startsWith('arti.receipt.') ||
+    if (key.startsWith('arti.scope.') || key.startsWith('arti.chat.') || key.startsWith('arti.receipt.') || key.startsWith('arti.tasteDraft.') ||
         key === 'arti.reactionLog' || (includePending && key.startsWith('arti.pendingReceipt.'))) storage.removeItem(key);
   }
 }

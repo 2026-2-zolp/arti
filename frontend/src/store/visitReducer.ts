@@ -3,10 +3,12 @@ import type { Reaction, Recommendation, TasteTag, User, VisitDuration, TasteProf
 import {load} from '../lib/storage';
 import {newVisitId} from '../lib/visitScope';
 import {TASTE_LABEL} from '../data/mock';
+import {sameTaste, tasteScope} from '../lib/tasteFlow';
 export interface VisitState {
   visitId: string;
   requestGeneration: number;
   tasteProfile?: TasteProfile;
+  tasteEvidenceReceipt?: string;
   /** 관람 중인 전시. 주소(/exhibitions/:exhibitionId)를 따라 맞춘다 — store/ExhibitionRoute.tsx. 아직 없으면 null */
   exhibitionId: string | null;
   user: User | null;
@@ -33,7 +35,8 @@ export type Action =
   | { type: 'setUserTastes'; tastes: TasteTag[] }
   | { type: 'setTastes'; tastes: TasteTag[]; profile?: TasteProfile }
   | { type: 'finishTaste'; tastes: TasteTag[]; profile?: TasteProfile }
-  | { type: 'setDuration'; duration: VisitDuration; newVisit?: boolean }
+  | { type: 'applyTaste'; scope: string; visitId: string; profile: TasteProfile; receipt?: string; user?: User }
+  | { type: 'setDuration'; duration: VisitDuration; newVisit?: boolean; scope?: string; proof?: {visitId: string; receipt: string} }
   | { type: 'setRecommendations'; recs: Recommendation[]; generation?: number }
   | { type: 'startVisit' }
   | { type: 'addDwell'; artworkId: string; seconds: number }
@@ -46,6 +49,7 @@ const USER_KEY = 'arti.user';
 
 const emptyVisit = {
   tasteProfile: undefined as TasteProfile | undefined,
+  tasteEvidenceReceipt: undefined as string | undefined,
   tastes: [] as TasteTag[],
   duration: null,
   recommendations: [] as Recommendation[],
@@ -63,8 +67,10 @@ const cleanTastes = (tags: string[] | undefined): TasteTag[] =>
   [...new Set((tags ?? []).map((t) => (t === 'calm' ? 'landscape' : t)))].filter((t): t is TasteTag => t in TASTE_LABEL);
 
 export function init(): VisitState {
-  const stored = load<Partial<VisitState>>(VISIT_KEY, {}, 'session');
+  const cached = load<Partial<VisitState> & {ownerId?: string | null}>(VISIT_KEY, {}, 'session');
   const user = load<User | null>(USER_KEY, null);
+  const { ownerId, ...snapshot } = cached;
+  const stored = ownerId === undefined || ownerId === (user?.id ?? null) ? snapshot : {};
   return {
     exhibitionId: null,
     ...emptyVisit,
@@ -85,6 +91,7 @@ export function reducer(s: VisitState, a: Action): VisitState {
     // 앞사람의 추천·반응이 다음 사람에게 보이거나 다음 사람의 관람기록에 저장되지 않게 하기 위해서다.
     // 서버에 저장된 관람기록(마이페이지)은 그대로 둔다.
     case 'login':
+      if (s.user?.id === a.user.id && (a.user.tasteProfileVersion ?? 1) < (s.user.tasteProfileVersion ?? 1)) return s;
       return s.user?.id === a.user.id ? { ...s, user: a.user } : { ...s, ...emptyVisit, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1, user: a.user };
     case 'logout':
       return { ...s, ...emptyVisit, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1, user: null };
@@ -96,8 +103,20 @@ export function reducer(s: VisitState, a: Action): VisitState {
     case 'finishTaste':
       // U-05에서 고른 작품의 태그로 만든 취향 (lib/tasteFromPicks.ts). 계정 저장은 U-05에서 따로 한다
       return { ...s, ...emptyVisit, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1, tastes: a.tastes, tasteProfile: a.profile, tasteDone: true };
+    case 'applyTaste':
+      if (tasteScope(s) !== a.scope || (a.user && a.user.id !== s.user?.id)) return s;
+      if (a.user && (a.user.tasteProfileVersion ?? 1) < (s.user?.tasteProfileVersion ?? 1)) return s;
+      if (sameTaste(s.tasteProfile, a.profile)) return a.user ? { ...s, user: a.user } : s;
+      if (a.profile.version === 2 && !a.receipt) return s;
+      return { ...s, ...emptyVisit, user: a.user ?? s.user, visitId: a.visitId,
+        requestGeneration: s.requestGeneration + 1, tastes: a.profile.selectedTags,
+        tasteProfile: a.profile, tasteEvidenceReceipt: a.receipt, tasteDone: true };
     case 'setDuration':
-      return a.duration === s.duration && !a.newVisit ? s : { ...s, duration: a.duration, recommendations: [], current: 0, viewed: [], reactions: {}, reactionReasons: {}, dwell: {}, startedAt: null, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1 };
+      if ((a.scope && tasteScope(s) !== a.scope) || (a.duration === s.duration && !a.newVisit)) return s;
+      if (s.tasteProfile?.version === 2 && s.startedAt && !a.proof) return s;
+      return { ...s, duration: a.duration, recommendations: [], current: 0, viewed: [], reactions: {}, reactionReasons: {},
+        dwell: {}, startedAt: null, visitId: a.proof?.visitId ?? (s.tasteEvidenceReceipt ? s.visitId : newVisitId()),
+        tasteEvidenceReceipt: a.proof?.receipt ?? s.tasteEvidenceReceipt, requestGeneration: s.requestGeneration + 1 };
     case 'setRecommendations':
       if (a.generation !== undefined && a.generation !== s.requestGeneration) return s;
       return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, reactionReasons: {}, dwell: {}, startedAt: null };

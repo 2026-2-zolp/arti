@@ -9,8 +9,8 @@
   "scope": "Plan readiness only, no implementation or product/human/cloud gate promotion",
   "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
   "next": [
-    "R04 next TP3 preview-first confirmation, account save and visit state. TP2 passed 150 Django tests and 30 contract cases in isolation. Recheck the integrated frontend before selecting changes.",
-    "TP3 preview-first UI and optional team changes -> TP4 isolated journey and cached model acceptance.",
+    "R04 next TP4 isolated PostgreSQL and browser journey, cached model provenance, and disable/recovery checks.",
+    "TP3 passed 33 frontend tests and synthetic Chrome checks. Optional team styling intake requires the latest integrated source.",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]

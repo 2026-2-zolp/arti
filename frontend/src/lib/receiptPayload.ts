@@ -19,6 +19,7 @@ export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition):
 
   return {
     visitId: s.visitId, tasteProfile: s.tasteProfile, tastes: s.tastes, selectedDuration: s.duration ?? '30m', requestGeneration: s.requestGeneration, reactionReasons: reasons, dwell,
+    tasteEvidenceReceipt: s.tasteEvidenceReceipt,
     userId: s.user?.id ?? null,
     exhibitionId: ex.id,
     exhibitionTitle: ex.title,

@@ -168,6 +168,7 @@ export interface VisitRecord {
   visitId?: string;
   persisted?: boolean;
   tasteProfile?: TasteProfile;
+  tasteEvidenceReceipt?: string;
   tastes?: TasteTag[];
   selectedDuration?: VisitDuration;
   requestGeneration?: number;
@@ -201,7 +202,8 @@ export interface ChatMessage {
 }
 
 export interface TasteProfile {
-  version: 1;
+  version: 1 | 2;
+  tieContextVersion?: string;
   source: 'picks' | 'saved' | 'manual';
   poolVersion: string | null;
   picks: { pairIndex: number; artworkId: string }[];

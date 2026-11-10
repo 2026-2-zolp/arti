@@ -1,189 +1,142 @@
-/** 작품 쌍 선택으로 취향을 파악하는 화면 */
-import {useConfirm} from '../../components/Confirmation';
-/**
- * U-05 취향 파악 — 작품 약 10점을 두 점씩 보여 주고 하나만 고르게 한다.
- * 다 고르면 고른 작품에 붙은 태그로 취향 태그를 만들어 보여 주고(lib/tasteFromPicks.ts), 확인하면 관람 시간으로 간다.
- * 로그인 사용자는 확인할 때 이 태그가 계정의 저장 취향이 된다(덮어쓰기).
- */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+/** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import TasteReview from '../../components/TasteReview';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { load, save } from '../../lib/storage';
+import { tasteScope } from '../../lib/tasteFlow';
 import { tastesFromPicks } from '../../lib/tasteFromPicks';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
-import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Artwork, TasteTag, TasteProfile } from '../../types';
+import { useExhibitionPath } from '../../store/ExhibitionRoute';
+import type { TasteProfile, TasteTag } from '../../types';
 
+interface Draft {
+  picks: string[];
+  version?: 1 | 2;
+  poolVersion?: string;
+  tieContextVersion?: string;
+  options?: TasteTag[];
+  tags?: TasteTag[];
+}
 
-
-
-/** 작품 쌍 선택으로 취향을 파악하는 화면 */
 export default function U05Taste() {
-  const confirmAction = useConfirm();
-  const navigate = useNavigate();
-  const { state, dispatch } = useVisit();
-  const exhibitionId = useExhibitionId();
+  const { state } = useVisit();
+  const scope = tasteScope(state);
+  return <TasteDraft key={scope} draftKey={`arti.tasteDraft.${scope}`} />;
+}
+
+function TasteDraft({ draftKey }: { draftKey: string }) {
+  const { state } = useVisit();
   const to = useExhibitionPath();
+  const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
   const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), []);
-  const data = pool?.artworks;
-  const pairs = useMemo(() => pool?.ready ? pool.pairs.map(p => [pool.artworks.find(w => w.id === p.leftId)!, pool.artworks.find(w => w.id === p.rightId)!] as [Artwork, Artwork]) : [], [pool]);
-  const [saveError, setSaveError] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState(0);
-  /** 지금까지 고른 작품 id (한 단계에 하나씩) */
-  const [picks, setPicks] = useState<string[]>([]);
-  const [picked, setPicked] = useState<string | null>(null);
-  /** 다 고른 뒤 만든 취향 태그. null이면 아직 고르는 중 */
-  const [result, setResult] = useState<TasteTag[] | null>(null);
-  const timer = useRef<number | null>(null);
-
-  useEffect(
-    () => () => {
-      if (timer.current) window.clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const choose = (id: string) => {
-    if (timer.current) return;
-    const nextPicks = [...picks, id];
-    setPicked(id);
-    timer.current = window.setTimeout(() => {
-      timer.current = null;
-      setPicked(null);
-      setPicks(nextPicks);
-      if (step + 1 < pairs.length) {
-        setStep((n) => n + 1);
-        return;
-      }
-      setResult(tastesFromPicks(data ?? [], nextPicks));
-    }, 420);
-  };
-
-  const undo = () => {
-    if (timer.current) return;
-    if (result) {
-      // 결과 화면에서 [이전]: 마지막 선택으로 돌아간다
-      setResult(null);
-      setPicks((cur) => cur.slice(0, -1));
-      setStep(Math.max(pairs.length - 1, 0));
-      return;
+  const v2 = pool?.tasteTieV2Enabled === true && pool.supportedTasteProfileVersions?.includes(2) === true;
+  const version = draft.version ?? (v2 ? 2 : 1);
+  const contextVersion = pool?.tieContext?.tieContextVersion ?? undefined;
+  const missingContext = v2 && !contextVersion;
+  const pairs = pool?.pairs ?? [];
+  const selected = draft.tags ?? [];
+  const complete = draft.options !== undefined;
+  const samePairs = draft.picks.every((id, index) => {
+    const pair = pairs[index];
+    return pair?.leftId === id || pair?.rightId === id;
+  });
+  const changed = !!draft.picks.length && (draft.poolVersion !== pool?.poolVersion ||
+    (version === 2) !== v2 || draft.tieContextVersion !== (v2 ? contextVersion : undefined) || !samePairs);
+  const currentPair = pairs[draft.picks.length];
+  const works = currentPair ? [currentPair.leftId, currentPair.rightId].flatMap(id => pool?.artworks.find(w => w.id === id) ?? []) : [];
+  const manual = selected.some(tag => !draft.options?.includes(tag));
+  const counts: TasteProfile['counts'] = {};
+  if (!manual && version === 1) {
+    for (const id of draft.picks) {
+      for (const tag of pool?.artworks.find(w => w.id === id)?.tags ?? []) counts[tag] = (counts[tag] ?? 0) + 1;
     }
-    if (step === 0) return;
-    setPicks((cur) => cur.slice(0, -1));
-    setStep((n) => n - 1);
+  }
+  const profile: TasteProfile = {
+    version, source: manual ? 'manual' : 'picks', selectedTags: selected,
+    counts, poolVersion: manual ? null : draft.poolVersion ?? null,
+    tieContextVersion: !manual && version === 2 ? draft.tieContextVersion : undefined,
+    picks: manual ? [] : draft.picks.map((artworkId, pairIndex) => ({ pairIndex, artworkId })),
   };
 
-  const confirm = async () => {
-    if (!result?.length || !pool?.ready || saving) return;
-    if (state.startedAt && !(await confirmAction('새 취향으로 관람을 다시 시작하면 현재 진행과 반응이 초기화됩니다. 계속할까요?'))) return;
-    const counts: TasteProfile['counts'] = {};
-    for (const id of picks) for (const t of data?.find(w => w.id === id)?.tags ?? []) counts[t] = (counts[t] ?? 0) + 1;
-    const profile: TasteProfile = { version: 1, source: 'picks', poolVersion: pool.poolVersion, picks: picks.map((artworkId, pairIndex) => ({ pairIndex, artworkId })), counts, selectedTags: result };
-    setSaving(true); setSaveError('');
-    dispatch({ type: 'finishTaste', tastes: result, profile });
-    if (state.user) {
-      try { await api.updateTastes(state.user.id, result, profile, exhibitionId); dispatch({type: 'login', user: await api.me()}); }
-      catch (e) { setSaveError(`이번 관람에는 적용됐지만 계정 저장에 실패했어요. ${e instanceof Error ? e.message : ''}`); setSaving(false); return; }
-    }
-    setSaving(false); navigate(to('/time'));
-  };
+  function update(next: Draft) {
+    save(draftKey, next, 'session');
+    setDraft(next);
+  }
 
-  const pair = pairs[step];
+  function choose(id: string) {
+    if (!pool?.ready || missingContext || changed || complete) return;
+    const picks = [...draft.picks, id];
+    const options = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
+    update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
+  }
 
+  const reviewKey = `${draftKey}.review.${JSON.stringify(profile)}`;
   return (
-    <MobileShell
-      screenId="U-05"
-      title="취향 파악"
-      right={
-        step > 0 || result ? (
-          <button type="button" className="text-btn" onClick={undo}>
-            이전
-          </button>
-        ) : undefined
-      }
-      footer={
-        result ? (
-          <button className="btn primary block" onClick={confirm} disabled={result.length === 0 || saving}>
-            이 취향으로 계속
-          </button>
-        ) : undefined
-      }
-    >
-      {result ? (
-        <Lead title="이런 태그가 나왔어요" desc="고른 작품에서 많이 겹친 특성이에요. 이 태그로 작품을 추천합니다." />
-      ) : (
-        <Lead title="둘 중 더 끌리는 작품을 골라주세요" desc="전시와 관계없이 취향을 알아보는 작품이에요. 두 점 중 더 끌리는 쪽을 다섯 번 골라 주세요." />
-      )}
-
+    <MobileShell screenId="U-05" title="취향 파악" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
+      right={draft.picks.length > 0 && <button type="button" className="text-btn" onClick={() =>
+        update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
+      <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'}
+        desc={complete ? undefined : '전시와 관계없이 취향을 알아보는 작품이에요. 더 끌리는 쪽을 다섯 번 골라 주세요.'} />
       {loading && <Spinner label="작품을 불러오는 중…" />}
-      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
-      {saveError && <p role="alert">{saveError}<button onClick={() => navigate(to('/time'))}>계정 저장 없이 계속</button><button onClick={confirm}>저장 재시도</button></p>}
-      {!loading && !error && pairs.length === 0 && (
-        <p className="muted">취향 선택용 작품 10점이 아직 준비되지 않았어요. 잠시 후 다시 확인해 주세요.<button onClick={reload}>다시 확인</button><button onClick={() => navigate(to(state.user?.tastes.length ? '/taste/saved' : '/entry'))}>이전으로</button></p>
-      )}
-
-      {result && (
-        <div className="saved-taste-card">
-          <span className="eyebrow">취향 태그</span>
-          {result.length > 0 ? (
-            <div className="chips">
-              {result.map((tag) => (
-                <span key={tag} className="chip accent">
-                  {TASTE_LABEL[tag]}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="muted">고른 작품에서 취향 태그를 찾지 못했어요. [이전]을 눌러 다시 골라 주세요.</p>
-          )}
-          <ul className="tag-count-list">
-            {picks.map((id) => {
-              const work = data?.find((w) => w.id === id);
-              const count = work?.tags.filter((t) => t in TASTE_LABEL).length ?? 0;
-              return (
-                <li key={id}>
-                  <span>{work?.title ?? id}</span>
-                  <span className="muted small">태그 {count}개</span>
-                </li>
-              );
-            })}
-          </ul>
+      {error && <p role="alert">{error}</p>}
+      {!loading && !pool?.ready && <p>취향 조사 작품을 불러올 수 없어요.</p>}
+      {missingContext && <p role="alert">취향 조사 근거를 다시 불러와 주세요.</p>}
+      {(changed || error || missingContext || (!loading && !pool?.ready)) && <button type="button" className="btn outline" onClick={reload}>조사 근거 다시 불러오기</button>}
+      {pool?.ready && changed && (
+        <div className="stack gap-12">
+          <p role="status">조사 근거가 바뀌었어요. 고른 작품은 초안에 남아 있어요.</p>
+          {samePairs && (version === 1 || v2)
+            ? <button type="button" className="btn outline" onClick={() => update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
+                tieContextVersion: v2 ? contextVersion : undefined,
+                options: complete ? tastesFromPicks(pool.artworks, draft.picks) : undefined })}>고른 작품을 최신 근거로 확인</button>
+            : <button type="button" className="btn outline" onClick={() => update({ picks: [] })}>작품을 처음부터 다시 고르기</button>}
         </div>
       )}
-
-      {pair && !result && (
-        <>
-          <div className="duel-dots" aria-label={`${step + 1}번째, 모두 ${pairs.length}번`}>
-            {pairs.map((_, i) => (
-              <span key={i} className={i === step ? 'on' : i < step ? 'done' : ''} />
+      {complete && (
+        <div className="saved-taste-card stack gap-12">
+          <div className="chips" aria-label="취향 태그">
+            {(Object.keys(TASTE_LABEL) as TasteTag[]).map(tag => (
+              <button type="button" key={tag} aria-pressed={selected.includes(tag)}
+                className={`chip ${selected.includes(tag) ? 'accent' : ''}`}
+                onClick={() => update({ ...draft, tags: selected.includes(tag) ? selected.filter(t => t !== tag) : [...selected, tag] })}>
+                {TASTE_LABEL[tag]}
+              </button>
             ))}
           </div>
+          {manual && <p>고른 작품에 없는 태그를 포함했어요. 선택한 태그를 같은 비중으로 추천에 사용합니다.</p>}
+          {!selected.length && <p>취향 태그를 하나 이상 골라 주세요.</p>}
+          {selected.length > 0 && (version === 2 || pool?.ready) && (
+            <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile}
+              blocked={!pool?.ready || changed || (version === 2 && !contextVersion)} />
+          )}
+          {pool?.ready && !changed && <button type="button" className="text-btn" onClick={reload}>조사 근거 다시 불러오기</button>}
+        </div>
+      )}
+      {pool?.ready && !complete && !changed && !missingContext && works.length === 2 && (
+        <>
+          <div className="duel-dots" aria-label={`${draft.picks.length + 1}번째, 모두 ${pairs.length}번`}>
+            {pairs.map((_, index) => <span key={index} className={index === draft.picks.length ? 'on' : index < draft.picks.length ? 'done' : ''} />)}
+          </div>
           <div className="duel">
-            {pair.map((w, index) => (
-              <div key={w.id} className="duel-slot">
+            {works.map((work, index) => (
+              <div key={work.id} className="duel-slot">
                 {index === 1 && <p className="duel-or">또는</p>}
-                <button
-                  type="button"
-                  className={`duel-card ${picked === w.id ? 'picked' : ''}`}
-                  disabled={picked !== null}
-                  onClick={() => choose(w.id)}
-                >
-                  <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={16 / 9} fit="contain" />
-                  <span className="duel-title">{w.title}</span>
-                  <span className="muted small">
-                    {w.artist}
-                    {w.year ? ` · ${w.year}` : ''}
-                  </span>
+                <button type="button" className="duel-card" onClick={() => choose(work.id)}>
+                  <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt={work.title} ratio={16 / 9} fit="contain" />
+                  <span className="duel-title">{work.title}</span>
+                  <span className="muted small">{work.artist}{work.year ? ` · ${work.year}` : ''}</span>
                 </button>
               </div>
             ))}
           </div>
         </>
       )}
+      {state.duration && <Link to={to('/recommend')}>현재 관람으로 돌아가기</Link>}
     </MobileShell>
   );
 }
