@@ -191,3 +191,19 @@ class SurveyTests(TestCase):
             SurveyEntry.objects.create(pool=pool, artwork_id='fixture-art01', position=1)
         with self.assertRaises(IntegrityError), transaction.atomic():
             SurveyEntry.objects.create(pool=pool, artwork_id='fixture-art12', position=10)
+
+    def test_unreviewed_draft_can_register_but_never_activate_or_change_review(self):
+        SurveyPool.objects.update(active=False)
+        Artwork.objects.filter(pk='fixture-art01').update(review_status='source_check', show_image=False, tag_status='none')
+        before = list(Artwork.objects.order_by('pk').values())
+        path = self.configure()
+        call_command('configure_taste_survey', manifest=str(path), expected_revision=0,
+                     allow_unreviewed_draft=True, stdout=io.StringIO())
+        self.assertEqual(SurveyEntry.objects.filter(pool_id='curated').count(), 10)
+        self.assertFalse(SurveyPool.objects.get(pk='curated').active)
+        self.assertFalse(self.pool()['ready'])
+        for flags in ({'allow_unreviewed_draft': True}, {'allow_unreviewed_draft': False}):
+            with self.assertRaises(CommandError):
+                call_command('configure_taste_survey', manifest=str(path), expected_revision=1, activate=True, **flags)
+        self.assertEqual(SurveyPool.objects.get(pk='curated').revision, 1)
+        self.assertEqual(list(Artwork.objects.order_by('pk').values()), before)

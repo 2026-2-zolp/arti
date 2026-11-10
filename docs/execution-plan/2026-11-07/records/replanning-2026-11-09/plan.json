@@ -349,13 +349,13 @@
   },
   "teamFeedback20261110": {
     "record": "14-team-feedback-2026-11-10.md",
-    "surveyDirection": "C1/C2 structural checks passed; global survey implemented; real curation and general environment migration pending",
+    "surveyDirection": "C1/C2 passed; arti-dev migrated; real10 candidate draft registered inactive; human/tag review and activation pending",
     "nextContract": "R04-P C1 committed d5fbea9; C2 implemented",
     "currentFixes": "R06-A signup/time/image/prose",
     "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
   },
   "next": [
-    "Curate10 survey candidates with identity/source/review/pair intent; R04-P structure passed, no unreviewed activation",
+    "Compare existing10 draft against external candidates; selection not final; private score exploration only, no public activation",
     "R04 private16 raw tags/emotions/recommendation distribution; no accuracy or approval without independent labels",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"

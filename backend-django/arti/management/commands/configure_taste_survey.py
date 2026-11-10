@@ -15,8 +15,12 @@ class Command(BaseCommand):
         parser.add_argument('--manifest', required=True)
         parser.add_argument('--expected-revision', type=int, required=True)
         parser.add_argument('--activate', action='store_true')
+        parser.add_argument('--allow-unreviewed-draft', action='store_true',
+                            help='Store candidate references privately; cannot be combined with --activate.')
 
     def handle(self, *args, **options):
+        if options['activate'] and options['allow_unreviewed_draft']:
+            raise CommandError('Unreviewed draft mode cannot activate a survey.')
         try:
             data = json.loads(Path(options['manifest']).read_text(encoding='utf-8-sig'))
         except (OSError, ValueError) as exc:
@@ -38,7 +42,9 @@ class Command(BaseCommand):
                 if options['expected_revision'] != (pool.revision if pool else 0):
                     raise CommandError('Survey revision conflict; reload before configuring.')
                 works = {w.id: w for w in Artwork.objects.select_for_update().filter(pk__in=ids).order_by('id')}
-                if len(works) != 10 or any(not eligible(works[i]) for i in ids):
+                if len(works) != 10:
+                    raise CommandError('All 10 artwork IDs must already exist.')
+                if not options['allow_unreviewed_draft'] and any(not eligible(works[i]) for i in ids):
                     raise CommandError('All 10 artworks require approved source, confirmed tags and a visible image.')
                 if pool is None:
                     pool = SurveyPool(id=data['id'], revision=1)
