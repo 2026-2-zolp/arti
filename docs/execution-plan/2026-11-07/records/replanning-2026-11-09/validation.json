@@ -9,7 +9,7 @@
   "scope": "Plan readiness only, no implementation or product/human/cloud gate promotion",
   "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
   "next": [
-    "R04 four-phase implementation/file/rollback/test plan prepared;product not started;next TP1a only after separate authorization;human review parallel,no final selection",
+    "R04 TP1a passed only;next TP1b additive schema and atomic score/evidence/revision storage in isolated PostgreSQL. No ordinary DB migration/public activation/remote push;Dongseop frontend integrated delivery recheck pending.",
     "TP1 nullable evidence/atomic storage -> TP2 snapshot/CAS/retry/history proof -> TP3 preview-first UI and optional team hunk merge -> TP4 isolated verification;26 future cases not run,ordinary DB stays unchanged",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"

@@ -23,7 +23,8 @@ from .runtime import ModelRuntime
 from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load_tag_thresholds
 from .emotions import EMOTIONS
 from .tags import TAGS
-from .image_fetch import ImageFetchError, decode_base64_image, fetch_image
+from .image_fetch import ImageFetchError, decode_base64_image_with_hash, fetch_image
+from .provenance import build_tag_evidence
 from .writer import KananaWriter, Writer, write
 
 log = logging.getLogger("arti.ai")
@@ -69,6 +70,7 @@ class AnalyzeResponse(BaseModel):
     tags: dict[str, float] | None = None  # 취향 태그 8개 (0~1, 태그마다 독립, 0.5 이상 = 해당함) — 추천에 사용
     tagSource: str | None = None  # "image" | "text"
     tagsRaw: dict[str, float] | None = None  # 기준값 보정 전 점수 (검증용)
+    tagEvidence: dict | None = None  # TP1a: 선택적 전달 근거. 저장/확정/동점 적용은 별도 단계입니다.
 
 
 @app.get("/health")
@@ -109,10 +111,13 @@ def analyze_artwork(req: AnalyzeRequest):
 
 
 def _analyze_artwork(req: AnalyzeRequest):
-    image, image_error = None, None
+    image, image_error, image_sha256 = None, None, None
     if req.imageBase64 or req.imageUrl:
         try:
-            image = decode_base64_image(req.imageBase64) if req.imageBase64 else fetch_image(req.imageUrl or "")
+            if req.imageBase64:
+                image, image_sha256 = decode_base64_image_with_hash(req.imageBase64)
+            else:
+                image = fetch_image(req.imageUrl or "")
         except ImageFetchError as e:
             image_error = str(e)  # 이미지가 실패해도 텍스트만으로 분석을 계속한다
     # 제목은 그림도 해설도 없을 때만 쓴다. 제목은 짧아서(「작품」「산」) 분위기를 판단하기 어렵고,
@@ -121,7 +126,8 @@ def _analyze_artwork(req: AnalyzeRequest):
     if not text and image is None:
         raise HTTPException(status_code=400, detail=image_error or "작품 해설이나 이미지가 있어야 분석할 수 있어요.")
     try:
-        result = analyze(scorer, text, image, image_error, calibration, tag_thresholds)
+        thresholds = dict(tag_thresholds)
+        result = analyze(scorer, text, image, image_error, calibration, thresholds)
     except Exception as e:
         log.exception("분석 실패")
         raise HTTPException(status_code=503, detail="감정 분석 모델을 실행하지 못했어요.") from e
@@ -132,10 +138,13 @@ def _analyze_artwork(req: AnalyzeRequest):
         usedImage=result.image_scores is not None,
         usedText=result.text_scores is not None,
         imageError=result.image_error,
-        models={"image": config.CLIP_MODEL, "text": config.NLI_MODEL},
+        models={"image": getattr(scorer, 'clip_name', config.CLIP_MODEL),
+                "text": getattr(scorer, 'nli_name', config.NLI_MODEL)},
         tags=result.tags,
         tagSource=result.tag_source,
         tagsRaw=result.tags_raw,
+        tagEvidence=build_tag_evidence(getattr(scorer, 'tag_model_provenance', None), image_sha256,
+                                      result.tags, thresholds) if result.tag_source == 'image' else None,
     )
 
 

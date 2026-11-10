@@ -20,7 +20,8 @@ def generate(kind, snapshot, **context):
                 cache['error'] = exc
                 raise
         result = cache['result']
-        return {'scores': result['tags']} if kind == 'tag' else result | {'analyzedAt': timezone.now().isoformat()}
+        # TP1a는 전달 검증까지만 합니다. 새 근거의 저장은 TP1b이며 감정 JSON에도 섞지 않습니다.
+        return {'scores': result['tags']} if kind == 'tag' else {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
     if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
         from .llm import generate_text
         return generate_text(kind, snapshot, **context)

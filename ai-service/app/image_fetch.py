@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 import io
+import hashlib
 
 import httpx
 from PIL import Image
@@ -29,11 +30,16 @@ def decode_image(data: bytes) -> Image.Image:
 
 
 def decode_base64_image(b64: str) -> Image.Image:
+    return decode_base64_image_with_hash(b64)[0]
+
+
+def decode_base64_image_with_hash(b64: str) -> tuple[Image.Image, str]:
+    """추론에 읽은 원본 바이트를 한 번 디코드하며 기존 이미지 반환 API도 유지합니다."""
     try:
         data = base64.b64decode(b64, validate=True)
     except (binascii.Error, ValueError) as e:
         raise ImageFetchError("이미지 데이터(base64) 형식이 올바르지 않아요.") from e
-    return decode_image(data)
+    return decode_image(data), hashlib.sha256(data).hexdigest()
 
 
 def fetch_image(url: str) -> Image.Image:

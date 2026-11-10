@@ -1,0 +1,55 @@
+{
+  "ok": true,
+  "scope": "synthetic FastAPI-to-Django HTTP only",
+  "dbCursorCalls": 0,
+  "realWeights": false,
+  "providerTagKeys": [
+    "scores"
+  ],
+  "providerEmotionHasTagEvidence": false,
+  "wire": {
+    "emotions": {
+      "calm": 1.0,
+      "joy": 0.902,
+      "sadness": 0.809,
+      "tension": 0.707,
+      "awe": 0.458,
+      "nostalgia": 0.705
+    },
+    "models": {
+      "image": "fixture/clip-e2e",
+      "text": "fixture-nli"
+    },
+    "usedImage": true,
+    "usedText": true,
+    "tags": {
+      "landscape": 0.5,
+      "people": 0.5,
+      "abstract": 0.5,
+      "light": 0.5,
+      "vivid": 0.5,
+      "cool": 0.5,
+      "warm": 0.5,
+      "soft": 0.5
+    },
+    "tagSource": "image",
+    "imageError": null,
+    "tagEvidence": {
+      "version": 1,
+      "tagSource": "image",
+      "imageSha256": "065127074db3cbc3d6a43ce51af6356f6f1018420f0bbf1edec088d7241c955b",
+      "modelArtifactSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "signature": {
+        "modelId": "fixture/clip-e2e",
+        "modelRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "promptPreprocessSha256": "185fcd8eb40e7b3aeb0f49e45af95e8b161e3507528bd2d7af9a8d1745172aad",
+        "calibrationSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "tagDefinitionVersion": "arti-eight-tags-v1",
+        "scoreDefinitionVersion": "image-calibrated-tag-v1"
+      },
+      "signatureSha256": "208cf9c8eb5a77a7de0f5613f1ca3c7d901826042c4e4f4d49d4abb2d8943fba",
+      "scoresSha256": "065c2cb87111e476824da33d8705a6275aa8474e19b6b739f173e00e2caf8da7",
+      "evidenceSha256": "2addc9df0e5a2795cab9c6cb13b8fa3a3589c8baea0431bf697471d5cf3c56d0"
+    }
+  }
+}
