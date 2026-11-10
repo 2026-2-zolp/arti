@@ -199,7 +199,8 @@
       ],
       "owner": "동섭·성현; 화면/공통CSS 소유 범위 조율",
       "required": true,
-      "status": "planned",
+      "status": "in_progress",
+      "progressEvidence": ["records/team-feedback-2026-11-10/validation.json"],
       "acceptance": "뷰포트 전후·실기기·접근성·선택/복귀/저장 회귀. 팔레트 전면교체를 기정사실화하지 않음"
     },
     {
@@ -346,7 +347,15 @@
       "level": "professor announcement; order unknown"
     }
   },
+  "teamFeedback20261110": {
+    "record": "14-team-feedback-2026-11-10.md",
+    "surveyDirection": "user authorized exhibition-independent survey bank; runtime contract change pending",
+    "nextContract": "R04-P",
+    "currentFixes": "R06-A signup/time/image/prose",
+    "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
+  },
   "next": [
+    "R04-P amend survey-bank contract independently of recommendation exhibition; no unreviewed import",
     "R04 private16 raw tags/emotions/recommendation distribution; no accuracy or approval without independent labels",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"

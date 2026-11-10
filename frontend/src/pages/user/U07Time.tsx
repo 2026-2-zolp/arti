@@ -23,6 +23,11 @@ export default function U07Time() {
 
   const next = async () => {
     if (!value) return;
+    // 같은 시간으로 돌아가면 기존 추천·반응·관람 ID를 그대로 이어갑니다.
+    if (value === state.duration) {
+      navigate(to('/recommend'));
+      return;
+    }
     if (state.startedAt && !(await confirmAction('추천을 다시 받으면 현재 관람 진행과 반응이 초기화됩니다. 새 관람을 시작할까요?'))) return;
     dispatch({ type: 'setDuration', duration: value, newVisit: !!state.startedAt });
     dispatch({ type: 'setRecommendations', recs: [] }); // 조건이 바뀌었으니 U-08에서 새로 추천

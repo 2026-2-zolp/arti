@@ -276,10 +276,10 @@ export default function U10Artwork() {
                 {showSummary ? (
                   <>
                     <span className="ai-label">AI 요약 · 검수된 작품 자료 기반</span>
-                    <p>{w.summary}</p>
+                    <p className="artwork-prose">{w.summary}</p>
                   </>
                 ) : (
-                  <p ref={descRef} className={expanded ? '' : 'clamp-3'}>
+                  <p ref={descRef} className={`artwork-prose${expanded ? '' : ' clamp-3'}`}>
                     {w.description}
                   </p>
                 )}

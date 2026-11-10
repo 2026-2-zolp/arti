@@ -172,7 +172,7 @@ export default function U05Taste() {
                   disabled={picked !== null}
                   onClick={() => choose(w.id)}
                 >
-                  <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={16 / 9} />
+                  <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={16 / 9} fit="contain" />
                   <span className="duel-title">{w.title}</span>
                   <span className="muted small">
                     {w.artist}

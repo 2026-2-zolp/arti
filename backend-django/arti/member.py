@@ -50,8 +50,11 @@ def signup(request):
         validate_email(email)
     except ValidationError:
         raise ContractError(400, 'VALIDATION_ERROR', '이메일 형식을 확인해 주세요.')
-    if not 8 <= len(password) <= 128 or not re.search(r'[A-Za-z]',password) or not re.search(r'[0-9]',password) or not 1 <= len(nickname.strip()) <= 100:
-        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8자 이상, 이름은 100자 이내로 입력해 주세요.')
+    if not 8 <= len(password) <= 128 or not re.search(r'[A-Za-z]',password) or not re.search(r'[0-9]',password):
+        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8~128자로 입력해 주세요.')
+    # 닉네임은 화면과 동일하게 선택 입력이며, 공백은 빈 값으로 보존합니다.
+    if len(nickname.strip()) > 100:
+        raise ContractError(400, 'VALIDATION_ERROR', '닉네임은 100자 이내로 입력해 주세요.')
     try:
         with transaction.atomic():
             a = Account.objects.create(login_id=email, email=email, nickname=nickname.strip(), role='user', password=make_password(password))
