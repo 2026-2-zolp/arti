@@ -9,8 +9,8 @@
   "scope": "Plan readiness only, no implementation or product/human/cloud gate promotion",
   "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
   "next": [
-    "R04-S contrast table and blind pack prepared;next tie-only policy contract;human pilot/intake in parallel,selection not final,no public activation",
-    "R04 tie-only policy contract: missing/equal/version cases and user-editable representatives; keep max8 and distinguish product adoption from exploratory top3/contrast",
+    "R04 tie contract and static frontend ZIP intake prepared;next review bounded implementation/test plan;human pilot/intake parallel,no product application or final selection",
+    "R04 proposed order:trusted score evidence -> v2 resolve/snapshot/write-CAS -> preview-first UI and ZIP hunk selection -> isolated API/PG/browser regressions;implementation needs separate authorization",
     "R03 human-approved core3 then actual-grounded dialogue extension",
     "R06 UI and R07 operations parallel; progress HWP owned by user"
   ]

@@ -1,0 +1,207 @@
+{
+  "zipSha256": "c517a42e31d5632d575fd256165f071cc9221d383dc1399e7394060357d19298",
+  "equal": [
+    ".dockerignore",
+    ".env.example",
+    ".gitignore",
+    "Dockerfile.dev",
+    "Dockerfile.static",
+    "index.html",
+    "nginx.static.conf",
+    "package.json",
+    "public/taste/README.txt",
+    "README.md",
+    "src/App.tsx",
+    "src/components/Confirmation.tsx",
+    "src/components/EmotionBars.tsx",
+    "src/components/Field.tsx",
+    "src/components/FloorMap.tsx",
+    "src/components/Icon.tsx",
+    "src/components/PendingReceipts.tsx",
+    "src/components/ReceiptImageSave.tsx",
+    "src/data/mock.ts",
+    "src/lib/adminAnalysis.ts",
+    "src/lib/apiTarget.ts",
+    "src/lib/josa.ts",
+    "src/lib/mapOperationGate.ts",
+    "src/lib/reactionLog.ts",
+    "src/lib/receiptPayload.ts",
+    "src/lib/recommend.ts",
+    "src/lib/storage.ts",
+    "src/lib/tasteFromPicks.ts",
+    "src/lib/useAsync.ts",
+    "src/lib/useProtectedImage.ts",
+    "src/lib/useSpeech.ts",
+    "src/lib/visitScope.ts",
+    "src/main.tsx",
+    "src/pages/admin/A01Login.tsx",
+    "src/pages/admin/A02Dashboard.tsx",
+    "src/pages/admin/A03Exhibitions.tsx",
+    "src/pages/admin/A05Map.tsx",
+    "src/pages/admin/A06Members.tsx",
+    "src/pages/admin/AdminLayout.tsx",
+    "src/pages/user/U01Start.tsx",
+    "src/pages/user/U09Route.tsx",
+    "src/store/ExhibitionRoute.tsx",
+    "src/store/VisitContext.tsx",
+    "src/store/visitReducer.ts",
+    "src/vite-env.d.ts",
+    "tests/adminAnalysis.test.mts",
+    "tests/apiTarget.test.mts",
+    "tests/mapOperationGate.test.mts",
+    "tests/receiptPayload.test.mts",
+    "tsconfig.json",
+    "tsconfig.tsbuildinfo",
+    "vite.config.ts"
+  ],
+  "changed": [
+    {
+      "path": "package-lock.json",
+      "sha256": "d4a4683a205ddb6cedb1ee23d1441f99f70e7a97de4e62f00b65a2fe7be90a4c",
+      "bytes": 78282
+    },
+    {
+      "path": "src/api/client.ts",
+      "sha256": "a9f6e27ffbff323bfb0d649aeacc09d337fe4c2d984d372e42d0a57de0bb812d",
+      "bytes": 14401
+    },
+    {
+      "path": "src/components/ArtImage.tsx",
+      "sha256": "97f5ed5f5b67d0c0f44735b084458f43ca3bf6c93083d2a07db9296e59420dc3",
+      "bytes": 3634
+    },
+    {
+      "path": "src/components/MobileShell.tsx",
+      "sha256": "747aaa3cee8a70afc13b248909c1f30bb668a455e6c8066d11c855fcb2fdefdd",
+      "bytes": 2186
+    },
+    {
+      "path": "src/pages/admin/A04Artworks.tsx",
+      "sha256": "f0b1e32db8bf2f34538fff096082e352cd1347f203ae147d57cd726ebf900aee",
+      "bytes": 36314
+    },
+    {
+      "path": "src/pages/admin/A07Reactions.tsx",
+      "sha256": "9a893b005965bfe7fde9c5a4745449a73378e232e9a18784b976d7db64bcefc2",
+      "bytes": 3751
+    },
+    {
+      "path": "src/pages/user/U02Entry.tsx",
+      "sha256": "b3079b167117c0b6693f3a59c0f5222065a80e3ebcf28a00044369cf441b8e62",
+      "bytes": 2924
+    },
+    {
+      "path": "src/pages/user/U03Login.tsx",
+      "sha256": "21159b18a78be84d628c51ee61100d7028872b2403dc134ae497abf63a0ec17d",
+      "bytes": 3306
+    },
+    {
+      "path": "src/pages/user/U04Signup.tsx",
+      "sha256": "3572926c228485e7a0117a9b6b34975df7c6df07a7c473a07f64ae95a231a105",
+      "bytes": 4903
+    },
+    {
+      "path": "src/pages/user/U05Taste.tsx",
+      "sha256": "b954a736bddcebfb1978f7c16b254b5392da554adbdf4b43de14569188660d96",
+      "bytes": 8175
+    },
+    {
+      "path": "src/pages/user/U06SavedTaste.tsx",
+      "sha256": "5f11daba447fae71c6a7257f24cb408d3d7d22d30330d8257e72c17139a5dd2b",
+      "bytes": 2635
+    },
+    {
+      "path": "src/pages/user/U07Time.tsx",
+      "sha256": "f9929a299d2ce5b60b2636d304acd465a358ee179002751ca9c46f0ca296e658",
+      "bytes": 2705
+    },
+    {
+      "path": "src/pages/user/U08Recommend.tsx",
+      "sha256": "15703f0a5d68ac370a04eb1c6cade22d627fe4f1e07864299ee8ade41ef41904",
+      "bytes": 5303
+    },
+    {
+      "path": "src/pages/user/U10Artwork.tsx",
+      "sha256": "4ae3233c1fe710676523b3cc39481dcddd7db6a5a7839164e3ac925d7a26ebcc",
+      "bytes": 18279
+    },
+    {
+      "path": "src/pages/user/U11AskAI.tsx",
+      "sha256": "272cb8b214219e930ca238ec7c78bfbb9dcccc6359ebda695dd0a808b1b1f1b6",
+      "bytes": 7052
+    },
+    {
+      "path": "src/pages/user/U12Receipt.tsx",
+      "sha256": "7e3a349a8448e18e39a24faef5b727100eda6ecb41fc736531869f8b9a7b7855",
+      "bytes": 12180
+    },
+    {
+      "path": "src/pages/user/U13MyPage.tsx",
+      "sha256": "218b5bf3f681ffa1e13154355841724f60c43f3a423402080138193e0c8fba9b",
+      "bytes": 6616
+    },
+    {
+      "path": "src/pages/user/U14ForgotPassword.tsx",
+      "sha256": "9bdc37c4f5464cdc9ebae886d169b92a1f1a9d546713cb9a2b9f347116cea01b",
+      "bytes": 548
+    },
+    {
+      "path": "src/pages/user/U15ResetPassword.tsx",
+      "sha256": "fd9c4b19b1e4ce0b0cec38fc9434012cd010fef6139805b1d9768dbec436d990",
+      "bytes": 542
+    },
+    {
+      "path": "src/styles/app.css",
+      "sha256": "1c4a12becded32a8194ffae131d3266dd42b9a16e3df77f116eeaa7defba1d45",
+      "bytes": 37771
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "57a2a5e7b5286e918c556f0b067193a6f2755aad7d80574a5604f6dd1b553866",
+      "bytes": 8291
+    },
+    {
+      "path": "tests/actorRequests.test.mts",
+      "sha256": "d006c4a4afb2efe0494a456170f40ae2c2a074ceed2420e171343888361c42c8",
+      "bytes": 3799
+    },
+    {
+      "path": "tests/visitReducer.test.mts",
+      "sha256": "b41feb0e9ef3dca96a102a73af10b98b971ddad4fc7e9b7687674a965937f563",
+      "bytes": 2467
+    }
+  ],
+  "added": [],
+  "missing": [],
+  "excludedNodeModules": 2721,
+  "scope": "static comparison only;archive dependencies not executed;no product merge",
+  "sameCount": 52,
+  "changedCount": 23,
+  "addedCount": 0,
+  "missingSourceCount": 0,
+  "lineEndingsNormalizedForComparison": true,
+  "classification": {
+    "reviewableDesign": [
+      "src/styles/app.css:danger/warn,reason-box",
+      "src/pages/admin/A04Artworks.tsx:error-text",
+      "src/pages/admin/A07Reactions.tsx:error-text",
+      "user pages:error-text",
+      "MobileShell/header title simplification pending hierarchy review"
+    ],
+    "preserveCurrent": [
+      "global taste-pool API and survey origin types",
+      "U05 contain fit and whole-image display",
+      "U07 unchanged-duration fast path",
+      "U10 artwork-prose paragraph CSS",
+      "global-survey and same-duration regression tests"
+    ],
+    "decisionRequired": [
+      "nickname frontend limit12 versus current100",
+      "preparation message exposes operator approval instructions",
+      "header removal requires main heading structure",
+      "22dvh/5:2 cover crop must not override whole-image criterion"
+    ],
+    "tieLogic": "tasteFromPicks unchanged;no tie fix in archive",
+    "lockfile": "same package.json/root manifest;7 package metadata entries changed,versions unchanged;not adopted"
+  }
+}
