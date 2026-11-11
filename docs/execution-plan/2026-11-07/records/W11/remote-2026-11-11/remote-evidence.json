@@ -1,0 +1,438 @@
+{
+  "checkedDateKst": "2026-11-11",
+  "repository": "2026-2-zolp/arti",
+  "mainSha": "d0a2f9dfd6e887aae53449165d22d143b1bebfa6",
+  "pullRequests": [
+    {
+      "headRefOid": "6a81392eecbd3e208b6d565d3f4fe49036c4104f",
+      "mergeCommit": {
+        "oid": "9fd5434cdcb93a9c4979464f8842b2360550a96a"
+      },
+      "number": 8,
+      "state": "MERGED",
+      "url": "https://github.com/2026-2-zolp/arti/pull/8"
+    },
+    {
+      "headRefOid": "9b889953715c4f6436693ffed69c525421bec701",
+      "mergeCommit": {
+        "oid": "d0a2f9dfd6e887aae53449165d22d143b1bebfa6"
+      },
+      "number": 9,
+      "state": "MERGED",
+      "url": "https://github.com/2026-2-zolp/arti/pull/9"
+    }
+  ],
+  "runs": [
+    {
+      "scope": "PR #8 final",
+      "conclusion": "success",
+      "databaseId": 43008390382,
+      "event": "pull_request",
+      "headBranch": "dev/임준억",
+      "headSha": "6a81392eecbd3e208b6d565d3f4fe49036c4104f",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "name": "Frontend checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run npm ci --ignore-scripts --no-audit --no-fund"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm test"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run typecheck"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run build"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Django PostgreSQL checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements.lock"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py check"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py makemigrations --check --dry-run"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py migrate --noinput"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py test arti.tests --noinput -v 2"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Plan and contract checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_plan.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_guardrails.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m unittest discover -s scripts/tests -v"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python scripts/git_materials.py"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Model service fake checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements-dev.txt"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m pytest -q"
+            }
+          ]
+        }
+      ],
+      "url": "https://github.com/2026-2-zolp/arti/actions/runs/43008390382"
+    },
+    {
+      "scope": "PR #8 merged main",
+      "conclusion": "success",
+      "databaseId": 43008845233,
+      "event": "push",
+      "headBranch": "main",
+      "headSha": "9fd5434cdcb93a9c4979464f8842b2360550a96a",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "name": "Django PostgreSQL checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements.lock"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py check"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py makemigrations --check --dry-run"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py migrate --noinput"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py test arti.tests --noinput -v 2"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Model service fake checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements-dev.txt"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m pytest -q"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Plan and contract checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_plan.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_guardrails.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m unittest discover -s scripts/tests -v"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python scripts/git_materials.py"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Frontend checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run npm ci --ignore-scripts --no-audit --no-fund"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm test"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run typecheck"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run build"
+            }
+          ]
+        }
+      ],
+      "url": "https://github.com/2026-2-zolp/arti/actions/runs/43008845233"
+    },
+    {
+      "scope": "PR #9 final",
+      "conclusion": "success",
+      "databaseId": 43015960966,
+      "event": "pull_request",
+      "headBranch": "dev/임준억",
+      "headSha": "9b889953715c4f6436693ffed69c525421bec701",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "name": "Plan and contract checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_plan.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_guardrails.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m unittest discover -s scripts/tests -v"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python scripts/git_materials.py"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Django PostgreSQL checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements.lock"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py check"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py makemigrations --check --dry-run"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py migrate --noinput"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py test arti.tests --noinput -v 2"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Model service fake checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements-dev.txt"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m pytest -q"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Frontend checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run npm ci --ignore-scripts --no-audit --no-fund"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm test"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run typecheck"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run build"
+            }
+          ]
+        }
+      ],
+      "url": "https://github.com/2026-2-zolp/arti/actions/runs/43015960966"
+    },
+    {
+      "scope": "PR #9 merged main",
+      "conclusion": "success",
+      "databaseId": 43016600235,
+      "event": "push",
+      "headBranch": "main",
+      "headSha": "d0a2f9dfd6e887aae53449165d22d143b1bebfa6",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "name": "Frontend checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run npm ci --ignore-scripts --no-audit --no-fund"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm test"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run typecheck"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run npm run build"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Django PostgreSQL checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements.lock"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py check"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py makemigrations --check --dry-run"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py migrate --noinput"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python manage.py test arti.tests --noinput -v 2"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Model service fake checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python -m pip install -r requirements-dev.txt"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m pytest -q"
+            }
+          ]
+        },
+        {
+          "conclusion": "success",
+          "name": "Plan and contract checks",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_plan.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/verify_guardrails.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python docs/execution-plan/2026-11-07/records/W02/verify_contracts.py"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python -m unittest discover -s scripts/tests -v"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run python scripts/git_materials.py"
+            }
+          ]
+        }
+      ],
+      "url": "https://github.com/2026-2-zolp/arti/actions/runs/43016600235"
+    }
+  ],
+  "mainEnforcement": {
+    "branchProtected": false,
+    "classicProtectionEndpointStatus": 404,
+    "classicProtectionMessage": "Branch not protected",
+    "activeBranchRules": [],
+    "repositoryRulesets": [],
+    "requiredStatusChecksEnforced": false
+  },
+  "decision": {
+    "AC07": "pass",
+    "GCI": "pass",
+    "W11": "complete",
+    "F24": "closed",
+    "scope": "Execution and evidence; merge enforcement remains a separate operating decision."
+  }
+}
