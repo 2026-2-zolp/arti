@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "probes": [
+    {
+      "probe": "pass_without_evidence",
+      "correctlyRejected": true,
+      "expectedError": "Pass without evidence"
+    },
+    {
+      "probe": "release_closure_cycle",
+      "correctlyRejected": true,
+      "expectedError": "Release closure cycle"
+    },
+    {
+      "probe": "release_with_open_issues",
+      "correctlyRejected": true,
+      "expectedError": "unresolved release-required issue"
+    },
+    {
+      "probe": "missing_implementation_work",
+      "correctlyRejected": true,
+      "expectedError": "omits criterion implementation work"
+    },
+    {
+      "probe": "task_dependency_cycle",
+      "correctlyRejected": true,
+      "expectedError": "dependency cycle"
+    },
+    {
+      "probe": "complete_without_acceptance",
+      "correctlyRejected": true,
+      "expectedError": "unpassed criterion"
+    },
+    {
+      "probe": "gate_without_review",
+      "correctlyRejected": true,
+      "expectedError": "lacks review evidence"
+    }
+  ],
+  "scope": "Document validator negative probes only. No service execution."
+}

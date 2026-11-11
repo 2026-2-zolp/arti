@@ -1,0 +1,35 @@
+- banner:
+  - button "뒤로가기":
+  - heading "아트 영수증" [level=1]
+- main:
+  - heading "오늘의 관람이 완성됐어요" [level=2]
+  - article "아트 영수증":
+    - heading "ART RECEIPT" [level=3]
+    - paragraph: ARTI 개발 검증 전시
+    - paragraph: 가상 전시실
+    - term: 관람 날짜
+    - definition: 2026.11.09 (월)
+    - term: 관람 시간
+    - definition: 1분
+    - term: 관람 작품
+    - definition: 3점
+    - term: 추천 작품
+    - definition: 3점
+    - term: 선호 표시
+    - definition: 1회
+    - term: 가장 오래 본 작품
+    - definition: 검증용 작품 01
+    - generic: 오늘 본 작품
+    - list:
+      - generic: 1. 검증용 작품 01
+      - generic: 👍
+      - generic: 2. 검증용 작품 03
+      - generic: 3. 검증용 작품 05
+    - generic: 오늘의 취향 키워드
+    - generic: 풍경
+    - paragraph: 오늘 본 작품을 기억해두세요.
+  - button "이미지 저장·공유"
+  - status: 관람기록에 저장되었어요.
+  - button "취향 해석 보기"
+- contentinfo:
+  - button "관람 완료"

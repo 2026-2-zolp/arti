@@ -1,0 +1,167 @@
+{
+  "baseline": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "scope": "Current-code HTTP/data characterization only; reproduced defects are NOT product fixes.",
+  "provider": "local fake only",
+  "providerCalls": 4,
+  "observations": [
+    {
+      "id": "R01",
+      "issues": [
+        "F04"
+      ],
+      "actual": [
+        200,
+        200,
+        200
+      ],
+      "target": [
+        404,
+        404,
+        404
+      ]
+    },
+    {
+      "id": "R02",
+      "issues": [
+        "F34"
+      ],
+      "actual": {
+        "summary": "NEW_DRAFT",
+        "status": "suggested"
+      },
+      "target": {
+        "summary": "REVIEWED",
+        "status": "confirmed"
+      }
+    },
+    {
+      "id": "R03",
+      "issues": [
+        "F03"
+      ],
+      "actual": {
+        "guideIntro": "EDITED_INTRO",
+        "guidedLooking": [
+          "EDITED_Q"
+        ],
+        "guidedHints": [
+          "EDITED_HINT"
+        ],
+        "guideStatus": "confirmed"
+      },
+      "target": "Fake generation→edited API round-trip preserved; actual A04 UI save checked separately in browser-observations.md"
+    },
+    {
+      "id": "R04",
+      "issues": [
+        "F35",
+        "F29"
+      ],
+      "actual": [
+        {
+          "patch": {
+            "referenceUrl": "https://example.invalid/source"
+          },
+          "statuses": [
+            "confirmed",
+            "confirmed"
+          ]
+        },
+        {
+          "patch": {
+            "artist": "CHANGED_ARTIST"
+          },
+          "statuses": [
+            "confirmed",
+            "confirmed"
+          ]
+        }
+      ],
+      "target": "source_check and suggested after source/fact changes"
+    },
+    {
+      "id": "R05",
+      "issues": [
+        "F10",
+        "F11"
+      ],
+      "actual": {
+        "rows": 2,
+        "statuses": [
+          201,
+          201
+        ],
+        "reasonsPresent": false
+      },
+      "target": {
+        "rows": 1,
+        "statuses": [
+          201,
+          200
+        ],
+        "reasonsPresent": true
+      }
+    },
+    {
+      "id": "R06",
+      "issues": [
+        "F11",
+        "F13",
+        "F14"
+      ],
+      "actual": {
+        "status": 200,
+        "userId": null,
+        "persistedField": false
+      },
+      "target": {
+        "status": 401,
+        "code": "SESSION_EXPIRED"
+      }
+    },
+    {
+      "id": "R07",
+      "issues": [
+        "F11"
+      ],
+      "actual": {
+        "status": 200,
+        "rowsAdded": 0
+      },
+      "target": "Maintain guest no DB storage; add persisted:false"
+    },
+    {
+      "id": "R08",
+      "issues": [
+        "F01"
+      ],
+      "actual": {
+        "profileA": [
+          "landscape",
+          "warm"
+        ],
+        "profileB": [
+          "warm",
+          "landscape"
+        ],
+        "scoreResultsEqual": true
+      },
+      "target": "Preserve counts; contract C05/C06 produce different scores, not necessarily different final lists"
+    },
+    {
+      "id": "R09",
+      "issues": [
+        "F04",
+        "F17"
+      ],
+      "actual": [
+        0,
+        1
+      ],
+      "target": [
+        0,
+        1
+      ]
+    }
+  ]
+}

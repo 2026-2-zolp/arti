@@ -1,0 +1,830 @@
+{
+  "version": 1,
+  "asOfKST": "2026-11-10",
+  "baselineCommit": "d2d454c",
+  "scope": "private exploratory comparison; no final selection, no approval, no DB or production config writes",
+  "images": [
+    {
+      "id": "survey-candidate-cap-03",
+      "assetPath": "ai-service/evaluation/images/03.jpg",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c",
+      "title": "미델하르니스의 가로수길",
+      "caption": "길과 가로수가 화면 안쪽으로 이어지고 흐린 하늘이 넓게 보입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-06",
+      "assetPath": "ai-service/evaluation/images/06.jpg",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7",
+      "title": "우유를 따르는 여인",
+      "caption": "한 사람이 그릇에 우유를 따르며 창가의 빛이 얼굴과 식탁에 닿습니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-12",
+      "assetPath": "ai-service/evaluation/images/12.jpg",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90",
+      "title": "브로드웨이 부기우기",
+      "caption": "노란 선과 빨강·파랑의 작은 네모가 격자를 이룹니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-38",
+      "assetPath": "ai-service/evaluation/images/38.jpg",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01",
+      "title": "아이의 목욕",
+      "caption": "성인과 아이가 가까이 앉아 발을 씻는 장면과 옷의 무늬가 보입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "yyk-demo-004",
+      "assetPath": "data/private/yoo-intake-20261109/04.png",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "title": "산(남)",
+      "caption": "노랑·초록의 삼각형 색면과 아래쪽 붉은 띠가 보입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-36",
+      "assetPath": "ai-service/evaluation/images/36.jpg",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b",
+      "title": "파라솔을 든 여인",
+      "caption": "양산을 든 인물과 뒤쪽의 작은 인물, 하늘과 풀밭이 보입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-19",
+      "assetPath": "ai-service/evaluation/images/19.jpg",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08",
+      "title": "목수 성 요셉",
+      "caption": "어두운 공간에서 촛불이 인물의 얼굴과 손 주변을 밝힙니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-28",
+      "assetPath": "ai-service/evaluation/images/28.jpg",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c",
+      "title": "가나가와 앞바다의 큰 파도",
+      "caption": "큰 파도와 배, 멀리 작은 산이 보입니다. 개별 판본은 미확정입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-21",
+      "assetPath": "ai-service/evaluation/images/21.jpg",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70",
+      "title": "춤",
+      "caption": "붉은 인물들이 손을 이어 원을 이루며 파란색과 초록색 면이 배경에 놓입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "survey-candidate-cap-02",
+      "assetPath": "ai-service/evaluation/images/02.jpg",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e",
+      "title": "시에라네바다 산맥 속에서",
+      "caption": "큰 산과 호수, 구름 사이의 빛, 앞쪽 나무와 동물이 보입니다.",
+      "group": "current_candidate"
+    },
+    {
+      "id": "yyk-demo-001",
+      "assetPath": "data/private/yoo-intake-20261109/01.png",
+      "sha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "title": "바다",
+      "caption": "개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 회색·흰색·파랑·검은 형태와 붉고 노란 붓질, 불규칙한 경계와 거칠게 보이는 질감을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-002",
+      "assetPath": "data/private/yoo-intake-20261109/02.png",
+      "sha256": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+      "title": "새벽",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 어두운 파랑·보라·초록 색면 사이에 밝은 파란 띠와 가는 선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-003",
+      "assetPath": "data/private/yoo-intake-20261109/03.png",
+      "sha256": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+      "title": "정상",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 노란 윗부분 아래에 짙은 초록 형태들이 있고 오른쪽에 붉고 파란 작은 부분이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-005",
+      "assetPath": "data/private/yoo-intake-20261109/05.png",
+      "sha256": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+      "title": "작품(산)",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 파란 삼각형 색면 안에 부채처럼 갈라지는 선이 있고 아래에는 어두운 큰 면이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-006",
+      "assetPath": "data/private/yoo-intake-20261109/06.png",
+      "sha256": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+      "title": "산",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 초록 색면 사이에 파란 삼각형이 있고 아래쪽에는 가는 붉은 가로선과 보라색 면이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-007",
+      "assetPath": "data/private/yoo-intake-20261109/07.png",
+      "sha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "title": "작품 (Work)",
+      "caption": "재단의 Work,1968,oil on canvas,136x136cm 캡션과 이미지에 대응하는 후보입니다. 블로그 사진의 산 표기는 별도 출처 표기이며 동일성/권리/내용 최종 확인은 대기입니다. 붉고 주황색인 면 사이로 삼각형 경계가 교차하고 가는 노란 선들이 반복됩니다. 특정 장소·작가 의도·개인 소장 여부를 이 자료로 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-008",
+      "assetPath": "data/private/yoo-intake-20261109/08.png",
+      "sha256": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+      "title": "산",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 초록 계열의 부채처럼 펼쳐진 면과 가는 선이 반복되고 파랑·보라색 부분이 함께 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-009",
+      "assetPath": "data/private/yoo-intake-20261109/09.png",
+      "sha256": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+      "title": "작품",
+      "caption": "개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 붉은 바탕 안에서 뾰족한 선들이 겹치고 위쪽에는 노란 띠와 주황색 부분이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-010",
+      "assetPath": "data/private/yoo-intake-20261109/10.png",
+      "sha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "title": "산",
+      "caption": "개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 파란 바탕과 겹치는 초록 산 모양, 밝은 윤곽과 아래쪽 파란 부분을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-011",
+      "assetPath": "data/private/yoo-intake-20261109/11.png",
+      "sha256": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+      "title": "산-Blue",
+      "caption": "공식 전시 캡션 대응 후보이며 재료·규격·개별 작품번호는 미확정입니다. 파란 바탕에 회색 격자와 노란 꺾인 선이 겹치고 아래에는 초록 삼각형들이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-012",
+      "assetPath": "data/private/yoo-intake-20261109/12.png",
+      "sha256": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+      "title": "산-Red",
+      "caption": "공식 전시 캡션 대응 후보이며 재료·규격·개별 작품번호는 미확정입니다. 주황·붉은 면 위에 노란 격자와 청록색 격자가 겹치고 아래쪽에는 자주색 부분이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-013",
+      "assetPath": "data/private/yoo-intake-20261109/13.png",
+      "sha256": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+      "title": "작품001 (도상 후보)",
+      "caption": "도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 초록 삼각형과 좌우의 주황·붉은 면, 위쪽의 분홍색 반원 모양과 점무늬 같은 질감이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-014",
+      "assetPath": "data/private/yoo-intake-20261109/14.png",
+      "sha256": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+      "title": "작품002 (도상 후보)",
+      "caption": "도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 노란 윗부분 아래로 짙은 삼각형들이 늘어서 있고 파랑·회색 질감의 면과 가는 선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-015",
+      "assetPath": "data/private/yoo-intake-20261109/15.png",
+      "sha256": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+      "title": "작품003 (도상 후보)",
+      "caption": "도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 자주색·분홍색의 넓은 면에 주황색 원이 있고 아래의 어두운 면에는 파란 가로띠와 가는 세로선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "yyk-demo-016",
+      "assetPath": "data/private/yoo-intake-20261109/16.png",
+      "sha256": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f",
+      "title": "작품 (도상 후보)",
+      "caption": "도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 넓은 어두운 청록 면 주위로 노랑·빨강 삼각형이 있고 아래에는 파란 곡선 띠와 질감이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "group": "yoo_target"
+    },
+    {
+      "id": "cap-01",
+      "assetPath": "ai-service/evaluation/images/01.jpg",
+      "sha256": "d9eefe39b877166c55589462162f7bfa99ce05cba67b81bfd920d99aeb8f24d8",
+      "title": "모르트퐁텐의 추억",
+      "caption": "코로가 1864년 살롱에 낸 풍경화로, 지금은 루브르 박물관에 있습니다. 은빛 안개가 낀 호숫가에서 여인과 아이들이 나뭇가지에 손을 뻗고 있어요. 실제 풍경을 그대로 옮기기보다 기억 속 장면처럼 흐릿하고 고요하게 표현한 것이 특징입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-04",
+      "assetPath": "ai-service/evaluation/images/04.jpg",
+      "sha256": "8803f9badee211355b8be5625a5db2c32a98805fb07883a16e5ff902af2dd7b2",
+      "title": "건초 마차",
+      "caption": "영국 화가 컨스터블이 고향 서퍽의 스투어강 풍경을 그린 그림으로, 런던 내셔널 갤러리에 있습니다. 빈 건초 마차가 얕은 강물을 건너고, 하늘에는 구름이 넓게 펼쳐져 있어요. 1824년 파리 살롱에서 금메달을 받아 프랑스 화가들에게도 영향을 주었습니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-07",
+      "assetPath": "ai-service/evaluation/images/07.jpg",
+      "sha256": "d3a1fc3d33e4c3e3fe23673f9a866ee98b0aa22d83e1ae60ed7186bd8975d9bf",
+      "title": "모나리자",
+      "caption": "레오나르도 다빈치가 16세기 초에 그린 초상화로, 파리 루브르 박물관에 있습니다. 윤곽선을 안개처럼 부드럽게 번지게 하는 스푸마토 기법으로 신비로운 미소를 표현했어요. 세계에서 가장 잘 알려진 그림 가운데 하나입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-08",
+      "assetPath": "ai-service/evaluation/images/08.jpg",
+      "sha256": "1cfa8ace037f5acfeae3275472e87c70c74f4f04c604e66d22d3817d349267b2",
+      "title": "야경",
+      "caption": "렘브란트가 1642년에 완성한 대형 단체 초상화로, 암스테르담 국립미술관에 있습니다. 프란스 바닝 코크 대장이 이끄는 민병대가 출동하는 순간을 그렸어요. 어둠 속에서 몇몇 인물만 밝게 비추는 강한 명암 대비가 특징입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-09",
+      "assetPath": "ai-service/evaluation/images/09.jpg",
+      "sha256": "82715722511e6d044ca22a9c47214cccab431552bc7bba3fb4ec5e9bdba1b168",
+      "title": "폴리베르제르의 술집",
+      "caption": "마네가 세상을 떠나기 전 마지막으로 완성한 대작으로, 런던 코톨드 갤러리에 있습니다. 파리 공연장 폴리베르제르의 바텐더와 그 뒤 거울에 비친 화려한 실내를 함께 그렸어요. 거울 속 모습이 실제 위치와 어긋나 있어 지금도 해석이 갈리는 작품입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-16",
+      "assetPath": "ai-service/evaluation/images/16.jpg",
+      "sha256": "f2abd398d5eec58a835edca0fa6d370da75b8330b71b7cd41947df952bb8aa8c",
+      "title": "해변 산책",
+      "caption": "스페인 화가 소로야가 1909년 발렌시아 해변에서 아내와 딸을 그린 작품으로, 마드리드 소로야 미술관에 있습니다. 바닷바람에 날리는 흰 옷과 양산에 지중해의 밝은 햇빛이 비쳐요. 소로야는 '빛의 화가'로 불립니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-20",
+      "assetPath": "ai-service/evaluation/images/20.jpg",
+      "sha256": "bd5ae59c50534f9d395b6b12262caeb74dc6ea1b53507063477dd1029b602d73",
+      "title": "드네프르 강의 달밤",
+      "caption": "러시아 화가 쿠인지가 1880년에 그린 작품으로, 상트페테르부르크 러시아 미술관에 있습니다. 처음 공개할 때 어두운 방에 이 그림 한 점만 걸고 조명을 비춰, 달빛이 실제로 빛나는 것처럼 보이게 했어요. 강물 위의 초록빛 달빛이 특징입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-22",
+      "assetPath": "ai-service/evaluation/images/22.jpg",
+      "sha256": "95b7974d77ca85ba6d080e93da82a3d0a34e4598efe2e014b2c1ed6efb3c21ef",
+      "title": "채링 크로스 다리",
+      "caption": "드랭은 마티스와 함께 강렬한 원색을 쓴 야수파(포비슴)를 이끈 화가입니다. 1906년 화상 볼라르의 권유로 런던에 머물며 템스강 풍경을 여러 점 그렸어요. 실제 색과 상관없이 파랑·초록·주황을 과감하게 칠한 것이 특징입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-23",
+      "assetPath": "ai-service/evaluation/images/23.jpg",
+      "sha256": "b935baff5f5e7b9a73e25acc957e9cee893d50b8816b0f99879519c180ebf594",
+      "title": "설교 후의 환상",
+      "caption": "고갱이 1888년 프랑스 브르타뉴에서 그린 작품으로, 스코틀랜드 국립미술관에 있습니다. 설교를 들은 여인들이 성경 속 '야곱과 천사의 씨름'을 떠올리는 장면이에요. 현실과 환상을 가르는 나무와 새빨간 바탕이 강렬합니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-24",
+      "assetPath": "ai-service/evaluation/images/24.jpg",
+      "sha256": "a102db03f0f6fa375cd57e8937d5144e1cc684bb1553aa9c07f65bf5af4e8c79",
+      "title": "마릴린 두 폭",
+      "caption": "앤디 워홀이 1962년 마릴린 먼로가 세상을 떠난 직후 만든 작품으로, 런던 테이트 미술관에 있습니다. 같은 얼굴 사진을 실크스크린으로 50번 찍었는데, 왼쪽은 화려한 색, 오른쪽은 흑백으로 점점 흐려져요. 대중 스타의 이미지와 죽음을 함께 떠올리게 합니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-25",
+      "assetPath": "ai-service/evaluation/images/25.jpg",
+      "sha256": "fb5aef17492e2c698d36f9f6ad85dcb0cf9d839ec177e430dc206cbb246c1a06",
+      "title": "베를린 거리 풍경",
+      "caption": "독일 표현주의 화가 키르히너가 1913년에 그린 작품으로, 뉴욕 노이에 갤러리에 있습니다. 베를린 거리를 걷는 화려한 차림의 사람들을 길쭉하고 날카로운 형태로 그렸어요. 대도시의 들뜬 분위기와 불안을 함께 담았습니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-26",
+      "assetPath": "ai-service/evaluation/images/26.jpg",
+      "sha256": "0d61e06fed0f1f8e971c08c2c4b6db14e73959f76519f50dfc065874aa8db737",
+      "title": "늙은 기타리스트",
+      "caption": "피카소가 가난했던 '청색 시대'(1901~04)에 그린 작품으로, 시카고 미술관에 있습니다. 눈먼 늙은 악사가 몸을 웅크린 채 기타를 안고 있어요. 화면 전체를 덮은 푸른색이 쓸쓸함을 더합니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-27",
+      "assetPath": "ai-service/evaluation/images/27.jpg",
+      "sha256": "e785b9eec80b2b3f3c37f1b17a064e6acae64d437a80c73b6643a2d8240159ba",
+      "title": "녹턴: 청색과 금색 – 올드 배터시 다리",
+      "caption": "미국 출신 화가 휘슬러가 런던 템스강의 밤을 그린 '녹턴' 연작 가운데 하나로, 테이트 미술관에 있습니다. 푸른 밤안개 속에 나무다리가 실루엣으로 서 있고 금빛 불꽃이 흩어져요. 음악 제목처럼 색의 조화를 중요하게 여긴 작품입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-29",
+      "assetPath": "ai-service/evaluation/images/29.jpg",
+      "sha256": "916e8dfdb34fe9529d810fba3c23b01b9a27ec469bc9d94861d4b0897508da81",
+      "title": "론강의 별이 빛나는 밤",
+      "caption": "고흐가 1888년 프랑스 아를에서 그린 밤 풍경으로, 파리 오르세 미술관에 있습니다. 론강 위 별빛과 강변 가스등 불빛이 물 위에 반짝이며 비쳐요. 다음 해 그린 〈별이 빛나는 밤〉보다 먼저 그린 작품입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-30",
+      "assetPath": "ai-service/evaluation/images/30.jpg",
+      "sha256": "9edc07602018b6128b905deea47cb8993448a2b542f16e6f964c560d1428f0b3",
+      "title": "IKB 191",
+      "caption": "프랑스 작가 이브 클랭이 1962년에 만든 단색화입니다. 클랭이 직접 개발해 특허를 낸 짙은 파랑 'IKB(인터내셔널 클랭 블루)'로 화면 전체를 칠했어요. 형태 없이 색 하나만으로 감각을 느끼게 하려는 작품입니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-31",
+      "assetPath": "ai-service/evaluation/images/31.jpg",
+      "sha256": "a3b4069d4eedd765a6e4d27daf1f9c6caa239d85b6d129e139ecdb18dccd7c91",
+      "title": "타오르는 6월",
+      "caption": "영국 화가 레이턴이 1895년에 그린 작품으로, 푸에르토리코의 폰세 미술관에 있습니다. 주황색 얇은 옷을 입은 여인이 몸을 둥글게 말고 잠들어 있어요. 뒤로 보이는 햇빛 비친 바다와 함께 한여름의 나른함을 표현했습니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-32",
+      "assetPath": "ai-service/evaluation/images/32.jpg",
+      "sha256": "44d91070f52f874f13c5fbd6dd4baf4f7ddb702a4850d1953eb6e5be41b50258",
+      "title": "아델레 블로흐바우어의 초상 I",
+      "caption": "클림트가 1907년에 완성한 초상화로, 뉴욕 노이에 갤러리에 있습니다. 실제 금박을 붙여 장식한 화려한 '황금 시기'의 대표작이에요. 나치에게 빼앗겼다가 소송 끝에 상속인에게 돌아간 사연으로도 알려져 있습니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "cap-37",
+      "assetPath": "ai-service/evaluation/images/37.jpg",
+      "sha256": "6b720d7d9a20608771b336992a8129a330763701811dcea3c3d70acb84eccd19",
+      "title": "피아노 치는 소녀들",
+      "caption": "르누아르가 1892년에 그린 작품으로, 같은 주제의 여러 판 가운데 하나는 프랑스 정부가 사들여 지금 오르세 미술관에 있습니다. 두 소녀가 피아노 앞에서 악보를 함께 보고 있어요. 부드러운 붓질과 따뜻한 색으로 편안한 실내 분위기를 표현했습니다.",
+      "group": "legacy_mixed_target"
+    },
+    {
+      "id": "met-435882",
+      "assetPath": "data/private/survey-comparison-20261110/met-435882.jpg",
+      "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e",
+      "title": "Still Life with Apples and a Pot of Primroses",
+      "caption": "식탁 위의 과일과 흰 천, 오른쪽의 화분이 보입니다.",
+      "group": "external_research"
+    },
+    {
+      "id": "met-436532",
+      "assetPath": "data/private/survey-comparison-20261110/met-436532.jpg",
+      "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da",
+      "title": "Self-Portrait with a Straw Hat (obverse: The Potato Peeler)",
+      "caption": "노란 모자를 쓴 인물의 얼굴과 짧게 이어지는 붓질이 보입니다.",
+      "group": "external_research"
+    },
+    {
+      "id": "met-435702",
+      "assetPath": "data/private/survey-comparison-20261110/met-435702.jpg",
+      "sha256": "525c8b861d616b8c55bff075d6808a47a4a4d29de5ddadfb903be5b3b24dd16f",
+      "title": "The Horse Fair",
+      "caption": "말 여러 마리와 사람들이 길을 따라 움직이며 뒤로 나무와 하늘이 보입니다.",
+      "group": "external_research"
+    },
+    {
+      "id": "met-437437",
+      "assetPath": "data/private/survey-comparison-20261110/met-437437.jpg",
+      "sha256": "cd3c299d8355a994507bfac03093397080a65b281b71e3e9166126caa9b362af",
+      "title": "Young Woman (La Servante)",
+      "caption": "한 인물이 몸을 세워 서 있고 뒤로 무늬가 있는 배경이 보입니다.",
+      "group": "external_research"
+    },
+    {
+      "id": "met-436535",
+      "assetPath": "data/private/survey-comparison-20261110/met-436535.jpg",
+      "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc",
+      "title": "Wheat Field with Cypresses",
+      "caption": "노란 들판과 짙은 나무, 소용돌이처럼 이어지는 하늘의 붓질이 보입니다.",
+      "group": "external_research"
+    },
+    {
+      "id": "met-438817",
+      "assetPath": "data/private/survey-comparison-20261110/met-438817.jpg",
+      "sha256": "e06ff1c9490053cf3f9c8351d0f939febf9ef92b8059a809ba541d16ebfccde0",
+      "title": "The Dance Class",
+      "caption": "넓은 실내에서 여러 인물이 서 있거나 몸을 움직이고 있습니다.",
+      "group": "external_research"
+    }
+  ],
+  "externalCandidates": [
+    {
+      "objectID": 435882,
+      "title": "Still Life with Apples and a Pot of Primroses",
+      "artistDisplayName": "Paul Cézanne",
+      "objectDate": "ca. 1890",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/435882",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DT47.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "51.112.1",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/435882",
+      "assetPath": "data/private/survey-comparison-20261110/met-435882.jpg",
+      "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e",
+      "bytes": 89191,
+      "id": "met-435882",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    },
+    {
+      "objectID": 436532,
+      "title": "Self-Portrait with a Straw Hat (obverse: The Potato Peeler)",
+      "artistDisplayName": "Vincent van Gogh",
+      "objectDate": "1887",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/436532",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DT1502_cropped2.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "67.187.70a",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436532",
+      "assetPath": "data/private/survey-comparison-20261110/met-436532.jpg",
+      "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da",
+      "bytes": 299280,
+      "id": "met-436532",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    },
+    {
+      "objectID": 435702,
+      "title": "The Horse Fair",
+      "artistDisplayName": "Rosa Bonheur",
+      "objectDate": "1852–55",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/435702",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-23550-001.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "87.25",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/435702",
+      "assetPath": "data/private/survey-comparison-20261110/met-435702.jpg",
+      "sha256": "525c8b861d616b8c55bff075d6808a47a4a4d29de5ddadfb903be5b3b24dd16f",
+      "bytes": 84750,
+      "id": "met-435702",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    },
+    {
+      "objectID": 437437,
+      "title": "Young Woman (La Servante)",
+      "artistDisplayName": "Auguste Renoir",
+      "objectDate": "ca. 1875",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/437437",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DT1488.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "61.101.14",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/437437",
+      "assetPath": "data/private/survey-comparison-20261110/met-437437.jpg",
+      "sha256": "cd3c299d8355a994507bfac03093397080a65b281b71e3e9166126caa9b362af",
+      "bytes": 64070,
+      "id": "met-437437",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    },
+    {
+      "objectID": 436535,
+      "title": "Wheat Field with Cypresses",
+      "artistDisplayName": "Vincent van Gogh",
+      "objectDate": "1889",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/436535",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-42549-001.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "1993.132",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/436535",
+      "assetPath": "data/private/survey-comparison-20261110/met-436535.jpg",
+      "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc",
+      "bytes": 221383,
+      "downloadUrl": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-42549-001.jpg",
+      "id": "met-436535",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    },
+    {
+      "objectID": 438817,
+      "title": "The Dance Class",
+      "artistDisplayName": "Edgar Degas",
+      "objectDate": "1874",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/438817",
+      "isPublicDomain": true,
+      "primaryImageSmall": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-20101-001.jpg",
+      "medium": "Oil on canvas",
+      "accessionNumber": "1987.47.1",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/438817",
+      "role": "recommendation_stress_target_not_survey",
+      "assetPath": "data/private/survey-comparison-20261110/met-438817.jpg",
+      "sha256": "e06ff1c9490053cf3f9c8351d0f939febf9ef92b8059a809ba541d16ebfccde0",
+      "bytes": 124833,
+      "id": "met-438817",
+      "humanReview": "pending",
+      "selectionFinal": false,
+      "imageReuseScope": "API public-domain flag recorded; not a legal determination for every jurisdiction"
+    }
+  ],
+  "metadataOnlyOrBlocked": [
+    {
+      "objectID": 484870,
+      "title": "Temple Gardens",
+      "artistDisplayName": "Paul Klee",
+      "objectDate": "1920",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/484870",
+      "isPublicDomain": false,
+      "primaryImageSmall": "",
+      "medium": "Gouache and traces of ink on three sheets of paper, mounted on paper, mounted on paperboard",
+      "accessionNumber": "1987.455.2",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/484870"
+    },
+    {
+      "objectID": 488319,
+      "title": "Improvisation 27 (Garden of Love II)",
+      "artistDisplayName": "Vasily Kandinsky",
+      "objectDate": "1912",
+      "objectURL": "https://www.metmuseum.org/art/collection/search/488319",
+      "isPublicDomain": false,
+      "primaryImageSmall": "",
+      "medium": "Oil on canvas",
+      "accessionNumber": "49.70.1",
+      "metadataApi": "https://collectionapi.metmuseum.org/public/collection/v1/objects/488319"
+    },
+    {
+      "objectID": 8991,
+      "provider": "artic",
+      "error": "HTTP Error 403: Forbidden",
+      "metadataApi": "https://api.artic.edu/api/v1/artworks/8991"
+    }
+  ],
+  "pools": {
+    "A_current_draft": [
+      "survey-candidate-cap-03",
+      "survey-candidate-cap-06",
+      "survey-candidate-cap-12",
+      "survey-candidate-cap-38",
+      "yyk-demo-004",
+      "survey-candidate-cap-36",
+      "survey-candidate-cap-19",
+      "survey-candidate-cap-28",
+      "survey-candidate-cap-21",
+      "survey-candidate-cap-02"
+    ],
+    "B_three_external_swaps": [
+      "survey-candidate-cap-03",
+      "met-436532",
+      "survey-candidate-cap-12",
+      "met-437437",
+      "yyk-demo-004",
+      "survey-candidate-cap-36",
+      "survey-candidate-cap-19",
+      "survey-candidate-cap-28",
+      "met-435702",
+      "survey-candidate-cap-02"
+    ],
+    "C_within_subject_probe": [
+      "survey-candidate-cap-03",
+      "survey-candidate-cap-02",
+      "survey-candidate-cap-06",
+      "survey-candidate-cap-38",
+      "survey-candidate-cap-12",
+      "yyk-demo-004",
+      "survey-candidate-cap-19",
+      "survey-candidate-cap-36",
+      "survey-candidate-cap-21",
+      "survey-candidate-cap-28"
+    ]
+  },
+  "targets": {
+    "mixed18": [
+      "cap-01",
+      "cap-04",
+      "cap-07",
+      "cap-08",
+      "cap-09",
+      "cap-16",
+      "cap-20",
+      "cap-22",
+      "cap-23",
+      "cap-24",
+      "cap-25",
+      "cap-26",
+      "cap-27",
+      "cap-29",
+      "cap-30",
+      "cap-31",
+      "cap-32",
+      "cap-37"
+    ],
+    "external3": [
+      "met-435882",
+      "met-436535",
+      "met-438817"
+    ],
+    "yoo15_disjoint": [
+      "yyk-demo-001",
+      "yyk-demo-002",
+      "yyk-demo-003",
+      "yyk-demo-005",
+      "yyk-demo-006",
+      "yyk-demo-007",
+      "yyk-demo-008",
+      "yyk-demo-009",
+      "yyk-demo-010",
+      "yyk-demo-011",
+      "yyk-demo-012",
+      "yyk-demo-013",
+      "yyk-demo-014",
+      "yyk-demo-015",
+      "yyk-demo-016"
+    ]
+  },
+  "positions": {
+    "yyk-demo-001": [
+      14,
+      28
+    ],
+    "yyk-demo-002": [
+      26,
+      28
+    ],
+    "yyk-demo-003": [
+      14,
+      48
+    ],
+    "yyk-demo-004": [
+      44,
+      28
+    ],
+    "yyk-demo-005": [
+      56,
+      28
+    ],
+    "yyk-demo-006": [
+      44,
+      48
+    ],
+    "yyk-demo-007": [
+      56,
+      48
+    ],
+    "yyk-demo-008": [
+      50,
+      68
+    ],
+    "yyk-demo-009": [
+      26,
+      48
+    ],
+    "yyk-demo-010": [
+      74,
+      28
+    ],
+    "yyk-demo-011": [
+      86,
+      28
+    ],
+    "yyk-demo-012": [
+      74,
+      48
+    ],
+    "yyk-demo-013": [
+      86,
+      48
+    ],
+    "yyk-demo-014": [
+      14,
+      68
+    ],
+    "yyk-demo-015": [
+      26,
+      68
+    ],
+    "yyk-demo-016": [
+      80,
+      68
+    ],
+    "cap-01": [
+      15,
+      20
+    ],
+    "cap-04": [
+      32,
+      20
+    ],
+    "cap-07": [
+      49,
+      20
+    ],
+    "cap-08": [
+      66,
+      20
+    ],
+    "cap-09": [
+      83,
+      20
+    ],
+    "cap-16": [
+      15,
+      42
+    ],
+    "cap-20": [
+      32,
+      42
+    ],
+    "cap-22": [
+      49,
+      42
+    ],
+    "cap-23": [
+      66,
+      42
+    ],
+    "cap-24": [
+      83,
+      42
+    ],
+    "cap-25": [
+      15,
+      64
+    ],
+    "cap-26": [
+      32,
+      64
+    ],
+    "cap-27": [
+      49,
+      64
+    ],
+    "cap-29": [
+      66,
+      64
+    ],
+    "cap-30": [
+      83,
+      64
+    ],
+    "cap-31": [
+      15,
+      86
+    ],
+    "cap-32": [
+      32,
+      86
+    ],
+    "cap-37": [
+      49,
+      86
+    ],
+    "met-435882": [
+      15,
+      20
+    ],
+    "met-436535": [
+      32,
+      20
+    ],
+    "met-438817": [
+      49,
+      20
+    ]
+  },
+  "entrance": [
+    50,
+    92
+  ],
+  "durations": [
+    "30m",
+    "60m",
+    "relaxed"
+  ],
+  "strategies": [
+    "current_all_frequency",
+    "top3_frequency_then_ai_sum",
+    "top3_signed_opponent_contrast"
+  ],
+  "sourceHashes": {
+    "ai-service/app/analyzer.py": "729ac2f853ce4b08bcf9f693120b84f143865ef3ea88d562c7ffeccc3ca1d4a3",
+    "ai-service/app/config.py": "26cb7721515fd51ad4c8eecbee768a0670b28616afc6f5141f4c2935dd27be57",
+    "ai-service/app/tags.py": "d58c1f7f9360d114163a2964679fc488adfcea28b782c34c4b04cb2de1108b31",
+    "ai-service/app/emotions.py": "003556b0a6b44c58d6c5b543538b66ea4e1f0d1c4b74b3b85f4084bc2bebbf66",
+    "ai-service/app/tag_calibration.json": "b529072729252a0cef0c52e33f008dd0f03ec37ba7ee529a210cb87459575109",
+    "ai-service/app/calibration.json": "eea6e07381fb127c5c1f3194d62de689b8c5eae5016f8d5af0b8660fbaef24f8",
+    "backend-django/arti/recommendations.py": "e8c9550a0f8b4ed5ac389e9fc5ac90a0b5c1500687a2bdb81760c3d6081126d9",
+    "backend-django/arti/constants.py": "b4cdc5c4d5aae111e657cbb45f60a307feb4625cdfce57619e93518b7c379cc9"
+  },
+  "inference": {
+    "clipPath": "data/private/model-runtime-20261109/clip",
+    "nliPath": "data/private/model-runtime-20261109/nli",
+    "clipRevision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "nliRevision": "8adb042d524ecd5c26d3e3ba0e3fbcf7e2d0864c",
+    "offline": true,
+    "threads": 4,
+    "imageWeight": 0.6,
+    "thresholdFit": false
+  },
+  "rules": [
+    "strictly finite model scores and all image hashes checked",
+    "freeze pools before scoring; no score-driven candidate search or threshold fitting",
+    "normalize inference inputs via existing RGB processor only; no frame cropping or color edits",
+    "current target-layout is fixed demo projection, not official floor plan or optimal walking route",
+    "no recommendation corpus overlaps any tested survey image ID or hash",
+    "old development examples are not holdout; all new external items lack human preference labels",
+    "32 equally enumerated choices are scenarios, not measured user probabilities",
+    "between-pool same bits are position-aligned artificial choices, not same-user causal comparison",
+    "C intentionally probes within-subject contrasts; shared categories may be forced by frequency counting",
+    "signed contrast sums chosen minus unchosen calibrated scores per tag, keeps positive top3, normalizes weights; model prompt bias is not human utility",
+    "emotion/NLI outputs are supplementary and never used for recommendation",
+    "no accuracy,learning-effect or optimal-setting claims without independent labels"
+  ]
+}

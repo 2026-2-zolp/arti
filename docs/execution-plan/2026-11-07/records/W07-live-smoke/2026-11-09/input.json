@@ -1,0 +1,10 @@
+{
+  "type": "synthetic_connection_smoke_only",
+  "description": "이것은 실제 미술작품이 아닌 연결 시험용 설정이다. 파란 바탕 위에 빨간 삼각형 하나가 있고 아래쪽에 노란 가로선 두 개가 있다. 재료와 작가의 의도에 관한 정보는 제공하지 않는다.",
+  "firstQuestion": "빨간 삼각형이 파란 바탕보다 앞으로 나오는 것 같아요. 보던 질문에 이어 무엇을 더 살펴보면 좋을까요?",
+  "followupQuestion": "내가 앞서 말한 관찰과 연결해 노란 선 두 개는 어떻게 보면 좋을까요?",
+  "contextPath": "original explanation → generated summary/guide suggestions → synthetic explicit confirmation → guide question → summary plus prior successful exchange",
+  "manualFixtureTagEmotion": "confirmed synthetic values retained, not model output",
+  "browser": "not_run",
+  "realYooImport": "not_run"
+}

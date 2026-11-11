@@ -1,0 +1,28 @@
+{
+  "asOf": "2026-11-09",
+  "baselineCommit": "f181b23",
+  "scope": "Synthetic fixture API/database and code/plan review; not real Yoo exhibition or browser acceptance",
+  "django": {
+    "command": "docker compose --env-file .env.compose -p arti-w06-map-review run --rm --no-deps api python manage.py test arti.tests --noinput",
+    "database": "isolated PostgreSQL 17; Django test DB",
+    "passed": 69,
+    "newMapTests": 6,
+    "finalSeconds": 33.482
+  },
+  "frontend": {
+    "testsPassed": 20,
+    "newDeferredOperationTests": 3,
+    "typecheckAndViteBuild": "pass",
+    "browserDomOrClickTest": "not_run"
+  },
+  "plan": {
+    "verifyPlan": "pass",
+    "guardrailProbes": 25,
+    "protectedArchiveFiles": 38
+  },
+  "realYooDataImport": "not_run",
+  "realPlacementAndWalkingTime": "not_run",
+  "realAI": "not_run",
+  "productGateStatuses": "unchanged",
+  "push": "not_performed"
+}

@@ -1,0 +1,8 @@
+import tarfile,hashlib,json
+from pathlib import Path
+root=Path('/source');out=Path('/backup')
+manifest={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(root.iterdir()) if p.is_file()}
+with tarfile.open(out/'media.tar','w') as tar:
+ for name in manifest:tar.add(root/name,arcname=name)
+(out/'media-manifest.json').write_text(json.dumps(manifest,sort_keys=True,indent=2))
+print('Archived synthetic media files:',len(manifest))

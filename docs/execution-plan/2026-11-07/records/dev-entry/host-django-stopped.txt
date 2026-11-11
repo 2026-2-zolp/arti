@@ -1,0 +1,22 @@
+Browser tab: 6, Title: "ARTI", URL: "http://localhost:5180/exhibitions/fixture-ex01".
+1 AXWebArea ARTI, URL: localhost:5180/exhibitions/fixture-ex01
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading ARTI, Value: 1
+				6 text ARTI
+			7 link Description: 마이페이지, Value: localhost:5180/mypage
+		8 container
+			9 heading 나만의 시선으로 만나는 미술관, Value: 2
+				10 text 나만의 시선으로 만나는 미술관
+			11 text AI가 추천하고, 작품을 보는 방법까지 안내합니다.
+			12 image 작품 앞에 선 관람객 일러스트
+			13 text 요청을 처리하지 못했어요.
+			14 button 다시 불러오기
+			15 link Description: 전시 목록으로, Value: localhost:5180/
+			16 text 진행 중인 관람이 있어요 추천 작품  3 점 중  3 점 감상
+		17 container
+			18 button 이어서 관람
+			19 button 새로 시작
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5180/exhibitions/fixture-ex01

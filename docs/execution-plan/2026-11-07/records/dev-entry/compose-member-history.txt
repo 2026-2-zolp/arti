@@ -1,0 +1,57 @@
+Browser tab: 8, Title: "ARTI", URL: "http://localhost:5178/mypage".
+1 AXWebArea ARTI, URL: localhost:5178/mypage
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 마이페이지, Value: 1
+				6 text 마이페이지
+			7 button 로그아웃
+		8 container
+			9 container 미저장 기록 복구
+			10 heading W05 시험회원님, 안녕하세요, Value: 2
+				11 text W05 시험회원님, 안녕하세요
+			12 tab group
+				13 tab (selected, settable, boolean) 관람기록, Value: 1
+				14 tab (selectable, settable, boolean) 좋아요 목록, Value: 0
+			15 content list
+				16 button 가상 전시실 2026.11.08 ARTI 개발 검증 전시 작품 3점 관람 1분 👍 0 아트 영수증 보기
+					17 text 가상 전시실
+					18 text 2026.11.08
+					19 text ARTI 개발 검증 전시
+					20 text 작품 
+					21 text 3
+					22 text 점
+					23 text 관람 
+					24 text 1
+					25 text 분
+					26 text 👍 
+					27 text 0
+					28 text 아트 영수증 보기
+				29 button 가상 전시실 2026.11.08 ARTI 개발 검증 전시 작품 1점 관람 1분 👍 1 아트 영수증 보기
+					30 text 가상 전시실
+					31 text 2026.11.08
+					32 text ARTI 개발 검증 전시
+					33 text 작품 
+					34 text 1
+					35 text 점
+					36 text 관람 
+					37 text 1
+					38 text 분
+					39 text 👍 
+					40 text 1
+					41 text 아트 영수증 보기
+				42 button 가상 전시실 2026.11.08 ARTI 개발 검증 전시 작품 3점 관람 1분 👍 1 아트 영수증 보기
+					43 text 가상 전시실
+					44 text 2026.11.08
+					45 text ARTI 개발 검증 전시
+					46 text 작품 
+					47 text 3
+					48 text 점
+					49 text 관람 
+					50 text 1
+					51 text 분
+					52 text 👍 
+					53 text 1
+					54 text 아트 영수증 보기
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/mypage

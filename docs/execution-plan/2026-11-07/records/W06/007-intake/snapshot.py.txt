@@ -1,0 +1,12 @@
+import sys,os,json,hashlib
+from pathlib import Path
+sys.path.insert(0,'/app');os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from arti.models import Account,Artwork,Exhibition,Session,Visit,VisitReaction
+models=[Exhibition,Artwork,Account,Session,Visit,VisitReaction]
+def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,default=str,ensure_ascii=False).encode()).hexdigest()
+data={m.__name__:list(m.objects.order_by('pk').values()) for m in models}
+result={'counts':{k:len(v) for k,v in data.items()},'logicalDatabaseSha256':digest(data),'workRowSha256':{w['id']:digest(w) for w in data['Artwork']},'exhibitions':{e['id']:{'version':e['version'],'status':e['status'],'subtitle':e['subtitle']} for e in data['Exhibition']},'media':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in settings.MEDIA_ROOT.iterdir() if p.is_file()}}
+print('SNAPSHOT='+json.dumps(result,sort_keys=True))

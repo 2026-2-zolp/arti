@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "status": "review draft; no production UI/API implemented",
+  "modelScores": {
+    "display": "score",
+    "range": [
+      0,
+      1
+    ],
+    "forbiddenClaims": [
+      "correctness_probability",
+      "visitor_emotion_probability",
+      "taste_match_probability"
+    ],
+    "sumTo100": false
+  },
+  "humanOpinions": {
+    "showCounts": true,
+    "denominator": "explicit valid judgments; unknown count reported separately",
+    "unknownIsNegative": false
+  },
+  "helpfulness": {
+    "numerator": "helpful",
+    "denominator": "helpful + unhelpful",
+    "exposureDenominatorSeparate": true,
+    "smallSamples": "counts first; percentage hidden below10 valid responses (provisional UI policy, not confidence guarantee)"
+  },
+  "feedback": {
+    "targetKinds": [
+      "artwork_preference",
+      "tag_fit",
+      "recommendation_helpfulness",
+      "text_helpfulness"
+    ],
+    "required": [
+      "targetKind",
+      "targetId",
+      "targetRevision",
+      "modelConfigVersion",
+      "rating"
+    ],
+    "ratings": [
+      "positive",
+      "negative",
+      "unknown"
+    ],
+    "freeTextDefault": false,
+    "guestStorage": "pending decision; keep existing no-DB-save policy",
+    "autoApprove": false,
+    "autoTrain": false
+  },
+  "reviewStates": [
+    "suggested",
+    "confirmed",
+    "stale",
+    "pending"
+  ],
+  "release": "contract proposal only; no W gate promotion"
+}

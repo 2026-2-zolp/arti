@@ -1,0 +1,508 @@
+[
+  {
+    "pool": "A_current_draft",
+    "bits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strategy": "current_all_frequency",
+    "tastes": [
+      "landscape",
+      "people",
+      "abstract",
+      "light",
+      "vivid",
+      "warm"
+    ],
+    "counts": {
+      "landscape": 1,
+      "abstract": 3,
+      "warm": 2,
+      "vivid": 2,
+      "people": 2,
+      "light": 1
+    },
+    "outputs": {
+      "mixed18/30m": {
+        "ids": [
+          "cap-32",
+          "cap-30",
+          "cap-24"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5283333333333333
+      },
+      "mixed18/60m": {
+        "ids": [
+          "cap-32",
+          "cap-30",
+          "cap-24",
+          "cap-08",
+          "cap-01"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5062
+      },
+      "mixed18/relaxed": {
+        "ids": [
+          "cap-37",
+          "cap-32",
+          "cap-30",
+          "cap-24",
+          "cap-08",
+          "cap-04",
+          "cap-01"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.48828571428571427
+      },
+      "yoo15_disjoint/30m": {
+        "ids": [
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-009"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6363333333333333
+      },
+      "yoo15_disjoint/60m": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6086
+      },
+      "yoo15_disjoint/relaxed": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-014",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-013",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.586
+      },
+      "external8/30m": {
+        "ids": [
+          "met-437853",
+          "met-436535",
+          "met-437881"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.3406666666666667
+      },
+      "external8/60m": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-436535",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 1,
+        "meanScore": 0.336
+      },
+      "external8/relaxed": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-435882",
+          "met-436535",
+          "met-438817",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 2,
+        "meanScore": 0.30242857142857144
+      }
+    }
+  },
+  {
+    "pool": "A_current_draft",
+    "bits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strategy": "all_frequency_ai_coverage_tiebreak",
+    "tastes": [
+      "landscape",
+      "people",
+      "abstract",
+      "light",
+      "vivid",
+      "warm"
+    ],
+    "counts": {
+      "landscape": 1,
+      "abstract": 3,
+      "warm": 2,
+      "vivid": 2,
+      "people": 2,
+      "light": 1
+    },
+    "outputs": {
+      "mixed18/30m": {
+        "ids": [
+          "cap-32",
+          "cap-30",
+          "cap-24"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5283333333333333
+      },
+      "mixed18/60m": {
+        "ids": [
+          "cap-37",
+          "cap-32",
+          "cap-30",
+          "cap-24",
+          "cap-08"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5218
+      },
+      "mixed18/relaxed": {
+        "ids": [
+          "cap-37",
+          "cap-32",
+          "cap-31",
+          "cap-01",
+          "cap-08",
+          "cap-24",
+          "cap-30"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5017142857142857
+      },
+      "yoo15_disjoint/30m": {
+        "ids": [
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-009"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6363333333333333
+      },
+      "yoo15_disjoint/60m": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6086
+      },
+      "yoo15_disjoint/relaxed": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-014",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-013",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.586
+      },
+      "external8/30m": {
+        "ids": [
+          "met-435809",
+          "met-436535",
+          "met-437881"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.339
+      },
+      "external8/60m": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-436535",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 1,
+        "meanScore": 0.336
+      },
+      "external8/relaxed": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-435882",
+          "met-436535",
+          "met-438817",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 2,
+        "meanScore": 0.30242857142857144
+      }
+    }
+  },
+  {
+    "pool": "A_current_draft",
+    "bits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strategy": "top3_frequency_then_ai_sum",
+    "tastes": [
+      "abstract",
+      "warm",
+      "people"
+    ],
+    "counts": {
+      "landscape": 1,
+      "abstract": 3,
+      "warm": 2,
+      "vivid": 2,
+      "people": 2,
+      "light": 1
+    },
+    "outputs": {
+      "mixed18/30m": {
+        "ids": [
+          "cap-32",
+          "cap-30",
+          "cap-08"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5459999999999999
+      },
+      "mixed18/60m": {
+        "ids": [
+          "cap-32",
+          "cap-30",
+          "cap-24",
+          "cap-23",
+          "cap-08"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5442
+      },
+      "mixed18/relaxed": {
+        "ids": [
+          "cap-32",
+          "cap-31",
+          "cap-23",
+          "cap-24",
+          "cap-30",
+          "cap-08",
+          "cap-07"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.521
+      },
+      "yoo15_disjoint/30m": {
+        "ids": [
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-009"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.719
+      },
+      "yoo15_disjoint/60m": {
+        "ids": [
+          "yyk-demo-016",
+          "yyk-demo-012",
+          "yyk-demo-007",
+          "yyk-demo-009",
+          "yyk-demo-014"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6526000000000001
+      },
+      "yoo15_disjoint/relaxed": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-014",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-013",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.6078571428571429
+      },
+      "external8/30m": {
+        "ids": [
+          "met-435809",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 1,
+        "meanScore": 0.359
+      },
+      "external8/60m": {
+        "ids": [
+          "met-435809",
+          "met-436535",
+          "met-438817",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 2,
+        "meanScore": 0.3338
+      },
+      "external8/relaxed": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-435882",
+          "met-436535",
+          "met-438817",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 4,
+        "meanScore": 0.28485714285714286
+      }
+    }
+  },
+  {
+    "pool": "A_current_draft",
+    "bits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "strategy": "top3_signed_opponent_contrast",
+    "tastes": [
+      "abstract",
+      "warm",
+      "vivid"
+    ],
+    "counts": {
+      "landscape": 1,
+      "abstract": 3,
+      "warm": 2,
+      "vivid": 2,
+      "people": 2,
+      "light": 1
+    },
+    "outputs": {
+      "mixed18/30m": {
+        "ids": [
+          "cap-32",
+          "cap-22",
+          "cap-30"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.5413333333333333
+      },
+      "mixed18/60m": {
+        "ids": [
+          "cap-32",
+          "cap-22",
+          "cap-08",
+          "cap-24",
+          "cap-30"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.515
+      },
+      "mixed18/relaxed": {
+        "ids": [
+          "cap-32",
+          "cap-31",
+          "cap-22",
+          "cap-23",
+          "cap-24",
+          "cap-30",
+          "cap-08"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.49614285714285716
+      },
+      "yoo15_disjoint/30m": {
+        "ids": [
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-009"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.897
+      },
+      "yoo15_disjoint/60m": {
+        "ids": [
+          "yyk-demo-016",
+          "yyk-demo-012",
+          "yyk-demo-007",
+          "yyk-demo-009",
+          "yyk-demo-014"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.8226
+      },
+      "yoo15_disjoint/relaxed": {
+        "ids": [
+          "yyk-demo-015",
+          "yyk-demo-014",
+          "yyk-demo-009",
+          "yyk-demo-007",
+          "yyk-demo-012",
+          "yyk-demo-013",
+          "yyk-demo-016"
+        ],
+        "zeroMatch": 0,
+        "meanScore": 0.7677142857142857
+      },
+      "external8/30m": {
+        "ids": [
+          "met-435809",
+          "met-436535",
+          "met-436634"
+        ],
+        "zeroMatch": 2,
+        "meanScore": 0.36133333333333334
+      },
+      "external8/60m": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-436535",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 4,
+        "meanScore": 0.2958
+      },
+      "external8/relaxed": {
+        "ids": [
+          "met-437853",
+          "met-435809",
+          "met-435882",
+          "met-436535",
+          "met-438817",
+          "met-437881",
+          "met-436634"
+        ],
+        "zeroMatch": 6,
+        "meanScore": 0.2462857142857143
+      }
+    }
+  }
+]

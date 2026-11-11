@@ -1,0 +1,22 @@
+{
+  "asOf": "2026-11-07",
+  "repository": "https://github.com/2026-2-zolp/arti.git",
+  "workspace": "C:/Proj/26-2-zolp/work/arti",
+  "branch": "work/jun-eok-refactor",
+  "commit": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "trackedFiles": 271,
+  "trackedChanges": 0,
+  "untrackedSourceFiles": 0,
+  "node": "v22.23.1",
+  "npm": "8.19.4",
+  "python": "3.12.14",
+  "captureImages": 40,
+  "wikiartImages": 79,
+  "teamLocalData": "awaiting_confirmation",
+  "dataPolicy": "원본미변경;새실행은인메모리DB;팀DB초기화/이관없음",
+  "remoteWrites": false,
+  "productionSourceEdits": false,
+  "actualModelCalls": false,
+  "actualBrowserE2E": false,
+  "actualAws": false
+}

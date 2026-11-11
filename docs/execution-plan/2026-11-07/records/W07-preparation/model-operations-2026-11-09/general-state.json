@@ -1,0 +1,9 @@
+{
+  "current": {
+    "works": 16,
+    "exhibitions": 1,
+    "stateDigest": "4477c50757be8e40a1c6eb9590e6e19345b8c4d0a5a5717d368192fd619b1e5c"
+  },
+  "equalsPriorJourneyState": true,
+  "scope": "read only, no general API/container recreation"
+}

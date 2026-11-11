@@ -1,0 +1,18 @@
+{
+  "round": "baseline",
+  "scenarioIds": [
+    "D01",
+    "D02",
+    "D03",
+    "D04"
+  ],
+  "boundaryIds": [
+    "B01",
+    "B02"
+  ],
+  "ablationIds": [
+    "D02",
+    "D03"
+  ],
+  "callLimit": 12
+}

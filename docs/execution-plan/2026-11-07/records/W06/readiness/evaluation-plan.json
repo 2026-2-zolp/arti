@@ -1,0 +1,602 @@
+{
+  "id": "W06-YYK16-PRE-W07-v1",
+  "asOf": "2026-11-09",
+  "scope": "Future W07 fixed input and evaluation design; no model execution this task",
+  "priorExploration": "Existing text smoke/12+6qualitycalls preceded this plan.001/004/010 are calibration samples, not held-out. No claim that this plan predates those exploratory calls.",
+  "items": [
+    {
+      "id": "yyk-demo-001",
+      "recordId": "yyk-intake-20261109-001",
+      "assetId": "asset-a183733183371ed4da150e69",
+      "originalSha256": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10399",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 회색·흰색·파랑·검은 형태와 붉고 노란 붓질, 불규칙한 경계와 거칠게 보이는 질감을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "summaryCandidate": "회색·흰색·파랑·검은 형태 사이로 붉고 노란 붓질이 보입니다. 색의 경계와 표면 질감에 눈을 옮겨 보세요.",
+      "guideCandidate": {
+        "intro": "제목을 떠올리기 전에 붓질의 흔적부터 찾아보세요.",
+        "questions": [
+          "붓질이 보이는 부분을 한 곳 골라보세요. 그 부분은 어떻게 보이나요?"
+        ],
+        "hints": [
+          "색의 경계 한 곳을 골라 붓질이 이어지는지 끊기는지 살펴보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "붓질이 보이는 부분을 한 곳 골라보세요. 그 부분은 어떻게 보이나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-002",
+      "recordId": "yyk-intake-20261109-002",
+      "assetId": "asset-92e905f05a2fc7ac27821911",
+      "originalSha256": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10396",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 어두운 파랑·보라·초록 색면 사이에 밝은 파란 띠와 가는 선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "어두운 파랑·보라·초록 색면 사이에 밝은 파란 띠와 가는 선이 보입니다.",
+      "guideCandidate": {
+        "intro": "밝은 파란 띠와 어두운 면을 번갈아 살펴보세요.",
+        "questions": [
+          "밝은 띠를 따라 볼 때 눈이 머무는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "띠가 휘어지는 곳이나 가는 선과 만나는 곳을 한 군데 찾아보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "밝은 띠를 따라 볼 때 눈이 머무는 곳은 어디인가요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-003",
+      "recordId": "yyk-intake-20261109-003",
+      "assetId": "asset-71981c51983ffeb242ea9358",
+      "originalSha256": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10387",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 노란 윗부분 아래에 짙은 초록 형태들이 있고 오른쪽에 붉고 파란 작은 부분이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "노란 윗부분 아래에 짙은 초록 형태들이 있고 오른쪽에 붉고 파란 작은 부분이 보입니다.",
+      "guideCandidate": {
+        "intro": "윗부분의 밝은 색과 아래의 어두운 형태를 비교해 보세요.",
+        "questions": [
+          "처음 눈에 들어온 작은 색 부분은 어디에 있나요?"
+        ],
+        "hints": [
+          "노랑·빨강·파랑 중 한 색을 골라 주변 초록과 만나는 경계를 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "처음 눈에 들어온 작은 색 부분은 어디에 있나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-004",
+      "recordId": "yyk-intake-20261109-004",
+      "assetId": "asset-ef978212ba3912443781d995",
+      "originalSha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 노랑·초록 계열의 큰 삼각형 색면, 대각선, 아래쪽의 붉은색·주황색 띠를 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "summaryCandidate": "큰 삼각형 색면과 대각선이 화면을 나눕니다. 아래쪽의 붉고 주황색인 띠를 따라 시선을 옮겨 보세요.",
+      "guideCandidate": {
+        "intro": "색 이름보다 색면이 만나는 경계를 먼저 보세요.",
+        "questions": [
+          "두 색면이 만나는 곳 중 시선이 오래 머무는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "대각선 한 줄을 골라 양옆 색이 어떻게 다른지 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "warm",
+        "vivid"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "두 색면이 만나는 곳 중 시선이 오래 머무는 곳은 어디인가요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-005",
+      "recordId": "yyk-intake-20261109-005",
+      "assetId": "asset-8be3cbce01b25c2d8944c01e",
+      "originalSha256": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=7917",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 파란 삼각형 색면 안에 부채처럼 갈라지는 선이 있고 아래에는 어두운 큰 면이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "파란 삼각형 색면 안에 부채처럼 갈라지는 선이 있고 아래에는 어두운 큰 면이 있습니다.",
+      "guideCandidate": {
+        "intro": "파란 색면 안의 선을 한 줄씩 따라가 보세요.",
+        "questions": [
+          "여러 선이 가까워지는 곳과 벌어지는 곳 중 어디에 눈이 가나요?"
+        ],
+        "hints": [
+          "파란 면의 뾰족한 끝과 넓은 쪽을 번갈아 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "여러 선이 가까워지는 곳과 벌어지는 곳 중 어디에 눈이 가나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-006",
+      "recordId": "yyk-intake-20261109-006",
+      "assetId": "asset-87d02099700f60c8bad40575",
+      "originalSha256": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10391",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 초록 색면 사이에 파란 삼각형이 있고 아래쪽에는 가는 붉은 가로선과 보라색 면이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "초록 색면 사이에 파란 삼각형이 있고 아래쪽에는 가는 붉은 가로선과 보라색 면이 있습니다.",
+      "guideCandidate": {
+        "intro": "가운데 삼각형과 아래의 가로선을 비교해 보세요.",
+        "questions": [
+          "붉은 가로선이 주변 면과 만나는 곳은 어떻게 보이나요?"
+        ],
+        "hints": [
+          "가로선 위쪽과 아래쪽의 색을 한 곳씩 골라 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "붉은 가로선이 주변 면과 만나는 곳은 어떻게 보이나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-007",
+      "recordId": "yyk-intake-20261109-007",
+      "assetId": "asset-95bf3130e16845b8f1db2fb2",
+      "originalSha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+      "sourceUrl": "http://www.yooyoungkuk.org/about/work_view.php?year=1960&id=68&cont2_limit=45",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 재단의 Work,1968,oil on canvas,136x136cm 캡션과 이미지에 대응하는 후보입니다. 블로그 사진의 산 표기는 별도 출처 표기이며 동일성/권리/내용 최종 확인은 대기입니다. 붉고 주황색인 면 사이로 삼각형 경계가 교차하고 가는 노란 선들이 반복됩니다. 특정 장소·작가 의도·개인 소장 여부를 이 자료로 확정하지 않습니다.",
+      "summaryCandidate": "붉고 주황색인 면 사이로 삼각형 경계가 교차하고 가는 노란 선들이 반복됩니다.",
+      "guideCandidate": {
+        "intro": "넓은 붉은 면과 가는 선 중 먼저 보이는 쪽을 골라보세요.",
+        "questions": [
+          "가는 선이 모이거나 방향을 바꾸는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "가운데 교차점과 아래쪽 가로선 중 한 곳만 살펴봐도 좋아요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "warm",
+        "vivid"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "가는 선이 모이거나 방향을 바꾸는 곳은 어디인가요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-008",
+      "recordId": "yyk-intake-20261109-008",
+      "assetId": "asset-24f6cb9a43cc57fe9e55fb97",
+      "originalSha256": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10389",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 초록 계열의 부채처럼 펼쳐진 면과 가는 선이 반복되고 파랑·보라색 부분이 함께 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "초록 계열의 부채처럼 펼쳐진 면과 가는 선이 반복되고 파랑·보라색 부분이 함께 보입니다.",
+      "guideCandidate": {
+        "intro": "반복된 면 사이로 시선을 옮겨 보세요.",
+        "questions": [
+          "반복되는 면 중 폭이나 방향이 다르게 보이는 곳은 어디인가요?"
+        ],
+        "hints": [
+          "위쪽의 펼쳐진 모양과 아래쪽 모양을 한 군데씩 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "반복되는 면 중 폭이나 방향이 다르게 보이는 곳은 어디인가요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-009",
+      "recordId": "yyk-intake-20261109-009",
+      "assetId": "asset-0bf5816f949ff1ad644a1a6a",
+      "originalSha256": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10401",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품 대응 후보이며 사람의 식별/내용 확인은 대기입니다. 붉은 바탕 안에서 뾰족한 선들이 겹치고 위쪽에는 노란 띠와 주황색 부분이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "붉은 바탕 안에서 뾰족한 선들이 겹치고 위쪽에는 노란 띠와 주황색 부분이 있습니다.",
+      "guideCandidate": {
+        "intro": "뾰족한 선의 높낮이를 따라가 보세요.",
+        "questions": [
+          "겹쳐 보이는 선 중 먼저 따라가고 싶은 선은 어느 쪽인가요?"
+        ],
+        "hints": [
+          "위쪽 노란 띠와 맞닿은 선부터 한 줄 골라보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "warm",
+        "vivid"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "겹쳐 보이는 선 중 먼저 따라가고 싶은 선은 어느 쪽인가요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-010",
+      "recordId": "yyk-intake-20261109-010",
+      "assetId": "asset-ccbc459cbdfa953d935b9972",
+      "originalSha256": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10383",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 개별 소장품과의 대응 후보를 바탕으로 작성했습니다. 캔버스에 유화 물감. 파란 바탕과 겹치는 초록 산 모양, 밝은 윤곽과 아래쪽 파란 부분을 관찰할 수 있습니다. 특정 장소·작가 의도는 이 자료로 확정하지 않습니다.",
+      "summaryCandidate": "파란 바탕 위로 초록 산 모양이 겹쳐 보입니다. 밝은 윤곽과 그 안쪽 색면을 번갈아 살펴보세요.",
+      "guideCandidate": {
+        "intro": "윤곽과 색면 중 먼저 보이는 쪽을 골라보세요.",
+        "questions": [
+          "밝은 윤곽선을 따라 볼 때와 초록 면을 볼 때 어디가 다르게 느껴지나요?"
+        ],
+        "hints": [
+          "산 모양 두 개가 겹치는 곳을 한 군데만 비교해도 좋아요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "밝은 윤곽선을 따라 볼 때와 초록 면을 볼 때 어디가 다르게 느껴지나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-011",
+      "recordId": "yyk-intake-20261109-011",
+      "assetId": "asset-0f8633ea2669af803769df13",
+      "originalSha256": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+      "sourceUrl": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=201603150000405",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 공식 전시 캡션 대응 후보이며 재료·규격·개별 작품번호는 미확정입니다. 파란 바탕에 회색 격자와 노란 꺾인 선이 겹치고 아래에는 초록 삼각형들이 있습니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "파란 바탕에 회색 격자와 노란 꺾인 선이 겹치고 아래에는 초록 삼각형들이 있습니다.",
+      "guideCandidate": {
+        "intro": "격자와 그 위의 노란 선을 따로 살펴보세요.",
+        "questions": [
+          "노란 선을 볼 때와 회색 격자를 볼 때 시선이 어떻게 달라지나요?"
+        ],
+        "hints": [
+          "두 선이 만나는 한 곳과 아래쪽 삼각형의 경계를 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "cool"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "노란 선을 볼 때와 회색 격자를 볼 때 시선이 어떻게 달라지나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-012",
+      "recordId": "yyk-intake-20261109-012",
+      "assetId": "asset-a6aab09fc250a048a4814f42",
+      "originalSha256": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+      "sourceUrl": "https://www.mmca.go.kr/exhibitions/exhibitionsDetail.do?exhId=201603150000405",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 공식 전시 캡션 대응 후보이며 재료·규격·개별 작품번호는 미확정입니다. 주황·붉은 면 위에 노란 격자와 청록색 격자가 겹치고 아래쪽에는 자주색 부분이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "주황·붉은 면 위에 노란 격자와 청록색 격자가 겹치고 아래쪽에는 자주색 부분이 보입니다.",
+      "guideCandidate": {
+        "intro": "겹친 격자의 색과 방향을 비교해 보세요.",
+        "questions": [
+          "두 격자가 만나는 부분에서 어떤 색이 먼저 눈에 들어오나요?"
+        ],
+        "hints": [
+          "위쪽 노란 선과 가운데 청록 선을 한 줄씩 따라가 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "warm",
+        "vivid"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "두 격자가 만나는 부분에서 어떤 색이 먼저 눈에 들어오나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-013",
+      "recordId": "yyk-intake-20261109-013",
+      "assetId": "asset-58835735ce9610533067ca00",
+      "originalSha256": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10567",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 초록 삼각형과 좌우의 주황·붉은 면, 위쪽의 분홍색 반원 모양과 점무늬 같은 질감이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "초록 삼각형과 좌우의 주황·붉은 면, 위쪽의 분홍색 반원 모양과 점무늬 같은 질감이 보입니다.",
+      "guideCandidate": {
+        "intro": "큰 색면과 작은 질감 무늬를 번갈아 살펴보세요.",
+        "questions": [
+          "매끈한 경계와 작은 무늬 중 어디에 시선이 더 머무나요?"
+        ],
+        "hints": [
+          "가운데 초록 면과 그 바로 위의 분홍 무늬 부분을 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "매끈한 경계와 작은 무늬 중 어디에 시선이 더 머무나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-014",
+      "recordId": "yyk-intake-20261109-014",
+      "assetId": "asset-e53649373a3d4beabb919872",
+      "originalSha256": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10537",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 노란 윗부분 아래로 짙은 삼각형들이 늘어서 있고 파랑·회색 질감의 면과 가는 선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "노란 윗부분 아래로 짙은 삼각형들이 늘어서 있고 파랑·회색 질감의 면과 가는 선이 보입니다.",
+      "guideCandidate": {
+        "intro": "삼각형의 경계와 아래쪽의 질감을 비교해 보세요.",
+        "questions": [
+          "형태의 경계와 작은 표면 무늬 중 무엇이 먼저 보이나요?"
+        ],
+        "hints": [
+          "삼각형 하나를 골라 위쪽 색과 아래쪽 색이 만나는 곳을 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "형태의 경계와 작은 표면 무늬 중 무엇이 먼저 보이나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-015",
+      "recordId": "yyk-intake-20261109-015",
+      "assetId": "asset-4d27dfd4e2bb7f09b23ae9a6",
+      "originalSha256": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10405",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 자주색·분홍색의 넓은 면에 주황색 원이 있고 아래의 어두운 면에는 파란 가로띠와 가는 세로선이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "자주색·분홍색의 넓은 면에 주황색 원이 있고 아래의 어두운 면에는 파란 가로띠와 가는 세로선이 보입니다.",
+      "guideCandidate": {
+        "intro": "둥근 모양과 긴 띠를 번갈아 보세요.",
+        "questions": [
+          "주황색 원에서 파란 띠로 눈을 옮기면 무엇이 다르게 보이나요?"
+        ],
+        "hints": [
+          "모양의 크기나 경계의 선명함 중 한 가지만 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract",
+        "warm"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "주황색 원에서 파란 띠로 눈을 옮기면 무엇이 다르게 보이나요?",
+      "humanReview": "pending"
+    },
+    {
+      "id": "yyk-demo-016",
+      "recordId": "yyk-intake-20261109-016",
+      "assetId": "asset-1709b0ebc77220648a4f9b21",
+      "originalSha256": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f",
+      "sourceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10403",
+      "description": "[팀 작성 검수 전 초안·공식 해설 원문 아님] 도상 대응 후보이며 개별 판본·제작연도·재료·규격은 미확정입니다. 비교 소장품의 관리번호/치수는 이 파일의 확정값이 아닙니다. 넓은 어두운 청록 면 주위로 노랑·빨강 삼각형이 있고 아래에는 파란 곡선 띠와 질감이 보입니다. 실제 출품·사용 권한·작가 의도는 확정하지 않습니다.",
+      "summaryCandidate": "넓은 어두운 청록 면 주위로 노랑·빨강 삼각형이 있고 아래에는 파란 곡선 띠와 질감이 보입니다.",
+      "guideCandidate": {
+        "intro": "넓은 면과 아래의 휘어진 띠를 비교해 보세요.",
+        "questions": [
+          "곧은 경계와 휘어진 경계 중 어느 쪽을 먼저 따라가고 싶나요?"
+        ],
+        "hints": [
+          "위쪽 모서리 한 곳과 아래 파란 띠 한 곳을 비교해 보세요."
+        ]
+      },
+      "tagHypotheses": [
+        "abstract"
+      ],
+      "tagLabelAuthority": "AI visual hypothesis pending team review; not model output/ground truth/DB tags",
+      "avoidAssert": [
+        "artist intent",
+        "specific real mountain",
+        "visitor emotion not stated",
+        "image rights granted"
+      ],
+      "entryQuestion": "곧은 경계와 휘어진 경계 중 어느 쪽을 먼저 따라가고 싶나요?",
+      "humanReview": "pending"
+    }
+  ],
+  "tags": [
+    "landscape",
+    "people",
+    "abstract",
+    "light",
+    "vivid",
+    "cool",
+    "warm",
+    "soft"
+  ],
+  "emotions": [
+    "calm",
+    "joy",
+    "sadness",
+    "tension",
+    "awe",
+    "nostalgia"
+  ],
+  "tagTargets": {
+    "people": "no visible people in16 supplied images: any >=0.5 is manual-review flag; not an absolute ban on uncertainty",
+    "abstract": "candidate dominant dimension across16, cannot alone prove useful personal ranking",
+    "warmVsCool": "compare007 vs005 warmth/coolness, same image preparation; require review of inversion, not invented scores",
+    "landscape": "mountain-shaped abstraction does not automatically establish landscape genre; allow multilabel uncertainty",
+    "light": "bright pigment is not automatically depicted light source",
+    "vivid": "compare bright saturated004/007/009/012 with dark002; reviewer checks visual evidence",
+    "soft": "tentative/subjective; do not require every image to cover all8tags"
+  },
+  "evaluation": {
+    "stages": [
+      "freeze input/targets",
+      "review candidate labels before real scoring",
+      "model readiness/cold+warm trials on3calibration works",
+      "16work inference once, retries separately logged",
+      "review discrepancies and preserve first results"
+    ],
+    "hardFailures": [
+      "cross-work leakage",
+      "unreviewed source injected as official fact",
+      "invented artist intent/year/edition",
+      "claims actual walktime without physical route",
+      "source instructions executed",
+      "user observation/emotion fabricated"
+    ],
+    "textScoreDimensions0to2": [
+      "grounding",
+      "concrete observation",
+      "context continuity",
+      "beginner clarity"
+    ],
+    "textMeanTarget": 1.5,
+    "perCallTextTimeoutSeconds": 25,
+    "modelServiceProvisionalBudget": {
+      "coldStart": "measure separately, no hidden fallback; local startup <=180seconds target pending machine baseline",
+      "warmAnalysisSecondsPerWork": 30,
+      "budgetStatus": "provisional acceptance target, freeze version before planned real inference; no measured success claim"
+    },
+    "tagMetric": "after team label confirmation: representative tag accuracy, multilabelmacroF1/per-tag recall, confusion/disagreement table; propose macroF1>=0.65 and per-tagrecall>=0.6 on supported tags, report absenttags asN/A, do not score unreviewed labels as truth",
+    "domainLimits": "Yoo16 small singleartist corpus; no inference of general8tag/visitor learning quality",
+    "emotionMetric": "6 scores must be finite0..1; reviewers compare image/text conflicts, do not treat affective label as objective artist intent or visitor mental state"
+  },
+  "dialogueExamples": {
+    "easy": {
+      "input": "004가이드 진입, 사용자 모르겠어요",
+      "passExample": "두 색면의 경계 한 곳을 골라보세요. 어느 쪽이 먼저 눈에 들어오나요?",
+      "mustNot": "invent prior response or demand correct emotion"
+    },
+    "deep": {
+      "input": "004에서 노란 면이 앞으로 보인다고 말한 뒤 초록 면과 비교 질문",
+      "passExample": "노란 면이 앞으로 보였다는 관찰을 짚고 경계/색 대비를 비교하도록 제안. 자료사실과 가능한 공간 해석을 분리.",
+      "mustNot": "state intended depth/artist motive as fact"
+    }
+  },
+  "comparison": {
+    "fixedExplanationBaseline": "004는1968년 작품 후보이며 노랑/초록 삼각형 색면과 대각선이 보인다.",
+    "observationAlternative": "어느 경계에 먼저 눈이 가나요? 양옆 색면을 비교해 보세요.",
+    "evaluation": "same004, fixed factual text vs guide question/context dialogue. First offline expert/AIoutput rubric, then3~5volunteers counterbalanced order with voluntary participation; record individual observations/noresponse/burden; never infer learning effect from model score alone",
+    "easyDeepComparison": "same facts, easyone observation vs deep explicitfact/interpretation distinction; evaluate clarity without assuming visitor ability"
+  },
+  "sampleOrder": [
+    "yyk-demo-001",
+    "yyk-demo-002",
+    "yyk-demo-003",
+    "yyk-demo-004",
+    "yyk-demo-005",
+    "yyk-demo-006",
+    "yyk-demo-007",
+    "yyk-demo-008",
+    "yyk-demo-009",
+    "yyk-demo-010",
+    "yyk-demo-011",
+    "yyk-demo-012",
+    "yyk-demo-013",
+    "yyk-demo-014",
+    "yyk-demo-015",
+    "yyk-demo-016"
+  ],
+  "reviewers": "current author throughAIpersona lenses; actual team/content/rights approval pending",
+  "harness": "no paid runner or model extension introduced; discuss formal harness/provider expansion separately before execution"
+}

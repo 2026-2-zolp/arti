@@ -1,0 +1,66 @@
+"""최신 작업트리의 CI 실행 명령을 격리 Linux 컨테이너에서 확인합니다."""
+import concurrent.futures, json, pathlib, subprocess, time
+ROOT=pathlib.Path(__file__).resolve().parents[3]
+OUT=ROOT/'docs/execution-plan/2026-11-07/records/W11/local-current-2026-11-09'
+NETWORK='arti-ci-intake-20261109'
+DB=NETWORK+'-db'
+results={}
+
+def run(label,args):
+    started=time.monotonic()
+    proc=subprocess.run(args,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,encoding='utf-8',errors='replace')
+    (OUT/(label+'.log')).write_text(proc.stdout,encoding='utf-8')
+    result={'exitCode':proc.returncode,'seconds':round(time.monotonic()-started,3),'command':args}
+    results[label]=result
+    print(label,proc.returncode,flush=True)
+    if proc.returncode:raise RuntimeError(label+' failed; see recorded log')
+
+def frontend():
+    script='''set -eu
+mkdir -p /tmp/frontend
+tar -C /src --exclude=node_modules --exclude=dist --exclude='.env*' -cf - . | tar -C /tmp/frontend -xf -
+cd /tmp/frontend
+npm ci --ignore-scripts --no-audit --no-fund
+npm test
+npm run typecheck
+npm run build
+'''
+    run('frontend',['docker','run','--rm','-v',str(ROOT/'frontend')+':/src:ro','node:22-alpine','sh','-c',script])
+
+def model():
+    script='''import subprocess
+subprocess.run(['python','-m','pip','install','--quiet','-r','requirements-dev.txt'],check=True)
+subprocess.run(['python','-m','pytest','-q','-o','cache_dir=/tmp/pytest-cache','--basetemp=/tmp/arti-ci-tests'],check=True)
+'''
+    run('model',['docker','run','--rm','-v',str(ROOT/'ai-service')+':/app:ro','-w','/app','-e','PYTHONDONTWRITEBYTECODE=1','-e','ARTI_PRELOAD=false','-e','ARTI_WRITER_ENABLED=false','-e','HF_HUB_OFFLINE=1','-e','TRANSFORMERS_OFFLINE=1','python:3.12-slim','python','-c',script])
+
+def django():
+    for kind,name in [('network',NETWORK),('container',DB)]:
+        if subprocess.run(['docker',kind,'inspect',name],capture_output=True).returncode==0:
+            raise RuntimeError('Dedicated name already exists; refusing to reuse '+name)
+    created=False;started=False
+    try:
+        run('network-create',['docker','network','create',NETWORK]);created=True
+        run('postgres-start',['docker','run','-d','--name',DB,'--network',NETWORK,'-e','POSTGRES_DB=arti','-e','POSTGRES_USER=arti','-e','POSTGRES_PASSWORD=ci-only-disposable-password','postgres:17-alpine']);started=True
+        for _ in range(60):
+            if subprocess.run(['docker','exec',DB,'pg_isready','-U','arti','-d','arti'],capture_output=True).returncode==0:break
+            time.sleep(.5)
+        else:raise RuntimeError('Dedicated PostgreSQL did not become ready')
+        script='''import subprocess
+commands=[['python','-m','pip','install','--quiet','-r','requirements.lock'],['python','manage.py','check'],['python','manage.py','makemigrations','--check','--dry-run'],['python','manage.py','migrate','--noinput'],['python','manage.py','test','arti.tests','--noinput','-v','2']]
+for command in commands:subprocess.run(command,check=True)
+'''
+        env={'DJANGO_SECRET_KEY':'ci-only-not-a-production-secret-at-least-32-characters','DJANGO_ALLOWED_HOSTS':'localhost,127.0.0.1,testserver','ARTI_ENV':'test','ALLOW_TEST_FIXTURES':'true','ARTI_LLM_PROVIDER':'disabled','ARTI_MODEL_SERVICE_URL':'','OPENAI_API_KEY':'','PGHOST':DB,'PGPORT':'5432','PGDATABASE':'arti','PGUSER':'arti','PGPASSWORD':'ci-only-disposable-password','MEDIA_ROOT':'/tmp/arti-ci-media','PYTHONDONTWRITEBYTECODE':'1'}
+        args=['docker','run','--rm','--network',NETWORK,'-v',str(ROOT/'backend-django')+':/app:ro','-w','/app']
+        for k,v in env.items():args+=['-e',k+'='+v]
+        run('django',args+['python:3.12-slim','python','-c',script])
+    finally:
+        if started:run('postgres-cleanup',['docker','rm','-f','-v',DB])
+        if created:run('network-cleanup',['docker','network','rm',NETWORK])
+
+try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+        futures=[pool.submit(fn) for fn in [frontend,model,django]]
+        for future in futures:future.result()
+finally:
+    (OUT/'linux-results.json').write_text(json.dumps({'scope':'Linux command reproduction, not GitHub runner or PR acceptance','sourceHead':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'results':results},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

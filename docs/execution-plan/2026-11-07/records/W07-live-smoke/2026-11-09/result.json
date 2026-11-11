@@ -1,0 +1,147 @@
+{
+  "asOf": "2026-11-09 KST",
+  "estimatedUpstreamCalls": 5,
+  "costAndUsageMeasured": false,
+  "model": "gpt-6-luna",
+  "scope": "isolated synthetic API smoke; no real exhibition or browser acceptance",
+  "steps": [
+    {
+      "name": "explanation",
+      "status": 200,
+      "seconds": 4.445,
+      "response": {
+        "text": "제공된 자료에 따르면 이 작품은 실제 미술작품이 아니라 연결 시험용 설정입니다. 파란 바탕에 빨간 삼각형 하나가 있고, 아래쪽에는 노란 가로선 두 개가 있다고 설명되어 있습니다. 재료나 작가의 의도에 관한 정보는 제공되지 않았습니다.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "smoke-art",
+            "sourceVersion": 1,
+            "kind": "original",
+            "revision": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "summary_and_guide",
+      "status": 200,
+      "seconds": 5.669,
+      "response": {
+        "artwork": {
+          "id": "smoke-art",
+          "exhibitionId": "smoke-ex",
+          "title": "합성 색면 시험 그림",
+          "artist": "ARTI 시험자료",
+          "year": "2026",
+          "roomId": "",
+          "position": null,
+          "palette": [],
+          "imageUrl": "",
+          "imageFile": null,
+          "showImage": true,
+          "tags": [
+            "abstract"
+          ],
+          "tagScores": null,
+          "tagStatus": "confirmed",
+          "description": "이것은 실제 미술작품이 아닌 연결 시험용 설정이다. 파란 바탕 위에 빨간 삼각형 하나가 있고 아래쪽에 노란 가로선 두 개가 있다. 재료와 작가의 의도에 관한 정보는 제공하지 않는다.",
+          "guidedLooking": [
+            "빨간 삼각형과 노란 가로선 두 개는 화면에서 어떻게 배치되어 있나요?"
+          ],
+          "guidedHints": [
+            "도형과 선의 위치, 크기, 서로 간의 간격을 살펴보세요."
+          ],
+          "guideIntro": "자료에 따르면 파란 바탕에 빨간 삼각형 하나와 노란 가로선 두 개가 있는 시험용 설정입니다.",
+          "guideStatus": "suggested",
+          "source": "팀이 직접 작성한 합성 시험 설정",
+          "referenceUrl": "",
+          "reviewStatus": "approved",
+          "updatedAt": "2026-11-08T16:57:42.668781+00:00",
+          "analysis": {
+            "emotions": {
+              "calm": 0.5
+            }
+          },
+          "emotionStatus": "confirmed",
+          "summary": "실제 작품이 아닌 시험용 설정입니다. 파란 바탕에 빨간 삼각형 하나와 노란 가로선 두 개가 있으며, 재료와 작가의 의도는 알려져 있지 않습니다.",
+          "summaryKeywords": [
+            "시험용 설정",
+            "파란 바탕",
+            "빨간 삼각형",
+            "노란 가로선"
+          ],
+          "summaryStatus": "suggested",
+          "version": 2,
+          "sourceVersion": 1,
+          "contentVersion": 2,
+          "summaryRevision": 2,
+          "guideRevision": 2
+        },
+        "summary": {
+          "ok": true,
+          "source": "provider",
+          "made": true
+        },
+        "guide": {
+          "ok": true,
+          "source": "provider",
+          "made": true
+        },
+        "tag": {
+          "ok": true,
+          "source": "kept",
+          "made": false
+        },
+        "emotion": {
+          "ok": true,
+          "source": "kept",
+          "made": false
+        }
+      }
+    },
+    {
+      "name": "docent_from_guide",
+      "status": 200,
+      "seconds": 3.723,
+      "response": {
+        "answer": "그렇게 느껴질 수 있겠네요. 이어서 삼각형이 화면의 어느 쪽에 놓였는지, 아래쪽 노란 가로선 두 개와 얼마나 떨어져 있는지 살펴보세요. 삼각형의 크기와 색의 대비가 앞으로 나오는 듯한 인상에 어떻게 작용하는지도 비교해 볼 수 있어요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "smoke-art",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 3
+          }
+        ],
+        "requestId": "12f1533a-e002-463e-8edd-290b0b788113"
+      }
+    },
+    {
+      "name": "docent_followup",
+      "status": 200,
+      "seconds": 4.203,
+      "response": {
+        "answer": "앞서 말씀하신 빨간 삼각형이 앞으로 나오는 느낌과 연결해, 아래쪽 노란 선 두 개가 삼각형과 얼마나 떨어져 있는지, 두 선 사이 간격은 어떤지 살펴보세요. 노란색과 파란 바탕의 대비도 삼각형의 앞쪽 인상을 강조하는지 비교해 볼 수 있습니다. 이는 살펴볼 감상 포인트이며, 선이 그런 효과를 의도했다고 단정할 수는 없어요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "smoke-art",
+            "sourceVersion": 1,
+            "kind": "summary",
+            "revision": 3
+          }
+        ],
+        "requestId": "5e59cc01-7e15-422a-809c-b3ceb3c832dc"
+      }
+    }
+  ],
+  "outcome": "transport_and_api_smoke_passed",
+  "upstreamErrors": [],
+  "reviewBoundary": {
+    "suggestionsHiddenBeforeConfirmation": true,
+    "syntheticConfirmationOnly": true,
+    "confirmedContentVisible": true
+  },
+  "modelFieldMeaning": "requested configuration model; upstream resolved model and token usage not captured"
+}

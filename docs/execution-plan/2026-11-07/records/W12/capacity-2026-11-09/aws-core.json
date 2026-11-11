@@ -1,0 +1,18 @@
+{
+  "checked": "2026-11-09",
+  "name": "AWS Core",
+  "author": "Amazon Web Services",
+  "manifestVersion": "1.2.0",
+  "source": "https://github.com/aws/agent-toolkit-for-aws/tree/main/plugins/aws-core",
+  "officialGuide": "https://docs.aws.amazon.com/agent-toolkit/latest/userguide/plugins.html",
+  "security": "https://docs.aws.amazon.com/agent-toolkit/latest/userguide/security-iam.html",
+  "manifest": "https://raw.githubusercontent.com/aws/agent-toolkit-for-aws/main/plugins/aws-core/.codex-plugin/plugin.json",
+  "mcp": "https://raw.githubusercontent.com/aws/agent-toolkit-for-aws/main/plugins/aws-core/.mcp.json",
+  "capabilities": [
+    "Read",
+    "Write"
+  ],
+  "sessionSearch": "AWS 및 AWS Core 검색에는 Data Analytics만 반환됨. 공식 문서·manifest로 Core 존재 확인. 설치/연결되지 않음.",
+  "decision": "배포 설계/IAM·비용·관측 검토에 적합. 서비스 전환/Bedrock/ECS 도입을 의미하지 않음.",
+  "credentialBoundary": "플러그인 설치와 계정 조작 권한을 분리. 문서/스킬 활용부터; 계정 연결 시 필요한 조회 권한과 별도 배포 역할을 한정. 키를 채팅/Git에 넣지 않음. 실제 AWS 호출 없음."
+}

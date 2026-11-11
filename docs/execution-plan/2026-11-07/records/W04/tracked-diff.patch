@@ -1,0 +1,248 @@
+diff --git a/frontend/src/api/client.ts b/frontend/src/api/client.ts
+index 83b9c61..f48f59f 100644
+--- a/frontend/src/api/client.ts
++++ b/frontend/src/api/client.ts
+@@ -29,6 +29,8 @@ export class ApiError extends Error {
+ }
+ 
+ const BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? '/api';
++// W04: explicit target selection, never retry/fall back to another API automatically.
++const ADMIN_READ = import.meta.env.VITE_API_TARGET === 'django' ? '/admin' : '';
+ const USER_TOKEN = 'arti.token';
+ const ADMIN_TOKEN = 'arti.adminToken';
+ /** 관리자 화면 로그인 여부 표시용 키 (pages/admin/AdminLayout.tsx의 ADMIN_KEY와 같은 값) */
+@@ -37,7 +39,21 @@ const ADMIN_INFO = 'arti.admin';
+ const USER_INFO = 'arti.user';
+ 
+ /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
+-export const uploadedImageUrl = (file: string) => `${BASE}/uploads/${encodeURIComponent(file)}`;
++export const uploadedImageUrl = (file: string, forAdmin = false) =>
++  `${BASE}${forAdmin ? ADMIN_READ : ''}/uploads/${encodeURIComponent(file)}`;
++
++export const isProtectedImageUrl = (url: string) =>
++  ADMIN_READ === '/admin' && url.startsWith(`${BASE}/admin/uploads/`);
++
++/** Admin tokens stay in request headers, never in image URLs or external-image requests. */
++export async function fetchProtectedImage(url: string, signal: AbortSignal): Promise<Blob> {
++  if (!isProtectedImageUrl(url)) throw new ApiError('허용되지 않은 이미지 경로예요.');
++  const token = load<string | null>(ADMIN_TOKEN, null);
++  if (!token) throw new ApiError('관리자 로그인이 필요해요.', 401);
++  const res = await fetch(url, { headers: { 'X-Admin-Token': token }, signal });
++  if (!res.ok) throw new ApiError('이미지를 불러올 수 없어요.', res.status);
++  return res.blob();
++}
+ 
+ /** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
+ async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+@@ -80,6 +96,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
+ const enc = encodeURIComponent;
+ 
+ export const api = {
++  // Admin preview must not consume filtered public catalog data on the Django target.
++  listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
++  listAdminArtworks: (exhibitionId?: string) =>
++    request<Artwork[]>('GET', `${ADMIN_READ}/artworks${exhibitionId ? `?exhibitionId=${enc(exhibitionId)}` : ''}`),
++  getAdminArtwork: (id: string) => request<Artwork>('GET', `${ADMIN_READ}/artworks/${enc(id)}`),
+   // ───────────────────────── 전시 ─────────────────────────
+   getExhibition: (id: string) => request<Exhibition>('GET', `/exhibitions/${enc(id)}`),
+ 
+diff --git a/frontend/src/components/ArtImage.tsx b/frontend/src/components/ArtImage.tsx
+index 6f17eef..0caceb3 100644
+--- a/frontend/src/components/ArtImage.tsx
++++ b/frontend/src/components/ArtImage.tsx
+@@ -6,6 +6,7 @@
+  */
+ import { useEffect, useMemo, useState } from 'react';
+ import { uploadedImageUrl } from '../api/client';
++import { useProtectedImage } from '../lib/useProtectedImage';
+ import type { Artwork } from '../types';
+ 
+ /**
+@@ -14,7 +15,7 @@ import type { Artwork } from '../types';
+  */
+ export function artworkImageSrc(w: Pick<Artwork, 'imageFile' | 'imageUrl' | 'showImage'>, forAdmin = false) {
+   if (!forAdmin && !w.showImage) return undefined;
+-  return w.imageFile ? uploadedImageUrl(w.imageFile) : w.imageUrl || undefined;
++  return w.imageFile ? uploadedImageUrl(w.imageFile, forAdmin) : w.imageUrl || undefined;
+ }
+ 
+ function mulberry32(seed: number) {
+@@ -57,12 +58,16 @@ export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 /
+   const urlKey = urls.join('|');
+   const [failed, setFailed] = useState(0); // 불러오지 못한 주소 개수
+   useEffect(() => setFailed(0), [urlKey]);
++  const resolved = useProtectedImage(urls[failed]);
++  useEffect(() => {
++    if (resolved.failed) setFailed((n) => n + 1);
++  }, [resolved.failed]);
+ 
+-  if (failed < urls.length) {
++  if (failed < urls.length && resolved.src) {
+     return (
+       <img
+         className={className}
+-        src={urls[failed]}
++        src={resolved.src}
+         alt={alt}
+         style={{ aspectRatio: ratio, objectFit: 'cover', display: 'block', width: '100%' }}
+         onError={() => setFailed((n) => n + 1)}
+diff --git a/frontend/src/components/FloorMap.tsx b/frontend/src/components/FloorMap.tsx
+index 38bb0ba..512ee3b 100644
+--- a/frontend/src/components/FloorMap.tsx
++++ b/frontend/src/components/FloorMap.tsx
+@@ -9,6 +9,7 @@
+  */
+ import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+ import { uploadedImageUrl } from '../api/client';
++import { useProtectedImage } from '../lib/useProtectedImage';
+ import type { Exhibition, MapPoint } from '../types';
+ 
+ export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
+@@ -36,6 +37,7 @@ interface Props {
+   /** 입구를 끌어다 놓았을 때 */
+   onEntranceMove?: (p: MapPoint) => void;
+   showEntrance?: boolean;
++  forAdmin?: boolean;
+ }
+ 
+ /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
+@@ -52,8 +54,10 @@ export function FloorMap({
+   onMarkerMove,
+   onEntranceMove,
+   showEntrance = true,
++  forAdmin = false,
+ }: Props) {
+   const plan = exhibition.floorPlan;
++  const { src: planSrc } = useProtectedImage(plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
+   const ratio = plan ? plan.width / plan.height : aspect;
+   const H = 100 / ratio;
+   const sy = (y: number) => (y * H) / 100;
+@@ -118,7 +122,7 @@ export function FloorMap({
+       aria-label={`${exhibition.title} 평면도`}
+     >
+       {plan ? (
+-        <image href={uploadedImageUrl(plan.file)} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
++        <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
+       ) : (
+         exhibition.rooms.map(
+           (r) =>
+diff --git a/frontend/src/pages/admin/A01Login.tsx b/frontend/src/pages/admin/A01Login.tsx
+index 1af51be..cdfa1ff 100644
+--- a/frontend/src/pages/admin/A01Login.tsx
++++ b/frontend/src/pages/admin/A01Login.tsx
+@@ -49,7 +49,11 @@ export default function A01Login() {
+         <button className="a-btn primary block" disabled={submitting || !id || !pw}>
+           {submitting ? '확인 중…' : '로그인'}
+         </button>
+-        <p className="demo-hint">데모: admin / admin1234</p>
++        <p className="demo-hint">
++          {import.meta.env.VITE_API_TARGET === 'django'
++            ? '관리자가 발급한 계정으로 로그인하세요.'
++            : '데모: admin / admin1234'}
++        </p>
+       </form>
+     </div>
+   );
+diff --git a/frontend/src/pages/admin/A02Dashboard.tsx b/frontend/src/pages/admin/A02Dashboard.tsx
+index 71a16b3..3ce9675 100644
+--- a/frontend/src/pages/admin/A02Dashboard.tsx
++++ b/frontend/src/pages/admin/A02Dashboard.tsx
+@@ -5,7 +5,7 @@ import { useAsync } from '../../lib/useAsync';
+ import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
+ 
+ export default function A02Dashboard() {
+-  const { data } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
++  const { data } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+   if (!data) return <PageHead title="대시보드" desc="불러오는 중…" />;
+   const [exs, works] = data;
+ 
+diff --git a/frontend/src/pages/admin/A03Exhibitions.tsx b/frontend/src/pages/admin/A03Exhibitions.tsx
+index 2370569..4952989 100644
+--- a/frontend/src/pages/admin/A03Exhibitions.tsx
++++ b/frontend/src/pages/admin/A03Exhibitions.tsx
+@@ -24,7 +24,7 @@ const blank = (): Exhibition => ({
+ 
+ export default function A03Exhibitions() {
+   const navigate = useNavigate();
+-  const { data, reload } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
++  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+   const [editing, setEditing] = useState<Exhibition | null>(null);
+ 
+   const save = async (ex: Exhibition) => {
+diff --git a/frontend/src/pages/admin/A04Artworks.tsx b/frontend/src/pages/admin/A04Artworks.tsx
+index bea56a8..c76bd35 100644
+--- a/frontend/src/pages/admin/A04Artworks.tsx
++++ b/frontend/src/pages/admin/A04Artworks.tsx
+@@ -11,6 +11,7 @@ import { api } from '../../api/client';
+ import { useAsync } from '../../lib/useAsync';
+ import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
+ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
++import { useProtectedImage } from '../../lib/useProtectedImage';
+ import { EmotionBars } from '../../components/EmotionBars';
+ import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
+ import { PageHead, REVIEW_LABEL } from './AdminLayout';
+@@ -20,7 +21,7 @@ export function ArtworkList() {
+   const [params, setParams] = useSearchParams();
+   const exFilter = params.get('exhibition') ?? '';
+   const reviewFilter = params.get('review') ?? '';
+-  const { data, reload } = useAsync(() => Promise.all([api.listExhibitions(), api.listArtworks()]), []);
++  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+   const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
+   const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+   // 일괄 작업 대상 전시: 필터로 고른 전시, 없으면 운영 중인 전시
+@@ -194,7 +195,7 @@ export function ArtworkEdit() {
+   const navigate = useNavigate();
+   const isNew = id === 'new';
+   const { data } = useAsync(
+-    () => Promise.all([api.listExhibitions(), isNew ? Promise.resolve(null) : api.getArtwork(id!)]),
++    () => Promise.all([api.listAdminExhibitions(), isNew ? Promise.resolve(null) : api.getAdminArtwork(id!)]),
+     [id],
+   );
+   const [w, setW] = useState<Artwork | null>(null);
+@@ -368,7 +369,7 @@ function ImageField({
+   const [busy, setBusy] = useState(false);
+   const [err, setErr] = useState<string | null>(null);
+   const [drag, setDrag] = useState(false);
+-  const src = artworkImageSrc(w, true);
++  const { src } = useProtectedImage(artworkImageSrc(w, true));
+ 
+   // 서버가 바꾼 필드만 반영하고, 화면에서 수정 중인 다른 입력값은 그대로 둔다
+   const applyServer = (saved: Artwork) =>
+diff --git a/frontend/src/pages/admin/A05Map.tsx b/frontend/src/pages/admin/A05Map.tsx
+index 35716a0..d3378fb 100644
+--- a/frontend/src/pages/admin/A05Map.tsx
++++ b/frontend/src/pages/admin/A05Map.tsx
+@@ -21,10 +21,10 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
+ 
+ export default function A05Map() {
+   const [params, setParams] = useSearchParams();
+-  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listExhibitions(), []);
++  const { data: exhibitions, setData: setExhibitions } = useAsync(() => api.listAdminExhibitions(), []);
+   const exId = params.get('exhibition') ?? exhibitions?.[0]?.id ?? '';
+   const { data: artworks, setData: setArtworks } = useAsync(
+-    () => (exId ? api.listArtworks(exId) : Promise.resolve([] as Artwork[])),
++    () => (exId ? api.listAdminArtworks(exId) : Promise.resolve([] as Artwork[])),
+     [exId],
+   );
+   const [selectedId, setSelectedId] = useState<string | null>(params.get('artwork'));
+@@ -133,6 +133,7 @@ export default function A05Map() {
+ 
+           <section className="a-card pad">
+             <FloorMap
++              forAdmin
+               exhibition={ex}
+               markers={markers}
+               aspect={1.55}
+diff --git a/frontend/src/pages/admin/A07Reactions.tsx b/frontend/src/pages/admin/A07Reactions.tsx
+index bbc89e6..d63034d 100644
+--- a/frontend/src/pages/admin/A07Reactions.tsx
++++ b/frontend/src/pages/admin/A07Reactions.tsx
+@@ -17,7 +17,7 @@ function formatAt(iso: string) {
+ }
+ 
+ export default function A07Reactions() {
+-  const { data } = useAsync(() => api.listArtworks(), []);
++  const { data } = useAsync(() => api.listAdminArtworks(), []);
+   const [filter, setFilter] = useState<Filter>('all');
+   const log = readReactionLog();
+   const likes = log.filter((item) => item.reaction === 'like').length;

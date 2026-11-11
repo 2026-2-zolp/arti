@@ -1,0 +1,28 @@
+{
+  "startingCommit": "ad81f7c",
+  "completed": true,
+  "frontendTests": 17,
+  "remotePush": false,
+  "files": [
+    {
+      "path": "frontend/vite.config.ts",
+      "sha256": "84460b7a9d3d72d533ff8d6889b852c3daa5dde5736b1c181ce86f6265d07c23"
+    },
+    {
+      "path": "frontend/src/lib/apiTarget.ts",
+      "sha256": "26312261c652d240b58ef664b0340a38dbd63eda734696f78a88eb8b55b596ec"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "sha256": "110286b5e026949ec6660a16a923099cce147e3abcafc43a0dc6ea87a5948b31"
+    },
+    {
+      "path": "frontend/tests/apiTarget.test.mts",
+      "sha256": "60889d6c6721d28188fe5f14f3b49275f074bb7befd944903b6c57772407d9e4"
+    },
+    {
+      "path": "frontend/.env.example",
+      "sha256": "c49429abf8519158bb160734293cc991c59d0483b7ec9e68e3aea0396f124837"
+    }
+  ]
+}

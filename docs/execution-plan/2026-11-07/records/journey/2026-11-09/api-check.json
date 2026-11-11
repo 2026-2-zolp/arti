@@ -1,0 +1,221 @@
+{
+  "ok": true,
+  "poolPairs": 5,
+  "cases": [
+    {
+      "taste": "landscape",
+      "duration": "30m",
+      "ids": [
+        "fixture-art01",
+        "fixture-art03",
+        "fixture-art05"
+      ],
+      "matchedTags": [
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ]
+      ]
+    },
+    {
+      "taste": "landscape",
+      "duration": "60m",
+      "ids": [
+        "fixture-art01",
+        "fixture-art03",
+        "fixture-art05",
+        "fixture-art07",
+        "fixture-art09"
+      ],
+      "matchedTags": [
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ]
+      ]
+    },
+    {
+      "taste": "landscape",
+      "duration": "relaxed",
+      "ids": [
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art03",
+        "fixture-art04",
+        "fixture-art05",
+        "fixture-art07",
+        "fixture-art09"
+      ],
+      "matchedTags": [
+        [
+          "landscape"
+        ],
+        [],
+        [
+          "landscape"
+        ],
+        [],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ],
+        [
+          "landscape"
+        ]
+      ]
+    },
+    {
+      "taste": "warm",
+      "duration": "30m",
+      "ids": [
+        "fixture-art02",
+        "fixture-art04",
+        "fixture-art06"
+      ],
+      "matchedTags": [
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ]
+      ]
+    },
+    {
+      "taste": "warm",
+      "duration": "60m",
+      "ids": [
+        "fixture-art02",
+        "fixture-art04",
+        "fixture-art06",
+        "fixture-art08",
+        "fixture-art10"
+      ],
+      "matchedTags": [
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ]
+      ]
+    },
+    {
+      "taste": "warm",
+      "duration": "relaxed",
+      "ids": [
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art03",
+        "fixture-art04",
+        "fixture-art06",
+        "fixture-art08",
+        "fixture-art10"
+      ],
+      "matchedTags": [
+        [],
+        [
+          "warm"
+        ],
+        [],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ],
+        [
+          "warm"
+        ]
+      ]
+    },
+    {
+      "taste": "people",
+      "duration": "30m",
+      "ids": [
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art03"
+      ],
+      "matchedTags": [
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "taste": "people",
+      "duration": "60m",
+      "ids": [
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art03",
+        "fixture-art04",
+        "fixture-art05"
+      ],
+      "matchedTags": [
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "taste": "people",
+      "duration": "relaxed",
+      "ids": [
+        "fixture-art01",
+        "fixture-art02",
+        "fixture-art03",
+        "fixture-art04",
+        "fixture-art05",
+        "fixture-art06",
+        "fixture-art07"
+      ],
+      "matchedTags": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    }
+  ],
+  "scope": "synthetic fixed tags/coordinates; nearest among selected points, not physical indoor navigation"
+}

@@ -1,0 +1,161 @@
+{
+  "candidateMiB": 2048,
+  "limitsMiB": {
+    "api": 768,
+    "db": 384,
+    "web": 64
+  },
+  "unallocatedMiB": 832,
+  "before": "7 objects imported automatically (use -v 2 for details).\n\n{\"artworks\": 13, \"visits\": 0, \"reactions\": 0}",
+  "httpSmoke": {
+    "index": 200,
+    "deepLink": 200,
+    "ready": 200
+  },
+  "loads": [
+    {
+      "concurrency": 5,
+      "seconds": 1.083,
+      "requests": 100,
+      "statuses": {
+        "200": 100
+      },
+      "p50Ms": 54.07,
+      "p95Ms": 95.33,
+      "maxMs": 187.02
+    },
+    {
+      "concurrency": 20,
+      "seconds": 4.699,
+      "requests": 400,
+      "statuses": {
+        "200": 400
+      },
+      "p50Ms": 289.67,
+      "p95Ms": 311.18,
+      "maxMs": 384.39
+    },
+    {
+      "concurrency": 50,
+      "seconds": 11.932,
+      "requests": 1000,
+      "statuses": {
+        "200": 1000
+      },
+      "p50Ms": 704.54,
+      "p95Ms": 895.4,
+      "maxMs": 1004.16
+    }
+  ],
+  "writes": {
+    "requests": 200,
+    "statuses": {
+      "200": 100,
+      "201": 100
+    },
+    "p50Ms": 396.1,
+    "p95Ms": 486.86,
+    "maxMs": 549.32
+  },
+  "after": "7 objects imported automatically (use -v 2 for details).\n\n{\"visits\": 100, \"reactions\": 100}",
+  "restart": "7 objects imported automatically (use -v 2 for details).\n\n100 visits and media preserved",
+  "resources": [
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    },
+    {
+      "samplingError": "cat: /sys/fs/cgroup/memory.current: No such file or directory\ncat: /sys/fs/cgroup/memory.peak: No such file or directory\ncat: /sys/fs/cgroup/memory.events: No such file or directory\ncat: /sys/fs/cgroup/cpu.stat: No such file or directory\n"
+    }
+  ],
+  "containers": [
+    {
+      "name": "/arti-capacity-2048-20261109-api-1",
+      "oomKilled": false,
+      "restartCount": 0,
+      "memoryLimit": 805306368,
+      "swapLimit": 805306368,
+      "nanoCpus": 1400000000
+    },
+    {
+      "name": "/arti-capacity-2048-20261109-db-1",
+      "oomKilled": false,
+      "restartCount": 0,
+      "memoryLimit": 402653184,
+      "swapLimit": 402653184,
+      "nanoCpus": 500000000
+    },
+    {
+      "name": "/arti-capacity-2048-20261109-web-1",
+      "oomKilled": false,
+      "restartCount": 0,
+      "memoryLimit": 67108864,
+      "swapLimit": 67108864,
+      "nanoCpus": 100000000
+    }
+  ],
+  "passed": false,
+  "supersededReason": "cgroup v1 메모리 측정 누락: 부하 응답만 유효하며 용량 인수 불가. recheck/ 결과로 대체."
+}

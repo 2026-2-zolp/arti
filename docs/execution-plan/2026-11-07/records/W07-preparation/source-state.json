@@ -1,0 +1,49 @@
+{
+  "preparationOnly": true,
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "c0dcf25e4a7870d87ebb351ab4bebef3e20e261dcef1a40f654ad65d9adba711"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "99029622347131d4ecb9330a6aacba609ca3f3798f7c029250e66b12283e5c95"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "sha256": "ac1f6d2b77583068048f0fd18cce67653c28dfc2f9c06d47c6667949685aa619"
+    },
+    {
+      "path": ".env.compose.example",
+      "sha256": "059db599816b8c062570f737b4dc4d6314b70a288a7006e60b9a2f99db2b0216"
+    },
+    {
+      "path": "compose.yaml",
+      "sha256": "5ee20e2c082b9843fe48b8859be315d5dc84400ca9f17718ba05e866ec9e2e29"
+    },
+    {
+      "path": "backend-django/arti/providers.py",
+      "sha256": "f6d6f5aa6acf0266771cf9adaeb422fab48f85bb5d6fb509abae8fbcd7f9838c"
+    },
+    {
+      "path": "backend-django/arti/llm.py",
+      "sha256": "25f02588e390495efc7ec6c18f42711cfc51bbabbed9ea50e1fd887a577736e1"
+    },
+    {
+      "path": "backend-django/arti/editing.py",
+      "sha256": "972fd238cc3d807b955d70410eaa815c429a979b07ee5d8ad4adc8236b9b3eb7"
+    },
+    {
+      "path": "backend-django/config/settings.py",
+      "sha256": "39f3f0faf9f638167a0437c4ccfbf320e65581e81109e4891afd040f3f653db6"
+    },
+    {
+      "path": "backend-django/arti/tests/test_provider.py",
+      "sha256": "3cefc5f15f8ab9946795812fd6de760543e1929a103efbf34034d188d2e44360"
+    },
+    {
+      "path": "backend-django/arti/tests/test_integration.py",
+      "sha256": "e55a75a0346300868922a444c1c6ad8f13b80fc77ca0a7d66f4b23d7c752ced6"
+    }
+  ]
+}

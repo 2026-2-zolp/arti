@@ -1,0 +1,55 @@
+import sys,os,json,hashlib,uuid,shutil
+from pathlib import Path
+sys.path.insert(0,'/app');os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from django.db import transaction
+from django.core.management import call_command
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.test import APIClient
+from arti.models import Exhibition,Artwork,Account,Session,Visit,VisitReaction
+models=[Exhibition,Artwork,Account,Session,Visit,VisitReaction]
+def snapshot():
+ data={m.__name__:list(m.objects.order_by('pk').values()) for m in models}
+ digest=hashlib.sha256(json.dumps(data,sort_keys=True,default=str,ensure_ascii=False).encode()).hexdigest()
+ media={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in settings.MEDIA_ROOT.iterdir() if p.is_file()}
+ return {'logicalDatabaseSha256':digest,'counts':{k:len(v) for k,v in data.items()},'media':media}
+mode=sys.argv[1]
+if mode=='seed':
+ if any(m.objects.exists() for m in models):raise RuntimeError('Refuse nonempty source')
+ with transaction.atomic():
+  call_command('load_test_fixture',verbosity=0)
+  ex=Exhibition.objects.get(pk='fixture-ex01');w=Artwork.objects.get(pk='fixture-art01')
+  plan=settings.MEDIA_ROOT/'backup-floor.png';plan.write_bytes((settings.MEDIA_ROOT/w.image_file).read_bytes())
+  ex.floor_plan={'file':plan.name,'width':1,'height':1};ex.entrance_x=12;ex.entrance_y=15;ex.save()
+  w.summary='合成'.replace('合成','합성 검수 요약');w.summary_status='confirmed';w.guide_status='confirmed';w.guide_intro='색을 살펴보세요';w.guided_looking=['어느 색인가요?'];w.guided_hints=['가운데를 보세요'];w.save()
+  Artwork.objects.filter(pk='fixture-art02').update(review_status='source_check',summary='미검수 합성 제안',summary_status='suggested')
+  user=Account.objects.create(id='backup-user',login_id='backup-user',password='!unusable-synthetic',role='user')
+  Account.objects.create(id='backup-admin',login_id='backup-admin',password='!unusable-synthetic',role='admin')
+  Session.objects.create(token_hash=hashlib.sha256(b'synthetic-backup-only').hexdigest(),account=user,expires_at=timezone.now()+timedelta(days=1))
+  visit=Visit.objects.create(id='backup-visit',user=user,visit_id=uuid.uuid4(),exhibition=ex,artwork_snapshots=[{'id':w.id,'title':w.title}],canonical_payload={'type':'synthetic backup test'})
+  VisitReaction.objects.create(visit=visit,artwork=w,reaction='like',reason='합성색상',dwell_seconds=12)
+if mode=='verify':
+ public=APIClient(HTTP_HOST='localhost');staff=APIClient(HTTP_HOST='localhost');staff.force_authenticate(user=Account.objects.get(pk='backup-admin'))
+ rows=public.get('/api/artworks').json();ids={r['id'] for r in rows};assert 'fixture-art01' in ids and 'fixture-art02' not in ids and 'fixture-art13' not in ids
+ w=Artwork.objects.get(pk='fixture-art01');assert w.summary_status=='confirmed' and w.guide_status=='confirmed'
+ pending=Artwork.objects.get(pk='fixture-art02');assert pending.summary_status=='suggested'
+ assert public.get('/api/artworks/'+pending.id).status_code==404
+ assert public.get('/api/uploads/'+Artwork.objects.get(pk='fixture-art13').image_file).status_code==404
+ response=staff.get('/api/admin/uploads/'+Artwork.objects.get(pk='fixture-art13').image_file);assert response.status_code==200;response.close()
+ assert Visit.objects.get(pk='backup-visit').artwork_snapshots[0]['id']==w.id
+ assert VisitReaction.objects.get(visit_id='backup-visit').reason=='합성색상'
+ expected=snapshot()['media'];path=settings.MEDIA_ROOT/w.image_file;held_dir=settings.MEDIA_ROOT/'.restore-check';held_dir.mkdir();held=held_dir/path.name
+ assert path.parent.resolve()==settings.MEDIA_ROOT.resolve() and not held.exists()
+ path.rename(held)
+ try:
+  observed={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in settings.MEDIA_ROOT.iterdir() if p.is_file()}
+  assert w.image_file in set(expected)-set(observed)
+  assert public.get('/api/uploads/'+w.image_file).status_code==404
+ finally:
+  held.rename(path);held_dir.rmdir()
+ assert snapshot()['media']==expected
+ print('CHECKS='+json.dumps({'publicReviewFilter':True,'protectedImage':True,'visitRelations':True,'confirmedAndSuggestedPreserved':True,'missingMediaDetected':True,'missingMediaApi404':True}))
+print('SNAPSHOT='+json.dumps(snapshot(),ensure_ascii=False,sort_keys=True))

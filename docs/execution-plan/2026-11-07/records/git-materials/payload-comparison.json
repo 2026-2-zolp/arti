@@ -1,0 +1,10 @@
+{
+  "baselineCommit": "858b62921fb7bc5fdc7cd17ff8bb8a036166f4b9",
+  "workPayloadsIdentical": 40,
+  "imageHashesIdentical": true,
+  "checkedAt": null,
+  "descriptionSemanticsIdentical": true,
+  "workingOriginalCrlf": 167,
+  "gitReferenceCrlf": 0,
+  "rawDescriptionHashEqual": false
+}

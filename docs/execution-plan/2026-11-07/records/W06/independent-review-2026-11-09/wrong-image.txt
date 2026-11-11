@@ -1,0 +1,85 @@
+- heading "ARTI 독립 라벨링" [level=1]
+- paragraph: 모델 점수·다른 사람의 답·작품 설명을 보지 않고 이미지에서 판단합니다. 답은 정답이나 공개 승인이 아닙니다. 의견이 애매하면 ‘모르겠음’을 선택하세요.
+- text: 검수자 별칭
+- textbox "검수자 별칭":
+  - /placeholder: "예: R01"
+- checkbox "내부 동작 시험 · 실제 검수로 집계하지 않음"
+- text: 내부 동작 시험 · 실제 검수로 집계하지 않음
+- paragraph:
+  - text: 이미지 선택
+  - button "이미지 선택"
+- paragraph: 전달받은 16점 이미지를 선택하세요. 파일 SHA-256이 등록된 자료와 일치해야 열립니다. 서버 전송·자동 저장은 없으며, 창을 닫기 전에 JSON을 내려받으세요.
+- status: 이미지 0/16점 준비 · 라벨 0/16점 완료
+- alert: 등록 자료와 해시가 다른 파일 1개를 제외했습니다.
+- generic "판단 기준 먼저 읽기 · 검토안 v1"
+- heading "1/16 · yyk-demo-007" [level=2]
+- generic: 이 작품의 검증된 이미지가 아직 없습니다.
+- group "풍경":
+  - generic: 풍경
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "인물":
+  - generic: 인물
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "추상":
+  - generic: 추상
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "빛":
+  - generic: 빛
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "강렬한 색감":
+  - generic: 강렬한 색감
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "차가운 색감":
+  - generic: 차가운 색감
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "따뜻한 색감":
+  - generic: 따뜻한 색감
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- group "부드러운 색감":
+  - generic: 부드러운 색감
+  - radio "해당함" [disabled]
+  - text: 해당함
+  - radio "해당하지 않음" [disabled]
+  - text: 해당하지 않음
+  - radio "모르겠음" [disabled]
+  - text: 모르겠음
+- generic "분위기 의견 · 선택 사항"
+- navigation:
+  - button "이전" [disabled]
+  - button "다음"
+  - button "JSON 내려받기 · 초안도 가능"

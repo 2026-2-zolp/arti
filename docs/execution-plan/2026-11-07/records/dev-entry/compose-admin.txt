@@ -1,0 +1,103 @@
+Browser tab: 7, Title: "ARTI", URL: "http://localhost:5178/admin".
+0 AXWebArea ARTI, URL: localhost:5178/admin
+	1 container root
+		2 container
+			3 text ARTI 관리자 관리자 계정
+			4 button 로그아웃
+		5 container 관리자 메뉴
+			6 link Description: 대시보드, Value: localhost:5178/admin
+			7 link Description: 전시 관리, Value: localhost:5178/admin/exhibitions
+			8 link Description: 작품 관리, Value: localhost:5178/admin/artworks
+			9 link Description: 위치·지도 관리, Value: localhost:5178/admin/map
+			10 link Description: 회원 조회, Value: localhost:5178/admin/members
+			11 link Description: 평가, Value: localhost:5178/admin/reactions
+		12 container
+			13 heading 대시보드, Value: 1
+				14 text 대시보드
+			15 text 등록된 전시와 작품, 데이터 검수 상태를 한눈에 확인합니다.
+			16 link Description: 운영 전시 2 현재 MVP 대상, Value: localhost:5178/admin/exhibitions
+			17 link Description: 등록 작품 53 검수 완료 12, Value: localhost:5178/admin/artworks
+			18 link Description: 위치 등록 10 미등록 43, Value: localhost:5178/admin/map
+			19 link Description: 검수 대기 41 출처 확인 필요, Value: localhost:5178/admin/artworks?review=todo
+			20 heading 최근 데이터 상태, Value: 2
+				21 text 최근 데이터 상태
+			22 table
+				23 row
+					24 cell
+						25 text 구분
+					26 cell
+						27 text 이름
+					28 cell
+						29 text 상태
+					30 cell
+						31 text 수정일
+					32 cell
+						33 text 담당
+				34 row
+					35 cell
+						36 text 작품
+					37 cell
+						38 link Description: 검증용 작품 02, Value: localhost:5178/admin/artworks/fixture-art02
+					39 cell
+						40 text 검수 완료
+					41 cell
+						42 text 11/08T04:17:47.263465+00:00
+					43 cell
+						44 text 관리자
+				45 row
+					46 cell
+						47 text 작품
+					48 cell
+						49 link Description: 검증용 작품 01, Value: localhost:5178/admin/artworks/fixture-art01
+					50 cell
+						51 text 검수 완료
+					52 cell
+						53 text 11/08T04:15:54.020314+00:00
+					54 cell
+						55 text 관리자
+				56 row
+					57 cell
+						58 text 작품
+					59 cell
+						60 link Description: 검증용 작품 13, Value: localhost:5178/admin/artworks/fixture-art13
+					61 cell
+						62 text 검수 완료
+					63 cell
+						64 text 11/07T22:03:07.580257+00:00
+					65 cell
+						66 text 관리자
+				67 row
+					68 cell
+						69 text 작품
+					70 cell
+						71 link Description: 검증용 작품 12, Value: localhost:5178/admin/artworks/fixture-art12
+					72 cell
+						73 text 검수 완료
+					74 cell
+						75 text 11/07T22:03:07.567444+00:00
+					76 cell
+						77 text 관리자
+				78 row
+					79 cell
+						80 text 작품
+					81 cell
+						82 link Description: 검증용 작품 11, Value: localhost:5178/admin/artworks/fixture-art11
+					83 cell
+						84 text 검수 대기
+					85 cell
+						86 text 11/07T22:03:07.552749+00:00
+					87 cell
+						88 text 관리자
+				89 row
+					90 cell
+						91 text 작품
+					92 cell
+						93 link Description: 검증용 작품 10, Value: localhost:5178/admin/artworks/fixture-art10
+					94 cell
+						95 text 검수 완료
+					96 cell
+						97 text 11/07T22:03:07.535793+00:00
+					98 cell
+						99 text 관리자
+
+The focused UI element is 0 AXWebArea ARTI, URL: localhost:5178/admin

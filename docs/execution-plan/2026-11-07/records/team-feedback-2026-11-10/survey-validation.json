@@ -1,0 +1,94 @@
+{
+  "asOfKST": "2026-11-10",
+  "contractCommit": "d5fbea9",
+  "scope": "R04-P C2 structural technical acceptance; no real survey curation/human approval/product quality gate promotion",
+  "backend": {
+    "passed": 114,
+    "newSurveyTests": 10,
+    "environment": "Linux current source mounted read-only, PostgreSQL17 disposable container",
+    "migration": "0001 to 0002 on disposable database; no data selection migration"
+  },
+  "frontend": {
+    "passed": 25,
+    "build": "TypeScript + Vite passed"
+  },
+  "browser": {
+    "environment": "Chrome desktop/mobile shell, Vite5190 -> Django4020 -> disposable PostgreSQL55440; no GPT",
+    "passed": [
+      "draft-origin unpositioned10 work global survey visible",
+      "five pairs -> valid selection -> current exhibition three different candidates",
+      "second exhibition shows same initial survey pair",
+      "deactivation -> ready:false and retry/back UI"
+    ],
+    "proof": "data/private/survey-review-20261110/recommendation.png",
+    "limits": [
+      "no physical-device test",
+      "member provenance/security checked by API/PG tests, not browser login",
+      "synthetic images/content; no actual artwork or external model quality claim"
+    ]
+  },
+  "criteria": {
+    "1": "passed within structural scope",
+    "2": "passed within structural scope",
+    "3": "passed within structural scope",
+    "4": "passed within structural scope",
+    "5": "passed within structural scope",
+    "6": "passed within structural scope",
+    "7": "passed within structural scope"
+  },
+  "loops": [
+    {
+      "issue": "legacy synthetic tags had no confirmed state",
+      "resolution": "explicit synthetic tag_status=confirmed for10; production criteria unchanged"
+    },
+    {
+      "issue": "old saved regression selected warm without choosing any warm artwork",
+      "resolution": "choose one matching warm work; server rejects unearned tags; weighted subset regression retained"
+    },
+    {
+      "issue": "new test used a nonexistent second exhibition ID",
+      "resolution": "use existing fixture-draft and explicitly running in cross-exhibit test"
+    },
+    {
+      "issue": "stream response.close emitted request_finished and closed TestCase outer connection",
+      "resolution": "mock only request_finished.send for stream cleanup; production media/auth path not mocked"
+    }
+  ],
+  "review": {
+    "technicalSenior": "scope separation, optimistic revision, single active constraints, invalid request no partial writes",
+    "visitor": "five pairs same, independent-survey explanation, safe not-ready/reselection",
+    "dataOperations": "explicit activation public-image decision, source review, no auto import, existing account provenance unchanged",
+    "teamProfessorEvaluator": "C1/C2 technical preparation distinct from real corpus acceptance and recommendation quality",
+    "independence": "same implementer role-based self-review, not independent humans"
+  },
+  "sourceHashes": {
+    "backend-django/arti/models.py": "1641b4a7f59fe67df23be142fec58d725cb1d5e310e1a9c075824d40b4e4b9f0",
+    "backend-django/arti/survey.py": "30ae32a2856a3edd7e0c139710c3a3af39466310834b1c35639acf435a272399",
+    "backend-django/arti/recommendations.py": "e8c9550a0f8b4ed5ac389e9fc5ac90a0b5c1500687a2bdb81760c3d6081126d9",
+    "backend-django/arti/views.py": "c2a8364506d66992a42576aad70348fd613ecabfeaac1aef433a2a8810e8e054",
+    "backend-django/arti/management/commands/configure_taste_survey.py": "9578c84085d0499ca15176a93f5c5350faa86bde93b5f9cbb9d69c522c760875",
+    "backend-django/arti/management/commands/load_test_fixture.py": "b44412695efe3d220a023de9bfc24d65ff692b882c3251d4e90764abfbccfc3d",
+    "backend-django/arti/migrations/0002_independent_taste_survey.py": "8f31465973b7484cb65cbab536df09b814ac0fab14c4adaead41a8426549065f",
+    "backend-django/arti/tests/test_survey.py": "7c778c14e646c65faa77866b3448195371ec49976e70090277d7747c44322876",
+    "frontend/src/api/client.ts": "100904f89c1fe1ad3ef4ad65c021b20c4bff7198ec9c949c5c7b836bae726ef4",
+    "frontend/src/pages/user/U05Taste.tsx": "a84d5915efae73f69dd795edb710b8b921c0a3ffc527984e283dbf1673188bed",
+    "frontend/src/types.ts": "8e9c1354a344d35379f552cf92ab71c8ddfac379ff30d4ebcaf7816bce1f6737",
+    "backend-django/config/urls.py": "69051c0a6bed902dc15b3b1e29cbf9b755e644797b263f6126668316f2f52d29",
+    "backend-django/development_fixture.json": "69cc7ed120b89d3c38ca3a8ed1996279d6912b990cfd90116ff431b94cd50318",
+    "backend-django/arti/tests/test_integration.py": "cddf1dca6dfbcae236cb956ef6be9ac5a7823d573d8afeddccef5562bb6e723a",
+    "frontend/tests/actorRequests.test.mts": "dcf1292e811c451e1a05b666186d369e905baf80b79937c59aeae062e6a5fd3c"
+  },
+  "next": "curate diverse10 with provenance/review; then compare R04-S ties/weights/recommendation changes",
+  "targetedAfterFinalReview": {
+    "passed": 10,
+    "strengthening": "nonempty recommendation assertion in both exhibitions; unreviewed command activation rejected"
+  },
+  "planChecks": {
+    "plan": "passed; protected38 unchanged",
+    "guardrails": "32 passed",
+    "W02PinnedIntegrity": "passed; historical source contract kept",
+    "overlay": "passed",
+    "migrationDrift": "none"
+  },
+  "sourceHashEncoding": "UTF-8 with LF; independent of working-copy line endings"
+}

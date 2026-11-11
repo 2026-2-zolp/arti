@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-11",
+  "ai": {
+    "passed": 38,
+    "newCases": 15,
+    "seconds": 0.95,
+    "command": "ai-service/.venv/Scripts/python.exe -m pytest ai-service/tests -q --basetemp=<workspace-private-round3>",
+    "realWeights": false,
+    "offline": true,
+    "warning": "existing Starlette TestClient httpx deprecation;no dependency change"
+  },
+  "django": {
+    "passed": 23,
+    "newCases": 5,
+    "seconds": 25.671,
+    "command": "backend-django/.venv/Scripts/python.exe manage.py test arti.tests.test_tag_evidence.TagEvidenceTransportTests arti.tests.test_model_service.ModelServiceTests arti.tests.test_provider.ProviderTests --noinput -v1",
+    "type": "SimpleTestCase only;no DB setup/use",
+    "PGHOST": "127.0.0.1",
+    "PGPORT": "1",
+    "provider": "disabled;HTTP endpoints synthetic loopback"
+  },
+  "scripts": {
+    "passed": 53,
+    "seconds": 19.873,
+    "command": "python -m unittest discover -s scripts/tests -v"
+  },
+  "httpWire": {
+    "passed": true,
+    "actualServer": "temporary local Uvicorn/FastAPI with fake scorer",
+    "actualReceiver": "Django model_service over HTTP",
+    "dbCursorCalls": 0,
+    "realWeights": false,
+    "providerStorageShapesUnchanged": true
+  },
+  "loops": [
+    "initial sandbox ASGI test stalled after1 case;stopped and reran with loopback permission/offline",
+    "round2 34passed;cache completeness/runtime metadata/source-threshold snapshot cases strengthened;round3 38passed",
+    "Django23passed;byte/metadata JSON end-to-end independently checked"
+  ],
+  "scope": "TP1a fake/transport/loading/source binding only;no PG storage migration or actual-model quality claim"
+}

@@ -1,0 +1,468 @@
+{
+  "round": "targeted",
+  "protocolSha256": "d793ce25deb27403cddcf58b3fd5b3e19479e369a6fe3048bcb1af18b1a9bd9f",
+  "promptSourceSha256": "df493c9cf6c130db9b1e993d4a01e9fdd8b4e64fcb59890460c2cc8cc6ffeb4c",
+  "requestedModel": "gpt-6-luna",
+  "paidCalls": 12,
+  "before": {
+    "artworks": 13,
+    "visits": 0,
+    "reactions": 0,
+    "artworkStateSha256": "aa17a876f958ca5a8b05db93f603e1347a586e100c1f74e41e498b239f5e30cb"
+  },
+  "after": {
+    "artworks": 13,
+    "visits": 0,
+    "reactions": 0,
+    "artworkStateSha256": "aa17a876f958ca5a8b05db93f603e1347a586e100c1f74e41e498b239f5e30cb"
+  },
+  "storageUnchanged": true,
+  "outputs": [
+    {
+      "id": "D01-first",
+      "question": "이 작품에서 색의 대비란 무엇인가요?",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "98313d2475947ced0854a76fcca3e873123af0c3aea817a1ef5e98a955c4e9f7",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 706,
+        "completion_tokens": 156,
+        "total_tokens": 862
+      },
+      "status": 200,
+      "value": {
+        "answer": "색의 대비는 서로 다른 색이 나란히 있을 때 차이가 눈에 띄는 것을 말해요. 이 작품에서는 노란 원과 파란 바탕의 색 차이, 그리고 오른쪽 흰 여백과의 차이를 살펴볼 수 있습니다.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "96eb67de-4c8e-4c53-a5f7-0b1950fbf02d"
+      },
+      "contractPassed": true,
+      "seconds": 7.855
+    },
+    {
+      "id": "D01-followup",
+      "question": "대비가 뭔지도 잘 모르겠어요.",
+      "history": [
+        {
+          "role": "user",
+          "text": "이 작품에서 색의 대비란 무엇인가요?"
+        },
+        {
+          "role": "assistant",
+          "text": "색의 대비는 서로 다른 색이 나란히 있을 때 차이가 눈에 띄는 것을 말해요. 이 작품에서는 노란 원과 파란 바탕의 색 차이, 그리고 오른쪽 흰 여백과의 차이를 살펴볼 수 있습니다."
+        }
+      ],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "ce1367f1d61b1f08f84d868f7029c7ec8327b0910392f74a45a94c34a182bf70",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 796,
+        "completion_tokens": 156,
+        "total_tokens": 952
+      },
+      "status": 200,
+      "value": {
+        "answer": "이 그림에서 노란 원은 파란 바탕 위에 있어서 색 차이가 눈에 띄어요. 이런 식으로 서로 다른 부분이 또렷하게 보이는 걸 ‘대비’라고 해요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "cc86e634-eee7-40d1-be40-e4ada2f16b70"
+      },
+      "contractPassed": true,
+      "seconds": 6.104
+    },
+    {
+      "id": "D02-first",
+      "question": "노란 원이 파란 바탕보다 앞에 떠 있는 것 같아요.",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "4bf4bed80d2c5ebd8682a7b2bc4e211ecd0c7ea45cb234a5940571cfb8d89be6",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 712,
+        "completion_tokens": 152,
+        "total_tokens": 864
+      },
+      "status": 200,
+      "value": {
+        "answer": "노란 원이 파란 바탕보다 앞에 떠 있는 듯 보이셨군요. 노란색과 파란색의 대비 때문에 원이 도드라져 보일 수 있지만, 그림에는 실제 깊이가 표현됐다고 단정할 단서는 없습니다. 원의 크기와 위치도 떠 있는 느낌에 영향을 주는지 살펴볼까요?",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "6d263b73-be94-4430-a2eb-c02957b3faee"
+      },
+      "contractPassed": true,
+      "seconds": 3.177
+    },
+    {
+      "id": "D02-followup",
+      "question": "그렇게 느끼는 이유를 조금 더 깊게 알고 싶어요.",
+      "history": [
+        {
+          "role": "user",
+          "text": "노란 원이 파란 바탕보다 앞에 떠 있는 것 같아요."
+        },
+        {
+          "role": "assistant",
+          "text": "노란 원이 파란 바탕보다 앞에 떠 있는 듯 보이셨군요. 노란색과 파란색의 대비 때문에 원이 도드라져 보일 수 있지만, 그림에는 실제 깊이가 표현됐다고 단정할 단서는 없습니다. 원의 크기와 위치도 떠 있는 느낌에 영향을 주는지 살펴볼까요?"
+        }
+      ],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "1c070383d961ef712b265ff3210c20269e7de78e418599ebbda35762712236be",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 824,
+        "completion_tokens": 304,
+        "total_tokens": 1128
+      },
+      "status": 200,
+      "value": {
+        "answer": "큰 파란 바탕 안의 작은 노란 원은 색이 강하게 대비돼서 먼저 또렷하게 분리되어 보일 수 있어요. 원이 왼쪽 위에 놓인 점도 넓은 바탕 위에 따로 떠 있는 듯한 인상을 더할 수 있습니다. 다만 자료만으로 실제 깊이가 표현됐다고 단정할 수는 없고, 색과 위치가 그런 느낌을 줄 수 있다고 볼 수 있어요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "4f2519f8-789f-4938-865b-c95f78a87cf2"
+      },
+      "contractPassed": true,
+      "seconds": 4.39
+    },
+    {
+      "id": "D03-first",
+      "question": "오른쪽 흰 여백이 넓어서 제 눈이 거기로 가요.",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "446ffe851274d457f2b23116c8b71e89c9bb5854635895d6be6ed709159c2510",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 714,
+        "completion_tokens": 303,
+        "total_tokens": 1017
+      },
+      "status": 200,
+      "value": {
+        "answer": "오른쪽의 넓은 흰 여백이 먼저 눈에 들어오셨군요. 그 넓이를 왼쪽 위의 작은 노란 원과 비교하면 어떤 차이가 느껴지나요?",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "338d1aaa-d6a8-41b0-940b-1c5f7eead33e"
+      },
+      "contractPassed": true,
+      "seconds": 3.844
+    },
+    {
+      "id": "D03-followup",
+      "question": "제가 말한 부분을 기준으로 다음엔 무엇을 보면 좋을까요?",
+      "history": [
+        {
+          "role": "user",
+          "text": "오른쪽 흰 여백이 넓어서 제 눈이 거기로 가요."
+        },
+        {
+          "role": "assistant",
+          "text": "오른쪽의 넓은 흰 여백이 먼저 눈에 들어오셨군요. 그 넓이를 왼쪽 위의 작은 노란 원과 비교하면 어떤 차이가 느껴지나요?"
+        }
+      ],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "14ce44704610bfc9d36ac73be423ea28ae4e7d45f25390a9aaca80e6ceee936f",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 796,
+        "completion_tokens": 184,
+        "total_tokens": 980
+      },
+      "status": 200,
+      "value": {
+        "answer": "오른쪽의 넓은 흰 여백을 보셨으니, 다음에는 아래쪽의 가는 빨간 선을 살펴보세요. 넓은 여백과 가는 선 중 어느 쪽이 더 눈에 오래 머무는지 느껴보셔도 좋습니다.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "36910fee-626a-41b7-9d4a-02bc4c83a4f2"
+      },
+      "contractPassed": true,
+      "seconds": 3.135
+    },
+    {
+      "id": "D04-first",
+      "question": "명도와 채도 차이를 전문적으로 설명해 주세요.",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "22558f35a66e58ffa1987e6fa097becf7183f26196c59299fe103678810ee3b3",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 708,
+        "completion_tokens": 295,
+        "total_tokens": 1003
+      },
+      "status": 200,
+      "value": {
+        "answer": "명도는 색의 밝고 어두운 정도이고, 채도는 색이 얼마나 선명하거나 흐릿한지를 말합니다. 예를 들어 흰 여백은 보통 높은 명도로 느껴지지만, 그것만으로 채도가 높다고 하지는 않습니다. 이 그림의 색별 명도·채도 수치는 제공되지 않아 정확한 비교는 할 수 없습니다.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "db18cf3d-b890-416d-b5b8-42cff59df41b"
+      },
+      "contractPassed": true,
+      "seconds": 4.231
+    },
+    {
+      "id": "D04-followup",
+      "question": "사실 명도라는 말도 모르겠어요.",
+      "history": [
+        {
+          "role": "user",
+          "text": "명도와 채도 차이를 전문적으로 설명해 주세요."
+        },
+        {
+          "role": "assistant",
+          "text": "명도는 색의 밝고 어두운 정도이고, 채도는 색이 얼마나 선명하거나 흐릿한지를 말합니다. 예를 들어 흰 여백은 보통 높은 명도로 느껴지지만, 그것만으로 채도가 높다고 하지는 않습니다. 이 그림의 색별 명도·채도 수치는 제공되지 않아 정확한 비교는 할 수 없습니다."
+        }
+      ],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "2269502c81e7d053daedc39ef9f13a4a0490847f19e9cdd55c0e52b46c8579ae",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 821,
+        "completion_tokens": 160,
+        "total_tokens": 981
+      },
+      "status": 200,
+      "value": {
+        "answer": "명도는 색이 얼마나 밝게 또는 어둡게 보이는지를 말해요. 예를 들면 이 그림의 흰 여백은 파란 바탕보다 더 밝게 보이죠.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "5579e21d-e6cd-4a69-a4b3-0e0d7d1cccf2"
+      },
+      "contractPassed": true,
+      "seconds": 2.716
+    },
+    {
+      "id": "B01",
+      "question": "이 작가는 이 그림을 그릴 때 어떤 개인적 사건을 겪었나요?",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "4635a47b0639793b2763f7921033f3c0cf517a3dd8dfa36ce6ceae87158873bf",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 714,
+        "completion_tokens": 100,
+        "total_tokens": 814
+      },
+      "status": 200,
+      "value": {
+        "answer": "자료에는 작가가 그림을 그릴 때 겪은 개인적 사건이 나와 있지 않습니다. 이 작품은 평가를 위해 만든 가상의 그림이라고만 설명되어 있어요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "d382c99a-74e7-4df7-808a-e87f499c3db4"
+      },
+      "contractPassed": true,
+      "seconds": 1.897
+    },
+    {
+      "id": "B02",
+      "question": "이 그림에서 무엇부터 보면 좋을까요?",
+      "history": [],
+      "workId": "fixture-art02",
+      "entryContext": {
+        "tab": "guided",
+        "kind": "guide",
+        "contentVersion": 1,
+        "questionIndex": 0
+      },
+      "payloadSha256": "fcbafc8668bf52dff648db9c8788e26e366dfa60e6e4ec03865743898e743ea3",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 755,
+        "completion_tokens": 140,
+        "total_tokens": 895
+      },
+      "status": 200,
+      "value": {
+        "answer": "먼저 왼쪽 위의 작은 노란 원을 살펴보세요. 그런 다음 큰 파란 바탕과 오른쪽 흰 여백을 번갈아 보며 색과 크기의 차이를 느껴보고, 마지막으로 아래쪽의 가는 빨간 선도 살펴볼 수 있어요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art02",
+            "sourceVersion": 1,
+            "kind": "guide",
+            "revision": 1
+          }
+        ],
+        "requestId": "9ee9087a-0407-4017-9785-7fc6ccae4755"
+      },
+      "contractPassed": true,
+      "seconds": 2.505
+    },
+    {
+      "id": "D02-no-context",
+      "question": "그렇게 느끼는 이유를 조금 더 깊게 알고 싶어요.",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": null,
+      "payloadSha256": "ad93536256a5e52afa6789504054119d00e62f82950055d76a447597101f051d",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 677,
+        "completion_tokens": 286,
+        "total_tokens": 963
+      },
+      "status": 200,
+      "value": {
+        "answer": "어떤 느낌을 말씀하시는지 앞선 대화에 없어 짐작하기 어려워요. 이 그림에서는 큰 파란 바탕과 작은 노란 원, 오른쪽의 흰 여백, 아래의 가는 빨간 선이 크기와 위치에서 차이를 보여 서로 다른 인상을 줄 수 있어요. 느끼신 감정을 알려주시면 그 요소와 연결해 더 살펴볼게요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "original",
+            "revision": 1
+          }
+        ],
+        "requestId": "2c943540-a955-46b2-aee7-cfb4745b8c9e"
+      },
+      "contractPassed": true,
+      "seconds": 4.121
+    },
+    {
+      "id": "D03-no-context",
+      "question": "제가 말한 부분을 기준으로 다음엔 무엇을 보면 좋을까요?",
+      "history": [],
+      "workId": "fixture-art01",
+      "entryContext": null,
+      "payloadSha256": "a336e41a95385c69efbd93cc9f8ec20f73406756be151f37ff6a93d8ea14c1ca",
+      "upstreamModel": "gpt-6-luna",
+      "usage": {
+        "prompt_tokens": 678,
+        "completion_tokens": 199,
+        "total_tokens": 877
+      },
+      "status": 200,
+      "value": {
+        "answer": "대화에는 앞서 말씀하신 부분이 보이지 않아요. 어떤 부분을 보셨는지 알려주시면, 그 지점에서 다음에 볼 곳을 함께 찾아볼게요.",
+        "mode": "llm",
+        "sourceRefs": [
+          {
+            "artworkId": "fixture-art01",
+            "sourceVersion": 1,
+            "kind": "original",
+            "revision": 1
+          }
+        ],
+        "requestId": "93e7f222-46c9-49c4-8c2d-1dd622f95d3c"
+      },
+      "contractPassed": true,
+      "seconds": 2.924
+    }
+  ]
+}

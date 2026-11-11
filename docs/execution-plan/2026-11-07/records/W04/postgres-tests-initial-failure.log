@@ -1,0 +1,46 @@
+Found 24 test(s).
+Creating test database for alias 'default' ('test_arti')...
+Operations to perform:
+  Synchronize unmigrated apps: rest_framework
+  Apply all migrations: arti, contenttypes
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying arti.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+System check identified no issues (0 silenced).
+setUpClass (arti.tests.test_foundation.FoundationTests) ... ERROR
+
+======================================================================
+ERROR: setUpClass (arti.tests.test_foundation.FoundationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/app/arti/tests/test_foundation.py", line 24, in setUpClass
+    super().setUpClass()
+  File "/usr/local/lib/python3.12/site-packages/django/test/testcases.py", line 1430, in setUpClass
+    cls.setUpTestData()
+  File "/app/arti/tests/test_foundation.py", line 37, in setUpTestData
+    call_command('load_test_fixture', stdout=io.StringIO())
+  File "/usr/local/lib/python3.12/site-packages/django/core/management/__init__.py", line 194, in call_command
+    return command.execute(*args, **defaults)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/django/core/management/base.py", line 464, in execute
+    output = self.handle(*args, **options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/app/arti/management/commands/load_test_fixture.py", line 37, in handle
+    obj.full_clean()
+  File "/usr/local/lib/python3.12/site-packages/django/db/models/base.py", line 1679, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'position_x': ['이 필드는 빈 칸으로 둘 수 없습니다.'], 'position_y': ['이 필드는 빈 칸으로 둘 수 없습니다.']}
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.203s
+
+FAILED (errors=1)
+Destroying test database for alias 'default' ('test_arti')...
+

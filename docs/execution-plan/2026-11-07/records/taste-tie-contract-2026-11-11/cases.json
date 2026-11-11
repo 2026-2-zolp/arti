@@ -1,0 +1,1797 @@
+{
+  "scope": "synthetic reference cases,not product API requests or human labels",
+  "cases": [
+    {
+      "id": "TC01",
+      "counterexample": "같은 빈도 안에서만5개 선택작 점수 합을 비교",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ],
+        "rules": [
+          "ai_secondary"
+        ]
+      },
+      "changes": []
+    },
+    {
+      "id": "TC02",
+      "counterexample": "한 태그 점수 누락을0으로 채우면 불공정;동점 그룹 전체 고정 순서",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "rules": [
+          "canonical_fallback"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "30367bdda1c72c5da794d7adc8711db454f7c89f9750553c54a69c56415ce7ed"
+        },
+        {
+          "op": "delete",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "counterexample": "동점 그룹 밖 점수 누락은 해당 그룹을 불필요하게 중단하지 않음",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ],
+        "rules": [
+          "ai_secondary"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "28b00672ad572288e6c6244a2971e38d30cb5ebaefec15c775a518aca0b67093"
+        },
+        {
+          "op": "delete",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "abstract"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC04",
+      "counterexample": "0은 유효점수이며 누락과 다름",
+      "expected": {
+        "tagOrder": [
+          "light",
+          "people",
+          "warm"
+        ],
+        "rules": [
+          "ai_secondary"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "2f9433fed9dab968c0896fee7f5ca5fb582e3441ebd3415e47279c6efb12081b"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            1,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            2,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            3,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            4,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            5,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            6,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            7,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            8,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            9,
+            "scores",
+            "warm"
+          ],
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "TC05",
+      "counterexample": "완전히 같은 점수 합이면 서버TAGS 고정 순서",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "4a43613d2ea640dbaaea94cdbf751afe7dd91681490d0b2064cd38ee4ca3e06c"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            1,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            1,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            2,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            2,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            3,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            3,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            4,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            4,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            5,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            5,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            6,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            6,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            7,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            7,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            8,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            8,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            9,
+            "scores",
+            "people"
+          ],
+          "value": 0.7
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            9,
+            "scores",
+            "warm"
+          ],
+          "value": 0.7
+        }
+      ]
+    },
+    {
+      "id": "TC06",
+      "counterexample": "혼합 모델 revision은 하나의 동점 그룹 안에서 비교 금지",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "3b638aa1162d491cdb584e6c155d01ab4591bf589b7622f8bf14184ea514d833"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "signature",
+            "modelRevision"
+          ],
+          "value": "different"
+        }
+      ]
+    },
+    {
+      "id": "TC07",
+      "counterexample": "출처 없는 구형 점수는 confirmed만으로 신뢰하지 않음",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "approvedSignature"
+          ],
+          "value": null
+        },
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "9e74b3c5764a5f74a5feac9ba5625daaa2690f79df436b17066c7044bed205d8"
+        }
+      ]
+    },
+    {
+      "id": "TC08",
+      "counterexample": "이미지와 텍스트 태그 점수 혼합 금지",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "7c97ec1a06cb7e47ce8b87b25ffe7d3b35673e57d949982d8fc4dc1b3cdcf03f"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "tagSource"
+          ],
+          "value": "text"
+        }
+      ]
+    },
+    {
+      "id": "TC09",
+      "counterexample": "새 선택의 풀 버전 불일치는409;묵시적 재조사 금지",
+      "expected": {
+        "error": "VERSION_CONFLICT"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "currentPoolVersion"
+          ],
+          "value": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "a9ae49352b89d64ea36dca161e283da1803b21b5c199a6d0f575d1fbc9e6fabf"
+        }
+      ]
+    },
+    {
+      "id": "TC10",
+      "counterexample": "풀은 같아도 점수 근거 버전이 바뀌면409",
+      "expected": {
+        "error": "VERSION_CONFLICT"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": 0.8
+        }
+      ]
+    },
+    {
+      "id": "TC11",
+      "counterexample": "낮은 빈도는 점수가 높아도 우선할 수 없음",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ],
+        "rules": [
+          "ai_secondary",
+          "frequency"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "ea9ad061cc3e014bf471e62651860624ebb350622eab0da600b5eb1112fe8b72"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            8,
+            "tags"
+          ],
+          "value": [
+            "light",
+            "warm"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC12",
+      "counterexample": "명시적 제거는 선택 부분집합으로 유지",
+      "expected": {
+        "tagOrder": [
+          "light",
+          "people"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "selectedTags"
+          ],
+          "value": [
+            "people",
+            "light"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC13",
+      "counterexample": "선택 근거 없는 추가는picks로 위장하지 않음",
+      "expected": {
+        "error": "VALIDATION_ERROR"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "selectedTags"
+          ],
+          "value": [
+            "people",
+            "abstract"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC14",
+      "counterexample": "클라이언트 counts/점수/순서는 서버 근거를 덮어쓰지 않음",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "clientCounts"
+          ],
+          "value": {
+            "people": 5,
+            "warm": 0
+          }
+        },
+        {
+          "op": "set",
+          "path": [
+            "clientOrder"
+          ],
+          "value": [
+            "people",
+            "warm",
+            "light"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "clientScores"
+          ],
+          "value": {
+            "people": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC15",
+      "counterexample": "수동 추가를 확정하면manual 균등;원 선택 counts는 과거근거로만 보존",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "abstract",
+          "warm"
+        ],
+        "rules": [
+          "canonical_fallback"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "clientCounts"
+          ],
+          "value": {
+            "warm": 5
+          }
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "manual"
+        },
+        {
+          "op": "set",
+          "path": [
+            "picks"
+          ],
+          "value": []
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolVersion"
+          ],
+          "value": null
+        },
+        {
+          "op": "set",
+          "path": [
+            "selectedTags",
+            0
+          ],
+          "value": "abstract"
+        },
+        {
+          "op": "set",
+          "path": [
+            "selectedTags",
+            1
+          ],
+          "value": "warm"
+        },
+        {
+          "op": "set",
+          "path": [
+            "selectedTags",
+            2
+          ],
+          "value": "people"
+        }
+      ]
+    },
+    {
+      "id": "TC16",
+      "counterexample": "구형 저장 취향은 새풀·새AI를 조회하지 않고 기존 counts 사용",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": true
+        },
+        {
+          "op": "set",
+          "path": [
+            "currentPoolVersion"
+          ],
+          "value": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "ready"
+          ],
+          "value": false
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 1,
+            "counts": {
+              "people": 5,
+              "light": 5,
+              "warm": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC17",
+      "counterexample": "새저장 snapshot은 당시 동점 순서를 고정;현재풀 변경과 분리",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": true
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 2,
+            "counts": {
+              "landscape": 0,
+              "people": 5,
+              "abstract": 0,
+              "light": 5,
+              "vivid": 0,
+              "cool": 0,
+              "warm": 5,
+              "soft": 0
+            },
+            "tieEvidence": {
+              "policyVersion": "frequency-ai-tie-v1",
+              "orderedTags": [
+                "warm",
+                "light",
+                "people"
+              ],
+              "binding": "1da540eb53ebad8f93144671a38e46e681e398656c6da5e42bb4ddff688cfe4f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC18",
+      "counterexample": "저장 버전 충돌은409",
+      "expected": {
+        "error": "VERSION_CONFLICT"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": true
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 3
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 2,
+            "counts": {
+              "landscape": 0,
+              "people": 5,
+              "abstract": 0,
+              "light": 5,
+              "vivid": 0,
+              "cool": 0,
+              "warm": 5,
+              "soft": 0
+            },
+            "tieEvidence": {
+              "policyVersion": "frequency-ai-tie-v1",
+              "orderedTags": [
+                "warm",
+                "light",
+                "people"
+              ],
+              "binding": "1da540eb53ebad8f93144671a38e46e681e398656c6da5e42bb4ddff688cfe4f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC19",
+      "counterexample": "비회원이 saved를 위조하면401",
+      "expected": {
+        "error": "AUTH_REQUIRED"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": false
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 2,
+            "counts": {
+              "landscape": 0,
+              "people": 5,
+              "abstract": 0,
+              "light": 5,
+              "vivid": 0,
+              "cool": 0,
+              "warm": 5,
+              "soft": 0
+            },
+            "tieEvidence": {
+              "policyVersion": "frequency-ai-tie-v1",
+              "orderedTags": [
+                "warm",
+                "light",
+                "people"
+              ],
+              "binding": "1da540eb53ebad8f93144671a38e46e681e398656c6da5e42bb4ddff688cfe4f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC20",
+      "counterexample": "5쌍에 중복pairIndex를 넣으면400",
+      "expected": {
+        "error": "VALIDATION_ERROR"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "picks",
+            1,
+            "pairIndex"
+          ],
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "TC21",
+      "counterexample": "문자열점수는 자동 숫자변환하지 않고 그룹fallback",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "30367bdda1c72c5da794d7adc8711db454f7c89f9750553c54a69c56415ce7ed"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": "0.99"
+        }
+      ]
+    },
+    {
+      "id": "TC22",
+      "counterexample": "bool은 숫자1처럼 쓰지 않음",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "30367bdda1c72c5da794d7adc8711db454f7c89f9750553c54a69c56415ce7ed"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "TC23",
+      "counterexample": "범위 밖 점수는 자르지 않고 그룹fallback",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "30367bdda1c72c5da794d7adc8711db454f7c89f9750553c54a69c56415ce7ed"
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "warm"
+          ],
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "TC24",
+      "counterexample": "동점에 없는 낮은빈도 그룹의 누락이 다른그룹까지 전파되지 않음",
+      "expected": {
+        "tagOrder": [
+          "warm",
+          "light",
+          "people"
+        ],
+        "rules": [
+          "ai_secondary",
+          "frequency"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "95a42e7efb53f65ce6b9778126dd788fc98dff921ee725acdf232a582d848fbc"
+        },
+        {
+          "op": "delete",
+          "path": [
+            "poolRows",
+            0,
+            "scores",
+            "people"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            8,
+            "tags"
+          ],
+          "value": [
+            "light",
+            "warm"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC25",
+      "counterexample": "저장된 새 동점정책 버전을 이해못하면 기존가중치+고정순서로 대체",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": true
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 2,
+            "counts": {
+              "landscape": 0,
+              "people": 5,
+              "abstract": 0,
+              "light": 5,
+              "vivid": 0,
+              "cool": 0,
+              "warm": 5,
+              "soft": 0
+            },
+            "tieEvidence": {
+              "policyVersion": "future-v99",
+              "orderedTags": [
+                "warm",
+                "light",
+                "people"
+              ],
+              "binding": "1da540eb53ebad8f93144671a38e46e681e398656c6da5e42bb4ddff688cfe4f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC26",
+      "counterexample": "저장 counts가 바뀌면 이전 동점 순서의 binding을 재사용하지 않음",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "rules": [
+          "canonical_fallback",
+          "frequency"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "accountProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "accountTags"
+          ],
+          "value": [
+            "people",
+            "light",
+            "warm"
+          ]
+        },
+        {
+          "op": "set",
+          "path": [
+            "authenticated"
+          ],
+          "value": true
+        },
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "saved"
+        },
+        {
+          "op": "set",
+          "path": [
+            "savedProfileVersion"
+          ],
+          "value": 4
+        },
+        {
+          "op": "set",
+          "path": [
+            "serverSnapshot"
+          ],
+          "value": {
+            "version": 2,
+            "counts": {
+              "landscape": 0,
+              "people": 5,
+              "abstract": 0,
+              "light": 5,
+              "vivid": 0,
+              "cool": 0,
+              "warm": 4,
+              "soft": 0
+            },
+            "tieEvidence": {
+              "policyVersion": "frequency-ai-tie-v1",
+              "orderedTags": [
+                "warm",
+                "light",
+                "people"
+              ],
+              "binding": "1da540eb53ebad8f93144671a38e46e681e398656c6da5e42bb4ddff688cfe4f"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "TC27",
+      "counterexample": "선택하지 않은 작품 점수 변경도 조사화면 근거버전 변경으로 추적",
+      "expected": {
+        "error": "VERSION_CONFLICT"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "poolRows",
+            1,
+            "scores",
+            "warm"
+          ],
+          "value": 0.4
+        }
+      ]
+    },
+    {
+      "id": "TC28",
+      "counterexample": "현재풀 준비 해제는409;저장된기록은 별도영향없음",
+      "expected": {
+        "error": "VERSION_CONFLICT"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "ready"
+          ],
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "TC29",
+      "counterexample": "재생을 위해 이미지 입력 해시 없는 점수는 쓰지 않음",
+      "expected": {
+        "tagOrder": [
+          "people",
+          "light",
+          "warm"
+        ]
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "evidenceVersion"
+          ],
+          "value": "55a272fb9fb9e3dd06e6e9d1791c12c5a05fb5a2443ca9509768ac8a6693c8fe"
+        },
+        {
+          "op": "delete",
+          "path": [
+            "poolRows",
+            0,
+            "imageSha256"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TC30",
+      "counterexample": "manual에 과거picks/풀근거를 함께 넣으면 거절",
+      "expected": {
+        "error": "VALIDATION_ERROR"
+      },
+      "changes": [
+        {
+          "op": "set",
+          "path": [
+            "mode"
+          ],
+          "value": "manual"
+        }
+      ]
+    }
+  ],
+  "baseRequest": {
+    "mode": "picks",
+    "selectedTags": [
+      "warm",
+      "people",
+      "light"
+    ],
+    "ready": true,
+    "poolRows": [
+      {
+        "id": "fixture-00",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "id": "fixture-01",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      {
+        "id": "fixture-02",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      {
+        "id": "fixture-03",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      {
+        "id": "fixture-04",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "4444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "id": "fixture-05",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      {
+        "id": "fixture-06",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "id": "fixture-07",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      {
+        "id": "fixture-08",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "8888888888888888888888888888888888888888888888888888888888888888"
+      },
+      {
+        "id": "fixture-09",
+        "tags": [
+          "people",
+          "light",
+          "warm"
+        ],
+        "tagStatus": "confirmed",
+        "scores": {
+          "landscape": 0.1,
+          "people": 0.6,
+          "abstract": 0.1,
+          "light": 0.7,
+          "vivid": 0.1,
+          "cool": 0.1,
+          "warm": 0.9,
+          "soft": 0.1
+        },
+        "signature": {
+          "modelId": "synthetic-clip",
+          "modelRevision": "test-revision-1",
+          "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "tagDefinitionVersion": "arti-eight-tags-v1",
+          "scoreDefinitionVersion": "image-calibrated-tag-v1"
+        },
+        "tagSource": "image",
+        "scoreRevision": 1,
+        "imageSha256": "9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    ],
+    "picks": [
+      {
+        "pairIndex": 0,
+        "artworkId": "fixture-00"
+      },
+      {
+        "pairIndex": 1,
+        "artworkId": "fixture-02"
+      },
+      {
+        "pairIndex": 2,
+        "artworkId": "fixture-04"
+      },
+      {
+        "pairIndex": 3,
+        "artworkId": "fixture-06"
+      },
+      {
+        "pairIndex": 4,
+        "artworkId": "fixture-08"
+      }
+    ],
+    "poolVersion": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "currentPoolVersion": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "approvedSignature": {
+      "modelId": "synthetic-clip",
+      "modelRevision": "test-revision-1",
+      "promptPreprocessSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "calibrationSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "tagDefinitionVersion": "arti-eight-tags-v1",
+      "scoreDefinitionVersion": "image-calibrated-tag-v1"
+    },
+    "evidenceVersion": "cbeee50febd6b1d7afc1a8e78217f552cb674c30bbb4497e4f116633655231f7"
+  }
+}

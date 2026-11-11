@@ -1,0 +1,20 @@
+Found 97 test(s).
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+........................................F................................................
+======================================================================
+FAIL: test_actual_provider_429_preserves_api_retry_after (arti.tests.test_integration.IntegrationTests.test_actual_provider_429_preserves_api_retry_after)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/django/test/utils.py", line 456, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/app/arti/tests/test_integration.py", line 264, in test_actual_provider_429_preserves_api_retry_after
+    self.assertEqual(response.status_code,429,response.content)
+AssertionError: 504 != 429 : b'{"error":"\xeb\xb6\x84\xec\x84\x9d \xea\xb2\xb0\xea\xb3\xbc\xeb\xa5\xbc \xec\xa4\x80\xeb\xb9\x84\xed\x95\x98\xec\xa7\x80 \xeb\xaa\xbb\xed\x96\x88\xec\x96\xb4\xec\x9a\x94.","code":"AI_TIMEOUT","retryable":true,"requestId":"6e07d013-005a-48c9-9487-2463f8711535"}'
+
+----------------------------------------------------------------------
+Ran 89 tests in 92.728s
+
+FAILED (failures=1)
+Destroying test database for alias 'default'...

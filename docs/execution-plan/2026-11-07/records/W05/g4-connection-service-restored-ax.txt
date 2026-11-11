@@ -1,0 +1,24 @@
+Browser tab: 5, Title: "ARTI", URL: "http://localhost:5179/exhibitions/fixture-ex01/recommend".
+1 AXWebArea ARTI, URL: localhost:5179/exhibitions/fixture-ex01/recommend
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 추천 작품, Value: 1
+				6 text 추천 작품
+		7 container
+			8 heading 오늘은 이 작품들을 만나보세요, Value: 2
+				9 text 오늘은 이 작품들을 만나보세요
+			10 text 취향과 관람 시간을 바탕으로 3개 작품을 골랐습니다.
+			11 content list
+				12 container
+					13 image 검증용 작품 01
+					14 text 1 .  검증용 작품 01 가상 작가  ·  연도 미상 풍경
+				15 container
+					16 image 검증용 작품 03
+					17 text 2 .  검증용 작품 03 가상 작가  ·  연도 미상 풍경
+				18 container
+					19 image 검증용 작품 05
+					20 text 3 .  검증용 작품 05 가상 작가  ·  연도 미상 풍경
+		21 button 2D 지도에서 경로 보기
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5179/exhibitions/fixture-ex01/recommend

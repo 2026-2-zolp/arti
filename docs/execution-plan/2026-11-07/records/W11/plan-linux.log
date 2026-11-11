@@ -1,0 +1,238 @@
+Unable to find image 'python:3.12' locally
+3.12: Pulling from library/python
+685e2037ccfc: Pulling fs layer
+4ed680595f4b: Pulling fs layer
+a6dd1c05fbba: Pulling fs layer
+411d2dc8717d: Pulling fs layer
+5ac0faf5954b: Pulling fs layer
+696c1fe91c64: Pulling fs layer
+e8a88afca2bd: Pulling fs layer
+685e2037ccfc: Download complete
+5ac0faf5954b: Download complete
+e8a88afca2bd: Download complete
+4ed680595f4b: Download complete
+a6dd1c05fbba: Download complete
+a6dd1c05fbba: Pull complete
+411d2dc8717d: Download complete
+e8a88afca2bd: Pull complete
+411d2dc8717d: Pull complete
+696c1fe91c64: Download complete
+696c1fe91c64: Pull complete
+5ac0faf5954b: Pull complete
+685e2037ccfc: Pull complete
+4ed680595f4b: Pull complete
+Digest: sha256:cad37dd20c7cac861af9003af8796d03ea7a998ec1e3a664429740fc9d7d2691
+Status: Downloaded newer image for python:3.12
+{
+  "ok": true,
+  "checks": [
+    "Unique IDs, baseline, and expected coverage",
+    "Task/gate mixed DAG, start and completion prerequisites, review evidence",
+    "Issue closure and conditional PostgreSQL operating choice",
+    "Local links and document ID coverage",
+    "Persona improvement and scenario traceability",
+    "Original archive and v1 inventory/SHA256 unchanged"
+  ],
+  "tasks": 12,
+  "gates": 10,
+  "criteria": 33,
+  "issues": 37,
+  "localLinks": 62,
+  "protectedFilesPreserved": 38,
+  "errors": [],
+  "scope": "Plan integrity only; no actual service/model/cloud acceptance"
+}
+{
+  "ok": true,
+  "cases": [
+    {
+      "case": "stale_summary_field",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Legacy summary field",
+      "actualErrors": []
+    },
+    {
+      "case": "pass_without_evidence",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "lacks evidence",
+      "actualErrors": []
+    },
+    {
+      "case": "release_closure_cycle",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Release closure cycle",
+      "actualErrors": []
+    },
+    {
+      "case": "release_open_issues",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "unresolved release-required issue",
+      "actualErrors": []
+    },
+    {
+      "case": "work_mapping_missing",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "omits criterion implementation work",
+      "actualErrors": []
+    },
+    {
+      "case": "task_cycle",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Mixed dependency cycle",
+      "actualErrors": []
+    },
+    {
+      "case": "complete_without_ac",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "unpassed criterion",
+      "actualErrors": []
+    },
+    {
+      "case": "gate_without_review",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "lacks evidence",
+      "actualErrors": []
+    },
+    {
+      "case": "missing_review_path",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Missing evidence file",
+      "actualErrors": []
+    },
+    {
+      "case": "complete_bypasses_gate",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Required gate not passed",
+      "actualErrors": []
+    },
+    {
+      "case": "start_bypasses_gate",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Required gate not passed",
+      "actualErrors": []
+    },
+    {
+      "case": "ci_finish_before_target_api",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Required task not complete",
+      "actualErrors": []
+    },
+    {
+      "case": "cloud_without_operations_gate",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Required gate not passed",
+      "actualErrors": []
+    },
+    {
+      "case": "operations_undecided",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "without PostgreSQL operations decision",
+      "actualErrors": []
+    },
+    {
+      "case": "gate_without_owner_complete",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Required task not complete",
+      "actualErrors": []
+    },
+    {
+      "case": "closed_without_commit",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "lacks resolved commit",
+      "actualErrors": []
+    },
+    {
+      "case": "baseline_drift",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Baseline differs",
+      "actualErrors": []
+    },
+    {
+      "case": "self_gate_cycle",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Mixed dependency cycle",
+      "actualErrors": []
+    },
+    {
+      "case": "unknown_persona",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Unknown improvement persona",
+      "actualErrors": []
+    },
+    {
+      "case": "persona_omits_work",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "Improvement omits AC work",
+      "actualErrors": []
+    },
+    {
+      "case": "criterion_text_drift",
+      "expectedAccepted": false,
+      "passed": true,
+      "expectedError": "AC text differs",
+      "actualErrors": []
+    },
+    {
+      "case": "unchanged_plan",
+      "expectedAccepted": true,
+      "passed": true,
+      "expectedError": null,
+      "actualErrors": []
+    },
+    {
+      "case": "local_development_external_wait",
+      "expectedAccepted": true,
+      "passed": true,
+      "expectedError": null,
+      "actualErrors": []
+    },
+    {
+      "case": "ci_can_start_before_target_api",
+      "expectedAccepted": true,
+      "passed": true,
+      "expectedError": null,
+      "actualErrors": []
+    },
+    {
+      "case": "fixture_cd_before_real_ai_and_without_rds",
+      "expectedAccepted": true,
+      "passed": true,
+      "expectedError": null,
+      "actualErrors": []
+    }
+  ],
+  "negativeCases": 21,
+  "positiveCases": 4,
+  "scope": "In-memory plan-state probes only; execution.json and service gates unchanged"
+}
+{
+  "ok": true,
+  "sourceFiles": 65,
+  "baselineRoutes": 34,
+  "directFrontendCalls": 51,
+  "contractCases": 35,
+  "wireExamples": 6,
+  "mappedIssues": 37,
+  "errors": [],
+  "scope": "Static examples/pinned Git baseline/map integrity only; current worktree and target API acceptance are separate."
+}

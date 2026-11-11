@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-11",
+  "baselineCommit": "ce5e487",
+  "scope": "contract preparation and static archive intake only;not runtime application",
+  "status": "contract_preparation_passed_product_application_pending",
+  "productApplied": false,
+  "selectionFinal": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "requirements": [
+    "missing_or_invalid_scores_group_fallback",
+    "same_score_deterministic_order",
+    "model_and_pool_evidence_versioning",
+    "explicit_user_edits_and_state_preservation",
+    "legacy_saved_profile_compatibility",
+    "counterexamples"
+  ],
+  "syntheticCases": 30,
+  "referenceUnitTests": 9,
+  "peopleReviewed": 0,
+  "modelCalls": 0,
+  "databaseCalls": 0,
+  "frontendZip": {
+    "staticComparison": true,
+    "same": 52,
+    "changed": 23,
+    "new": 0,
+    "missingSource": 0,
+    "nodeModulesFilesNotExecuted": 2721,
+    "productMerge": false,
+    "buildOrBrowserTest": false
+  },
+  "review": {
+    "type": "single-author role-based self review",
+    "technicalSenior": "version/provenance insufficiency and state changes identified;no product imports of reference;strict invalid/group fallback and pure numeric/order properties",
+    "visitor": "no forced top3;no silent manual conversion;no auto-reset on preview failure;input/old visit preservation specified",
+    "dataOperations": "v1 snapshots frozen;no model requery or bulk migration;new snapshot/write CAS still future implementation",
+    "teamProfessorExternalEvaluator": "team UI handoff incomplete;static intake separated from acceptance;policy preparation not preference quality proof"
+  },
+  "implementationStillRequired": [
+    "trusted score provenance and tie context",
+    "negotiated profile v2 and read-only resolve endpoint",
+    "same policy server coverage,save snapshot and write-CAS",
+    "preview-first UI and ZIP hunk selection",
+    "isolated API/PG/browser regressions"
+  ],
+  "next": "review detailed implementation/change/test plan;no product work performed in this task",
+  "criteria": {
+    "CT1": "pass:static ZIP intake and20 current source hashes/formal state preserved",
+    "CT2": "pass:30 synthetic counterexamples and pure reference rules",
+    "CT3": "pass:9 new unit tests,53 total script tests;input/pick permutations,quantization,legacy/no current pool lookup",
+    "CT4": "pass:UI preservation checklist and future evidence/v2/preview/snapshot/CAS/isolated verification order specified"
+  },
+  "scriptTests": {
+    "passed": 53,
+    "newTests": 9,
+    "elapsedSeconds": 14.05,
+    "environment": "workspace TEMP/TMP/TMPDIR"
+  },
+  "planChecks": {
+    "integrity": true,
+    "guardrailCases": 32,
+    "protectedArchiveFiles": 38,
+    "formalStatePreserved": true
+  },
+  "sourceSha256": {
+    "scripts/taste_tie_contract.py": "b0dff0199b8a0cf269ad696505e4778833da4330078a5a809c4deb9e59357bbc",
+    "scripts/tests/test_taste_tie_contract.py": "a1c086d755b8ffbfce11969262b5d7b22d5f272aaa5a911d08f34f22d9199ea1",
+    "docs/execution-plan/2026-11-07/records/taste-tie-contract-2026-11-11/cases.json": "fd01283e7e4bca57ca01af0ab6e4c56364f5b769ffdd059e5347008021ce9fc9",
+    "docs/execution-plan/2026-11-07/records/taste-tie-contract-2026-11-11/results.json": "6e1a641fced072a4d98b22f6ca9204341c08e367f6b791ccfea2eb25bd8e0661"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "asOf": "2026-11-09",
+  "audit": {
+    "ok": true,
+    "captureWorks": 40,
+    "captureImagesVerified": 40,
+    "pathCorrections": 40,
+    "wikiArtImageFiles": 79,
+    "exampleEmotionCases": 11,
+    "checkedAt": null,
+    "duplicateImageHashGroups": [],
+    "referenceSha256": "416000f684bd66af6ccc694bf91242f07fae2bb7f53ee6cc042bb3f022c6b0b7",
+    "assetsVerified": 125,
+    "warnings": [
+      "Source URLs are syntactically checked, not browsed or fact-checked.",
+      "AI draft; no human approval inferred. WikiArt files are not 79 approved/labelled service works.",
+      "No Yoo Youngkuk exhibition intake; local unique DB/uploads remain unknown/separate."
+    ],
+    "writesToDatabase": false,
+    "approvedWorks": 0
+  },
+  "captureArtists": 36,
+  "capturePrimaryTagCounts": {
+    "landscape": 12,
+    "warm": 4,
+    "people": 14,
+    "abstract": 3,
+    "cool": 4,
+    "light": 2,
+    "vivid": 1
+  },
+  "captureMultiLabelCounts": {
+    "landscape": 18,
+    "people": 19,
+    "light": 7,
+    "cool": 10,
+    "abstract": 7,
+    "warm": 11,
+    "soft": 6,
+    "vivid": 5
+  },
+  "labelsProvenance": "Repository states6team raters/40works, multi-tag majority excluding one primary-only rater; preserve as historical team labels, not expert truth or approval of explanations/rights.",
+  "descriptions": "40 AI draft explanations, checkedAt null, original note says source pages not verified during writing.",
+  "wikiArt": "79image files, not79completed labelled service works",
+  "emotionExamples": {
+    "count": 11,
+    "imagePathsPresent": 0,
+    "scope": "mock text/emotion example set, not Yoo domain validation"
+  },
+  "oldYoo05": {
+    "id": "cap-05",
+    "titleAsRecorded": "산 (〈산〉 연작 중1점)",
+    "yearAsRecorded": "1960~70년대",
+    "artist": "유영국",
+    "labels": [
+      "abstract",
+      "warm"
+    ],
+    "sourceType": "artist biography URL, not individual work record",
+    "visualCandidate": "same motif as current009, reproduction/color/margin/possibleedition differences; not same asset or individual work proof",
+    "transferLabelsAutomatically": false
+  },
+  "decision": "No import into current Yoo exhibition. Keep40/79/11 as separate readonly evaluation/regression sources; optional separate internal testexhibition only if specific UI/all-tag regression requires it. Do not count them as16 extraexhibits.",
+  "databaseWrite": false,
+  "auditScopeNote": "Generic old-material audit warning NoYooIntake describes that tool performing no import, not the current DB; current DB independently checked has16Yoo works."
+}

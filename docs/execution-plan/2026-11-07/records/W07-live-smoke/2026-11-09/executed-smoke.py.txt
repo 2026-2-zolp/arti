@@ -1,0 +1,69 @@
+import os,sys,json,time,uuid,hashlib,io
+sys.path.insert(0,'/app')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from django.test.runner import DiscoverRunner
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
+from rest_framework.test import APIClient
+from arti.models import Exhibition,Artwork,Account,Session
+from arti.serializers import artwork_dto
+from arti import llm
+from urllib.error import HTTPError
+runner=DiscoverRunner(verbosity=0,interactive=False)
+report={'model':settings.OPENAI_MODEL,'scope':'isolated synthetic API smoke; no real exhibition or browser acceptance','steps':[],'outcome':'running','upstreamErrors':[]}
+original_opener=llm.build_opener
+class ObservedOpener:
+ def __init__(self,opener):self.opener=opener
+ def open(self,*args,**kwargs):
+  try:return self.opener.open(*args,**kwargs)
+  except HTTPError as error:
+   # Record status only; never read/log upstream bodies or credential-bearing request objects.
+   report['upstreamErrors'].append({'status':error.code})
+   raise
+llm.build_opener=lambda *a,**k:ObservedOpener(original_opener(*a,**k))
+config=None
+try:
+ config=runner.setup_databases()
+ cache.clear()
+ ex=Exhibition.objects.create(id='smoke-ex',title='합성 시험 전시',start_date='2026-01-01',end_date='2026-12-31',status='running')
+ w=Artwork.objects.create(id='smoke-art',exhibition=ex,title='합성 색면 시험 그림',artist='ARTI 시험자료',year='2026',description='이것은 실제 미술작품이 아닌 연결 시험용 설정이다. 파란 바탕 위에 빨간 삼각형 하나가 있고 아래쪽에 노란 가로선 두 개가 있다. 재료와 작가의 의도에 관한 정보는 제공하지 않는다.',source='팀이 직접 작성한 합성 시험 설정',review_status='approved',tag_status='confirmed',emotion_status='confirmed',tags=['abstract'],analysis={'emotions':{'calm':0.5}})
+ admin=Account.objects.create(login_id='smoke-admin',role='admin',password=make_password('synthetic-only-no-shared-login'))
+ token=uuid.uuid4().hex
+ Session.objects.create(token_hash=hashlib.sha256(token.encode()).hexdigest(),account=admin,expires_at=timezone.now()+timedelta(minutes=10))
+ public=APIClient(HTTP_HOST='localhost');staff=APIClient(HTTP_HOST='localhost');staff.credentials(HTTP_X_ADMIN_TOKEN=token)
+ def call(name,client,path,data):
+  start=time.monotonic();r=client.post(path,data,format='json');body=r.json()
+  safe=json.loads(json.dumps(body,ensure_ascii=False).replace(settings.OPENAI_API_KEY,'[redacted]'))
+  report['steps'].append({'name':name,'status':r.status_code,'seconds':round(time.monotonic()-start,3),'response':safe})
+  print(json.dumps({'step':name,'status':r.status_code,'seconds':report['steps'][-1]['seconds']},ensure_ascii=False),flush=True)
+  if r.status_code!=200:raise RuntimeError('stop_on_failed_step')
+  return body
+ first=call('explanation',public,'/api/artworks/smoke-art/explanation',{})
+ assert first['mode']=='llm'
+ generated=call('summary_and_guide',staff,'/api/admin/artworks/smoke-art/analyze',{'version':w.version})
+ assert generated['summary']['made'] and generated['guide']['made']
+ w.refresh_from_db();assert w.summary_status=='suggested' and w.guide_status=='suggested'
+ hidden=public.get('/api/artworks/smoke-art').json()
+ assert not hidden['summary'] and not hidden['guidedLooking']
+ approved=staff.post('/api/admin/exhibitions/smoke-ex/confirm-ai',{'items':[{'id':w.id,'version':w.version,'fields':['summary','guide']}]},format='json')
+ assert approved.status_code==200
+ w.refresh_from_db();visible=public.get('/api/artworks/smoke-art').json()
+ assert visible['summary'] and visible['guidedLooking']
+ report['reviewBoundary']={'suggestionsHiddenBeforeConfirmation':True,'syntheticConfirmationOnly':True,'confirmedContentVisible':True}
+ entry={'tab':'guided','kind':'guide','questionIndex':0,'contentVersion':w.content_version}
+ question='빨간 삼각형이 파란 바탕보다 앞으로 나오는 것 같아요. 보던 질문에 이어 무엇을 더 살펴보면 좋을까요?'
+ answer=call('docent_from_guide',public,'/api/artworks/smoke-art/ask',{'question':question,'entryContext':entry,'visitId':str(uuid.uuid4()),'history':[]})
+ assert answer['mode']=='llm' and answer['sourceRefs'][0]['kind']=='guide'
+ follow=call('docent_followup',public,'/api/artworks/smoke-art/ask',{'question':'내가 앞서 말한 관찰과 연결해 노란 선 두 개는 어떻게 보면 좋을까요?','entryContext':{'tab':'desc','kind':'summary','contentVersion':w.content_version},'history':[{'role':'user','text':question},{'role':'assistant','text':answer['answer']}]})
+ assert follow['sourceRefs'][0]['kind']=='summary'
+ report['outcome']='transport_and_api_smoke_passed'
+except Exception as e:
+ report['outcome']='stopped';report['failureType']=type(e).__name__
+finally:
+ if config is not None:runner.teardown_databases(config)
+ print('SAFE_REPORT='+json.dumps(report,ensure_ascii=False),flush=True)

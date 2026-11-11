@@ -1,0 +1,95 @@
+{
+  "recordedAt": "2026-11-06",
+  "note": "문서 작성 시작 시 기존 아카이브 파일 해시. 보존 확인용.",
+  "files": [
+    {
+      "path": "docs/project-baseline/2026-11-06/01-context.md",
+      "sha256": "b76cd09f5bc74870427dd23dd5ac6b2019250112e3ae3b69e6658875bc67ba78"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/02-findings.md",
+      "sha256": "f01ab64dcee3f080bf423713a645d04e498af7f3b95d9cc3bceade6288b0a350"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/03-stack-and-decisions.md",
+      "sha256": "ee7610afca383c46068286c095038c845783280a6d5f7593a56f22beb39edd78"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/04-work-plan.md",
+      "sha256": "5692574c7e6850f6a6cf3214755f9549344eb2e29ffac4d1b0d9cc7381b422cc"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/05-verification.md",
+      "sha256": "cd8eb9e8dcc7178c26358ece5e56d4961551a1225376751e7679cef93bfbfd7a"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/06-sources.md",
+      "sha256": "004ee6ac365212e5a4c09aa81d6b57106454391a5594c0afe25eaa59ead5dc0b"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/07-contract-baseline.md",
+      "sha256": "643a10703d9264ffd4a26ef3bb57722eb7dec603e3f4341171b68891028ae76b"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/archive-check.json",
+      "sha256": "ecdf08f5a8fdf5b3f7da6a1c99c30c24398eb8157d79f80cd9ac57797d851a9b"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/plan.json",
+      "sha256": "cae696bdf7c004f218abb97f405f943f0c90bca2c51bdc17178bf2fb13d68430"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/README.md",
+      "sha256": "6b3760ca4d8ff1c529da0b57cb87b3568b6590033ec2dc1da4fc74fe1c012ce4"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/verify_archive.py",
+      "sha256": "b6efb8f7a177887fe979bfcc48bbab1e428727f309391125fdaf3242a74cb0dc"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3e234713f16781029d0cf249818c8196.md",
+      "sha256": "6e74db05713e1a2d92e599479e739b831123cea778382379acaa372f6fea3bee"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3e434713f16780cfa5e9d0b280b3e760.md",
+      "sha256": "bb91c0a46825a1105c2facabf55e3eb6e6338b2ad9c99805c0d9d9fdf52be8b7"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3f034713f16780d39decdc6996c7994c.md",
+      "sha256": "11083c25e8f7956b804fe8ee7769e8a97d8a8967658824cb946934a7fdff2d66"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3fa34713f16780beb95ec4e5879ba25b.md",
+      "sha256": "4eb0a127dc1c58c38f8ba58b1a91ca8b993d992fc43a01f916f0a3c9d81b54cb"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3fb34713f1678122bbf9f2c856b50ce8.md",
+      "sha256": "05fd565708823eefa051e0807401fd7e52a208e34aae4562fad09eba84033c0b"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/3fd34713f16781dfa73cd32ee360112d.md",
+      "sha256": "0f30c3a7996ed9507dcc6098532dbd39559b997c88f281a7198e39398c5ff804"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/40134713f16781128c42daa31409c45b.md",
+      "sha256": "cbee6514b2be94dc33b296b98299dd7ba41777076c10bb95bea2fbf08d12e35b"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/40534713f167815ca209e7cb69599407.md",
+      "sha256": "dea24afe67ddd56b3941ef91a9bd1388e7b22443b6ad665a6a8c76dcd3621680"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/40d34713f16781feb71ed930090ac9b6.md",
+      "sha256": "d4b11667ab6249eef79e5504d50cca200023b053dcb6e9e3d8ba15048bc3fd7f"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/40f34713f16781b7bae8e16a53b63845.md",
+      "sha256": "3c89306c8c17ded184dc2a2f8aa47d0bdb3d65a37c92393295cf8ff5102953ed"
+    },
+    {
+      "path": "docs/project-baseline/2026-11-06/sources/41034713f16781818024c2b48f372311.md",
+      "sha256": "b972213e61b68881d74240532ec18b58589dc39a49a70c87e2d225d5224ff013"
+    }
+  ]
+}
+

@@ -1,0 +1,17 @@
+{
+  "beforeAdapterSha256": "6ed0c4bad71067479031b959282289407b485ab176f61ae3d3baf8b5462c0fa2",
+  "afterAdapterSha256": "14e12a090d76264233fe8e20a2922a19abaf6ef781ace90cb3de2fa455e90c4d",
+  "retestCases": [
+    "Q02",
+    "Q03",
+    "Q08",
+    "Q11"
+  ],
+  "scope": "prompt wording only; no API/schema/model/timeout changes",
+  "reason": [
+    "no unsupported unit",
+    "shorter summary",
+    "explicit observation continuity",
+    "separate fact and interpretation"
+  ]
+}

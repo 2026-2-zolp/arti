@@ -1,0 +1,304 @@
+{
+  "recordedAt": "2026-11-08 KST",
+  "branch": "dev/임준억",
+  "baseline": "ae0e58ebc338c17da6d4d17616fd802f03ba3bb6",
+  "reviewedProductFiles": 42,
+  "allReviewedContentPreserved": true,
+  "note": "Commit organization only; EOL rules may change bytes. Original source-state/runtime logs retained; helper relocation documented separately.",
+  "files": [
+    {
+      "path": ".env.compose.example",
+      "reviewedSha256": "4d39cf38daeeb04cfc401fe6f40147ea8f6e8421ca22d1c518dc21c808b140ef",
+      "currentSha256": "4d39cf38daeeb04cfc401fe6f40147ea8f6e8421ca22d1c518dc21c808b140ef",
+      "canonicalLfSha256": "4d39cf38daeeb04cfc401fe6f40147ea8f6e8421ca22d1c518dc21c808b140ef",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/.dockerignore",
+      "reviewedSha256": "0d2ae475472e7362d1a4e28d2b2be8f776ffe16939a84a070bcea61224357d4f",
+      "currentSha256": "0d2ae475472e7362d1a4e28d2b2be8f776ffe16939a84a070bcea61224357d4f",
+      "canonicalLfSha256": "0d2ae475472e7362d1a4e28d2b2be8f776ffe16939a84a070bcea61224357d4f",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/Dockerfile",
+      "reviewedSha256": "7b6f185e09211842f23accf135c9af7c739c8e00fbf017539cae597357acf10a",
+      "currentSha256": "7b6f185e09211842f23accf135c9af7c739c8e00fbf017539cae597357acf10a",
+      "canonicalLfSha256": "7b6f185e09211842f23accf135c9af7c739c8e00fbf017539cae597357acf10a",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/README.md",
+      "reviewedSha256": "2a102f301dc7dbed5714aa5f6613f87f0a6760e5f2b4e79bb140939c86956d65",
+      "currentSha256": "2a102f301dc7dbed5714aa5f6613f87f0a6760e5f2b4e79bb140939c86956d65",
+      "canonicalLfSha256": "2a102f301dc7dbed5714aa5f6613f87f0a6760e5f2b4e79bb140939c86956d65",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/authentication.py",
+      "reviewedSha256": "449fb5e0890debbea014b2742fca758edbc0d3deb10acb3e71fd1fa347e8b07b",
+      "currentSha256": "449fb5e0890debbea014b2742fca758edbc0d3deb10acb3e71fd1fa347e8b07b",
+      "canonicalLfSha256": "449fb5e0890debbea014b2742fca758edbc0d3deb10acb3e71fd1fa347e8b07b",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/constants.py",
+      "reviewedSha256": "f931759988c64ce5ca8f9aacfc3e1d2ddb7f5c176b3912273dee2935d9cdbda1",
+      "currentSha256": "f931759988c64ce5ca8f9aacfc3e1d2ddb7f5c176b3912273dee2935d9cdbda1",
+      "canonicalLfSha256": "f931759988c64ce5ca8f9aacfc3e1d2ddb7f5c176b3912273dee2935d9cdbda1",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/http.py",
+      "reviewedSha256": "fe2609fa1ca86868ae8fcbec0a573ea4f2a049d4a5b5e387c6767f8f7226cf30",
+      "currentSha256": "fe2609fa1ca86868ae8fcbec0a573ea4f2a049d4a5b5e387c6767f8f7226cf30",
+      "canonicalLfSha256": "fe2609fa1ca86868ae8fcbec0a573ea4f2a049d4a5b5e387c6767f8f7226cf30",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/management/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/management/commands/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/management/commands/bootstrap_admin.py",
+      "reviewedSha256": "d4ae56bba2d16ce837450ebe76e780918b85d52136fff2b66cd47f52b421fca2",
+      "currentSha256": "d4ae56bba2d16ce837450ebe76e780918b85d52136fff2b66cd47f52b421fca2",
+      "canonicalLfSha256": "d4ae56bba2d16ce837450ebe76e780918b85d52136fff2b66cd47f52b421fca2",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/management/commands/load_test_fixture.py",
+      "reviewedSha256": "d0f53ad17f874d75ef067fd3895c76361e23d64cc56eaa11726b142cc3991578",
+      "currentSha256": "d0f53ad17f874d75ef067fd3895c76361e23d64cc56eaa11726b142cc3991578",
+      "canonicalLfSha256": "d0f53ad17f874d75ef067fd3895c76361e23d64cc56eaa11726b142cc3991578",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/migrations/0001_initial.py",
+      "reviewedSha256": "0cf7ad14d0e277e4dbe60a1ee28a1506f432d93ea0d06c5246df85baf1729e98",
+      "currentSha256": "15ef4331a41b51b651a709415eacfb5c26fadcd8febb396925ef6952798f07bf",
+      "canonicalLfSha256": "15ef4331a41b51b651a709415eacfb5c26fadcd8febb396925ef6952798f07bf",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/migrations/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/models.py",
+      "reviewedSha256": "20b5fe142941b7cc0e413b1c8eef6b01e1133c1f7b2a74c0f82ce07ae0eac8af",
+      "currentSha256": "feafc2f7aea539e094d63380c53887ec6ad2f82385e6cd9e9670592f04a142a1",
+      "canonicalLfSha256": "feafc2f7aea539e094d63380c53887ec6ad2f82385e6cd9e9670592f04a142a1",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/recommendations.py",
+      "reviewedSha256": "d1fccbac5749a0d9594a8a5557b6ea3b2999b5e33ad2700298d78e794c43d600",
+      "currentSha256": "d1fccbac5749a0d9594a8a5557b6ea3b2999b5e33ad2700298d78e794c43d600",
+      "canonicalLfSha256": "d1fccbac5749a0d9594a8a5557b6ea3b2999b5e33ad2700298d78e794c43d600",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/serializers.py",
+      "reviewedSha256": "9f78de01b73c4842c166db486295a2320aeef0bb411198b20d08c61995c5d2c6",
+      "currentSha256": "9f78de01b73c4842c166db486295a2320aeef0bb411198b20d08c61995c5d2c6",
+      "canonicalLfSha256": "9f78de01b73c4842c166db486295a2320aeef0bb411198b20d08c61995c5d2c6",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/tests/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/tests/test_foundation.py",
+      "reviewedSha256": "a93b014f77744785b916a2e4a1f406e9459dcf05ca3d30332e1e9adf4f088f2c",
+      "currentSha256": "a93b014f77744785b916a2e4a1f406e9459dcf05ca3d30332e1e9adf4f088f2c",
+      "canonicalLfSha256": "a93b014f77744785b916a2e4a1f406e9459dcf05ca3d30332e1e9adf4f088f2c",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/arti/views.py",
+      "reviewedSha256": "b78dd86bfe673b6e8bcda48ba791e047a984be21c975eb5a27014ebbbf6c1611",
+      "currentSha256": "b78dd86bfe673b6e8bcda48ba791e047a984be21c975eb5a27014ebbbf6c1611",
+      "canonicalLfSha256": "b78dd86bfe673b6e8bcda48ba791e047a984be21c975eb5a27014ebbbf6c1611",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/config/__init__.py",
+      "reviewedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "currentSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonicalLfSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/config/settings.py",
+      "reviewedSha256": "e564f01cbb55ecf12d5c7d1e86914edef3b19b30b1e667c9d7d67de3bdc4f25b",
+      "currentSha256": "e564f01cbb55ecf12d5c7d1e86914edef3b19b30b1e667c9d7d67de3bdc4f25b",
+      "canonicalLfSha256": "e564f01cbb55ecf12d5c7d1e86914edef3b19b30b1e667c9d7d67de3bdc4f25b",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/config/urls.py",
+      "reviewedSha256": "f88eedc3fba4892adbe0924bd382d080095b7238722c4da140dbbbf662e25896",
+      "currentSha256": "f88eedc3fba4892adbe0924bd382d080095b7238722c4da140dbbbf662e25896",
+      "canonicalLfSha256": "f88eedc3fba4892adbe0924bd382d080095b7238722c4da140dbbbf662e25896",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/config/wsgi.py",
+      "reviewedSha256": "c1ed832c2a0786feb5149ed553edb97a0dec3abf91f510bb5ebedf9214833c53",
+      "currentSha256": "c1ed832c2a0786feb5149ed553edb97a0dec3abf91f510bb5ebedf9214833c53",
+      "canonicalLfSha256": "c1ed832c2a0786feb5149ed553edb97a0dec3abf91f510bb5ebedf9214833c53",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/development_fixture.json",
+      "reviewedSha256": "daafa421960a361e98e96b6e7142e68c20d7ea47b759a98b8e6ee35e0815a44a",
+      "currentSha256": "0a65580029cdeff721ec682684a0168fc82281fbb01238f9dc36c81fb1eb7afe",
+      "canonicalLfSha256": "0a65580029cdeff721ec682684a0168fc82281fbb01238f9dc36c81fb1eb7afe",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/manage.py",
+      "reviewedSha256": "baa6a97954281286b9816b799ff1b99041128f2a50a3a1ed9e42b671477d56ed",
+      "currentSha256": "baa6a97954281286b9816b799ff1b99041128f2a50a3a1ed9e42b671477d56ed",
+      "canonicalLfSha256": "baa6a97954281286b9816b799ff1b99041128f2a50a3a1ed9e42b671477d56ed",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/requirements.in",
+      "reviewedSha256": "e9dd22dc38908b2121a84df3c0b7ebef01510e447fd4c2330fa19468f84d705f",
+      "currentSha256": "e9dd22dc38908b2121a84df3c0b7ebef01510e447fd4c2330fa19468f84d705f",
+      "canonicalLfSha256": "e9dd22dc38908b2121a84df3c0b7ebef01510e447fd4c2330fa19468f84d705f",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "backend-django/requirements.lock",
+      "reviewedSha256": "112211f6bf55bacab1fabf13551cd7103b41158527e17160bc5040890dca8d39",
+      "currentSha256": "3acf818fe6e9b1363644ced7ade044696df0a65c9cf74413e4b3afaf8bcc203f",
+      "canonicalLfSha256": "3acf818fe6e9b1363644ced7ade044696df0a65c9cf74413e4b3afaf8bcc203f",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "compose.yaml",
+      "reviewedSha256": "788614322499931c9b9bedaa71d8631e6cdba72df2ac639f7a0a1646fcfbb9e7",
+      "currentSha256": "788614322499931c9b9bedaa71d8631e6cdba72df2ac639f7a0a1646fcfbb9e7",
+      "canonicalLfSha256": "788614322499931c9b9bedaa71d8631e6cdba72df2ac639f7a0a1646fcfbb9e7",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/.dockerignore",
+      "reviewedSha256": "b2b14144c901c47ba035b93d725be73701be46fb69eb9f80c7df8bb6b220cfa6",
+      "currentSha256": "b2b14144c901c47ba035b93d725be73701be46fb69eb9f80c7df8bb6b220cfa6",
+      "canonicalLfSha256": "b2b14144c901c47ba035b93d725be73701be46fb69eb9f80c7df8bb6b220cfa6",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/Dockerfile.dev",
+      "reviewedSha256": "e49c7d4be4042d75966a473cf21c71e52b8f104b66512d478b97d0a980fb1372",
+      "currentSha256": "e49c7d4be4042d75966a473cf21c71e52b8f104b66512d478b97d0a980fb1372",
+      "canonicalLfSha256": "e49c7d4be4042d75966a473cf21c71e52b8f104b66512d478b97d0a980fb1372",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "reviewedSha256": "10a64f584f131a0574f7577e41f1222ffa7fd9a8d4cb512ef44a257c8b732b19",
+      "currentSha256": "47801d935c772dfb1a110b64191b4492a35ecb298711b388ab061d4d35f7b438",
+      "canonicalLfSha256": "47801d935c772dfb1a110b64191b4492a35ecb298711b388ab061d4d35f7b438",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/components/ArtImage.tsx",
+      "reviewedSha256": "0ce9e35368c46471f5feadb7bf8fff1500e66f79d12cedfa123fde352d4b609c",
+      "currentSha256": "ea73f415a7e945aa1c9551e8dfba955d2e9ffe48964497cd6bc62bf3ad0ca4de",
+      "canonicalLfSha256": "ea73f415a7e945aa1c9551e8dfba955d2e9ffe48964497cd6bc62bf3ad0ca4de",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/components/FloorMap.tsx",
+      "reviewedSha256": "b8736479578226368aa78f01c5aa6a826b207a500ac1f3ec6ab8fd212073e7b5",
+      "currentSha256": "7e261d293e134e359eaefcdce829a25039e49080ed3245c188927a6bbd2bcdaf",
+      "canonicalLfSha256": "7e261d293e134e359eaefcdce829a25039e49080ed3245c188927a6bbd2bcdaf",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/lib/useProtectedImage.ts",
+      "reviewedSha256": "0cd2fc1a76bb9609778d8e0d210556f8717603b7e48858cdc2c0a2e6a667f90b",
+      "currentSha256": "0cd2fc1a76bb9609778d8e0d210556f8717603b7e48858cdc2c0a2e6a667f90b",
+      "canonicalLfSha256": "0cd2fc1a76bb9609778d8e0d210556f8717603b7e48858cdc2c0a2e6a667f90b",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A01Login.tsx",
+      "reviewedSha256": "067fa55560e10e87ac078b688eacc0cc32ffcc372d077f4e5fd550977039d179",
+      "currentSha256": "81828e885644ca926669d4efb004bc526ab128425ad5f6553e69b714725b4682",
+      "canonicalLfSha256": "81828e885644ca926669d4efb004bc526ab128425ad5f6553e69b714725b4682",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A02Dashboard.tsx",
+      "reviewedSha256": "2481abb2c62eee262b908d5531baa3614d1cba84668e70e293470a1ce6c8d24f",
+      "currentSha256": "b5a19b329c8d4829362d3077b26ae3ebb42b211aba11f9c07e21381879c9f591",
+      "canonicalLfSha256": "b5a19b329c8d4829362d3077b26ae3ebb42b211aba11f9c07e21381879c9f591",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A03Exhibitions.tsx",
+      "reviewedSha256": "302fc4f59f78745691352472298c8b764edf670a0ee22cd0e3e4837ab5045b88",
+      "currentSha256": "dcfd452049d9c36c86d13ac9cc24dae34d81c3278fd34dffd9895af9359e0f1a",
+      "canonicalLfSha256": "dcfd452049d9c36c86d13ac9cc24dae34d81c3278fd34dffd9895af9359e0f1a",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A04Artworks.tsx",
+      "reviewedSha256": "7a53ff30919cc230548c9d9fed85bf35247a9f0df81de6c31b4f612287a1b136",
+      "currentSha256": "6aa3d1dbe2e733a69dd82fe0ea55d281d9fd56272a2a97cf9fa3511c105c71b8",
+      "canonicalLfSha256": "6aa3d1dbe2e733a69dd82fe0ea55d281d9fd56272a2a97cf9fa3511c105c71b8",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A05Map.tsx",
+      "reviewedSha256": "8896b70dc2c3b217f5cc70ec7cbf90c72e0ae32c5207c189a4151476365ba4a5",
+      "currentSha256": "b63d8314c2f0beb5dd6c034cca98ed654a09189f28c06da41a4bc54ddf7fedf9",
+      "canonicalLfSha256": "b63d8314c2f0beb5dd6c034cca98ed654a09189f28c06da41a4bc54ddf7fedf9",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "frontend/src/pages/admin/A07Reactions.tsx",
+      "reviewedSha256": "45e2edee1ae11c293ac14cd8540ee95c72e43d58c2e777d7f5796a205951e788",
+      "currentSha256": "99ecf274922fe2f9d327598f88d84503e8032151d1c1ae52b91ae2ec804a2eb2",
+      "canonicalLfSha256": "99ecf274922fe2f9d327598f88d84503e8032151d1c1ae52b91ae2ec804a2eb2",
+      "sameContentIgnoringEol": true
+    },
+    {
+      "path": "scripts/init_dev_env.py",
+      "reviewedSha256": "571de6088ff5d6406630f5135f0fe18b44b8243c1ed392c2e9a9f6856989389c",
+      "currentSha256": "571de6088ff5d6406630f5135f0fe18b44b8243c1ed392c2e9a9f6856989389c",
+      "canonicalLfSha256": "571de6088ff5d6406630f5135f0fe18b44b8243c1ed392c2e9a9f6856989389c",
+      "sameContentIgnoringEol": true
+    }
+  ]
+}

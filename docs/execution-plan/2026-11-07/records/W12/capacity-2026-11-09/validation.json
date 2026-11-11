@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "scope": "Local preparation only; no cloud/content/remote CI gates advanced",
+  "checks": [
+    "1024MiB limited-container capacity passed, not full VM/cloud acceptance",
+    "2048MiB limited-container capacity passed, not full VM/cloud acceptance",
+    "Real Nginx/Gunicorn/PG 60s delayed-header budget and disconnect/version protection",
+    "Linux regression commands passed; not remote CI",
+    "Cost subtotal arithmetic, exclusions remain required"
+  ],
+  "costSubtotalsUsd": {
+    "ec2Micro720": "14.91",
+    "ec2Small720": "24.27",
+    "ec2Micro176": "7.84",
+    "ec2Small176": "10.13",
+    "lightsail1GB": "7.13",
+    "lightsail2GB": "12.13"
+  },
+  "selfReviewPersonas": {
+    "senior": "Shared budget/late writes/slot/version covered. Whole infrastructure hard deadline remains open.",
+    "operations": "cgroup v1 metrics complete; OS/credits/backup/cloud not accepted; original data untouched.",
+    "visitor": "Reads during one slow analysis passed. Two AI-occupied sync workers remain unverified.",
+    "teamProfessorExternalEvaluator": "Small-EC2 precedent compared with SQLite/external APIs; no claim of monthly bill or actual human approval."
+  },
+  "next": "Production settings/proxy contract and DB TLS local preparation"
+}

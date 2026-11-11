@@ -1,0 +1,7 @@
+Browser tab: 4, Title: "localhost:5178/api/artworks/fixture-art01", URL: "http://localhost:5178/api/artworks/fixture-art01".
+0 AXWebArea localhost:5178/api/artworks/fixture-art01
+	1 text {"error":"작품 정보를 찾을 수 없어요.","code":"NOT_FOUND","retryable":false,"requestId":"27d210c8-6287-4113-a4b9-41567fcdd51b"}
+	2 container
+		3 checkbox 0
+
+The focused UI element is 0 AXWebArea localhost:5178/api/artworks/fixture-art01

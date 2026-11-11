@@ -1,0 +1,26 @@
+{
+  "paidCalls": 24,
+  "requestedModels": [
+    "gpt-6-luna"
+  ],
+  "upstreamModels": [
+    "gpt-6-luna"
+  ],
+  "usage": {
+    "prompt_tokens": 15607,
+    "completion_tokens": 5242,
+    "total_tokens": 20849
+  },
+  "usdBilled": null,
+  "usageIsNotBillingStatement": true,
+  "baselineSeconds": [
+    2.051,
+    5.908
+  ],
+  "targetedSeconds": [
+    1.897,
+    7.855
+  ],
+  "scope": "Django APIClient route/PG plus real GPT HTTP; not browser/production/user learning effect",
+  "databaseUnchanged": true
+}

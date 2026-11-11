@@ -1,0 +1,100 @@
+{
+  "asOfKST": "2026-11-10",
+  "scope": "general development migration and private candidate registration; no public activation or push",
+  "candidates": "data/intake/2026-11-10-taste-survey/selection.json",
+  "originalDataPreservation": {
+    "beforeCounts": {
+      "Exhibition": 1,
+      "Artwork": 16,
+      "Account": 0,
+      "Session": 0,
+      "Visit": 0,
+      "VisitReaction": 0
+    },
+    "afterCounts": {
+      "Exhibition": 2,
+      "Artwork": 25,
+      "Account": 0,
+      "Session": 0,
+      "Visit": 0,
+      "VisitReaction": 0
+    },
+    "originalRowsUnchanged": true,
+    "originalMediaUnchanged": true,
+    "backupDatabaseRestoreMatchesOriginalRows": true,
+    "backupMediaArchiveMatchesOriginalFiles": true,
+    "backupFiles": {
+      "before-survey.dump": "0bba6eff6a406ab6dbedc33f5ce899aca57988e2f636003e768392b0ffd54026",
+      "before-media.tar": "47fe10718ca9c7551206ca6b871de346a17c467abcf54ec06dffcc9f05f7d258"
+    },
+    "frontendHomeStatus": 200
+  },
+  "runtime": {
+    "poolId": "survey-candidates-20261110",
+    "revision": 1,
+    "active": false,
+    "entries": [
+      "survey-candidate-cap-03",
+      "survey-candidate-cap-06",
+      "survey-candidate-cap-12",
+      "survey-candidate-cap-38",
+      "yyk-demo-004",
+      "survey-candidate-cap-36",
+      "survey-candidate-cap-19",
+      "survey-candidate-cap-28",
+      "survey-candidate-cap-21",
+      "survey-candidate-cap-02"
+    ],
+    "newWorks": 9,
+    "newReviewStatus": "source_check",
+    "newTagStatus": "none",
+    "newShowImage": false,
+    "publicExhibitions": 0,
+    "publicWorks": 0,
+    "readyStatus": 200,
+    "tastePoolReady": false,
+    "privateDetailStatus": 404,
+    "privateImageStatus": 404,
+    "unauthenticatedAdminStatus": 401,
+    "provider": "openai_compatible",
+    "gptCalls": 0
+  },
+  "tests": {
+    "djangoPostgresqlPassed": 115,
+    "newDraftSafetyTest": "registration allowed privately, activation flags/default strict activation rejected, artwork state unchanged",
+    "originalGitMaterialsAudit": "passed; old40 labels/images/descriptions unchanged"
+  },
+  "review": {
+    "technicalSenior": "expected revision and transactional draft registration; unreviewed activation rejected",
+    "visitor": "diverse five pairs, no hypothesis-forced tag, ties remain16/32 and user UI still not ready",
+    "dataOperations": "source/rights/content/tag uncertainty separated; original16 preserved; backups verified by restore",
+    "teamProfessorEvaluator": "candidate proposal and technical checks are not human sign-off, model accuracy or public demonstration readiness",
+    "independence": "same implementer role-based self-review; no independent human approvals"
+  },
+  "openItems": [
+    "human identity/rights/content/tag review for all10",
+    "cap38 low resolution and official access retry; cap21 specific1910 source; cap28 edition; yyk004 prior source access",
+    "raw model distributions and tie/representative-tag comparison",
+    "public activation explicitly deferred; remote push forbidden"
+  ],
+  "privateEvidence": "data/private/survey-dev-20261110 (ignored)",
+  "sourceHashes": {
+    "backend-django/arti/management/commands/configure_taste_survey.py": "c4ac32c2dfa71e3ebb01320a5b13c6c1781672ff62f157586a6fc3704e323269",
+    "backend-django/arti/tests/test_survey.py": "508aa2b5bbffff7ec5284f8934a1442f6e51d92a191a992cfdf3eae0ff9b9e0f",
+    "scripts/verify_survey_candidates.py": "ec7befa8566a7f16298845998687c6ce84365a24a5a6ebbcb4291c5fd2df5b15",
+    "data/intake/2026-11-10-taste-survey/selection.json": "35504759a7dd5af15c84d7a68799b92cfd27e4093e79107d4b767cae442b8654",
+    "data/intake/2026-11-10-taste-survey/pool-manifest.json": "44a8101c1173d8c0c9104908134384fe7c71f750844e5631e5be7039477049e1",
+    "data/intake/2026-11-10-taste-survey/import-manifest.json": "4f80acb3fd6a09497ce9560e4c3b71fe929d4be11f8fef8aa3bb8d6c281dd8ed"
+  },
+  "checks": {
+    "planIntegrity": "passed; protected38 preserved",
+    "guardrails": "32 passed",
+    "originalW02PinnedIntegrity": "passed",
+    "replanOverlay": "passed",
+    "candidateAssetsAndPairs": "10 unique hashes,5 pairs; checked",
+    "backupIgnoredByGit": true
+  },
+  "selectionFinal": false,
+  "externalCandidatesAllowed": true,
+  "userClarification": "Current10 are replaceable comparison draft; no final taste-artwork selection approval"
+}

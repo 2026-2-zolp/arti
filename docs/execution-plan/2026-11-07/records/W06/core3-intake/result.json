@@ -1,0 +1,133 @@
+{
+  "asOf": "2026-11-09 KST",
+  "baseline": "d3a2f76",
+  "scope": "core3 provisional self-review, generic draft intake and private development import only",
+  "project": "arti-dev",
+  "manifestPath": "data/intake/2026-11-09-yoo-youngkuk/core3-manifest.json",
+  "manifestSha256": "87b7ff6a01a91c2dad60328eaf105b209291819790130a8bf947185c241f86fd",
+  "checks": {
+    "dryRunUnchanged": true,
+    "restartPreserved": true,
+    "originalResearchInventoryUnchanged": true,
+    "otherVolumesUntouched": true,
+    "extraPaidCalls": 0
+  },
+  "snapshots": {
+    "before": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 0,
+        "Exhibition": 0,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "logicalDatabaseSha256": "5dd6c6232e42ad5ee3d2f1ff12b9ff05fecd474441a5f725a7a77832d942f3d5",
+      "media": {}
+    },
+    "afterDryRun": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 0,
+        "Exhibition": 0,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "logicalDatabaseSha256": "5dd6c6232e42ad5ee3d2f1ff12b9ff05fecd474441a5f725a7a77832d942f3d5",
+      "media": {}
+    },
+    "afterImport": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 3,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "logicalDatabaseSha256": "a5bac3c4f06f0817ae46128a7775cd67149fd91ccf3df202a5a4d82b55fbdd6f",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f"
+      }
+    },
+    "afterRestart": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 3,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "logicalDatabaseSha256": "a5bac3c4f06f0817ae46128a7775cd67149fd91ccf3df202a5a4d82b55fbdd6f",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f"
+      }
+    }
+  },
+  "apiChecks": {
+    "accountsCreated": 0,
+    "adminApiRead": "in-memory test principal; not real admin login",
+    "adminMedia200": true,
+    "keyConfigured": true,
+    "media": {
+      "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+      "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f"
+    },
+    "privateExhibitions": 1,
+    "privateWorks": 3,
+    "provider": "openai_compatible",
+    "publicExhibitions": 0,
+    "publicMedia404": true,
+    "publicWorks": 0,
+    "reimportBlockedAndUnchanged": true,
+    "requestedModel": "gpt-6-luna",
+    "unreviewedSuggestedPreserved": true
+  },
+  "importResult": {
+    "ok": true,
+    "dryRun": false,
+    "exhibitionId": "ex-yyk-demo-20261109",
+    "works": 3,
+    "imagesVerified": 3,
+    "manifestSha256": "87b7ff6a01a91c2dad60328eaf105b209291819790130a8bf947185c241f86fd",
+    "exhibitionStatus": "draft",
+    "reviewStatus": "source_check",
+    "publicWorks": 0,
+    "accountsImported": 0,
+    "layoutImported": false,
+    "approvalImported": false
+  },
+  "preservation": {
+    "privateLocation": "data/private/yyk-preserve-20261109",
+    "apiStoppedForConsistentBackup": true,
+    "archiveHashes": {
+      "arti.dump": "5b172a6a54918fb90dba4e72f2eb5db453988b6b0c23e8606be42a63e22872bd",
+      "media.tar": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "media-manifest.json": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    "restoreRehearsal": "prior synthetic backup-restore/2026-11-09; this real pre-import dump not separately restored"
+  },
+  "regression": {
+    "initialTests": 77,
+    "afterReviewTests": 78,
+    "passed": true,
+    "systemCheck": true,
+    "schemaChangesDetected": false
+  },
+  "remainingHumanChecks": [
+    "candidate identity confirmation",
+    "source/rights verification",
+    "description/summary/guide approval",
+    "actual or demo layout basis",
+    "remaining13 works",
+    "real tag/emotion/recommendation/U10-U11 full journey"
+  ],
+  "restartTarget": "arti-dev api container; database contents compared, DB container not restarted"
+}

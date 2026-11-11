@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "checks": [
+    "Unique IDs, baseline, and expected coverage",
+    "Task/gate mixed DAG, start and completion prerequisites, review evidence",
+    "Issue closure and conditional PostgreSQL operating choice",
+    "Current issue review, historical snapshot and Git intake boundary",
+    "Local links and document ID coverage",
+    "Persona improvement and scenario traceability",
+    "Original archive and v1 inventory/SHA256 unchanged"
+  ],
+  "tasks": 12,
+  "gates": 10,
+  "criteria": 33,
+  "issues": 37,
+  "localLinks": 106,
+  "protectedFilesPreserved": 38,
+  "errors": [],
+  "scope": "Plan integrity only; no actual service/model/cloud acceptance"
+}

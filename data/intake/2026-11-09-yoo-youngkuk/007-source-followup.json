@@ -1,0 +1,64 @@
+{
+  "asOf": "2026-11-09 KST",
+  "baseline": "afe46ee",
+  "recordId": "yyk-intake-20261109-007",
+  "assetId": "asset-95bf3130e16845b8f1db2fb2",
+  "originalSha256": "157612a2ced162d9ff4790bcbc63e04e0cd328f99abd4311fddb02983160cdad",
+  "previousDecision": "hold_no_identity_source",
+  "currentAssessment": "visual_match_foundation; conditional private intake evidence sufficient, not human approval",
+  "preferredTitleCandidate": "작품 (Work)",
+  "titleVariants": [
+    {
+      "label": "Work",
+      "source": "Yoo Youngkuk Art Foundation work page id68"
+    },
+    {
+      "label": "산",
+      "source": "user-supplied blog screenshot caption; original blog URL not provided"
+    }
+  ],
+  "foundationFacts": {
+    "caption": "Work, 1968, oil on canvas, 136x136cm",
+    "year": "1968",
+    "medium": "oil on canvas",
+    "dimensionsAsPublished": "136x136cm",
+    "sourceUrl": "http://www.yooyoungkuk.org/about/work_view.php?year=1960&id=68&cont2_limit=45",
+    "imageUrl": "http://www.yooyoungkuk.org/upload/work/68-work-1968-oil-on-canvas-136x136cm.jpg",
+    "titlePolicy": "foundation Work as candidate display title; blog 산 retained as source-specific alternate caption",
+    "urlParameterPolicy": "year=1960 is not the displayed creation year; use caption1968. id68 is website record key, not asserted artwork accession."
+  },
+  "visualComparison": {
+    "foundationVsOriginal": "same composition: intersecting central triangles, repeated fine lines on both sides and lower half, upper-right dark diagonal, lower-right signature placement",
+    "blogScreenshotVsOriginal": "same composition with frame/perspective/color reproduction differences",
+    "method": "manual visual comparison, not authentication or pixel identity"
+  },
+  "blogProvenance": {
+    "reportedTitle": "<유영국, 절대와 자유> 전 3부.. 조형실험",
+    "reportedDate": "2017-01-09",
+    "status": "user supplied screenshot and description; original post/date/photo origin not independently retrieved",
+    "caption": "산,1968,캔버스에 유채,개인 소장",
+    "ownershipClaim": "blog caption only; foundation page does not supply ownership confirmation"
+  },
+  "supplementalPdf": {
+    "url": "https://www.mmca.go.kr/upload/exhibition/2016/11/2016110109123096016232.pdf",
+    "checkedPage": 1,
+    "finding": "rendered first face has different red1968 and blue1968 paintings; must not attach their adjacent captions directly to007",
+    "direct007Evidence": false
+  },
+  "evidenceHashes": {
+    "foundation-work68.html": "cfea447693faa21440c22bb4dbbba081a2d56d374e0895010ea2205a8beaf1ea",
+    "foundation-work68.jpg": "2d93f399deaf45b1cbbcd92c767c6e666d340339f8571399fb3462b3c259fe16",
+    "user-blog-screenshot.png": "7d4992a441a60bda130fe960bccdc7e9ff6c899dfdf0d960587f7a7173f1af71",
+    "mmca-2016-leaflet.pdf": "91984928c73998f7a8eb079d8ea6a1e4bd66a0aa693d1ccde0815eb459e3edf2"
+  },
+  "evidenceLocation": "data/private/yyk-007-source-20261109 (ignored)",
+  "remaining": [
+    "human confirmation of title variant/file-work identity",
+    "original acquisition route of delivered07.png still not established",
+    "image reuse/publication permission",
+    "content approval and actual/demo layout/tag/emotion/journey checks"
+  ],
+  "dbChanged": false,
+  "databaseWorks": 15,
+  "eligibleForFollowupPrivateIntake": true
+}

@@ -1,0 +1,19 @@
+import sys,os,json,time,hashlib
+sys.path.insert(0,'/app');os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings')
+import django
+django.setup()
+from django.conf import settings
+from arti import providers
+from arti.http import ContractError
+raw=open('/input/plan.json','rb').read();plan=json.loads(raw)
+results={'requestedModel':settings.OPENAI_MODEL,'planSha256':hashlib.sha256(raw).hexdigest(),'scope':'postfix targeted retest, kept separate from initial12','outputs':[],'usageAndResolvedModel':'not captured'}
+for case in [c for c in plan['cases'] if c['id'] in ('Q06','Q09')]:
+ start=time.monotonic();item={'id':case['id'],'kind':case['kind']}
+ try:
+  value=providers.generate(case['kind'],case['snapshot'],**case['context']);providers.validate(case['kind'],value)
+  item.update(ok=True,value=value)
+ except ContractError as e:item.update(ok=False,status=e.status_code,code=e.contract_code)
+ except Exception as e:item.update(ok=False,errorType=type(e).__name__)
+ item['seconds']=round(time.monotonic()-start,3);results['outputs'].append(item)
+ print(json.dumps({'case':item['id'],'ok':item['ok'],'seconds':item['seconds']},ensure_ascii=False),flush=True)
+print('SAFE_RESULT='+json.dumps(results,ensure_ascii=False).replace(settings.OPENAI_API_KEY,'[redacted]'),flush=True)

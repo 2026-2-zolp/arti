@@ -1,0 +1,15 @@
+{
+  "asOf": "2026-11-08",
+  "automaticChecksPassed": true,
+  "postgresTests": 51,
+  "frontendTests": 13,
+  "typecheckPassed": true,
+  "buildPassed": true,
+  "migrationChanges": false,
+  "composeConfigValid": true,
+  "g4Passed": true,
+  "commitPolicy": "local commit after G4; containing commit recorded by Git and push-readiness document",
+  "preCommitHead": "b1fa10360ea790df3a582d71aa8099cda7e4f717",
+  "remainingForG4": [],
+  "scope": "Git-based intake only; local unique assets preserved for separate handoff; real model, cloud, CI/CD execution and real-device acceptance excluded"
+}

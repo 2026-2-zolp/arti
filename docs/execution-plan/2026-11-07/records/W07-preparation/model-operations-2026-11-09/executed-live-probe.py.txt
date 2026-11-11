@@ -1,0 +1,122 @@
+# 실제 가중치의 로딩·과부하·클라이언트 timeout·중단/재기동을 로컬에서 측정합니다.
+import os,sys,time,json,subprocess,threading,base64,io,urllib.request,urllib.error
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+import psutil
+import importlib.metadata,hashlib
+from PIL import Image
+root=Path.cwd();out=root/'data/private/model-ops-20261109'
+env=os.environ.copy();env.update(ARTI_PRELOAD='false',ARTI_WRITER_ENABLED='false',ARTI_CLIP_MODEL=str(root/'data/private/model-runtime-20261109/clip'),ARTI_NLI_MODEL=str(root/'data/private/model-runtime-20261109/nli'),HF_HUB_OFFLINE='1',OMP_NUM_THREADS='4',MKL_NUM_THREADS='4')
+base='http://127.0.0.1:18062';server=None;stream=None
+report={'python':sys.version.split()[0],'versions':{k:importlib.metadata.version(k) for k in ['torch','transformers','fastapi','uvicorn']},'modelRevisions':json.loads((root/'data/private/model-runtime-20261109/downloads.json').read_text()),'sourceHashes':{f:hashlib.sha256((root/f).read_bytes()).hexdigest() for f in ['ai-service/app/runtime.py','ai-service/app/main.py','ai-service/app/analyzer.py','backend-django/arti/providers.py','backend-django/arti/model_service.py','backend-django/arti/editing.py']},'scope':'single-worker local CPU operations, synthetic inputs only; no DB writes/paid LLM','events':[]};peak=[];done=threading.Event()
+buf=io.BytesIO();Image.new('RGB',(96,96),(40,100,180)).save(buf,format='PNG')
+payload={'description':'파란 면과 노란 원을 비교하는 합성 작품입니다. '+('색면의 경계와 흰 여백을 살펴봅니다. '*20),'imageBase64':base64.b64encode(buf.getvalue()).decode()}
+def call(path,payload=None,timeout=10):
+ t=time.perf_counter()
+ try:
+  req=urllib.request.Request(base+path,data=None if payload is None else json.dumps(payload).encode(),headers={'Content-Type':'application/json'})
+  with urllib.request.urlopen(req,timeout=timeout) as r:return {'status':r.status,'body':json.load(r),'seconds':time.perf_counter()-t}
+ except urllib.error.HTTPError as exc:
+  status=exc.code;retry=exc.headers.get('Retry-After');exc.close()
+  return {'status':status,'retryAfter':retry,'seconds':time.perf_counter()-t}
+ except (TimeoutError,urllib.error.URLError,OSError) as exc:return {'status':'transport_error','errorType':type(exc).__name__,'seconds':time.perf_counter()-t}
+def start():
+ global server,stream
+ stream=(out/'server.log').open('a',encoding='utf-8')
+ server=subprocess.Popen([sys.executable,'-m','uvicorn','app.main:app','--host','127.0.0.1','--port','18062','--workers','1'],cwd=root/'ai-service',env=env,stdout=stream,stderr=stream)
+ for _ in range(200):
+  if call('/health',timeout=1)['status']==200:return
+  if server.poll() is not None:raise RuntimeError('server exited before HTTP startup')
+  time.sleep(.05)
+ raise RuntimeError('HTTP startup deadline')
+def stop():
+ global server,stream
+ if server is not None:
+  try:
+   children=psutil.Process(server.pid).children(recursive=True)
+   for child in children:child.terminate()
+   psutil.wait_procs(children,timeout=3)
+  except psutil.Error:pass
+  server.terminate()
+  try:server.wait(timeout=5)
+  except subprocess.TimeoutExpired:server.kill();server.wait()
+  server=None
+ if stream:stream.close();stream=None
+def wait_ready():
+ t=time.perf_counter()
+ for _ in range(900):
+  r=call('/ready',timeout=1)
+  if r['status']==200:return time.perf_counter()-t
+  time.sleep(.1)
+ raise RuntimeError('model readiness deadline')
+def sample():
+ while not done.wait(.1):
+  try:
+   current=server
+   if current is not None:
+    p=psutil.Process(current.pid);peak.append(sum(x.memory_info().rss for x in [p]+p.children(recursive=True)))
+  except psutil.Error:pass
+thread=threading.Thread(target=sample,daemon=True);thread.start()
+def django_call():
+ code="""import os,sys,json
+os.environ['DJANGO_SETTINGS_MODULE']='config.settings';os.environ['DJANGO_SECRET_KEY']='synthetic-operation-test-secret-at-least-32'
+os.environ['ARTI_MODEL_SERVICE_URL']='http://127.0.0.1:18062';sys.path.insert(0,'backend-django')
+from arti.providers import generate
+from arti.http import ContractError
+cache={}
+try:
+ a=generate('tag',{'description':'검증용 파란 면과 노란 원'},analysis_cache=cache)
+ b=generate('emotion',{'description':'검증용 파란 면과 노란 원'},analysis_cache=cache)
+ print(json.dumps({'ok':True,'tagCount':len(a['scores']),'emotionCount':len(b['emotions'])}))
+except ContractError as e:print(json.dumps({'ok':False,'status':e.status_code,'code':e.contract_code}))
+"""
+ r=subprocess.run([str(root/'backend-django/.venv/Scripts/python.exe'),'-c',code],cwd=root,capture_output=True,text=True,encoding='utf-8',timeout=40)
+ if r.returncode:raise RuntimeError('Django probe failed')
+ return json.loads(r.stdout)
+try:
+ start();initial=call('/ready');assert initial['status']==503
+ cold=call('/analyze',payload);assert cold['status']==503 and cold['seconds']<2
+ second=call('/analyze',payload);assert second['status']==503
+ report['events'].append({'case':'cold_and_loading_requests','initialReady':initial,'first':cold,'second':second,'readyAfterSeconds':wait_ready()})
+ barrier=threading.Barrier(2)
+ def parallel():barrier.wait(timeout=2);return call('/analyze',payload,timeout=30)
+ with ThreadPoolExecutor(2) as pool:
+  futures=[pool.submit(parallel) for _ in range(2)];responses=[f.result(35) for f in futures]
+ assert sorted(r['status'] for r in responses)==[200,429]
+ report['events'].append({'case':'two_concurrent_requests','responses':[{k:v for k,v in r.items() if k!='body'} for r in responses]})
+ timed=call('/analyze',payload,timeout=.02);assert timed['status']=='transport_error'
+ busy=False
+ for _ in range(30):
+  h=call('/health').get('body',{})
+  if h.get('analysisBusy'):busy=True;break
+  time.sleep(.01)
+ assert busy
+ rejected=call('/analyze',payload);assert rejected['status']==429
+ for _ in range(300):
+  if not call('/health').get('body',{}).get('analysisBusy'):break
+  time.sleep(.1)
+ recovered=call('/analyze',payload,timeout=30);assert recovered['status']==200
+ report['events'].append({'case':'caller_timeout_keeps_slot_until_compute_finishes','timeout':timed,'whileBusy':rejected,'afterComplete':{k:v for k,v in recovered.items() if k!='body'}})
+ ok=django_call();assert ok['ok']
+ with ThreadPoolExecutor(1) as pool:
+  pending=pool.submit(django_call)
+  active=False
+  for _ in range(150):
+   if call('/health').get('body',{}).get('analysisBusy'):active=True;break
+   time.sleep(.02)
+  assert active
+  stop();interrupted=pending.result(15)
+ assert not interrupted['ok'] and interrupted['status'] in (502,503)
+ report['events'].append({'case':'process_stop_during_django_inference','analysisWasBusy':active,'djangoResult':interrupted})
+ down=django_call();assert down.get('status')==503
+ start();again=call('/analyze',payload);assert again['status']==503
+ ready=wait_ready();ok_again=django_call();assert ok_again['ok']
+ report['events'].append({'case':'service_stop_restart','djangoBefore':ok,'djangoStopped':down,'restartCold':again,'restartReadySeconds':ready,'djangoAfter':ok_again})
+ report['pass']=True
+except Exception as exc:report.update({'pass':False,'failure':type(exc).__name__+': '+str(exc)})
+finally:
+ done.set();thread.join(2);stop()
+ report['peakServerTreeRssMiB']=max(peak,default=0)/1024**2
+ report['memoryScope']='sampled server launcher+child RSS, excludes callers; local Windows CPU4threads'
+ (out/'live-result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+ print(json.dumps(report,ensure_ascii=False),flush=True)

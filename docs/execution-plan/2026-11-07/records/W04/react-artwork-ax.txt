@@ -1,0 +1,26 @@
+Browser tab: 2, Title: "ARTI", URL: "http://127.0.0.1:5178/exhibitions/fixture-ex01/artwork".
+0 AXWebArea ARTI, URL: 127.0.0.1:5178/exhibitions/fixture-ex01/artwork
+	1 container root
+		2 container
+			3 button 뒤로가기
+			4 heading 1 / 3, Value: 1
+				5 text  /  3
+			6 button 지도 보기
+		7 container
+			8 image 검증용 작품 01
+			9 button 전체 화면
+			10 heading 검증용 작품 01, Value: 2
+				11 text 검증용 작품 01
+			12 text 가상 작가 | 연도 미상 이 작품이 추천된 이유 당신이 고른 '풍경'이 담긴 작품이에요.
+			13 tab group
+				14 tab (selected, settable, boolean) 작품 해설, Value: 1
+				15 tab (selectable, settable, boolean) 관람가이드, Value: 0
+			16 text 실제 전시 자료가 아닌 개발 검증용 원문입니다.
+			17 button 음성 설명 듣기
+			18 button AI에게 질문하기
+			19 text 이 작품, 어땠나요? (선택)
+			20 checkbox Description: 좋아요, Value: 0
+			21 checkbox Description: 별로예요, Value: 0
+		22 button 다음 작품 안내
+
+The focused UI element is 0 AXWebArea ARTI, URL: 127.0.0.1:5178/exhibitions/fixture-ex01/artwork

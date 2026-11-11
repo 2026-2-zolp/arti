@@ -1,0 +1,252 @@
+{
+  "asOf": "2026-11-09 KST",
+  "baseline": "3ff20d6",
+  "scope": "remaining13 provisional self-review and conditional12 private append; not publication approval",
+  "project": "arti-dev",
+  "reviewCounts": {
+    "reviewed": 13,
+    "conditionalPrivateIntake": 12,
+    "held": 1,
+    "catalogueCandidates": 6,
+    "captionCandidates": 2,
+    "motifCandidates": 4
+  },
+  "manifestSha256": "17f61edb5cd345c0c061e6bee8c0f82d56b2a414174f8d5db242c4bbdfd77b31",
+  "reviewSha256": "faa4d8e0a50b84699721ff6749432509abed30f801d30116c50f9577e76149c9",
+  "snapshots": {
+    "before": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 3,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "exhibitions": {
+        "ex-yyk-demo-20261109": {
+          "status": "draft",
+          "subtitle": "[시연 재구성] 핵심3점 비공개 검수용·실제 출품 전시 아님",
+          "version": 1
+        }
+      },
+      "logicalDatabaseSha256": "a5bac3c4f06f0817ae46128a7775cd67149fd91ccf3df202a5a4d82b55fbdd6f",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f"
+      },
+      "workRowSha256": {
+        "yyk-demo-001": "720aa206b25277a853e93466f964e9b77d66eae1323a0ba1ba5eade6cc466431",
+        "yyk-demo-004": "f37b1c24efae16c94723d6358a7cb042868aac9251827a043833aa2b0bf653bf",
+        "yyk-demo-010": "5fdb341b2053caa6295ed3a59be84d4f695d910ccc5c36e641594db0ce93da21"
+      }
+    },
+    "afterDryRun": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 3,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "exhibitions": {
+        "ex-yyk-demo-20261109": {
+          "status": "draft",
+          "subtitle": "[시연 재구성] 핵심3점 비공개 검수용·실제 출품 전시 아님",
+          "version": 1
+        }
+      },
+      "logicalDatabaseSha256": "a5bac3c4f06f0817ae46128a7775cd67149fd91ccf3df202a5a4d82b55fbdd6f",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f"
+      },
+      "workRowSha256": {
+        "yyk-demo-001": "720aa206b25277a853e93466f964e9b77d66eae1323a0ba1ba5eade6cc466431",
+        "yyk-demo-004": "f37b1c24efae16c94723d6358a7cb042868aac9251827a043833aa2b0bf653bf",
+        "yyk-demo-010": "5fdb341b2053caa6295ed3a59be84d4f695d910ccc5c36e641594db0ce93da21"
+      }
+    },
+    "afterAppend": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 15,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "exhibitions": {
+        "ex-yyk-demo-20261109": {
+          "status": "draft",
+          "subtitle": "[시연 재구성] 전달자료 비공개 검수용·실제 출품 전시 아님",
+          "version": 2
+        }
+      },
+      "logicalDatabaseSha256": "46088cd415420c0c7880669f11ceb07a7a1ed17173c9fc0a21a270dab326e476",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-002-38f211760586.png": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+        "yyk-demo-003-16b4d86ea984.png": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-005-e1e0753986d3.png": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+        "yyk-demo-006-0d0e36016efe.png": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+        "yyk-demo-008-7fb8f90cc3d7.png": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+        "yyk-demo-009-a9baea0f449c.png": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+        "yyk-demo-011-358d3a1d61a8.png": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+        "yyk-demo-012-f6846782bc02.png": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+        "yyk-demo-013-bc86050922a0.png": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+        "yyk-demo-014-b728e4b22b48.png": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+        "yyk-demo-015-957f4147897b.png": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+        "yyk-demo-016-02dc51a9d64c.png": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f"
+      },
+      "workRowSha256": {
+        "yyk-demo-001": "720aa206b25277a853e93466f964e9b77d66eae1323a0ba1ba5eade6cc466431",
+        "yyk-demo-002": "1b99ce4f877a81a9d7be5c456f978d1c719a6eb9bf4faf5736be6043cd9d0b64",
+        "yyk-demo-003": "72301e9cf4a683184dc545abce6e730e6e38f4b8070e2622a7b413af66fe85b4",
+        "yyk-demo-004": "f37b1c24efae16c94723d6358a7cb042868aac9251827a043833aa2b0bf653bf",
+        "yyk-demo-005": "8c416121f7b1b1f6547dc976be235406d68893f7dffe3dd20a3a04fe9afd0dea",
+        "yyk-demo-006": "86327d9456015cffbf7f395e4e587268f946bbec88595351bc54185408153192",
+        "yyk-demo-008": "32989625382f447192c269b93ced167ac8f9d2628da5b5ffba9005f33ba12fdc",
+        "yyk-demo-009": "5402433f70cedd92e9a79cd403f733f2954ff0ca829cfabc6d348171c39d104a",
+        "yyk-demo-010": "5fdb341b2053caa6295ed3a59be84d4f695d910ccc5c36e641594db0ce93da21",
+        "yyk-demo-011": "c55f6582bd07e192e6d63ff4fb595c83843b466a7087e8d61b6ae195aa956bb8",
+        "yyk-demo-012": "4021f101a46b079a292998b9b9263b2ea9caf558e7d26f4f9daf93c54f8a3c71",
+        "yyk-demo-013": "f302b04de2f038b8d04f72f96800cb0cb4190a5eef74b234b91a0ebecec7bca6",
+        "yyk-demo-014": "3eb7c314aec8b5cc0a1d52f406e9b882ee9ebd966cbb957ff72a54caa2d23da4",
+        "yyk-demo-015": "4a9625a03b995cd635acac3013ebfc3a967662ef1fa143a008b6f7a7718e970e",
+        "yyk-demo-016": "1a3627e23b95f79140e9eafbcd6ab306026d4448c41a8f84c5211f0f05bbba0f"
+      }
+    },
+    "afterApiRestart": {
+      "counts": {
+        "Account": 0,
+        "Artwork": 15,
+        "Exhibition": 1,
+        "Session": 0,
+        "Visit": 0,
+        "VisitReaction": 0
+      },
+      "exhibitions": {
+        "ex-yyk-demo-20261109": {
+          "status": "draft",
+          "subtitle": "[시연 재구성] 전달자료 비공개 검수용·실제 출품 전시 아님",
+          "version": 2
+        }
+      },
+      "logicalDatabaseSha256": "46088cd415420c0c7880669f11ceb07a7a1ed17173c9fc0a21a270dab326e476",
+      "media": {
+        "yyk-demo-001-5c9e375934ff.png": "5c9e375934ff1c46e35e57854207d346b1f4d24a938c818a4a594e5e3ec71f1a",
+        "yyk-demo-002-38f211760586.png": "38f211760586fbede72ab46a67cb910645f6649fc76583852c92673521c47ac8",
+        "yyk-demo-003-16b4d86ea984.png": "16b4d86ea984170a8c87e47d0b87dd97f943227bd0799236d015652659d967f4",
+        "yyk-demo-004-504ec1961b6b.png": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+        "yyk-demo-005-e1e0753986d3.png": "e1e0753986d3d91c2712cd67e8323c00842c665c0a97549a2a83b248b8704696",
+        "yyk-demo-006-0d0e36016efe.png": "0d0e36016efe3fe246a90f36e280d490adcd6fea6870328bb52fbb6793e1b220",
+        "yyk-demo-008-7fb8f90cc3d7.png": "7fb8f90cc3d7f59f76d1bcf81da3484684730176a3d8db7eca1bc0a2b41bba57",
+        "yyk-demo-009-a9baea0f449c.png": "a9baea0f449c843097eb7741ee20ea8026d3ca4ec562a96636f0ecc5b3fddc77",
+        "yyk-demo-010-6ee82adc2202.png": "6ee82adc22026ec9d45073caf5727ea045c6135cfbde596a97d743630548af8f",
+        "yyk-demo-011-358d3a1d61a8.png": "358d3a1d61a83324ebbef6e64e1a2cccbda92ff30693e94b725ac4074260e4ba",
+        "yyk-demo-012-f6846782bc02.png": "f6846782bc02f4679869bfc9d83200e90fb10d7bdb85f7298147a4c32ce588be",
+        "yyk-demo-013-bc86050922a0.png": "bc86050922a05bf53fc78d5801df0036ad506a0db483baa70998b868f2c7c8c3",
+        "yyk-demo-014-b728e4b22b48.png": "b728e4b22b485f002feb1dbb41d4b164931bdd3b3fbbce0a1d057126c9685849",
+        "yyk-demo-015-957f4147897b.png": "957f4147897babb64e7fab383cc4716476f900c737f92404e7b5025e1271c3ae",
+        "yyk-demo-016-02dc51a9d64c.png": "02dc51a9d64c0d3d0652b4952425504f356de91fdcc34ea85936e65e94598c3f"
+      },
+      "workRowSha256": {
+        "yyk-demo-001": "720aa206b25277a853e93466f964e9b77d66eae1323a0ba1ba5eade6cc466431",
+        "yyk-demo-002": "1b99ce4f877a81a9d7be5c456f978d1c719a6eb9bf4faf5736be6043cd9d0b64",
+        "yyk-demo-003": "72301e9cf4a683184dc545abce6e730e6e38f4b8070e2622a7b413af66fe85b4",
+        "yyk-demo-004": "f37b1c24efae16c94723d6358a7cb042868aac9251827a043833aa2b0bf653bf",
+        "yyk-demo-005": "8c416121f7b1b1f6547dc976be235406d68893f7dffe3dd20a3a04fe9afd0dea",
+        "yyk-demo-006": "86327d9456015cffbf7f395e4e587268f946bbec88595351bc54185408153192",
+        "yyk-demo-008": "32989625382f447192c269b93ced167ac8f9d2628da5b5ffba9005f33ba12fdc",
+        "yyk-demo-009": "5402433f70cedd92e9a79cd403f733f2954ff0ca829cfabc6d348171c39d104a",
+        "yyk-demo-010": "5fdb341b2053caa6295ed3a59be84d4f695d910ccc5c36e641594db0ce93da21",
+        "yyk-demo-011": "c55f6582bd07e192e6d63ff4fb595c83843b466a7087e8d61b6ae195aa956bb8",
+        "yyk-demo-012": "4021f101a46b079a292998b9b9263b2ea9caf558e7d26f4f9daf93c54f8a3c71",
+        "yyk-demo-013": "f302b04de2f038b8d04f72f96800cb0cb4190a5eef74b234b91a0ebecec7bca6",
+        "yyk-demo-014": "3eb7c314aec8b5cc0a1d52f406e9b882ee9ebd966cbb957ff72a54caa2d23da4",
+        "yyk-demo-015": "4a9625a03b995cd635acac3013ebfc3a967662ef1fa143a008b6f7a7718e970e",
+        "yyk-demo-016": "1a3627e23b95f79140e9eafbcd6ab306026d4448c41a8f84c5211f0f05bbba0f"
+      }
+    }
+  },
+  "checks": {
+    "dryRunUnchanged": true,
+    "existing3FullRowsPreserved": true,
+    "existing3MediaPreserved": true,
+    "apiRestartPreserved": true,
+    "held007NotImported": true,
+    "originalInventoryAndCore3ManifestUnchanged": true,
+    "paidModelCalls": 0
+  },
+  "apiChecks": {
+    "adminApiRead": "in-memory test principal; no real account/login created",
+    "adminMedia200": true,
+    "held007Absent": true,
+    "keyConfigured": true,
+    "motif4YearBlankAndCandidateLabel": true,
+    "newWorks": 12,
+    "old3FullRowsAndMediaPreserved": true,
+    "privateExhibitions": 1,
+    "privateWorks": 15,
+    "provider": "openai_compatible",
+    "publicMedia404": true,
+    "publicWorks": 0,
+    "reimportBlockedAndUnchanged": true,
+    "requestedModel": "gpt-6-luna",
+    "suggestedStatesPreserved": true
+  },
+  "importResult": {
+    "ok": true,
+    "dryRun": false,
+    "exhibitionId": "ex-yyk-demo-20261109",
+    "works": 12,
+    "imagesVerified": 12,
+    "manifestSha256": "17f61edb5cd345c0c061e6bee8c0f82d56b2a414174f8d5db242c4bbdfd77b31",
+    "exhibitionStatus": "draft",
+    "exhibitionVersion": 2,
+    "appendToDraft": true,
+    "reviewStatus": "source_check",
+    "publicWorks": 0,
+    "accountsImported": 0,
+    "layoutImported": false,
+    "approvalImported": false
+  },
+  "backup": {
+    "location": "data/private/yyk-expand-preserve-20261109",
+    "scope": "pre-append development DB with3works plus3media; API stopped during snapshot",
+    "archiveHashes": {
+      "arti.dump": "d17125959fd1e8b1be12aecc9d3f44125d52e3b45462ee1ebe7f198d598fd62c",
+      "media.tar": "d997ae4fa2e6f5eb6ecc30900e188040089ad02d16210ee26aea7975febeceb6",
+      "media-manifest.json": "de6c35ade5d7b8283c1875f8f4e5ebdbab5a63191c35675095359d0d65549a67"
+    },
+    "newDumpRestoreExecuted": false,
+    "priorRestoreEvidence": "records/backup-restore/2026-11-09"
+  },
+  "regression": {
+    "initial": {
+      "passed": 83,
+      "seconds": 31.629
+    },
+    "afterSelfReview": {
+      "passed": 83,
+      "seconds": 32.376
+    },
+    "schemaChangesDetected": false,
+    "systemCheck": true,
+    "providerCalls": 0
+  },
+  "limits": [
+    "same-agent persona self-review, not independent approval",
+    "candidate identity and image rights pending for all15",
+    "4motif editions/years unconfirmed; source metadata not transplanted",
+    "007 source/identity unresolved",
+    "admin API via in-memory principal, no actual admin login/browser review",
+    "actual layouts/tags/emotions/pool/recommendation/docent/receipt journey and W06/G5 still pending"
+  ]
+}

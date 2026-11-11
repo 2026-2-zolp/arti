@@ -1,0 +1,77 @@
+{
+  "reviewer": "same implementer, self-review under senior/data-operations/visitor/team-professor-evaluator viewpoints; not independent human assessment",
+  "baselineVerdict": "needs correction despite HTTP12/12 success",
+  "hardFindings": [
+    {
+      "case": "D03-followup",
+      "finding": "질문형으로 선이 흰 공간 안에 있다는 미제공 위치 관계를 전제함",
+      "evidence": "선이 흰 공간 안에서 어디쯤 자리하는지",
+      "sourceLimit": "source says white space on right and red line below; containment is not supplied",
+      "scope": "unsupported visual premise, not an invented artist biography"
+    }
+  ],
+  "scores": {
+    "D01-followup": {
+      "grounding": 2,
+      "adaptation": 1,
+      "continuity": 2,
+      "clarity": 1
+    },
+    "D02-followup": {
+      "grounding": 2,
+      "adaptation": 2,
+      "continuity": 2,
+      "clarity": 2
+    },
+    "D03-followup": {
+      "grounding": 0,
+      "adaptation": 2,
+      "continuity": 2,
+      "clarity": 2
+    },
+    "D04-followup": {
+      "grounding": 2,
+      "adaptation": 1,
+      "continuity": 2,
+      "clarity": 1
+    },
+    "B01": {
+      "grounding": 2,
+      "clarity": 2
+    },
+    "B02": {
+      "grounding": 2,
+      "clarity": 2
+    },
+    "D02-no-context": {
+      "grounding": 2,
+      "clarity": 1
+    },
+    "D03-no-context": {
+      "grounding": 2,
+      "clarity": 1
+    }
+  },
+  "requiredBehaviorPassed": {
+    "D01-followup": false,
+    "D02-followup": true,
+    "D03-followup": false,
+    "D04-followup": false,
+    "B01": true,
+    "B02": true,
+    "D02-no-context": true,
+    "D03-no-context": true
+  },
+  "findings": [
+    {
+      "case": "D01-followup",
+      "why": "용어 정의와 여러 요소 나열을 반복해 쉬운 한 예시로 좁히는 재설명이 약함"
+    },
+    {
+      "case": "D04-followup",
+      "why": "어렵다는 최근 요청 뒤에 명도 고저 표현·수치 부재·묻지 않은 채도까지 더해 부담 증가"
+    }
+  ],
+  "comparison": "With history D02 connects yellow-circle floating; D03 connects actual white-space observation. Without history both acknowledge missing observation. This is one matched synthetic output comparison, not population causal effect.",
+  "action": "Answer-only minimal adaptation/grounding prompt refinement, unchanged model/schema/keys/storage; all affected signal groups plus safety/ablation retested within12 additional calls."
+}

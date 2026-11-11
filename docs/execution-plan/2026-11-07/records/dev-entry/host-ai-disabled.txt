@@ -1,0 +1,22 @@
+Browser tab: 6, Title: "ARTI", URL: "http://localhost:5180/exhibitions/fixture-ex01/artwork/ask".
+0 AXWebArea ARTI, URL: localhost:5180/exhibitions/fixture-ex01/artwork/ask
+	1 container root
+		2 container
+			3 button 뒤로가기
+			4 heading AI에게 질문하기, Value: 1
+				5 text AI에게 질문하기
+		6 container
+			7 image 검증용 작품 01
+			8 text 검증용 작품 01 가상 작가  ·  연도 미상 AI 연결을 준비 중이에요. 잠시 후 다시 시도해 주세요. 작품 해설에서 보던 내용 을 이어서 이야기해요. 아직 말하지 않은 감상은 대신 추측하지 않아요.
+			9 text G4 원문 변경 검증입니다. 실제 작품 자료가 아닌 시험 원문입니다.
+			10 text 작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.
+			11 text 추천 질문
+			12 button 이 작품은 어디부터 보면 좋을까요?
+			13 button 작가는 어떤 사람인가요?
+			14 button 색은 어떤 의미가 있나요?
+			15 button 왜 유명한 작품인가요?
+		16 container
+			17 text field (settable) Description: 질문 입력, Value: 시험 연결을 확인해요
+			18 button 보내기
+
+The focused UI element is 0 AXWebArea ARTI, URL: localhost:5180/exhibitions/fixture-ex01/artwork/ask

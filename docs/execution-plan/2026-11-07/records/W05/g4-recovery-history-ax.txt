@@ -1,0 +1,49 @@
+Browser tab: 1, Title: "ARTI", URL: "http://localhost:5178/receipt/b61d71af62540ac9a493a6b2".
+1 AXWebArea ARTI, URL: localhost:5178/receipt/b61d71af62540ac9a493a6b2
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 아트 영수증, Value: 1
+				6 text 아트 영수증
+		7 container
+			8 heading ARTI 개발 검증 전시, Value: 2
+				9 text ARTI 개발 검증 전시
+			10 container 아트 영수증
+				11 container
+					12 heading ART RECEIPT, Value: 3
+						13 text ART RECEIPT
+					14 text ARTI 개발 검증 전시 가상 전시실
+				15 definition list
+					16 container 관람 날짜
+						17 text 관람 날짜
+					18 text 2026.11.08 (일)
+					19 container 관람 시간
+						20 text 관람 시간
+					21 container
+						22 text 1 분
+				23 definition list
+					24 container 관람 작품
+						25 text 관람 작품
+					26 container
+						27 text 1 점
+					28 container 추천 작품
+						29 text 추천 작품
+					30 container
+						31 text 3 점
+					32 container 선호 표시
+						33 text 선호 표시
+					34 container
+						35 text 1 회
+					36 container 가장 오래 본 작품
+						37 text 가장 오래 본 작품
+					38 text 검증용 작품 01
+				39 text 오늘 본 작품
+				40 content list
+					41 container
+						42 text 1 .  검증용 작품 01 👍
+				43 text 오늘의 취향 키워드 landscape
+				44 text 오늘 본 작품을 기억해두세요.
+			45 button (disabled) 이미지 준비 중…
+		46 button 마이페이지로
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/receipt/b61d71af62540ac9a493a6b2

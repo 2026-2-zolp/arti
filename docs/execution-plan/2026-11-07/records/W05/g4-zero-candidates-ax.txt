@@ -1,0 +1,16 @@
+Browser tab: 1, Title: "ARTI", URL: "http://localhost:5178/exhibitions/fixture-g4-short/recommend".
+1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-g4-short/recommend
+	2 container root
+		3 container
+			4 button 뒤로가기
+			5 heading 추천 작품, Value: 1
+				6 text 추천 작품
+		7 container
+			8 heading 오늘은 이 작품들을 만나보세요, Value: 2
+				9 text 오늘은 이 작품들을 만나보세요
+			10 text 추천 작품을 고르고 있어요… 현재 추천 가능한 작품 중  「풍경」  태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요. 지금 추천할 수 있는 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요. 전시 데이터를 확인해 주세요.
+			11 button 다시 시도
+			12 button 취향 다시 선택
+		13 button (disabled) 2D 지도에서 경로 보기
+
+The focused UI element is 1 AXWebArea ARTI, URL: localhost:5178/exhibitions/fixture-g4-short/recommend
