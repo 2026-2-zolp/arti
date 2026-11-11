@@ -105,7 +105,8 @@ h1, h2, h3, p { margin: 0; }
 .dot-sep { margin: 0 8px; color: var(--muted); }
 .pill-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  border: 0; background: var(--surface-2); border-radius: 12px; padding: 8px 12px; font-size: 14px;
+  border: 0; background: var(--surface-2); border-radius: 12px; padding: 7px 10px; font-size: 13px;
+  white-space: nowrap; flex-shrink: 0;
 }
 
 /* ---------- 버튼 ---------- */
@@ -309,8 +310,9 @@ a.history-card { text-decoration: none; }
 
 /* ---------- U-09 ---------- */
 .route-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; font-size: 14px; }
-.progress-dots { display: flex; gap: 4px; }
-.progress-dots span { width: 18px; height: 4px; border-radius: 2px; background: var(--line); }
+/* 추천 작품 수(3·5·7점)에 따라 칸이 늘어나도 전체 폭은 고정 → 칸 하나가 좁아진다 */
+.progress-dots { display: flex; gap: 4px; width: 112px; }
+.progress-dots span { flex: 1; min-width: 6px; height: 4px; border-radius: 2px; background: var(--line); }
 .progress-dots span.done { background: #bdb7ae; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
@@ -328,8 +330,9 @@ a.history-card { text-decoration: none; }
 
 /* ---------- U-10 ---------- */
 .progress-title { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; font-size: 16px; font-weight: 500; }
-.progress-bars { display: flex; gap: 4px; }
-.progress-bars span { width: 22px; height: 3px; border-radius: 2px; background: var(--line); }
+/* U-10 상단 진행 막대: 전체 폭 고정, 작품 수가 많아지면 칸이 좁아져 '지도 보기' 버튼 자리를 침범하지 않는다 */
+.progress-bars { display: flex; gap: 3px; width: 96px; }
+.progress-bars span { flex: 1; min-width: 6px; height: 3px; border-radius: 2px; background: var(--line); }
 .progress-bars span.on { background: var(--ink); }
 .art-frame { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 .art-frame.fullscreen { position: fixed; inset: 0; z-index: 50; border-radius: 0; background: #111; display: flex; align-items: center; }
@@ -604,3 +607,6 @@ a.history-card { text-decoration: none; }
 .notice-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .notice-body { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }
 .notice-card .btn + .btn { margin-top: 6px; }
+
+/* U-09 경로선 안내: 위 진행 표시·아래 지도와 간격 */
+.route-note { margin: 0 0 12px; }
