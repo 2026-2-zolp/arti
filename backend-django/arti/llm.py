@@ -55,26 +55,32 @@ def safe_artwork(value):
     return {k: value[k] for k in FIELDS if k in value}
 
 
-def generate_text(kind, snapshot, **context):
-    # CLIP/mDeBERTa image/tag/emotion contracts are deliberately separate.
-    if kind not in TASKS:
-        raise ContractError(503, 'AI_UNAVAILABLE', '이 분석 모델은 아직 연결되지 않았어요.', retryable=True)
+def text_connection_settings(kind):
+    """요청과 상태 점검에서 같은 텍스트 연결 설정을 검사합니다."""
     key = settings.OPENAI_API_KEY.strip()
     model = (settings.ARTI_LLM_MODELS.get(kind) or settings.OPENAI_MODEL).strip()
     base = settings.OPENAI_BASE_URL.rstrip('/')
+    parameter = settings.ARTI_LLM_TOKEN_PARAMETER
     try:
-        try:
-            url = urlsplit(base)
-        except ValueError:
-            unavailable()
-        valid_url = (url.scheme == 'https' or (url.scheme == 'http' and url.hostname in ('localhost', '127.0.0.1', '::1')))
-        if not valid_url or not url.hostname or url.username or url.password or url.query or url.fragment:
-            unavailable()
-        if not key or not model or any(c in key for c in '\r\n'):
-            unavailable()
-        parameter = settings.ARTI_LLM_TOKEN_PARAMETER
-        if parameter not in ('max_completion_tokens', 'max_tokens'):
-            unavailable()
+        url = urlsplit(base)
+    except ValueError:
+        unavailable()
+    valid_url = url.scheme == 'https' or (url.scheme == 'http' and url.hostname in ('localhost', '127.0.0.1', '::1'))
+    if not valid_url or not url.hostname or url.username or url.password or url.query or url.fragment:
+        unavailable()
+    if not key or not model or any(c in key for c in '\r\n'):
+        unavailable()
+    if parameter not in ('max_completion_tokens', 'max_tokens'):
+        unavailable()
+    return base, key, model, parameter
+
+
+def generate_text(kind, snapshot, **context):
+    # CLIP·mDeBERTa 분석은 별도 서비스가 처리합니다.
+    if kind not in TASKS:
+        raise ContractError(503, 'AI_UNAVAILABLE', '이 분석 모델은 아직 연결되지 않았어요.', retryable=True)
+    try:
+        base, key, model, parameter = text_connection_settings(kind)
         if kind == 'interpret':
             data = {'artworks': [safe_artwork(w) for w in snapshot.get('artworks', [])],
                     'reactions': snapshot.get('reactions', {}), 'dwell': snapshot.get('dwell', {})}

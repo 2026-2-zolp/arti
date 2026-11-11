@@ -5,6 +5,31 @@ from django.utils import timezone
 from .http import ContractError
 
 
+def configuration_status():
+    """외부 호출 없이 도슨트와 작품 분석의 설정 상태만 반환합니다."""
+    from .llm import text_connection_settings
+    from .model_service import model_service_base
+
+    docent = 'disabled'
+    if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
+        try:
+            text_connection_settings('answer')
+            docent = 'configured'
+        except ContractError:
+            docent = 'invalid'
+    elif settings.ARTI_LLM_PROVIDER != 'disabled':
+        docent = 'invalid'
+
+    analysis = 'disabled'
+    if settings.ARTI_MODEL_SERVICE_URL:
+        try:
+            model_service_base()
+            analysis = 'configured'
+        except ContractError:
+            analysis = 'invalid'
+    return {'docent': docent, 'analysis': analysis}
+
+
 def generate(kind, snapshot, **context):
     if kind in ('tag', 'emotion'):
         if not settings.ARTI_MODEL_SERVICE_URL:

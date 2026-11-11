@@ -15,6 +15,7 @@ from .authentication import IsAdmin
 from .constants import TAGS
 from .http import ContractError
 from .models import Account, Artwork, Exhibition, Session
+from .providers import configuration_status
 from .recommendations import recommend, strength
 from .survey import current_pool
 from .serializers import AdminLoginInput, RecommendInput, artwork_dto, exhibition_dto
@@ -43,7 +44,7 @@ def with_etag(data):
 
 @api_view(['GET'])
 def health(request):
-    return Response({'ok': True, 'service': 'django-api', 'stage': 'W05-development', 'ai': 'not-connected'})
+    return Response({'ok': True, 'service': 'django-api', 'aiConfiguration': configuration_status()})
 
 
 @api_view(['GET'])

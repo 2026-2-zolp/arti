@@ -12,7 +12,7 @@
 - 관리자 비공개 이미지/도면은 /api/admin/uploads를 헤더인증으로 fetch한 뒤 임시objectURL로 표시한다. 토큰을URL에넣거나외부이미지에전송하지않고화면이바뀌면취소/해제한다.
 - POST /api/recommendations는 기존 {exhibitionId,tastes,duration}를 받고 tasteProfile을 선택적으로 검증한다. picks빈도는 서버pool로 재계산, 출처가없는 과거태그는균등가중한다. empty tastes는일반추천0점. saved는 본인서버snapshot만 허용하고 회원 로그인/프로필 저장과 본인 snapshot 재사용을 연결했다.
 - GET /api/exhibitions/:id/taste-pool는 정확히10점5쌍 또는 ready:false다. U05는 서버의 pool/version과 원본 선택·빈도를 전달한다.
-- 상태확인: /api/health는 process/AI미연결 표시, /api/ready는 실제 PostgreSQL과 migration된 테이블 확인.
+- 상태 확인은 `/api/health`에서 API 프로세스와 도슨트·작품 분석 설정(`disabled`, `invalid`, `configured`)을 봅니다. 실제 호출은 격리 작품의 질문·분석 요청으로 확인합니다. `/api/ready`는 PostgreSQL 접속과 필요한 테이블을 확인하며 실패 시 `503 DB_NOT_READY`를 반환합니다.
 - W05 쓰기/회원/영수증과 도슨트 맥락 API를 구현했다. 실제 provider는 W07에서 연결하며 기본 호출은503 AI_UNAVAILABLE다. 비밀번호 재설정/전시 일괄 분석은501 FEATURE_DISABLED다. Express에 숨은 fallback은 없다. 501을 성공/실제AI로 표시하지 않는다.
 
 ## 로컬 실행 — 저장소 루트에서

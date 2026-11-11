@@ -66,7 +66,7 @@ def failure(status=502, code='PROVIDER_ERROR'):
     raise ContractError(status, code, '분석 서비스 응답을 확인해 주세요.', retryable=True)
 
 
-def analyze(snapshot, *, deadline=None):
+def model_service_base():
     base = settings.ARTI_MODEL_SERVICE_URL.rstrip('/')
     try:
         url = urlsplit(base)
@@ -75,6 +75,11 @@ def analyze(snapshot, *, deadline=None):
     # 관리자가 배포 설정한 내부 주소만 사용하며 작품의 URL은 원격에서 가져오지 않습니다.
     if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.query or url.fragment:
         failure(503, 'AI_UNAVAILABLE')
+    return base
+
+
+def analyze(snapshot, *, deadline=None):
+    base = model_service_base()
     payload = {'title': snapshot.get('title', ''), 'description': snapshot.get('description', '')}
     name = snapshot.get('imageFile')
     image_sha256 = None

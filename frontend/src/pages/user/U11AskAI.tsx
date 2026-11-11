@@ -35,6 +35,7 @@ export default function U11AskAI() {
 
   const key = w ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
+  const canAsk = Boolean(w && key && !pending && !contentChanged);
   useEffect(() => {
     generation.current += 1; setPending(false);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
@@ -81,7 +82,7 @@ export default function U11AskAI() {
             placeholder="작품에 대해 궁금한 점을 물어보세요"
             aria-label="질문 입력"
           />
-          <button type="submit" className="send-btn" disabled={!input.trim() || pending || contentChanged} aria-label="보내기">
+          <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
             <Icon name="send" size={20} />
           </button>
         </form>
@@ -119,7 +120,7 @@ export default function U11AskAI() {
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
           {SUGGESTED.map((q) => (
-            <button key={q} className="chip outline" onClick={() => ask(q)} disabled={pending || contentChanged}>
+            <button key={q} className="chip outline" onClick={() => ask(q)} disabled={!canAsk}>
               {q}
             </button>
           ))}
