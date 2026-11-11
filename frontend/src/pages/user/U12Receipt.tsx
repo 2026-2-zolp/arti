@@ -8,7 +8,8 @@ import {useConfirm} from '../../components/Confirmation';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
+import { Icon } from '../../components/Icon';
 import { useAsync } from '../../lib/useAsync';
 import { load, save, remove } from '../../lib/storage';
 import {buildRecord} from '../../lib/receiptPayload';
@@ -48,6 +49,17 @@ function LiveReceipt() {
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
   const [interp, setInterp] = useState<Interpretation | 'failed' | null>(() => load(cacheKey + '.interpretation', null, 'session'));
   const [attempt, setAttempt] = useState(0);
+  /** 로그인 만료로 저장하지 못함 → 다시 저장해도 같은 결과라 '로그인하고 복구하기'만 보여 준다 */
+  const [expired, setExpired] = useState(false);
+  // 실패 안내는 영수증 아래에 생겨 하단 고정 버튼에 가려질 수 있으므로, 생기면 보이는 곳까지 스크롤한다.
+  const saveStatusRef = useRef<HTMLDivElement>(null);
+  const interpCardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (failure) saveStatusRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [failure]);
+  useEffect(() => {
+    if (interp === 'failed') interpCardRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [interp]);
   useEffect(() => {
     if (!data || record) return;
     const value = buildRecord(initial, data[1], data[0]); save(cacheKey, value, 'session'); setRecord(value);
@@ -55,14 +67,18 @@ function LiveReceipt() {
   useEffect(() => {
     if (!record || !initial.user || saved) return;
     let active = true;
-    save(pendingKey, record, 'session'); setBusy(true); setFailure('');
+    save(pendingKey, record, 'session'); setBusy(true); setFailure(''); setExpired(false);
     // Never silently retry a pending member receipt as a guest after token expiry.
-    if (!load('arti.token', null)) { setBusy(false); setFailure('로그인이 만료됐어요. 같은 계정으로 로그인한 뒤 마이페이지에서 미저장 기록을 복구해 주세요.'); return; }
+    if (!load('arti.token', null)) { setBusy(false); setExpired(true); setFailure('로그인이 만료됐어요. 같은 계정으로 로그인한 뒤 마이페이지에서 미저장 기록을 복구해 주세요.'); return; }
     api.saveMemberVisit(record, initial.user.id, () => active && mounted.current && scope.current === initialScope).then(r => {
       if (!active || actor.current !== initial.user?.id) return;
       if (!r.persisted) throw new Error('회원 기록이 저장되지 않았어요.');
       setSaved(true); remove(pendingKey, 'session');
-    }).catch(e => active && setFailure(e instanceof Error ? e.message : '기록 저장에 실패했어요.')).finally(() => active && setBusy(false));
+    }).catch(e => {
+      if (!active) return;
+      if (e instanceof ApiError && e.status === 401) setExpired(true);
+      setFailure(e instanceof Error ? e.message : '기록 저장에 실패했어요.');
+    }).finally(() => active && setBusy(false));
     return () => {active = false;};
   }, [record, initial.user, saved, attempt, pendingKey]);
   const interpret = async () => {
@@ -77,21 +93,79 @@ function LiveReceipt() {
     finally {interpreting.current = false; if (mounted.current && scope.current === initialScope) setInterpretPending(false);}
   };
   const finish = async () => {
-    if (initial.user && !saved && !(await confirmAction('아직 저장되지 않았어요. 현재 탭의 미저장 기록을 남기고 나갈까요? 같은 계정으로 로그인 후 마이페이지에서 재시도할 수 있어요.'))) return;
+    // 영수증을 아예 만들지 못한 경우(전시·작품 불러오기 실패)는 미저장 사본도 없으므로 '남긴다'고 안내하지 않는다. 동작은 같다.
+    const message = record
+      ? '아직 저장되지 않았어요. 현재 탭의 미저장 기록을 남기고 나갈까요? 같은 계정으로 로그인 후 마이페이지에서 재시도할 수 있어요.'
+      : '이번 관람기록은 저장되지 않아요. 나갈까요?';
+    if (initial.user && !saved && !(await confirmAction(message))) return;
     dispatch({type: 'resetVisit'}); navigate(to(), {replace: true});
   };
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
   return <MobileShell screenId="U-12" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
-    <h2>오늘의 관람이 완성됐어요</h2>
-    {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={finish}>나가기</button></p>}
+    <div className="lead center"><h2>오늘의 관람이 완성됐어요</h2></div>
+    {error && (
+      <div className="notice-card is-err" role="alert">
+        <p className="notice-title"><Icon name="alert" size={18} />영수증을 불러오지 못했어요</p>
+        <p className="notice-body">{error}</p>
+        <button className="btn primary block" onClick={reload}>다시 불러오기</button>
+        <button className="btn ghost block" onClick={finish}>나가기</button>
+      </div>
+    )}
     {!record || !data ? (!error && <Spinner />) : <>
       <div ref={captureRef}><Receipt record={record} artworks={data[1]} interpretation={interp && interp !== 'failed' ? interp.text : null} profile={interp && interp !== 'failed' ? interp.emotionProfile : null} /></div>
+
+      {/* 관람기록 저장 상태: 회원은 저장 중 → 저장됨 / 실패(로그인 만료 구분), 비회원은 이 기기에서만 */}
+      <div ref={saveStatusRef} className="above-footer">
+        {!initial.user ? (
+          <p className="save-status is-info" role="status"><Icon name="info" size={18} />이 관람은 이 기기에서만 볼 수 있어요 (서버에 저장되지 않아요)</p>
+        ) : failure && !busy ? (
+          <div className="save-status is-err" role="alert">
+            <p className="save-status-line"><Icon name={expired ? 'lock' : 'alert'} size={18} />{expired ? '로그인이 만료돼 저장하지 못했어요' : '관람기록을 저장하지 못했어요'}</p>
+            {/* 준억님 방식대로 실패 시 '다시 저장'과 '로그인 후 복구'를 항상 둘 다 둔다. 로그인 만료면 복구를 주 버튼으로 */}
+            {expired ? <>
+              <p className="save-status-sub">같은 계정으로 로그인하면 마이페이지에서 이 기록을 복구할 수 있어요.</p>
+              <button className="btn primary block" onClick={() => navigate('/login?redirect=/mypage')}>로그인하고 복구하기</button>
+              <button className="btn outline block" disabled={busy} onClick={() => setAttempt(n => n + 1)}>다시 저장</button>
+            </> : <>
+              <p className="save-status-sub">{failure}</p>
+              <button className="btn primary block" disabled={busy} onClick={() => setAttempt(n => n + 1)}>다시 저장</button>
+              <button className="link-btn" onClick={() => navigate('/login?redirect=/mypage')}>로그인 후 마이페이지에서 복구</button>
+            </>}
+          </div>
+        ) : saved ? (
+          <p className="save-status is-ok" role="status"><Icon name="check" size={18} />관람기록에 저장되었어요</p>
+        ) : busy ? (
+          <p className="save-status is-busy" role="status"><span className="spinner-dot" aria-hidden="true" />관람기록 저장 중…</p>
+        ) : (
+          <p className="save-status is-info" role="status"><Icon name="info" size={18} />아직 관람기록이 저장되지 않았어요</p>
+        )}
+      </div>
+
+      {/* AI 취향 해석: 관람기록 저장과 별개. 회원은 저장된 뒤에만 요청 가능(서버도 저장 전 요청을 거절) */}
+      <section ref={interpCardRef} className={`interp-card above-footer${interp === 'failed' ? ' is-err' : ''}`} aria-label="AI 취향 해석">
+        {interp === 'failed' ? <>
+          <p className="interp-title is-err"><Icon name="alert" size={18} />해석을 가져오지 못했어요</p>
+          <p className="interp-desc" role="alert">{initial.user ? '관람기록은 저장돼 있어요. 해석만 다시 시도할 수 있어요.' : '잠시 후 다시 시도할 수 있어요.'}</p>
+          <button className="btn outline block" disabled={interpretPending} onClick={interpret}>다시 시도</button>
+        </> : <>
+          <p className="interp-title"><Icon name="sparkle" size={18} />AI 취향 해석</p>
+          {interp ? <>
+            {/* 준억님 화면처럼 성공 후에도 다시 요청할 수 있다. 다시 하면 새 해석으로 바뀐다 */}
+            <p className="interp-desc">영수증 안에 해석을 넣었어요. 다시 해석하면 새 내용으로 바뀌어요.</p>
+            <button className="btn outline block" onClick={interpret}>다시 해석하기</button>
+          </> : interpretPending ? (
+            <p className="interp-desc"><span className="spinner-dot" aria-hidden="true" />해석하는 중…</p>
+          ) : initial.user && !saved ? (
+            <p className="interp-desc">관람기록이 저장되면 볼 수 있어요.</p>
+          ) : <>
+            <p className="interp-desc">오늘 본 작품으로 내 취향을 풀어 드려요.</p>
+            <button className="btn outline block" onClick={interpret}>취향 해석 보기</button>
+          </>}
+        </>}
+      </section>
+
       <ReceiptImageSave targetRef={captureRef} ready fileName={receiptFileName(record.date)} />
-      {initial.user ? <p role="status">{busy ? '관람기록 저장 중…' : saved ? '관람기록에 저장되었어요.' : '아직 관람기록이 저장되지 않았어요.'}</p> : <p>비회원 기록은 서버에 저장하지 않아요. 이 기기의 현재 관람에서만 확인할 수 있어요.</p>}
-      {failure && <p className="error-text" role="alert">{failure}<button disabled={busy} onClick={() => setAttempt(n => n+1)}>저장 재시도</button><button onClick={() => navigate('/login?redirect=/mypage')}>로그인 후 미저장 기록 복구</button></p>}
-      <button disabled={busy || interpretPending || (!!initial.user && !saved)} onClick={interpret}>취향 해석 {interp === 'failed' ? '다시 시도' : '보기'}</button>
-      {interp === 'failed' && <p>해석을 가져오지 못했어요. 관람기록 저장과는 별개이며 다시 시도할 수 있어요.</p>}
     </>}
   </MobileShell>;
 }

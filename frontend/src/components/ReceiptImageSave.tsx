@@ -6,6 +6,7 @@
  * - 이미지는 브라우저 안에서만 만들고 서버로 보내지 않는다.
  */
 import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { Icon } from './Icon';
 
 type Status = 'waiting' | 'making' | 'ready' | 'failed';
 
@@ -233,22 +234,26 @@ export function ReceiptImageSave({
   };
 
   const label = status === 'failed' ? '다시 시도' : status === 'ready' ? '이미지 저장·공유' : '이미지 준비 중…';
+  // 저장 완료는 버튼 글자를 3초 동안 바꿔서 알린다 (아래에 문구를 띄우면 하단 고정 버튼에 가려질 수 있음)
+  const done = !!note && status !== 'failed';
 
   return (
     <>
-      <button
-        type="button"
-        className="btn outline block mt-12"
-        onClick={onClick}
-        disabled={status === 'waiting' || status === 'making'}
-      >
-        {label}
-      </button>
-      {note && (
-        <p className={`center small mt-12 ${status === 'failed' ? 'error-text' : 'muted'}`} role="status">
+      {/* 실패 문구는 버튼 위에 둬서 가려지지 않게 한다 */}
+      {note && status === 'failed' && (
+        <p className="center error-text mt-12" role="alert">
           {note}
         </p>
       )}
+      <button
+        type="button"
+        className={`btn outline block mt-12${done ? ' is-done' : ''}`}
+        onClick={onClick}
+        disabled={status === 'waiting' || status === 'making'}
+      >
+        {done ? <><Icon name="check" size={18} />{note}</> : label}
+      </button>
+      {done && <span className="sr-only" role="status">{note}</span>}
 
       {previewUrl && (
         <div className="modal-backdrop" onClick={() => setPreviewUrl(null)}>

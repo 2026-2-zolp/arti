@@ -21,6 +21,10 @@ const paths = {
   user: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0',
   plus: 'M12 5v14M5 12h14',
   search: 'M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4',
+  alert: 'M12 4l9 16H3zM12 10v4M12 17h.01',
+  info: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v5M12 8h.01',
+  lock: 'M6 11h12v9H6zM9 11V8a3 3 0 016 0v3',
+  sparkle: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z',
 } as const;
 
 export type IconName = keyof typeof paths;

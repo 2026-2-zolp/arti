@@ -100,6 +100,8 @@ export default function U09Route() {
         </div>
       </div>
 
+      {/* 경로선은 실제 통로·이동 시간이 아님을 알린다 (준억님 10955a9의 의도 유지, 문구만 짧게) */}
+      <p className="muted small">선은 관람 순서를 이은 거예요. 실제 길과 다를 수 있어요.</p>
       <div className="map-card">
         <FloorMap
           exhibition={ex}

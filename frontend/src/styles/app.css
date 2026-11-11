@@ -93,6 +93,8 @@ h1, h2, h3, p { margin: 0; }
   padding: 12px 24px calc(16px + env(safe-area-inset-bottom));
   background: linear-gradient(to top, var(--bg) 75%, transparent);
 }
+/* 하단 고정 버튼(m-footer) 위로 스크롤되도록 여유를 둔다 */
+.above-footer { scroll-margin-bottom: 120px; }
 .footnote { text-align: center; font-size: 13px; color: var(--muted); margin-top: 10px; }
 
 .icon-btn { border: 0; background: none; padding: 6px; border-radius: 10px; display: inline-flex; }
@@ -577,3 +579,28 @@ a.history-card { text-decoration: none; }
 .confirm-card { width: min(100%, 440px); padding: 24px; border-radius: 16px; background: var(--surface, #fff); color: var(--text, #222); box-shadow: 0 16px 48px rgb(0 0 0 / 20%); }
 .confirm-card h2 { margin: 0 0 16px; font-size: 20px; }
 .confirm-card p { margin: 0 0 24px; line-height: 1.65; white-space: pre-wrap; }
+
+/* ===== U-12 영수증: 저장 상태 줄 · AI 취향 해석 칸 · 안내 카드 ===== */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.save-status { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+.save-status.is-busy, .save-status.is-info { background: var(--surface-2); color: var(--ink-2); }
+.save-status.is-ok { background: #e8f4ee; color: var(--ok); }
+.save-status.is-ok .link-btn.inline { color: var(--ok); font-size: 14px; }
+.save-status.is-err { display: block; background: #fdecea; color: var(--danger); }
+.save-status.is-err .btn { margin-top: 12px; }
+.save-status.is-err .link-btn { display: block; margin: 12px auto 0; color: var(--danger); font-size: 13px; }
+.save-status-line { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.save-status-sub { margin-top: 4px; font-size: 13px; }
+.save-status svg, .interp-title svg, .notice-title svg { flex-shrink: 0; }
+.interp-card { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.interp-card.is-err { border-color: #f1b8b2; }
+.interp-title { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+.interp-title.is-err { color: var(--danger); }
+.interp-desc { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.interp-card .btn { margin-top: 12px; }
+.btn.outline.is-done { color: var(--ok); border-color: #b9dcc8; gap: 6px; }
+.notice-card { margin-top: 16px; padding: 18px 16px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+.notice-card.is-err .notice-title { color: var(--danger); }
+.notice-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.notice-body { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }
+.notice-card .btn + .btn { margin-top: 6px; }
