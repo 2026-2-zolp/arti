@@ -35,4 +35,4 @@ actionlint 첫 검사에서 job env의 runner.temp context 사용 오류를 발�
 
 현재 열린 대상 PR은 없다. 이번 요청대로 브랜치 push와 실제 Actions를 검증했고, PR 생성·main 병합·브랜치 보호 변경은 하지 않았다. AC07이 요구한 PR 이벤트와 required-check 적용 여부는 별도 확인 대상으로 남긴다. 따라서 W11 in_progress·AC07/GCI not_run을 유지하되 원격 push실행 성공은 별도 사실로 기록한다. GPT 키 삽입/실검증·확장·하네스는 사용자 결정에 따라 추후 함께 논의한다.
 
-[검사 요약](validation-summary.json), [CI/CD 검토](../../../../operations/CI-CD_적용검토.md), [최종 검토/원격 기록](../../../../작업기록/2026-11-08_최종검토와원격CI검증.md).
+[검사 요약](validation-summary.json), [CI/CD 검토](../../../../operations/CI-CD_적용검토.md), [최종 검토/원격 기록](../../../../작업기록/일지/2026-11-08_개발환경과CI.md#ci-도입과-원격-실행).

@@ -164,6 +164,6 @@ flowchart LR
 
 후속: [CI workflow](.github/workflows/ci.yml)를 도입했고 실제 push 실행4job 성공을 확인했습니다. [서버 AI 설정](docs/operations/AI_설정과모델선택.md)은 기본 비활성·키 미설정이며 실제 모델 품질 검증은 남아 있습니다.
 
-원격 CI 첫 성공: [3750e13 / ARTI CI](https://github.com/2026-2-zolp/arti/actions/runs/42448758269). 프론트13·Django/PG63·fake모델17·계획계약 모두 통과했습니다. [원격 실행 기록](docs/작업기록/2026-11-08_최종검토와원격CI검증.md).
+원격 CI 첫 성공: [3750e13 / ARTI CI](https://github.com/2026-2-zolp/arti/actions/runs/42448758269). 프론트13·Django/PG63·fake모델17·계획계약 모두 통과했습니다. [원격 실행 기록](docs/작업기록/일지/2026-11-08_개발환경과CI.md#ci-도입과-원격-실행).
 
 현재 구조·보존 원본·자료 복원 경계는 [legacy 의존 정리](docs/operations/현재구조와legacy의존.md), Git 자료 점검은 [참조자료 정책](data/reference/git-captures/README.md)을 따릅니다.
