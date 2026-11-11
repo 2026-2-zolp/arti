@@ -74,8 +74,6 @@ export default function U03Login() {
           회원가입
         </button>
       </div>
-
-      <p className="muted">가입한 계정으로 로그인해 주세요. 기본 데모 계정은 제공하지 않습니다.</p>
     </MobileShell>
   );
 }

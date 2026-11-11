@@ -279,7 +279,7 @@ export default function U10Artwork() {
                     <p>{w.summary}</p>
                   </>
                 ) : (
-                  <p ref={descRef} className={expanded ? '' : 'clamp-3'}>
+                  <p ref={descRef} className={expanded ? 'pre-line' : 'pre-line clamp-3'}>
                     {w.description}
                   </p>
                 )}
