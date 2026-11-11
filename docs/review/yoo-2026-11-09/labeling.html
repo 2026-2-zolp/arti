@@ -9,8 +9,8 @@
 <section><label>검수자 별칭 <input id="alias" placeholder="예: R01" maxlength="24" pattern="[A-Za-z0-9_-]+"></label>
 <label><input id="test" type="checkbox">내부 동작 시험 · 실제 검수로 집계하지 않음</label>
 <p><label>이미지 선택 <input id="files" type="file" multiple accept="image/*"></label></p>
-<p class="muted">전달받은 16점 이미지를 선택하세요. 파일 SHA-256이 등록된 자료와 일치해야 열립니다. 서버 전송·자동 저장은 없으며, 창을 닫기 전에 JSON을 내려받으세요.</p>
-<p id="status" role="status">이미지 0/16점 준비 · 라벨 0/16점 완료</p><p id="error" role="alert"></p></section>
+<p class="muted">전달받은 이미지를 모두 선택하세요. 파일 SHA-256이 등록된 자료와 일치해야 열립니다. 서버 전송·자동 저장은 없으며, 창을 닫기 전에 JSON을 내려받으세요.</p>
+<p id="status" role="status">이미지 준비 중</p><p id="error" role="alert"></p></section>
 <details><summary>판단 기준 먼저 읽기 · 검토안 v1</summary><ul>
 <li>풍경: 자연/환경 장면. 산 모양이 보인다는 이유만으로 반드시 풍경은 아닙니다. 추상과 동시 선택할 수 있습니다.</li>
 <li>인물: 사람이 주요 시각 요소인지 확인합니다.</li><li>추상: 형태·선·색의 비재현적 구성. 풍경과 배타적이지 않습니다.</li>
@@ -30,13 +30,13 @@ const order=manifest.items.map(x=>x.id);for(let i=order.length-1;i>0;i--){const 
 const answers=Object.fromEntries(order.map(id=>[id,{tags:Object.fromEntries(Object.keys(tags).map(k=>[k,null])),emotionReviewed:false,emotions:[]} ]));
 const images=new Map();let current=0;
 function complete(id){return images.has(id)&&Object.values(answers[id].tags).every(v=>v!==null);}
-function render(){const id=order[current],a=answers[id];$('work').textContent=`${current+1}/16 · ${id}`;$('image').replaceChildren();
-if(images.has(id)){const im=document.createElement('img');im.src=images.get(id);im.alt=id+' 검토 이미지';$('image').append(im);}else $('image').textContent='이 작품의 검증된 이미지가 아직 없습니다.';
+function render(){const id=order[current],a=answers[id];$('work').textContent=`${current+1}/${order.length}`;$('image').replaceChildren();
+if(images.has(id)){const im=document.createElement('img');im.src=images.get(id);im.alt='검토 이미지 '+(current+1);$('image').append(im);}else $('image').textContent='이 작품의 검증된 이미지가 아직 없습니다.';
 $('tags').replaceChildren();for(const [key,title] of Object.entries(tags)){const f=document.createElement('fieldset');const l=document.createElement('legend');l.textContent=title;f.append(l);
 for(const [value,label] of [['yes','해당함'],['no','해당하지 않음'],['unsure','모르겠음']]){const wrapper=document.createElement('label'),input=document.createElement('input');input.type='radio';input.name=key;input.value=value;input.checked=a.tags[key]===value;input.disabled=!images.has(id);input.onchange=()=>{a.tags[key]=value;status();};wrapper.append(input,document.createTextNode(label));f.append(wrapper);}$('tags').append(f);}
 $('emotionReviewed').checked=a.emotionReviewed;$('emotionReviewed').disabled=!images.has(id);$('emotionReviewed').onchange=()=>{a.emotionReviewed=$('emotionReviewed').checked;render();};$('emotions').replaceChildren();for(const [key,label] of Object.entries(emotions)){const w=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.checked=a.emotions.includes(key);i.disabled=!a.emotionReviewed;i.onchange=()=>{a.emotions=i.checked?[...a.emotions,key]:a.emotions.filter(k=>k!==key);};w.append(i,document.createTextNode(label));$('emotions').append(w);}
-$('prev').disabled=current===0;$('next').disabled=current===15;status();}
-function status(){$('status').textContent=`이미지 ${images.size}/16점 준비 · 라벨 ${order.filter(complete).length}/16점 완료`;}
+$('prev').disabled=current===0;$('next').disabled=current===order.length-1;status();}
+function status(){$('status').textContent=`이미지 ${images.size}/${order.length}점 준비 · 라벨 ${order.filter(complete).length}/${order.length}점 완료`;}
 $('prev').onclick=()=>{current--;render();};$('next').onclick=()=>{current++;render();};
 $('files').onchange=async()=>{const files=[...$('files').files];$('files').disabled=true;$('error').textContent='';let rejected=0;try{for(const f of files){const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('');const row=manifest.items.find(i=>i.sha256===hash);if(!row){rejected++;continue;}if(images.has(row.id))URL.revokeObjectURL(images.get(row.id));images.set(row.id,URL.createObjectURL(f));}if(rejected)$('error').textContent=`등록 자료와 해시가 다른 파일 ${rejected}개를 제외했습니다.`;}catch(e){$('error').textContent='파일 확인 실패. 지원 브라우저에서 원본 파일을 다시 선택해 주세요.';}finally{$('files').disabled=false;render();}};
 $('download').onclick=()=>{const alias=$('alias').value.trim();if(!/^[A-Za-z0-9_-]{1,24}$/.test(alias)){$('error').textContent='검수자 별칭은 영문·숫자·밑줄·하이픈 1~24자로 입력하세요.';return;}const result={format:'arti-independent-labels',version:1,manifestDigest:manifest.digest,tagDefinitionVersion:manifest.tagDefinitionVersion,reviewerAlias:alias,forTesting:$('test').checked,createdAt:new Date().toISOString(),sampleOrder:order,completeCount:order.filter(complete).length,status:order.every(complete)?'submitted':'draft',items:manifest.items.map(i=>({id:i.id,imageSha256:i.sha256,imageVerified:images.has(i.id),tags:answers[i.id].tags,emotionReviewed:answers[i.id].emotionReviewed,emotions:answers[i.id].emotionReviewed?answers[i.id].emotions:[]}))};const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='arti-labels-'+alias+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
