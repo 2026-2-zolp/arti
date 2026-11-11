@@ -151,7 +151,8 @@ def build_pack(matrix, output):
     """외부 요청 없이 해시가 맞는 원본을 포함한 비공개 HTML을 만듭니다. 응답 파일은 덮어쓰지 않습니다."""
     manifest, mapping = make_manifest(matrix)
     output = output.resolve()
-    if not output.is_relative_to((ROOT / 'data/private').resolve()) or output.exists():
+    private_root = (ROOT / 'data/private').resolve()
+    if output == private_root or not output.is_relative_to(private_root) or output.exists():
         raise ValueError('new output directory under data/private required')
     images = {}
     inverse = {v: k for k, v in mapping['items'].items()}
