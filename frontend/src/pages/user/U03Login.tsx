@@ -38,7 +38,7 @@ export default function U03Login() {
   };
 
   return (
-    <MobileShell screenId="U-03" title="로그인">
+    <MobileShell screenId="U-03">
       <Lead title="다시 오셨군요" desc="로그인은 선택사항이에요. 저장된 취향과 관람기록을 이어서 쓸 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>

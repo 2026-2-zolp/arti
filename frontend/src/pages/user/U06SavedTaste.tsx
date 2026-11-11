@@ -32,7 +32,6 @@ export default function U06SavedTaste() {
   return (
     <MobileShell
       screenId="U-06"
-      title="저장된 취향"
       back={to('/entry')}
       footer={
         <div className="stack gap-10">

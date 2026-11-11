@@ -55,7 +55,7 @@ export default function U04Signup() {
   const allChecked = terms.service && terms.privacy;
 
   return (
-    <MobileShell screenId="U-04" title="회원가입">
+    <MobileShell screenId="U-04">
       <Lead title="취향과 기록을 저장해요" desc="다음 관람에서도 내 취향으로 바로 추천받을 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>

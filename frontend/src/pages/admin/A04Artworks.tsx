@@ -105,7 +105,7 @@ export function ArtworkList() {
           </>
         }
       />
-      {error && <p role="alert">{error}<button onClick={reload}>다시 조회</button></p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 조회</button></p>}
       {aiMsg && <p className={aiMsg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{aiMsg.text}{aiMsg.type === 'err' && <button onClick={() => {setReviewed([]); reload();}}>최신 자료 다시 조회</button>}</p>}
       <div className="a-filters">
         <select value={exFilter} onChange={(e) => setFilter('exhibition', e.target.value)} aria-label="전시 필터">

@@ -21,7 +21,7 @@ export default function U02Entry() {
   };
 
   return (
-    <MobileShell screenId="U-02" title="시작 방법 선택" back={to()}>
+    <MobileShell screenId="U-02" back={to()}>
       <Lead title="어떻게 시작할까요?" desc="로그인하지 않아도 추천·지도·작품 감상을 모두 이용할 수 있어요." />
 
       <ul className="benefit-list">

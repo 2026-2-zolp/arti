@@ -99,8 +99,8 @@ export default function U11AskAI() {
         </div>
       )}
 
-      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
-      {failure && <p role="alert">{failure}</p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {failure && <p className="error-text" role="alert">{failure}</p>}
       {reading?.entry && <p className="muted">{reading.entry.tab === 'guided' ? '관람가이드에서 보던 질문' : '작품 해설에서 보던 내용'}을 이어서 이야기해요. 아직 말하지 않은 감상은 대신 추측하지 않아요.<br />{reading.entry.kind === 'guide' ? w?.guidedLooking[reading.entry.questionIndex ?? 0] : reading.entry.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[reading.entry.questionIndex ?? 0] : reading.entry.kind === 'summary' ? w?.summary : w?.description}</p>}
       <div className="chat-log" aria-live="polite">
         {messages.length === 0 && (

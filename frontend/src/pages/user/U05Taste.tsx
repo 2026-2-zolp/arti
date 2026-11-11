@@ -97,7 +97,6 @@ export default function U05Taste() {
   return (
     <MobileShell
       screenId="U-05"
-      title="취향 파악"
       right={
         step > 0 || result ? (
           <button type="button" className="text-btn" onClick={undo}>
@@ -120,8 +119,8 @@ export default function U05Taste() {
       )}
 
       {loading && <Spinner label="작품을 불러오는 중…" />}
-      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
-      {saveError && <p role="alert">{saveError}<button onClick={() => navigate(to('/time'))}>계정 저장 없이 계속</button><button onClick={confirm}>저장 재시도</button></p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {saveError && <p className="error-text" role="alert">{saveError}<button onClick={() => navigate(to('/time'))}>계정 저장 없이 계속</button><button onClick={confirm}>저장 재시도</button></p>}
       {!loading && !error && pairs.length === 0 && (
         <p className="muted">취향 선택용 작품 10점이 아직 준비되지 않았어요. 승인된 이미지와 태그를 확인하고 다시 시도해 주세요.<button onClick={reload}>다시 확인</button><button onClick={() => navigate(to(state.user?.tastes.length ? '/taste/saved' : '/entry'))}>이전으로</button></p>
       )}
@@ -172,7 +171,7 @@ export default function U05Taste() {
                   disabled={picked !== null}
                   onClick={() => choose(w.id)}
                 >
-                  <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={16 / 9} />
+                  <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={5 / 2} />
                   <span className="duel-title">{w.title}</span>
                   <span className="muted small">
                     {w.artist}

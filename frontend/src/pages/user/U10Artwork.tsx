@@ -210,7 +210,7 @@ export default function U10Artwork() {
         </div>
       }
     >
-      {error ? <p role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={() => navigate(to('/route'))}>지도로 돌아가기</button></p> : loading || !w ? (
+      {error ? <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={() => navigate(to('/route'))}>지도로 돌아가기</button></p> : loading || !w ? (
         <Spinner />
       ) : (
         <>

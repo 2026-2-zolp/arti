@@ -82,14 +82,14 @@ function LiveReceipt() {
   };
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
-  return <MobileShell screenId="U-12" title="아트 영수증" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
+  return <MobileShell screenId="U-12" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
     <h2>오늘의 관람이 완성됐어요</h2>
-    {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={finish}>나가기</button></p>}
+    {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={finish}>나가기</button></p>}
     {!record || !data ? (!error && <Spinner />) : <>
       <div ref={captureRef}><Receipt record={record} artworks={data[1]} interpretation={interp && interp !== 'failed' ? interp.text : null} profile={interp && interp !== 'failed' ? interp.emotionProfile : null} /></div>
       <ReceiptImageSave targetRef={captureRef} ready fileName={receiptFileName(record.date)} />
       {initial.user ? <p role="status">{busy ? '관람기록 저장 중…' : saved ? '관람기록에 저장되었어요.' : '아직 관람기록이 저장되지 않았어요.'}</p> : <p>비회원 기록은 서버에 저장하지 않아요. 이 기기의 현재 관람에서만 확인할 수 있어요.</p>}
-      {failure && <p role="alert">{failure}<button disabled={busy} onClick={() => setAttempt(n => n+1)}>저장 재시도</button><button onClick={() => navigate('/login?redirect=/mypage')}>로그인 후 미저장 기록 복구</button></p>}
+      {failure && <p className="error-text" role="alert">{failure}<button disabled={busy} onClick={() => setAttempt(n => n+1)}>저장 재시도</button><button onClick={() => navigate('/login?redirect=/mypage')}>로그인 후 미저장 기록 복구</button></p>}
       <button disabled={busy || interpretPending || (!!initial.user && !saved)} onClick={interpret}>취향 해석 {interp === 'failed' ? '다시 시도' : '보기'}</button>
       {interp === 'failed' && <p>해석을 가져오지 못했어요. 관람기록 저장과는 별개이며 다시 시도할 수 있어요.</p>}
     </>}
@@ -111,7 +111,6 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
   return (
     <MobileShell
       screenId="U-12"
-      title="아트 영수증"
       back="/mypage"
       footer={
         <button className="btn outline block" onClick={() => navigate('/mypage')}>

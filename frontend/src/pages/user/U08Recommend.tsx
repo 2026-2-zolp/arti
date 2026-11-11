@@ -51,7 +51,6 @@ export default function U08Recommend() {
   return (
     <MobileShell
       screenId="U-08"
-      title="추천 작품"
       back={to('/time')}
       footer={
         <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'))}>
@@ -69,7 +68,7 @@ export default function U08Recommend() {
         </p>
       )}
       {artworkError && <p className="error-text" role="alert">작품 목록을 불러오지 못했어요. {artworkError}<button onClick={reloadArtworks}>작품 목록 다시 불러오기</button></p>}
-      {coverageError && <p role="alert">태그별 추천 후보 수를 확인하지 못했어요.<button onClick={reloadCoverage}>후보 수 다시 확인</button></p>}
+      {coverageError && <p className="error-text" role="alert">태그별 추천 후보 수를 확인하지 못했어요.<button onClick={reloadCoverage}>후보 수 다시 확인</button></p>}
       {error && <p className="error-text" role="alert">{error}<button onClick={() => setAttempt(n => n + 1)}>다시 시도</button><button onClick={() => navigate(to('/taste'))}>취향 다시 선택</button></p>}
       {ready && recommendations.length < (duration === '30m' ? 3 : duration === '60m' ? 5 : 7) && <p>준비된 추천 후보가 적어 가능한 작품만 안내해요.</p>}
       {!ready && !error && !artworkError && <Spinner label="취향에 맞는 작품을 찾는 중…" />}
