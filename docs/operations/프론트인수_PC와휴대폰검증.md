@@ -1,6 +1,6 @@
 # ARTI 프론트 인수 · PC와 휴대폰 검증
 
-팀이 공유한 `dev/임준억`을 기준으로 화면을 실행한다. [실기기 피드백과 수정 기준](../작업기록/2026-11-11_실기기피드백_프론트인수.md)
+팀 공통 기준인 `main`으로 화면을 실행한다. 수정본을 확인할 때는 검증 대상 커밋이나 브랜치를 사용한다. [실기기 피드백과 수정 기준](../작업기록/2026-11-11_실기기피드백_프론트인수.md)
 
 | 환경 | 먼저 볼 항목 | 활용 |
 | --- | --- | --- |
@@ -14,7 +14,7 @@
 ```powershell
 git fetch origin
 # 이 브랜치 이름이 이미 있다면 다른 새 이름을 사용한다.
-git switch -c review/mobile-frontend origin/dev/임준억
+git switch -c review/mobile-frontend origin/main
 if (-not (Test-Path .env.compose)) { python scripts/init_dev_env.py }
 $env:ARTI_ENV = 'test'
 $env:ALLOW_TEST_FIXTURES = 'true'
