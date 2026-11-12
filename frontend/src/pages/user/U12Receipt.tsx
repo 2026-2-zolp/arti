@@ -119,7 +119,7 @@ function LiveReceipt() {
       {/* 관람기록 저장 상태: 회원은 저장 중 → 저장됨 / 실패(로그인 만료 구분), 비회원은 이 기기에서만 */}
       <div ref={saveStatusRef} className="above-footer">
         {!initial.user ? (
-          <p className="save-status is-info" role="status"><Icon name="info" size={18} />이 관람은 이 기기에서만 볼 수 있어요 (서버에 저장되지 않아요)</p>
+          <p className="save-status is-info" role="status"><Icon name="info" size={18} />비회원 관람기록은 서버에 저장되지 않아요. 이 기기의 현재 관람에서만 확인할 수 있어요.</p>
         ) : failure && !busy ? (
           <div className="save-status is-err" role="alert">
             <p className="save-status-line"><Icon name={expired ? 'lock' : 'alert'} size={18} />{expired ? '로그인이 만료돼 저장하지 못했어요' : '관람기록을 저장하지 못했어요'}</p>
