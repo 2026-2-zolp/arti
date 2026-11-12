@@ -6,7 +6,7 @@ import {useConfirm} from '../../components/Confirmation';
  * - /receipt/:visitId : U-13 마이페이지(관람기록)에서 들어온 과거 기록 조회 모드
  */
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { api, ApiError } from '../../api/client';
 import { Icon } from '../../components/Icon';
@@ -174,6 +174,7 @@ function LiveReceipt() {
 /** 저장된 관람 기록의 영수증을 조회합니다. */
 function HistoryReceipt({ visitId }: { visitId: string }) {
   const navigate = useNavigate();
+  const { state: entry } = useLocation();
   const { state } = useVisit();
   const captureRef = useRef<HTMLDivElement>(null);
   const { data, loading, error } = useAsync(
@@ -183,12 +184,18 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
 
   if (!state.user) return <Navigate to={`/login?redirect=/receipt/${visitId}`} replace />;
 
+  function backToHistory() {
+    // 관람기록에서 열었으면 기존 목록 이력으로 돌아가고, 직접 연 주소는 목록으로 교체한다.
+    if (entry?.from === '/mypage') navigate(-1);
+    else navigate('/mypage', { replace: true });
+  }
+
   return (
     <MobileShell
       screenId="U-12"
-      back="/mypage"
+      back={backToHistory}
       footer={
-        <button className="btn outline block" onClick={() => navigate('/mypage')}>
+        <button className="btn outline block" onClick={backToHistory}>
           마이페이지로
         </button>
       }

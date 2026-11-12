@@ -6,7 +6,7 @@
  *   그 밖에는 들어오는 순간 이전 관람 진행 상태를 비운다.
  */
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
@@ -22,12 +22,13 @@ export default function U01Start() {
 }
 
 /** 두 모드가 같이 쓰는 틀: 헤더(마이페이지) + 소개 문구 + 일러스트 */
-function StartShell({ footer, children }: { footer?: ReactNode; children: ReactNode }) {
+function StartShell({ back = false, footer, children }: { back?: false | (() => void); footer?: ReactNode; children: ReactNode }) {
   const { state } = useVisit();
   return (
     <MobileShell
       screenId="U-01"
       title={<span className="brand">ARTI</span>}
+      back={back}
       right={
         state.user ? (
           <Link className="text-btn" to="/mypage">
@@ -54,6 +55,7 @@ const period = (ex: Exhibition) => `${ex.startDate.replaceAll('-', '.')} – ${e
 function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   const { state, dispatch } = useVisit();
   const navigate = useNavigate();
+  const { state: entry } = useLocation();
   const to = useExhibitionPath();
   const { data: ex, loading, error, reload } = useAsync(() => api.getExhibition(exhibitionId), [exhibitionId]);
 
@@ -70,6 +72,10 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
 
   return (
     <StartShell
+      back={() => {
+        if (entry?.from === '/') navigate(-1);
+        else navigate('/', { replace: true });
+      }}
       footer={
         resumable ? (
           <div className="stack gap-10">
@@ -127,7 +133,7 @@ function ExhibitionPicker() {
       <ul className="history-list">
         {running.map((ex) => (
           <li key={ex.id}>
-            <Link className="history-card" to={exhibitionPath(ex.id)}>
+            <Link className="history-card" to={exhibitionPath(ex.id)} state={{ from: '/' }}>
               <div className="history-top">
                 <span className="muted small">
                   <Icon name="pin" size={15} /> {ex.venue}
