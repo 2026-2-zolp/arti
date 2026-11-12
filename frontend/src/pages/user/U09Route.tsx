@@ -100,7 +100,8 @@ export default function U09Route() {
         </div>
       </div>
 
-      <p className="muted small">작품 좌표를 잇는 참고 경로예요. 실제 통로와 이동 시간은 반영하지 않아요.</p>
+      {/* 경로선은 실제 통로·이동 시간이 아님을 알린다 (준억님 10955a9의 의도 유지, 문구만 짧게) */}
+      <p className="muted small route-note">선은 관람 순서를 이은 거예요. 실제 길과 다를 수 있어요.</p>
       <div className="map-card">
         <FloorMap
           exhibition={ex}
@@ -129,9 +130,10 @@ export default function U09Route() {
               <span className="eyebrow">{isFirst ? '첫 번째 작품' : '다음 작품'}</span>
               <div className="next-row">
                 <strong>
-                  {target.title} · {roomName(target)}
+                  {target.title}
+                  {target.year ? `(${target.year})` : ''}
                 </strong>
-                <span className="muted small">{target.position ? '좌표 기준 위치 안내' : '위치 미등록'}</span>
+                <span className="muted small">{target.position ? roomName(target) : '위치 미등록'}</span>
               </div>
             </>
           )}
@@ -144,7 +146,7 @@ export default function U09Route() {
           return (
             <li key={r.artworkId} className={i < current ? 'done' : i === current ? 'cur' : ''}>
               <span className="route-num">{i < current ? '✓' : i + 1}</span>
-              <span className="route-title">{w?.title ?? '작품 정보 없음'}</span>
+              <span className="route-title">{w ? `${w.title}${w.year ? `(${w.year})` : ''}` : '작품 정보 없음'}</span>
               <span className="muted small">{w ? (w.position ? roomName(w) : '위치 미등록') : ''}</span>
             </li>
           );

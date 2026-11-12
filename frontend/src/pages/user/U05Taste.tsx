@@ -77,7 +77,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
 
   const reviewKey = `${draftKey}.review.${JSON.stringify(profile)}`;
   return (
-    <MobileShell screenId="U-05" title="취향 파악" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
+    <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
       right={draft.picks.length > 0 && <button type="button" className="text-btn" onClick={() =>
         update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
       <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'}

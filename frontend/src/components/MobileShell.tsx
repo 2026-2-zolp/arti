@@ -35,7 +35,7 @@ export function MobileShell({ title, back, right, footer, children, screenId }: 
             </button>
           )}
         </div>
-        <h1 className="m-title">{title}</h1>
+        <h1 className="m-title" aria-hidden={title ? undefined : true}>{title}</h1>
         <div className="m-header-side right">{right}</div>
       </header>
       <main className="m-body">{children}</main>

@@ -69,7 +69,6 @@ export default function U07Time() {
   return (
     <MobileShell
       screenId="U-07"
-      title="관람 시간"
       footer={
         <button className="btn primary block" disabled={!value || busy} onClick={next}>
           추천 받기

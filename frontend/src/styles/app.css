@@ -13,7 +13,8 @@
   --accent-soft: #fdeff2;
   --accent-line: #f6cdd6;
   --ok: #2f8a5b;
-  --warn: #c2410c;
+  --danger: #b42318;
+  --warn: #9a6700;
   --radius: 14px;
   --radius-lg: 20px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.04);
@@ -49,7 +50,7 @@ h1, h2, h3, p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
 .eyebrow { font-size: 13px; color: var(--muted); display: block; }
-.error-text { color: var(--accent); font-size: 14px; }
+.error-text { color: var(--danger); font-size: 14px; }
 .ok-text { color: var(--ok); font-size: 14px; margin-top: 10px; }
 .text-warn { color: var(--warn); }
 .pre-line { white-space: pre-line; }
@@ -92,6 +93,8 @@ h1, h2, h3, p { margin: 0; }
   padding: 12px 24px calc(16px + env(safe-area-inset-bottom));
   background: linear-gradient(to top, var(--bg) 75%, transparent);
 }
+/* 하단 고정 버튼(m-footer) 위로 스크롤되도록 여유를 둔다 */
+.above-footer { scroll-margin-bottom: 120px; }
 .footnote { text-align: center; font-size: 13px; color: var(--muted); margin-top: 10px; }
 
 .icon-btn { border: 0; background: none; padding: 6px; border-radius: 10px; display: inline-flex; }
@@ -102,7 +105,8 @@ h1, h2, h3, p { margin: 0; }
 .dot-sep { margin: 0 8px; color: var(--muted); }
 .pill-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  border: 0; background: var(--surface-2); border-radius: 12px; padding: 8px 12px; font-size: 14px;
+  border: 0; background: var(--surface-2); border-radius: 12px; padding: 7px 10px; font-size: 13px;
+  white-space: nowrap; flex-shrink: 0;
 }
 
 /* ---------- 버튼 ---------- */
@@ -149,8 +153,8 @@ h1, h2, h3, p { margin: 0; }
   border: 1px solid var(--line); background: var(--surface); font-size: 16px;
 }
 .field input:focus { outline: none; border-color: var(--ink); }
-.field input[aria-invalid='true'] { border-color: var(--accent); }
-.field-error { color: var(--accent); font-size: 13px; }
+.field input[aria-invalid='true'] { border-color: var(--danger); }
+.field-error { color: var(--danger); font-size: 13px; }
 .field-hint { color: var(--muted); font-size: 13px; }
 .terms { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
@@ -197,7 +201,7 @@ a.history-card { text-decoration: none; }
 .duel-dots span.done { background: var(--ink); }
 .duel-dots span.on { width: 22px; background: var(--accent); }
 .duel { display: flex; flex-direction: column; }
-.duel-or { margin: 10px 0; text-align: center; font-size: 13px; color: var(--muted); }
+.duel-or { margin: 4px 0; text-align: center; font-size: 13px; color: var(--muted); }
 .duel-card {
   width: 100%; padding: 8px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
   text-align: left; display: flex; flex-direction: column; gap: 8px;
@@ -304,8 +308,9 @@ a.history-card { text-decoration: none; }
 
 /* ---------- U-09 ---------- */
 .route-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; font-size: 14px; }
-.progress-dots { display: flex; gap: 4px; }
-.progress-dots span { width: 18px; height: 4px; border-radius: 2px; background: var(--line); }
+/* 추천 작품 수(3·5·7점)에 따라 칸이 늘어나도 전체 폭은 고정 → 칸 하나가 좁아진다 */
+.progress-dots { display: flex; gap: 4px; width: 112px; }
+.progress-dots span { flex: 1; min-width: 6px; height: 4px; border-radius: 2px; background: var(--line); }
 .progress-dots span.done { background: #bdb7ae; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
@@ -323,8 +328,9 @@ a.history-card { text-decoration: none; }
 
 /* ---------- U-10 ---------- */
 .progress-title { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; font-size: 16px; font-weight: 500; }
-.progress-bars { display: flex; gap: 4px; }
-.progress-bars span { width: 22px; height: 3px; border-radius: 2px; background: var(--line); }
+/* U-10 상단 진행 막대: 전체 폭 고정, 작품 수가 많아지면 칸이 좁아져 '지도 보기' 버튼 자리를 침범하지 않는다 */
+.progress-bars { display: flex; gap: 3px; width: 96px; }
+.progress-bars span { flex: 1; min-width: 6px; height: 3px; border-radius: 2px; background: var(--line); }
 .progress-bars span.on { background: var(--ink); }
 .art-frame { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 .art-frame.fullscreen { position: fixed; inset: 0; z-index: 50; border-radius: 0; background: #111; display: flex; align-items: center; }
@@ -334,9 +340,9 @@ a.history-card { text-decoration: none; }
 .art-title { font-size: 26px; font-weight: 800; margin-top: 18px; }
 .art-meta { color: var(--muted); font-size: 16px; margin-top: 6px; }
 .art-meta .sep { margin: 0 10px; color: var(--line); }
-.reason-box { display: flex; gap: 12px; margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft); border: 1px solid var(--accent-line); }
-.reason-box > svg { color: var(--accent); flex: none; margin-top: 1px; }
-.reason-box strong { font-size: 15px; }
+.reason-box { display: flex; gap: 12px; margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+.reason-box > svg { color: var(--ink-2); flex: none; margin-top: 1px; }
+.reason-box strong { font-size: 15px; font-weight: 600; color: var(--ink-2); }
 .reason-box p { margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
 .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
 .tab { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 0 4px; border-radius: 10px; border: 1px solid transparent; background: var(--surface-2); color: var(--ink-2); font-size: 13.5px; white-space: nowrap; letter-spacing: -0.01em; }
@@ -349,6 +355,11 @@ a.history-card { text-decoration: none; }
 .hint-text { display: block; margin-top: 6px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
 .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 .action-row .btn { min-height: 48px; padding: 0 10px; font-size: 14.5px; white-space: nowrap; gap: 6px; }
+/* 아주 좁은 폰(360px 미만)에서는 긴 버튼 글자('이 부분 더 알아보기')가 칸 밖으로 넘쳐 화면이 옆으로 밀리므로 두 줄 허용 */
+@media (max-width: 359px) {
+  .action-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .action-row .btn { white-space: normal; line-height: 1.25; padding: 6px 10px; }
+}
 .reaction-row { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .reaction-row .muted { margin-right: auto; }
 .round-btn { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
@@ -437,7 +448,7 @@ a.history-card { text-decoration: none; }
 .stat-label { color: var(--ink-2); }
 .stat-value { font-size: 36px; font-weight: 600; }
 .stat-sub { color: var(--muted); font-size: 14px; }
-.stat.warn .stat-value { color: var(--accent); }
+.stat.warn .stat-value { color: var(--warn); }
 
 .a-table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .a-table th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 18px 20px; border-bottom: 1px solid var(--a-line); white-space: nowrap; }
@@ -575,5 +586,40 @@ a.history-card { text-decoration: none; }
 .confirm-card h2 { margin: 0 0 16px; font-size: 20px; }
 .confirm-card p { margin: 0 0 24px; line-height: 1.65; white-space: pre-wrap; }
 
+/* ===== U-12 영수증: 저장 상태 줄 · AI 취향 해석 칸 · 안내 카드 ===== */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.save-status { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+.save-status.is-busy, .save-status.is-info { background: var(--surface-2); color: var(--ink-2); }
+.save-status.is-ok { background: #e8f4ee; color: var(--ok); }
+.save-status.is-ok .link-btn.inline { color: var(--ok); font-size: 14px; }
+.save-status.is-err { display: block; background: #fdecea; color: var(--danger); }
+.save-status.is-err .btn { margin-top: 12px; }
+.save-status.is-err .link-btn { display: block; margin: 12px auto 0; color: var(--danger); font-size: 13px; }
+.save-status-line { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.save-status-sub { margin-top: 4px; font-size: 13px; }
+.save-status svg, .interp-title svg, .notice-title svg { flex-shrink: 0; }
+.interp-card { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.interp-card.is-err { border-color: #f1b8b2; }
+.interp-title { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+.interp-title.is-err { color: var(--danger); }
+.interp-desc { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.interp-card .btn { margin-top: 12px; }
+.btn.outline.is-done { color: var(--ok); border-color: #b9dcc8; gap: 6px; }
+.notice-card { margin-top: 16px; padding: 18px 16px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+.notice-card.is-err .notice-title { color: var(--danger); }
+.notice-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.notice-body { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }
+.notice-card .btn + .btn { margin-top: 6px; }
+
+/* U-09 경로선 안내: 위 진행 표시·아래 지도와 간격 */
+.route-note { margin: 0 0 12px; }
+
 /* 작품 원문·요약의 줄바꿈을 보존하고 긴 문장이 화면 밖으로 넘지 않게 합니다. */
 .artwork-prose { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* U-10 반응: 고른 이유는 버튼 줄 아래 별도 줄 (버튼 자리 고정, 긴 이유는 말줄임) */
+.reaction-reason { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 10px; min-width: 0; }
+.reaction-reason .reason-chip.saved { max-width: calc(100% - 64px); }
+
+/* U-12 영수증 태그 칩: 칩 안은 항상 한 줄, 공간이 모자라면 칩 전체가 다음 줄로 (PNG 저장 시 글꼴 폭 차이로 갈라지던 문제, 1차 ④) */
+.receipt .chip { white-space: nowrap; flex-shrink: 0; }

@@ -30,7 +30,7 @@ export default function A07Reactions() {
   return (
     <>
       <PageHead title="평가" desc="관람객이 작품에 남긴 좋아요·별로예요와 이유를 확인합니다." />
-      {error && <p role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
       <p>서버에 저장된 회원 관람 평가만 표시합니다. 최근 50건입니다.</p>
       <div className="react-filters" role="group" aria-label="평가 필터">
         <FilterButton label="전체" count={log.length} on={filter === 'all'} onClick={() => setFilter('all')} />

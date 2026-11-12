@@ -35,7 +35,6 @@ export default function U13MyPage() {
   return (
     <MobileShell
       screenId="U-13"
-      title="마이페이지"
       right={
         <button className="text-btn" onClick={() => logout()}>
           로그아웃

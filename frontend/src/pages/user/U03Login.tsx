@@ -38,7 +38,7 @@ export default function U03Login() {
   };
 
   return (
-    <MobileShell screenId="U-03" title="로그인">
+    <MobileShell screenId="U-03">
       <Lead title="다시 오셨군요" desc="로그인은 선택사항이에요. 저장된 취향과 관람기록을 이어서 쓸 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>
@@ -74,8 +74,6 @@ export default function U03Login() {
           회원가입
         </button>
       </div>
-
-      <p className="muted">가입한 계정으로 로그인해 주세요. 기본 데모 계정은 제공하지 않습니다.</p>
     </MobileShell>
   );
 }
