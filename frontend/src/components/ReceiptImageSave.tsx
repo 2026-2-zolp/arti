@@ -6,6 +6,7 @@
  * - 이미지는 브라우저 안에서만 만들고 서버로 보내지 않는다.
  */
 import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
 
 type Status = 'waiting' | 'making' | 'ready' | 'failed';
@@ -130,6 +131,7 @@ export function ReceiptImageSave({
   targetRef,
   ready,
   fileName,
+  inFooter = false,
 }: {
   /** 이미지로 만들 영역 (영수증 박스를 감싼 요소) */
   targetRef: RefObject<HTMLElement | null>;
@@ -137,6 +139,7 @@ export function ReceiptImageSave({
   ready: boolean;
   /** 확장자 제외 파일명 */
   fileName: string;
+  inFooter?: boolean;
 }) {
   const [status, setStatus] = useState<Status>('waiting');
   const [file, setFile] = useState<File | null>(null);
@@ -241,13 +244,13 @@ export function ReceiptImageSave({
     <>
       {/* 실패 문구는 버튼 위에 둬서 가려지지 않게 한다 */}
       {note && status === 'failed' && (
-        <p className="center error-text mt-12" role="alert">
+        <p className={`center error-text ${inFooter ? 'receipt-save-error' : 'mt-12'}`} role="alert">
           {note}
         </p>
       )}
       <button
         type="button"
-        className={`btn outline block mt-12${done ? ' is-done' : ''}`}
+        className={`btn outline block${inFooter ? '' : ' mt-12'}${done ? ' is-done' : ''}`}
         onClick={onClick}
         disabled={status === 'waiting' || status === 'making'}
       >
@@ -255,7 +258,7 @@ export function ReceiptImageSave({
       </button>
       {done && <span className="sr-only" role="status">{note}</span>}
 
-      {previewUrl && (
+      {previewUrl && createPortal(
         <div className="modal-backdrop" onClick={() => setPreviewUrl(null)}>
           <div className="modal receipt-preview" onClick={(e) => e.stopPropagation()}>
             <p className="center small">
@@ -266,7 +269,8 @@ export function ReceiptImageSave({
               닫기
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

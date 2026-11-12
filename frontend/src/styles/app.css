@@ -393,6 +393,8 @@ a.history-card { text-decoration: none; }
 .receipt-head h3 { font-weight: 500; font-size: 20px; letter-spacing: 0.02em; }
 .receipt-title { margin-top: 12px; font-weight: 700; font-size: 16px; line-height: 1.4; word-break: keep-all; }
 .receipt-venue { margin-top: 4px; color: var(--muted); font-size: 13px; }
+.receipt-date { display: block; margin-top: 10px; color: var(--ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.receipt-save-error { margin-bottom: 8px; }
 /* 길게 눌러 저장 안내 (공유 시트·다운로드가 안 되는 환경) */
 .receipt-preview { display: flex; flex-direction: column; gap: 14px; padding: 20px; max-height: calc(100dvh - 40px); }
 .receipt-preview img { width: 100%; min-height: 0; flex: 1 1 auto; object-fit: contain; border-radius: 8px; -webkit-touch-callout: default; }
