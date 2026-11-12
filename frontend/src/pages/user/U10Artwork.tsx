@@ -338,18 +338,9 @@ export default function U10Artwork() {
           </div>
 
           <div className="reaction-block">
+            {/* 반응 버튼은 고정된 자리에 두고, 고른 이유는 아래 별도 줄에 표시한다 (1차 ③, 갤럭시 #14) */}
             <div className="reaction-row">
               <span className="muted small">이 작품, 어땠나요? (선택)</span>
-              {reaction && savedReason && (
-                <button
-                  type="button"
-                  className={`reason-chip saved ${reaction}`}
-                  aria-label={`${savedReason}, 이유 바꾸기`}
-                  onClick={() => openReason(reaction, savedReason)}
-                >
-                  {savedReason}
-                </button>
-              )}
               <button
                 className={`round-btn ${reaction === 'like' ? 'on' : ''}`}
                 aria-pressed={reaction === 'like'}
@@ -367,6 +358,19 @@ export default function U10Artwork() {
                 <Icon name="thumbDown" />
               </button>
             </div>
+            {reaction && savedReason && (
+              <div className="reaction-reason">
+                <span className="muted small">고른 이유</span>
+                <button
+                  type="button"
+                  className={`reason-chip saved ${reaction}`}
+                  aria-label={`${savedReason}, 이유 바꾸기`}
+                  onClick={() => openReason(reaction, savedReason)}
+                >
+                  {savedReason}
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
