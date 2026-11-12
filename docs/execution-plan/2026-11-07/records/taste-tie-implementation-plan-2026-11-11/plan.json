@@ -1,0 +1,802 @@
+{
+  "version": 1,
+  "asOfKST": "2026-11-11",
+  "baselineCommit": "9234371",
+  "status": "implementation_not_started",
+  "permissionScope": "planning_only",
+  "productApplied": false,
+  "selectionFinal": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "formalGatesPromoted": false,
+  "phases": [
+    {
+      "id": "TP1",
+      "title": "점수 출처 저장",
+      "dependsOn": [],
+      "status": "planned",
+      "gate": "not_run",
+      "files": [
+        {
+          "path": "ai-service/app/config.py",
+          "state": "existing",
+          "purpose": "CLIP revision pin과 메타데이터 생성 설정;기존 NLI/추론 파라미터 유지"
+        },
+        {
+          "path": "ai-service/app/analyzer.py",
+          "state": "existing",
+          "purpose": "실제 로드 artifact/processor와 태그 프롬프트의 출처를 로딩 완료 시 게시"
+        },
+        {
+          "path": "ai-service/app/main.py",
+          "state": "existing",
+          "purpose": "nullable tagEvidence 응답 추가,분석과 동일 calibration/이미지 바이트에 결합"
+        },
+        {
+          "path": "ai-service/app/image_fetch.py",
+          "state": "existing",
+          "purpose": "디코드 전 실제 수신 원본 바이트 SHA256을 추적;이미지 처리는 유지"
+        },
+        {
+          "path": "ai-service/app/provenance.py",
+          "state": "proposed_new",
+          "purpose": "정규 signature/해시 구성과 불명확 provenance 표시"
+        },
+        {
+          "path": "ai-service/app/runtime.py",
+          "state": "existing",
+          "purpose": "성공한 로드와 근거가 함께 게시되는 경계 확인;필요 시 최소 변경"
+        },
+        {
+          "path": "backend-django/arti/model_service.py",
+          "state": "existing",
+          "purpose": "전송한 이미지 SHA256과 응답 근거 일치·형식/크기 검증"
+        },
+        {
+          "path": "backend-django/arti/providers.py",
+          "state": "existing",
+          "purpose": "tag 생성에서 점수와 provenance를 함께 반환,기존 감정 경계 유지"
+        },
+        {
+          "path": "backend-django/arti/models.py",
+          "state": "existing",
+          "purpose": "Artwork tag_score_revision·tag_score_evidence nullable/additive 필드"
+        },
+        {
+          "path": "backend-django/arti/migrations/0003_tag_score_evidence.py",
+          "state": "proposed_new",
+          "purpose": "구조만 추가,기존행 revision0/evidence null,인수/공개 자동화 없음"
+        },
+        {
+          "path": "backend-django/arti/editing.py",
+          "state": "existing",
+          "purpose": "분석 저장 트랜잭션에 점수/근거/revision 원자 반영,실패/오래된 source 보호"
+        },
+        {
+          "path": "backend-django/arti/serializers.py",
+          "state": "existing",
+          "purpose": "새 출처는 관리자용만,공개 DTO에 로컬 경로/내부입력 노출 금지"
+        },
+        {
+          "path": "ai-service/tests/test_provenance.py",
+          "state": "proposed_new",
+          "purpose": "실제 artifact/해시/fake 경계와 구형 nullable 호환"
+        },
+        {
+          "path": "ai-service/tests/test_api.py",
+          "state": "existing",
+          "purpose": "구형 응답호환·신규 근거 구조"
+        },
+        {
+          "path": "ai-service/tests/test_runtime.py",
+          "state": "existing",
+          "purpose": "부분 로드/동시요청·재기동 회귀"
+        },
+        {
+          "path": "backend-django/arti/tests/test_model_service.py",
+          "state": "existing",
+          "purpose": "수신/전송 해시·기존 응답·잘못된 근거"
+        },
+        {
+          "path": "backend-django/arti/tests/test_model_operations.py",
+          "state": "existing",
+          "purpose": "점수/근거/기존 확정 보호·timeout/429/503/504"
+        },
+        {
+          "path": "backend-django/config/settings.py",
+          "state": "existing",
+          "purpose": "서버 승인 signature 해시 설정,등록 없으면 AI동점 불가"
+        },
+        {
+          "path": ".env.example",
+          "state": "existing",
+          "purpose": "기존 루트 예시에 승인 signature·모델 revision/생성 enable 설명만 추가;실제env 유지"
+        },
+        {
+          "path": ".env.compose.example",
+          "state": "existing",
+          "purpose": "설정 전달 예시만,실제 env 파일 변경 없음"
+        },
+        {
+          "path": "compose.yaml",
+          "state": "existing",
+          "purpose": "새 비밀 아닌 설정 전달;서비스/볼륨 구성 유지"
+        },
+        {
+          "path": "docs/operations/모델서비스_로컬운영.md",
+          "state": "existing",
+          "purpose": "Compose 밖 로컬 FastAPI revision/cache/근거/구형응답 운영 재현"
+        }
+      ],
+      "entry": [
+        "9234371 계약·이 계획 검토와 제품 작업 별도 승인",
+        "필드/응답 추가 전 기존 AI 오류·저장 보호 회귀 기준 확보"
+      ],
+      "done": [
+        "실제 바이트/로더 artifact와 결합한 근거만 보존,불명확 정보 추정 금지",
+        "점수/근거/revision 함께 저장,실패 시 셋 모두 무변경",
+        "기존행/승인/공개/프로필 무변경·구형 FastAPI 응답 허용",
+        "TP1 검증 전 새 v2 생성 비활성"
+      ],
+      "rollback": [
+        "필드를 남기는 additive rollback,구형 응답·점수 경로로 복귀",
+        "live DB의0003역마이그레이션·새근거 삭제 금지"
+      ],
+      "commits": [
+        "TP1a 모델/transport nullable 근거와 fake 회귀 통과 후 로컬 커밋",
+        "TP1b additive migration·원자 저장·구형 호환 통과 후 로컬 커밋"
+      ],
+      "caseIds": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05"
+      ],
+      "expectedEvidence": "future execution record;not generated or passed in this planning task"
+    },
+    {
+      "id": "TP2",
+      "title": "서버 사전 검증·저장 호환/충돌 보호",
+      "dependsOn": [
+        "TP1"
+      ],
+      "status": "planned",
+      "gate": "not_run",
+      "files": [
+        {
+          "path": "backend-django/arti/taste_resolution.py",
+          "state": "proposed_new",
+          "purpose": "카운트/동점/preview·snapshot 공통 순수 helper와 DB 읽기 경계"
+        },
+        {
+          "path": "backend-django/arti/taste_evidence.py",
+          "state": "proposed_new",
+          "purpose": "근거 hash/서버 승인 signature·관람증거 purpose/actor/visit 검증"
+        },
+        {
+          "path": "backend-django/arti/survey.py",
+          "state": "existing",
+          "purpose": "동일 DB snapshot에서 pool/tieContext 생성,기존 poolVersion 식 유지"
+        },
+        {
+          "path": "backend-django/arti/serializers.py",
+          "state": "existing",
+          "purpose": "명시 v1/v2 union·엄격 입력/resolve·mutation/receipt 스키마"
+        },
+        {
+          "path": "backend-django/arti/views.py",
+          "state": "existing",
+          "purpose": "GET capability/enable 상태·v2 추천 경로·기존 배열 응답 유지"
+        },
+        {
+          "path": "backend-django/config/urls.py",
+          "state": "existing",
+          "purpose": "POST/api/taste-profiles/resolve만 추가"
+        },
+        {
+          "path": "backend-django/arti/recommendations.py",
+          "state": "existing",
+          "purpose": "v1 경로 동결,v2 동일빈도 커버리지 우선순위만 공유"
+        },
+        {
+          "path": "backend-django/arti/member.py",
+          "state": "existing",
+          "purpose": "계정 lock 내 CAS·동일 mutation 재시도/no-op·옛 저장 호환"
+        },
+        {
+          "path": "backend-django/arti/models.py",
+          "state": "existing",
+          "purpose": "Account 마지막 taste_write_receipt nullable JSON필드"
+        },
+        {
+          "path": "backend-django/arti/migrations/0004_taste_write_receipt.py",
+          "state": "proposed_new",
+          "purpose": "idempotency 마지막요청 구조만 추가,기존 프로필 이관 없음"
+        },
+        {
+          "path": "backend-django/arti/records.py",
+          "state": "existing",
+          "purpose": "v2 영수증에 서버검증 관람 근거 재사용,기존 visitId 재시도 우선"
+        },
+        {
+          "path": "backend-django/arti/editing.py",
+          "state": "existing",
+          "purpose": "다중작품 confirm_ai 잠금을Artwork ID순으로통일;요청순서와무관하게교착방지"
+        },
+        {
+          "path": "backend-django/arti/management/commands/configure_taste_survey.py",
+          "state": "existing",
+          "purpose": "풀/작품 잠금 순서와 현재풀 일관성 대조;필요한 경계만 변경"
+        },
+        {
+          "path": "backend-django/config/settings.py",
+          "state": "existing",
+          "purpose": "신규v2 생성 enable 기본false;기존 저장/관람 읽기와 분리"
+        },
+        {
+          "path": ".env.example",
+          "state": "existing",
+          "purpose": "기존 루트 예시에 승인 signature·모델 revision/생성 enable 설명만 추가;실제env 유지"
+        },
+        {
+          "path": ".env.compose.example",
+          "state": "existing",
+          "purpose": "테스트에서만v2 enable하는 설명"
+        },
+        {
+          "path": "compose.yaml",
+          "state": "existing",
+          "purpose": "enable 설정 전달,일반 환경 값 변경 없음"
+        },
+        {
+          "path": "backend-django/arti/tests/test_taste_resolution.py",
+          "state": "proposed_new",
+          "purpose": "정책 반례·API/v1/v2·그룹fallback·preview무쓰기"
+        },
+        {
+          "path": "backend-django/arti/tests/test_taste_concurrency.py",
+          "state": "proposed_new",
+          "purpose": "실제PG 두연결+barrier CAS/풀교체/재시도"
+        },
+        {
+          "path": "backend-django/arti/tests/test_survey.py",
+          "state": "existing",
+          "purpose": "구형 snapshot·전역풀·10점 자격·공개 회귀"
+        },
+        {
+          "path": "backend-django/arti/tests/test_integration.py",
+          "state": "existing",
+          "purpose": "관람/영수증/계정 경계 및 구형 flow 회귀"
+        }
+      ],
+      "entry": [
+        "TP1 통과 및 additive필드 사용 가능",
+        "보완 결정D1~D7의 범위 확인;기존계약 자동 변경으로 취급하지 않음"
+      ],
+      "done": [
+        "preview는 DB write/모델 호출0;원자 snapshot·버전 검증",
+        "v1/옛snapshot 소급변경 없음,v2서버 점수만 사용",
+        "CAS 두요청 한건성공/한건409,응답유실 재시도 한차례 저장",
+        "풀교체 중 혼합근거0·관람중 풀교체 후 v2 영수증 보존",
+        "capability 생성은 기본off,기존v2 읽기/재시도와 분리"
+      ],
+      "rollback": [
+        "신규v2 생성 disable,미확정 UI입력 보존",
+        "알려진v2 읽기·frozen순서·이미 발행된 관람증거·동일mutation 재시도 유지",
+        "확장schema 남김;v2정보 모르는 구형 이미지로 무조건rollback하지 않음"
+      ],
+      "commits": [
+        "TP2a resolve·context·v1/v2 추천·preview무쓰기 회귀 통과 후 커밋",
+        "TP2b snapshot/CAS/idempotency/관람증거·PG병렬 회귀 통과 후 커밋"
+      ],
+      "caseIds": [
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P2-06",
+        "P2-07",
+        "P2-08",
+        "P2-09"
+      ],
+      "expectedEvidence": "future execution record;not generated or passed in this planning task"
+    },
+    {
+      "id": "TP3",
+      "title": "프론트 확인 흐름·UI 선별 병합",
+      "dependsOn": [
+        "TP2"
+      ],
+      "status": "planned",
+      "gate": "not_run",
+      "files": [
+        {
+          "path": "frontend/src/types.ts",
+          "state": "existing",
+          "purpose": "v1/v2·preview·write/visit 근거 타입 union"
+        },
+        {
+          "path": "frontend/src/api/client.ts",
+          "state": "existing",
+          "purpose": "전역풀 capability·resolve·CAS/mutation·관람근거;204/배열 유지"
+        },
+        {
+          "path": "frontend/src/lib/tasteDraft.ts",
+          "state": "proposed_new",
+          "purpose": "미확정 초안/입력 의미 hash·editRevision·응답 적용 조건"
+        },
+        {
+          "path": "frontend/src/lib/tasteFromPicks.ts",
+          "state": "existing",
+          "purpose": "v1 유지,v2 서버 결과만 사용;로컬AI 점수계산 추가 금지"
+        },
+        {
+          "path": "frontend/src/pages/user/U05Taste.tsx",
+          "state": "existing",
+          "purpose": "태그 부분집합/manual확인·preview-first·명시확인/저장·충돌 보존"
+        },
+        {
+          "path": "frontend/src/pages/user/U06SavedTaste.tsx",
+          "state": "existing",
+          "purpose": "서버 저장버전 재사용,신구 profile union"
+        },
+        {
+          "path": "frontend/src/pages/user/U07Time.tsx",
+          "state": "existing",
+          "purpose": "기존 동일시간 빠른복귀 보존,필요할 때만 상태 경계 확인"
+        },
+        {
+          "path": "frontend/src/pages/user/U08Recommend.tsx",
+          "state": "existing",
+          "purpose": "서버 tie profile/버전오류 안내·지연응답 guard"
+        },
+        {
+          "path": "frontend/src/store/visitReducer.ts",
+          "state": "existing",
+          "purpose": "확정 한차례 commit/no-op·visitId와 근거 binding·계정/세대 경계"
+        },
+        {
+          "path": "frontend/src/store/VisitContext.tsx",
+          "state": "existing",
+          "purpose": "session draft/proof 복구와 actor change 폐기,token 인증값 노출 없음"
+        },
+        {
+          "path": "frontend/src/lib/receiptPayload.ts",
+          "state": "existing",
+          "purpose": "관람근거 outer필드 전달·기존 retry body 유지"
+        },
+        {
+          "path": "frontend/src/pages/user/U12Receipt.tsx",
+          "state": "existing",
+          "purpose": "pending receipt 동결·풀/계정 변화 후 기존관람 분리"
+        },
+        {
+          "path": "frontend/src/components/MobileShell.tsx",
+          "state": "existing",
+          "purpose": "동섭 종합본과 중복헤더/주제목 계층 선별 검토"
+        },
+        {
+          "path": "frontend/src/styles/app.css",
+          "state": "existing",
+          "purpose": "오류색/경고색/이유강조만 선별,contain·문단 CSS 보존"
+        },
+        {
+          "path": "frontend/src/pages/admin/A04Artworks.tsx",
+          "state": "existing",
+          "purpose": "ZIP error-text hunk만 검토"
+        },
+        {
+          "path": "frontend/src/pages/admin/A07Reactions.tsx",
+          "state": "existing",
+          "purpose": "ZIP error-text hunk만 검토"
+        },
+        {
+          "path": "frontend/tests/tasteDraft.test.mts",
+          "state": "proposed_new",
+          "purpose": "초안/no-op·역순응답·실패 보존"
+        },
+        {
+          "path": "frontend/tests/actorRequests.test.mts",
+          "state": "existing",
+          "purpose": "기존 전역API·계정401 guard·저장/api.me 실패"
+        },
+        {
+          "path": "frontend/tests/visitReducer.test.mts",
+          "state": "existing",
+          "purpose": "기존동일시간·확정1회·다른계정지연응답·복구"
+        },
+        {
+          "path": "frontend/tests/receiptPayload.test.mts",
+          "state": "existing",
+          "purpose": "proof binding·pending body 동일 재시도"
+        },
+        {
+          "path": "frontend/src/pages/user/U10Artwork.tsx",
+          "state": "existing",
+          "purpose": "팀 종합 확인 후 error-text hunk만 검토;원문문단/U10→도슨트 맥락 보존"
+        },
+        {
+          "path": "frontend/src/pages/user/U11AskAI.tsx",
+          "state": "existing",
+          "purpose": "팀 종합 확인 후 error-text hunk만 검토;원문문단/U10→도슨트 맥락 보존"
+        }
+      ],
+      "entry": [
+        "TP2 통과·확정할v2 wire형식 고정",
+        "성현/동섭의 최신 종합본 기준 commit/파일/hunk 재확인;미확인이면 기존 ZIP을 참고만 하고 UI병합 보류"
+      ],
+      "done": [
+        "초안/취소/409/저장실패는 현재관람·계정·반응 무변경",
+        "응답유실/api.me실패·actor/editRevision변경 시 잘못된commit0",
+        "전체이미지/문단/전역API/동일시간/닉네임100/회귀 보존",
+        "서버지원+enable때만v2 생성,옛profile 읽기 지속",
+        "추가태그 manual전환 명시,빈선택 거절·대표3강제 없음"
+      ],
+      "rollback": [
+        "새UI 생성 경로 disable 후 기존 저장읽기/진행 유지",
+        "미확정 draft/proof는actor-bound로보존/재검증,옛state를v1으로위조전환 금지",
+        "ZIP 전체덮기·다른팀원 작업 branch강제초기화 금지"
+      ],
+      "commits": [
+        "TP3a types/API/draft/reducer·계정 경계 회귀 통과 후 커밋",
+        "TP3b 화면/영수증 확인흐름·선별UI·브라우저 점검 통과 후 커밋"
+      ],
+      "caseIds": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06"
+      ],
+      "expectedEvidence": "future execution record;not generated or passed in this planning task"
+    },
+    {
+      "id": "TP4",
+      "title": "격리 통합 검증·인수 준비",
+      "dependsOn": [
+        "TP3"
+      ],
+      "status": "planned",
+      "gate": "not_run",
+      "files": [
+        {
+          "path": "backend-django/arti/tests/test_taste_concurrency.py",
+          "state": "created_in_prior_phase",
+          "purpose": "실제PG 동시성과 barrier 오류 재현"
+        },
+        {
+          "path": "backend-django/arti/tests/test_taste_resolution.py",
+          "state": "created_in_prior_phase",
+          "purpose": "v1/v2 전범위와 동일입력 추천 비교"
+        },
+        {
+          "path": "ai-service/tests/test_provenance.py",
+          "state": "created_in_prior_phase",
+          "purpose": "직렬화/부분로드·구형응답 계약"
+        },
+        {
+          "path": "frontend/tests/tasteDraft.test.mts",
+          "state": "created_in_prior_phase",
+          "purpose": "역순/실패/no-op·저장 재시도 재현"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "state": "existing",
+          "purpose": "기존4job 안의 deterministic 시험 인수;원격실행은추후push승인 이후"
+        },
+        {
+          "path": "docs/operations/취향조사풀-운영.md",
+          "state": "existing",
+          "purpose": "signature/enable·rollback·비활성pool 유지 절차"
+        },
+        {
+          "path": "docs/execution-plan/2026-11-07/records/taste-tie-implementation-results-2026-11-11/README.md",
+          "state": "proposed_new",
+          "purpose": "후속실행시 단계별환경/명령/원수/남은조건 누적,날짜는실제실행일로"
+        }
+      ],
+      "entry": [
+        "TP1~TP3 통과;격리 PostgreSQL/미디어/port/프로젝트 선택 확인",
+        "실제모델 cached artifact 확인 가능;불가 시 실제출처smoke는대기하고TP4완료주장 금지"
+      ],
+      "done": [
+        "격리fake10점·권한/3·5·7추천/동선/도슨트진입·영수증/재시도 완주",
+        "v1추천출력불변,v2가중치불변·선정/방문순서변화 구분",
+        "실제cached 모델1회 근거/바이트해시일치,모델재학습/최적화/유료GPT0",
+        "일반arti-dev·원본16·미디어·활성풀 전후동일",
+        "로컬CI해당시험통과,실제GitHubActions/사람품질/공개는별도대기"
+      ],
+      "rollback": [
+        "실패단계만 수정→관련회귀→통합검증 반복,pass증거없이다음단계진행 금지",
+        "시험출력/DB만소유확인후정리;일반환경down-v/원본삭제금지"
+      ],
+      "commits": [
+        "TP4 통합보완·작업기록·로컬 검증 증거 통과 후 커밋;원격push 별도"
+      ],
+      "caseIds": [
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P4-06"
+      ],
+      "expectedEvidence": "future execution record;not generated or passed in this planning task"
+    }
+  ],
+  "verificationCases": [
+    {
+      "id": "P1-01",
+      "topic": "provenance",
+      "action": "같은원본바이트로Django전송/FastAPI응답비교",
+      "expected": "SHA동일·모델/processor실제artifact+설정결합;로컬경로비공개",
+      "evidence": "tag-provenance.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P1-02",
+      "topic": "unknown_provenance",
+      "action": "구형서비스응답·로컬모델revision불명",
+      "expected": "점수기존호환·근거null·AI동점fallback,추정revision금지",
+      "evidence": "legacy-model-response.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P1-03",
+      "topic": "atomic_analysis",
+      "action": "잘못된근거/timeout/429/503/504·stale아트버전",
+      "expected": "실패한tag점수/근거/revision·재생성대상아닌확정값무변경;전체예산초과는모든결과저장0",
+      "evidence": "analysis-protection.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P1-04",
+      "topic": "schema",
+      "action": "빈DB·기존v1데이터에0003",
+      "expected": "기존행/태그/공개/회원snapshot동일,새필드0/null",
+      "evidence": "migration-evidence.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P1-05",
+      "topic": "loader",
+      "action": "부분load·재기동·동시요청",
+      "expected": "성공artifact와signature한번게시,추론/잠금회귀통과",
+      "evidence": "runtime-results.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-01",
+      "topic": "tie_rules",
+      "action": "30기존반례를제품helper/API에대조",
+      "expected": "태그집합/가중치불변·그룹전체fallback·정수합정렬동일",
+      "evidence": "tie-parity.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-02",
+      "topic": "read_only_preview",
+      "action": "새preview전후8모델행/미디어/외부요청계측",
+      "expected": "DB쓰기/계정버전증가/모델호출0",
+      "evidence": "preview-readonly.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-03",
+      "topic": "snapshot_race",
+      "action": "실제PG barrier로pool교체/점수편집과resolve경쟁·관리자역순batch confirm 경합",
+      "expected": "구근거전체 또는 신근거전체/409;혼합context0·deadlock0",
+      "evidence": "pg-snapshot-race.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-04",
+      "topic": "cas",
+      "action": "같은계정N버전서로다른mutation동시저장",
+      "expected": "한건204·한건409,버전N+1·한건만저장",
+      "evidence": "pg-cas.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-05",
+      "topic": "lost_response",
+      "action": "저장성공응답유실→같은mutation/동일본문재시도",
+      "expected": "204,버전/쓰기1회;같은ID다른본문409",
+      "evidence": "mutation-retry.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-06",
+      "topic": "legacy",
+      "action": "풀/모델교체후v1/saved v2읽기·v1쓰기경쟁",
+      "expected": "옛snapshot무변경;v1이v2를CAS없이덮기409;기존v1끼리제약명시",
+      "evidence": "legacy-matrix.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-07",
+      "topic": "history_proof",
+      "action": "관람중pool교체·72h경계·proof위변조/다른actor/visit",
+      "expected": "유효proof로현재계정미변경영수증;invalid거절·이미저장동일재시도유지",
+      "evidence": "visit-proof.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-08",
+      "topic": "authorization",
+      "action": "guest/user/admin·다른계정/전시·위조counts/evidence",
+      "expected": "401/403/400구분·다른전시추천0·client근거불신",
+      "evidence": "authorization.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P2-09",
+      "topic": "feature_disable",
+      "action": "기능off·enable경쟁·옛발급증거재시도",
+      "expected": "신규v2생성차단,옛snapshot읽기/원문영수증/동일mutation유지",
+      "evidence": "disable-compatibility.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-01",
+      "topic": "draft",
+      "action": "태그변경/취소/같은값복귀/배열순서만변경",
+      "expected": "실제확정전현관람/계정무변경·같은의미no-op",
+      "evidence": "draft-state.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-02",
+      "topic": "response_order",
+      "action": "느린preview후추가편집/다른계정/다른관람진입",
+      "expected": "editRevision+actor/requestGeneration guard로늦은응답무시",
+      "evidence": "stale-response.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-03",
+      "topic": "edit_semantics",
+      "action": "근거태그제외/복귀·새태그추가·빈집합",
+      "expected": "picks부분집합/manual균등명시·빈선택확정불가",
+      "evidence": "edit-boundaries.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-04",
+      "topic": "save_failure",
+      "action": "계정저장409/네트워크유실/api.me실패",
+      "expected": "oldvisit보존·변경미확정;명시이번관람만/같은mutation확인",
+      "evidence": "save-failure-ui.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-05",
+      "topic": "ui_merge",
+      "action": "선별색/헤더변경후세로/가로그림·문단·동일시간",
+      "expected": "contain/전역API/문단·100자/주제목/회귀지속",
+      "evidence": "ui-intake-checklist.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P3-06",
+      "topic": "storage_recovery",
+      "action": "새로고침·로그아웃·다른계정·pending receipt복원",
+      "expected": "actor/visit/draft별분리,같은재시도body유지",
+      "evidence": "storage-recovery.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P4-01",
+      "topic": "journey",
+      "action": "격리10점5쌍→3/5/7추천→지도→U10→U11→영수증",
+      "expected": "완주·전시경계/맥락연계·중복방문저장0",
+      "evidence": "browser-journey.md",
+      "status": "not_run",
+      "kind": "browser_planned"
+    },
+    {
+      "id": "P4-02",
+      "topic": "no_regression",
+      "action": "동일합성데이터의v1전후·v2서버순서비교",
+      "expected": "v1ID/순서/score/matchedTags동일,v2가중치불변;우열주장금지",
+      "evidence": "recommendation-diff.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P4-03",
+      "topic": "real_model",
+      "action": "기존cached 이미지모델로비공개1회",
+      "expected": "입력SHA/실제로딩revision/processor/calibration일치;GPT0",
+      "evidence": "real-provenance-smoke.json",
+      "status": "not_run",
+      "kind": "real_model_planned"
+    },
+    {
+      "id": "P4-04",
+      "topic": "ordinary_preservation",
+      "action": "격리검증전후일반환경8모델/미디어/풀상태확인",
+      "expected": "arti-dev및원본16보존·공개풀변경0",
+      "evidence": "ordinary-before-after.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P4-05",
+      "topic": "ci",
+      "action": "기존4job상당명령·새회귀전체실행",
+      "expected": "로컬성공범위기록,원격Actions는미실행으로분리",
+      "evidence": "local-ci-results.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    },
+    {
+      "id": "P4-06",
+      "topic": "rollback",
+      "action": "격리에서disable·additive schema보존·중단재개",
+      "expected": "옛snapshot/영수증/재시도유지·새생성만차단·데이터무삭제",
+      "evidence": "rollback-results.json",
+      "status": "not_run",
+      "kind": "automated_planned"
+    }
+  ],
+  "decisions": [
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7"
+  ],
+  "isolation": {
+    "ordinaryProject": "arti-dev",
+    "ordinaryWritesAllowed": false,
+    "futureProject": "arti-tie-integration",
+    "suggestedApiPort": 14018,
+    "suggestedUiPort": 15178,
+    "fixtures": "synthetic10 and separate target corpora;not final survey",
+    "gptCallsAllowed": 0,
+    "autoDownloadsAllowed": false,
+    "publicActivationAllowed": false
+  },
+  "next": "TP1 implementation only after separate product authorization;human blind review intake parallel;no final survey selection",
+  "invariants": {
+    "maxTags": 8,
+    "recommendationCounts": [
+      3,
+      5,
+      7
+    ],
+    "thresholdChanges": false,
+    "retraining": false,
+    "finalSurveySize": 10,
+    "surveyPairs": 5,
+    "previewLogicalWrites": 0,
+    "referenceIsProductImplementation": false,
+    "concurrencyDatabase": "PostgreSQL"
+  }
+}

@@ -1,8 +1,10 @@
 # 내부 FastAPI 분석 서비스에 원본 자료를 전달하고 완전한 점수 응답만 허용합니다.
 import base64
+import hashlib
 import json
 import math
 import socket
+import re
 from pathlib import Path
 from http.client import HTTPException as HTTPTransportError
 from urllib.error import HTTPError, URLError
@@ -19,11 +21,52 @@ MAX_IMAGE = 10 * 1024 * 1024
 MAX_RESPONSE = 128 * 1024
 
 
+def evidence_digest(value):
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
+                                     separators=(',', ':'), allow_nan=False).encode('utf-8')).hexdigest()
+
+
+def validate_tag_evidence(value, image_sha256, tags, model_id):
+    """구형 null은 허용하되 존재하는 근거는 입력/점수/모델에 결합해 검사합니다. 승인 판정은 아닙니다."""
+    if value is None:
+        return None
+    fields = {'version', 'tagSource', 'imageSha256', 'modelArtifactSha256', 'signature',
+              'signatureSha256', 'scoresSha256', 'evidenceSha256'}
+    signature_fields = {'modelId', 'modelRevision', 'promptPreprocessSha256', 'calibrationSha256',
+                        'tagDefinitionVersion', 'scoreDefinitionVersion'}
+    if not isinstance(value, dict) or set(value) != fields or type(value['version']) is not int or value['version'] != 1:
+        failure()
+    if value['tagSource'] != 'image' or not image_sha256 or value['imageSha256'] != image_sha256:
+        failure()
+    for key in fields - {'version', 'tagSource', 'signature'}:
+        if not isinstance(value[key], str) or not re.fullmatch(r'[a-f0-9]{64}', value[key]):
+            failure()
+    signature = value['signature']
+    if (not isinstance(signature, dict) or set(signature) != signature_fields
+            or any(not isinstance(v, str) for v in signature.values())):
+        failure()
+    if (signature['modelId'] != model_id or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,95}/[A-Za-z0-9][A-Za-z0-9_.-]{0,95}', model_id)
+            or not re.fullmatch(r'[a-f0-9]{40}', signature['modelRevision'])
+            or signature['tagDefinitionVersion'] != 'arti-eight-tags-v1'
+            or signature['scoreDefinitionVersion'] != 'image-calibrated-tag-v1'):
+        failure()
+    for key in ('promptPreprocessSha256', 'calibrationSha256'):
+        if not re.fullmatch(r'[a-f0-9]{64}', signature[key]): failure()
+    try:
+        if (value['signatureSha256'] != evidence_digest(signature)
+                or value['scoresSha256'] != evidence_digest({k: float(v) for k, v in tags.items()})
+                or value['evidenceSha256'] != evidence_digest({k: v for k, v in value.items() if k != 'evidenceSha256'})):
+            failure()
+    except (ValueError, TypeError):
+        failure()
+    return value
+
+
 def failure(status=502, code='PROVIDER_ERROR'):
     raise ContractError(status, code, '분석 서비스 응답을 확인해 주세요.', retryable=True)
 
 
-def analyze(snapshot, *, deadline=None):
+def model_service_base():
     base = settings.ARTI_MODEL_SERVICE_URL.rstrip('/')
     try:
         url = urlsplit(base)
@@ -32,8 +75,14 @@ def analyze(snapshot, *, deadline=None):
     # 관리자가 배포 설정한 내부 주소만 사용하며 작품의 URL은 원격에서 가져오지 않습니다.
     if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.query or url.fragment:
         failure(503, 'AI_UNAVAILABLE')
+    return base
+
+
+def analyze(snapshot, *, deadline=None):
+    base = model_service_base()
     payload = {'title': snapshot.get('title', ''), 'description': snapshot.get('description', '')}
     name = snapshot.get('imageFile')
+    image_sha256 = None
     if name:
         root = Path(settings.MEDIA_ROOT).resolve()
         path = (root / name).resolve()
@@ -47,6 +96,7 @@ def analyze(snapshot, *, deadline=None):
         if not content or len(content) > MAX_IMAGE:
             failure()
         payload['imageBase64'] = base64.b64encode(content).decode('ascii')
+        image_sha256 = hashlib.sha256(content).hexdigest()
     elif snapshot.get('imageUrl'):
         # 외부 이미지 다운로드/SSRF 정책은 별도이며 조용한 텍스트 대체를 막습니다.
         failure(503, 'AI_UNAVAILABLE')
@@ -93,5 +143,8 @@ def analyze(snapshot, *, deadline=None):
     models = value.get('models')
     if not isinstance(models, dict) or any(not isinstance(models.get(k), str) or not models[k] for k in ('image', 'text')):
         failure()
+    evidence = validate_tag_evidence(value.get('tagEvidence'), image_sha256, value['tags'], models['image'])
+    if evidence is not None and (not value['usedImage'] or value.get('tagSource') != 'image' or value.get('imageError')):
+        failure()
     # 공급자 임의 필드를 DB나 공개 응답으로 전달하지 않습니다.
-    return {k: value[k] for k in ('emotions', 'models', 'usedImage', 'usedText', 'tags', 'tagSource') if k in value} | {'imageError': None}
+    return {k: value[k] for k in ('emotions', 'models', 'usedImage', 'usedText', 'tags', 'tagSource') if k in value} | {'imageError': None, 'tagEvidence': evidence}

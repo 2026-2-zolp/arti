@@ -32,11 +32,15 @@ class MapManagementTests(Helpers, TestCase):
         self.assertEqual(saved['floorPlan']['height'], 400)
         self.assertEqual(self.admin.get(self.path).json()['floorPlan'], saved['floorPlan'])
         filename = saved['floorPlan']['file']
-        self.assertEqual(self.public.get('/api/uploads/' + filename).status_code, 200)
+        download = self.public.get('/api/uploads/' + filename)
+        self.assertEqual(download.status_code, 200)
+        self.assertEqual(b''.join(download.streaming_content), self.png)
         self.ex.refresh_from_db()
         self.ex.status = 'draft'; self.ex.save()
         self.assertEqual(self.public.get('/api/uploads/' + filename).status_code, 404)
-        self.assertEqual(self.admin.get('/api/admin/uploads/' + filename).status_code, 200)
+        private_download = self.admin.get('/api/admin/uploads/' + filename)
+        self.assertEqual(private_download.status_code, 200)
+        self.assertEqual(b''.join(private_download.streaming_content), self.png)
 
     def test_same_ratio_replacement_resets_only_target_exhibition(self):
         first = self.upload(self.ex.version)

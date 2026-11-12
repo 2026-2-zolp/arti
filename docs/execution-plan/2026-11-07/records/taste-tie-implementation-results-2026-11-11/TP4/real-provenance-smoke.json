@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "analysisCalls": 1,
+  "externalGptCalls": 0,
+  "offline": true,
+  "inputSha256": "2c11a4b8020dc3cc976a71a0c5db10453fef526f99f0e47234c12a057bce4448",
+  "signature": {
+    "modelId": "openai/clip-vit-base-patch32",
+    "modelRevision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "calibrationSha256": "f0879cf33068ba918d42e4cef0dc8d14e638cca3a64a3b74f1c2927f5ffdffca",
+    "tagDefinitionVersion": "arti-eight-tags-v1",
+    "promptPreprocessSha256": "65d5f00fd564752e26d654c64cbd1b8758fe2970f64cf11c1e6f9946f24572b1",
+    "scoreDefinitionVersion": "image-calibrated-tag-v1"
+  },
+  "signatureSha256": "1d3de249849a7c32d8cc5d70d2f7446a5c7b9508fdfeab70b42bb5b56c00522b",
+  "artifactManifestSha256": "cf8ad1aa030832bcac901ec70f6a1fa594592782dcdf440cbf4f280cf86f9c19",
+  "processorManifestSha256": "480e3d94797984371983d597fa1233dd63ee9d078546e8230b0c4ab9289074ec",
+  "calibrationSha256": "f0879cf33068ba918d42e4cef0dc8d14e638cca3a64a3b74f1c2927f5ffdffca",
+  "scoresSha256": "731ef3cbaf93b92a1846637965123c5a6cbd949ffb4a37cd06bd13cc7c0de931",
+  "storedRevision": 1,
+  "storedStatus": "suggested",
+  "elapsedSeconds": 4.762,
+  "runtime": {
+    "torch": "2.15.0+cpu",
+    "transformers": "4.57.6",
+    "Pillow": "13.0.0",
+    "tokenizers": "0.22.2",
+    "safetensors": "0.8.0"
+  }
+}

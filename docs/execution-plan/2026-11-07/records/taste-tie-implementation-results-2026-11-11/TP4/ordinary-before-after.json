@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "readOnly": true,
+  "comparedModelCounts": {
+    "Exhibition": 2,
+    "Artwork": 25,
+    "Account": 0,
+    "Session": 0,
+    "Visit": 0,
+    "VisitReaction": 0,
+    "SurveyPool": 1,
+    "SurveyEntry": 10
+  },
+  "databaseSha256": "a97cb09ced46464673b2cb9c3c2126418ebee4540d8fa4fbc6d72377c2dc66a2",
+  "mediaSha256": "d979bc931979b174828a5b5c18f7561bcd61b604c81ccf7e9f57ca6857f5b245",
+  "activeSurveys": 0,
+  "originalsVerified": 16,
+  "originalsInventorySha256": "9b2382c2ebdb44766fb21ecc8d3cd2fa2ce78895335a5c4d169fce7dd02bab69",
+  "databaseMatches": true,
+  "mediaMatches": true,
+  "originalsMatch": true,
+  "ordinaryContainersMatch": true,
+  "isolatedPostgresImage": "postgres:17-alpine",
+  "sharedVolumes": 0,
+  "storage": "tmpfs"
+}

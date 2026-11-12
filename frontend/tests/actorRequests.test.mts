@@ -58,3 +58,10 @@ test('failed login credentials do not expire an existing valid session', async()
  await assert.rejects(api.login('synthetic@example.test','incorrect'));
  assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));assert.deepEqual(events,[]);
 });
+
+test('survey lookup uses a global endpoint without an exhibition parameter', async () => {
+ setup(); const urls:string[]=[];
+ globalThis.fetch=(async (url)=>{urls.push(String(url));return Response.json({ready:false,poolId:null,revision:null,poolVersion:'empty',pairs:[],artworks:[]});}) as typeof fetch;
+ const pool=await api.tastePool();
+ assert.deepEqual(urls,['/api/taste-pool']);assert.equal(pool.ready,false);
+});

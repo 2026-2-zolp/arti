@@ -12,8 +12,13 @@ from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from .http import ContractError
 from .models import Account, Session
+from .model_service import evidence_digest
 from .recommendations import profile_snapshot
-from .views import DUMMY_PASSWORD, LoginThrottle, public_exhibition, public_works
+from .serializers import TasteProfileInput
+from .taste_evidence import profile_input, uuid_value
+from .taste_resolution import conflict, invalid, locked_actor, resolve, taste_transaction
+from .constants import TAGS
+from .views import DUMMY_PASSWORD, LoginThrottle, public_exhibition
 
 
 def member(request, user_id=None):
@@ -50,8 +55,11 @@ def signup(request):
         validate_email(email)
     except ValidationError:
         raise ContractError(400, 'VALIDATION_ERROR', '이메일 형식을 확인해 주세요.')
-    if not 8 <= len(password) <= 128 or not re.search(r'[A-Za-z]',password) or not re.search(r'[0-9]',password) or not 1 <= len(nickname.strip()) <= 100:
-        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8자 이상, 이름은 100자 이내로 입력해 주세요.')
+    if not 8 <= len(password) <= 128 or not re.search(r'[A-Za-z]',password) or not re.search(r'[0-9]',password):
+        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8~128자로 입력해 주세요.')
+    # 닉네임은 화면과 동일하게 선택 입력이며, 공백은 빈 값으로 보존합니다.
+    if len(nickname.strip()) > 100:
+        raise ContractError(400, 'VALIDATION_ERROR', '닉네임은 100자 이내로 입력해 주세요.')
     try:
         with transaction.atomic():
             a = Account.objects.create(login_id=email, email=email, nickname=nickname.strip(), role='user', password=make_password(password))
@@ -87,7 +95,7 @@ def logout(request):
 
 @api_view(['PUT'])
 def tastes(request, user_id):
-    a = member(request, user_id)
+    member(request, user_id)
     tags = request.data.get('tastes')
     profile = request.data.get('tasteProfile')
     if profile is not None and not isinstance(profile,dict):
@@ -95,13 +103,52 @@ def tastes(request, user_id):
     if profile and profile.get('source') == 'saved':
         raise ContractError(400, 'VALIDATION_ERROR', '새 선택 또는 수동 태그만 저장할 수 있어요.')
     ex_id = request.data.get('exhibitionId')
-    works = list(public_works(public_exhibition(ex_id).id)) if ex_id else []
-    snapshot = profile_snapshot(tags, profile, works, a, ex_id)
-    with transaction.atomic():
-        a = Account.objects.select_for_update().get(pk=a.id)
-        a.tastes, a.taste_profile = tags, snapshot
-        a.taste_profile_version += 1
-        a.save(update_fields=['tastes', 'taste_profile', 'taste_profile_version'])
+    if ex_id is not None and not isinstance(ex_id, str):
+        invalid()
+    if not isinstance(tags, list) or any(not isinstance(tag, str) or tag not in TAGS for tag in tags) or len(set(tags)) != len(tags):
+        invalid()
+    if profile is not None:
+        form = TasteProfileInput(data=profile)
+        form.is_valid(raise_exception=True)
+        profile = form.validated_data
+    v2 = profile is not None and profile['version'] == 2
+    expected = request.data.get('expectedSavedProfileVersion')
+    if (v2 or 'expectedSavedProfileVersion' in request.data) and (type(expected) is not int or expected < 1):
+        invalid('현재 저장된 취향 버전이 필요해요.')
+    if v2 and set(tags) != set(profile['selectedTags']):
+        invalid()
+    mutation = uuid_value(request.data.get('clientMutationId')) if v2 else None
+    request_hash = evidence_digest({'version': expected, 'exhibitionId': ex_id, 'profile': profile_input(profile),
+                                    'counts': profile['counts']}) if v2 else None
+    with taste_transaction():
+        account = locked_actor(request)
+        receipt = account.taste_write_receipt or {}
+        if v2 and receipt.get('mutationId') == mutation:
+            if (receipt.get('requestHash') != request_hash or receipt.get('savedVersion') != account.taste_profile_version
+                    or receipt.get('binding') != evidence_digest([account.tastes, account.taste_profile])):
+                conflict()
+            return Response(status=204)
+        if expected is not None and expected != account.taste_profile_version:
+            conflict()
+        if expected is None and isinstance(account.taste_profile, dict) and account.taste_profile.get('version') == 2:
+            conflict()
+        if ex_id:
+            public_exhibition(ex_id)
+        if v2:
+            snapshot, _, _ = resolve(profile, tags, account, ex_id)
+            tags = snapshot['selectedTags']
+        else:
+            snapshot = profile_snapshot(tags, profile, [], account, ex_id)
+        fields = ['taste_write_receipt']
+        if not v2 or (account.tastes, account.taste_profile) != (tags, snapshot):
+            account.tastes, account.taste_profile = tags, snapshot
+            account.taste_profile_version += 1
+            fields += ['tastes', 'taste_profile', 'taste_profile_version']
+        account.taste_write_receipt = {
+            'mutationId': mutation, 'requestHash': request_hash, 'savedVersion': account.taste_profile_version,
+            'binding': evidence_digest([account.tastes, account.taste_profile]),
+        } if v2 else None
+        account.save(update_fields=fields)
     return Response(status=204)
 
 

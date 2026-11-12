@@ -41,10 +41,11 @@ interface Props {
   alt: string;
   className?: string;
   ratio?: number; // 가로/세로 비율
+  fit?: 'cover' | 'contain'; // 비교 화면에서는 작품 전체를 보존합니다.
 }
 
 /** 작품 이미지와 대체 표시를 렌더링합니다. */
-export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 3 }: Props) {
+export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 3, fit = 'cover' }: Props) {
   const shapes = useMemo(() => {
     const rnd = mulberry32(hash(seed));
     const pick = () => palette[Math.floor(rnd() * palette.length)];
@@ -70,7 +71,7 @@ export function ArtImage({ seed, palette, imageUrl, alt, className, ratio = 4 / 
         className={className}
         src={resolved.src}
         alt={alt}
-        style={{ aspectRatio: ratio, objectFit: 'cover', display: 'block', width: '100%' }}
+        style={{ aspectRatio: ratio, objectFit: fit, display: 'block', width: '100%' }}
         onError={() => setFailed((n) => n + 1)}
       />
     );

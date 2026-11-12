@@ -45,7 +45,8 @@ function LiveReceipt() {
   const cacheKey = `arti.receipt.${initial.user?.id ?? 'guest'}.${initial.visitId}`;
   const pendingKey = `arti.pendingReceipt.${initial.user?.id}.${initial.visitId}`;
   const {data, error, reload} = useAsync(() => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]), [exhibitionId]);
-  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() => load(cacheKey, null, 'session'));
+  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() =>
+    load(pendingKey, load(cacheKey, null, 'session'), 'session'));
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
   const [interp, setInterp] = useState<Interpretation | 'failed' | null>(() => load(cacheKey + '.interpretation', null, 'session'));
   const [attempt, setAttempt] = useState(0);

@@ -67,7 +67,8 @@
       "guided_hints": [
         "힌트"
       ],
-      "guide_status": "suggested"
+      "guide_status": "suggested",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art02",
@@ -96,7 +97,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art03",
@@ -125,7 +127,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art04",
@@ -154,7 +157,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art05",
@@ -183,7 +187,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art06",
@@ -212,7 +217,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art07",
@@ -241,7 +247,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art08",
@@ -270,7 +277,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art09",
@@ -299,7 +307,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art10",
@@ -328,7 +337,8 @@
       "guide_intro": "",
       "guided_looking": [],
       "guided_hints": [],
-      "guide_status": "none"
+      "guide_status": "none",
+      "tag_status": "confirmed"
     },
     {
       "id": "fixture-art11",

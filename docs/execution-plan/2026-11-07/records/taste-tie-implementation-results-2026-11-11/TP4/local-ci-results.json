@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "frontend": {
+    "tests": 34,
+    "typecheck": "passed",
+    "build": "passed"
+  },
+  "django": {
+    "tests": 151,
+    "check": "passed",
+    "migrationCheck": "passed",
+    "isolatedMigrations": "0001 through 0004",
+    "newRegression": "test_equal_dwell_preserves_receipt_across_postgres_round_trip"
+  },
+  "modelContracts": {
+    "tests": 38,
+    "offline": true,
+    "warnings": 1
+  },
+  "planAndMaterials": {
+    "plan": "passed",
+    "guardrails": "passed",
+    "w02Contracts": "passed",
+    "scripts": 53,
+    "materialAudit": "passed"
+  },
+  "remoteActionsRun": false
+}

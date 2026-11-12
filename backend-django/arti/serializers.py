@@ -11,19 +11,36 @@ class PickInput(serializers.Serializer):
 
 # 취향 프로필의 출처·선택 이력·버전을 검증합니다.
 class TasteProfileInput(serializers.Serializer):
-    version = serializers.IntegerField(min_value=1, max_value=1)
+    version = serializers.IntegerField(min_value=1, max_value=2)
     source = serializers.ChoiceField(choices=('picks', 'manual', 'saved'))
     poolVersion = serializers.CharField(max_length=64, allow_null=True, required=False, default=None)
     picks = PickInput(many=True, max_length=5, required=False, default=list)
     counts = serializers.DictField(child=serializers.IntegerField(min_value=0, max_value=5), required=False, default=dict)
     selectedTags = serializers.ListField(child=serializers.ChoiceField(choices=TAGS), max_length=8)
     savedProfileVersion = serializers.IntegerField(min_value=1, required=False)
+    tieContextVersion = serializers.RegexField(r'\A[0-9a-f]{64}\Z', required=False)
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict) and ('tieEvidence' in data or 'tagOrder' in data):
+            raise serializers.ValidationError({'tieEvidence': '서버가 계산하는 취향 근거는 제출할 수 없어요.'})
+        value = super().to_internal_value(data)
+        if value['version'] == 2:
+            if type(data.get('version')) is not int:
+                raise serializers.ValidationError({'version': '취향 프로필 버전을 확인해 주세요.'})
+            if 'savedProfileVersion' in data and type(data['savedProfileVersion']) is not int:
+                raise serializers.ValidationError({'savedProfileVersion': '저장된 취향 버전을 확인해 주세요.'})
+            picks = data.get('picks', [])
+            if isinstance(picks, list) and any(isinstance(p, dict) and type(p.get('pairIndex')) is not int for p in picks):
+                raise serializers.ValidationError({'picks': '선택한 쌍 번호를 확인해 주세요.'})
+        return value
 
     def validate(self, value):
         if any(k not in TAGS for k in value['counts']) or len(set(value['selectedTags'])) != len(value['selectedTags']):
             raise serializers.ValidationError('Invalid or duplicate taste tags.')
         if value['source'] == 'saved' and 'savedProfileVersion' not in value:
             raise serializers.ValidationError('savedProfileVersion is required.')
+        if value['version'] == 2 and value['source'] == 'picks' and not value.get('tieContextVersion'):
+            raise serializers.ValidationError('취향 조사 근거 버전이 필요해요.')
         return value
 
 

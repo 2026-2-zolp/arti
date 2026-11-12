@@ -1,0 +1,214 @@
+{
+  "format": "arti-exhibition-intake",
+  "version": 1,
+  "exhibition": {
+    "id": "ex-survey-candidates-20261110",
+    "title": "취향 조사 후보 자료 묶음",
+    "subtitle": "내부 후보 관리용·실제 전시 아님·비공개",
+    "venue": "내부 자료 관리·전시장 없음",
+    "startDate": "2026-11-10",
+    "endDate": "2026-12-31",
+    "kind": "demo_reconstruction",
+    "basis": "기존 Artwork 전시FK를 유지하기 위한 비공개 관리 묶음. 실제 출품·일정이 아니며 조사 승인·공개 전환 안 함."
+  },
+  "items": [
+    {
+      "id": "survey-candidate-cap-03",
+      "recordId": "survey-intake-cap-03",
+      "assetId": "asset-090c7891eebf50608b5f8c60",
+      "file": "survey-candidate-cap-03-090c7891eebf.jpg",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c",
+      "title": "미델하르니스의 가로수길",
+      "artist": "메인더르트 호베마",
+      "year": "1689",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 길과 가로수가 화면 안쪽으로 이어지고 흐린 하늘이 넓게 보입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.nationalgallery.org.uk/paintings/meindert-hobbema-the-avenue-at-middelharnis",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-06",
+      "recordId": "survey-intake-cap-06",
+      "assetId": "asset-b0d49c8c196eef1aef0a2bd4",
+      "file": "survey-candidate-cap-06-b0d49c8c196e.jpg",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7",
+      "title": "우유를 따르는 여인",
+      "artist": "요하네스 페르메이르",
+      "year": "1660년경",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 한 사람이 그릇에 우유를 따르며 창가의 빛이 얼굴과 식탁에 닿습니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.rijksmuseum.nl/en/collection/object/The-Milkmaid--42dd0e658c2979aec8e144d2357c55c0",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-12",
+      "recordId": "survey-intake-cap-12",
+      "assetId": "asset-19a4dcdbb31a5aaf1d890ac6",
+      "file": "survey-candidate-cap-12-19a4dcdbb31a.jpg",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90",
+      "title": "브로드웨이 부기우기",
+      "artist": "피트 몬드리안",
+      "year": "1942–1943",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 노란 선과 빨강·파랑의 작은 네모가 격자를 이룹니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.moma.org/collection/works/78682",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-38",
+      "recordId": "survey-intake-cap-38",
+      "assetId": "asset-6abd896645953b2aa0737daa",
+      "file": "survey-candidate-cap-38-6abd89664595.jpg",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01",
+      "title": "아이의 목욕",
+      "artist": "메리 커샛",
+      "year": "1893",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 성인과 아이가 가까이 앉아 발을 씻는 장면과 옷의 무늬가 보입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.artic.edu/artworks/111442/the-child-s-bath",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-36",
+      "recordId": "survey-intake-cap-36",
+      "assetId": "asset-a1d77d070e6a2c36ed0598c3",
+      "file": "survey-candidate-cap-36-a1d77d070e6a.jpg",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b",
+      "title": "파라솔을 든 여인",
+      "artist": "클로드 모네",
+      "year": "1875",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 양산을 든 인물과 뒤쪽의 작은 인물, 하늘과 풀밭이 보입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.nga.gov/artworks/61379-woman-parasol-madame-monet-and-her-son",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-19",
+      "recordId": "survey-intake-cap-19",
+      "assetId": "asset-6630baa71988c3d33957fbf2",
+      "file": "survey-candidate-cap-19-6630baa71988.jpg",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08",
+      "title": "목수 성 요셉",
+      "artist": "조르주 드 라 투르",
+      "year": "1642–1644년경",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 어두운 공간에서 촛불이 인물의 얼굴과 손 주변을 밝힙니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://collections.louvre.fr/en/ark:/53355/cl010063817",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-28",
+      "recordId": "survey-intake-cap-28",
+      "assetId": "asset-365e0005d4f13012f19f12c9",
+      "file": "survey-candidate-cap-28-365e0005d4f1.jpg",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c",
+      "title": "가나가와 앞바다의 큰 파도",
+      "artist": "가쓰시카 호쿠사이",
+      "year": "1830–1832년경",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 큰 파도와 배, 멀리 작은 산이 보입니다. 개별 판본은 미확정입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://www.metmuseum.org/art/collection/search/45434",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-21",
+      "recordId": "survey-intake-cap-21",
+      "assetId": "asset-cf028c0b33e1036c8d115aab",
+      "file": "survey-candidate-cap-21-cf028c0b33e1.jpg",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70",
+      "title": "춤",
+      "artist": "앙리 마티스",
+      "year": "1910",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 붉은 인물들이 손을 이어 원을 이루며 파란색과 초록색 면이 배경에 놓입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://en.wikipedia.org/wiki/Dance_(Matisse)",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    },
+    {
+      "id": "survey-candidate-cap-02",
+      "recordId": "survey-intake-cap-02",
+      "assetId": "asset-1e71bb2882de06748a586616",
+      "file": "survey-candidate-cap-02-1e71bb2882de.jpg",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e",
+      "title": "시에라네바다 산맥 속에서",
+      "artist": "앨버트 비어슈타트",
+      "year": "1868",
+      "description": "[비공개 관찰 초안·공식 해설 아님] 큰 산과 호수, 구름 사이의 빛, 앞쪽 나무와 동물이 보입니다.",
+      "source": "기존Git40 캡처 재사용 후보; 공식/소장품 메타데이터와 대조,이미지취득·사용범위·사람검수 미확정",
+      "referenceUrl": "https://americanart.si.edu/artwork/among-sierra-nevada-california-2059",
+      "contentOrigin": "team_draft",
+      "identityStatus": "candidate",
+      "rightsStatus": "unverified",
+      "summary": "",
+      "guide": {
+        "intro": "",
+        "questions": [],
+        "hints": []
+      }
+    }
+  ]
+}

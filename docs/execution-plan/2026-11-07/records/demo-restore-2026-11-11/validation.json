@@ -1,0 +1,169 @@
+{
+  "testedCommit": "9fd5434cdcb93a9c4979464f8842b2360550a96a",
+  "dateKst": "2026-11-11",
+  "scope": "Local synthetic exhibition; real Django/Gunicorn and PostgreSQL 17; desktop Chrome mobile emulation; local fault-injecting docent provider.",
+  "source": {
+    "exhibition": "fixture-ex01",
+    "picks": 5,
+    "visitedWorks": 3,
+    "floorPlanHttp200": true,
+    "providerHttpStatuses": [
+      500,
+      200
+    ],
+    "docentHttpStatuses": [
+      502,
+      200
+    ],
+    "inputPreservedAndSameQuestionRetried": true,
+    "receiptHttpStatuses": [
+      201,
+      200
+    ],
+    "viewports": [
+      {
+        "name": "map",
+        "width": 360,
+        "height": 740,
+        "scrollWidth": 360,
+        "touch": 5
+      },
+      {
+        "name": "artwork",
+        "width": 360,
+        "height": 740,
+        "scrollWidth": 360,
+        "touch": 5
+      },
+      {
+        "name": "docent-failure",
+        "width": 360,
+        "height": 740,
+        "scrollWidth": 360,
+        "touch": 5
+      },
+      {
+        "name": "docent-success",
+        "width": 360,
+        "height": 740,
+        "scrollWidth": 360,
+        "touch": 5
+      },
+      {
+        "name": "receipt",
+        "width": 360,
+        "height": 740,
+        "scrollWidth": 360,
+        "touch": 5
+      }
+    ]
+  },
+  "restored": {
+    "browserReceiptHttp": 200,
+    "browserReceiptMatchesSource": true,
+    "apiChecks": {
+      "receipt": 200,
+      "identicalReplay": 200,
+      "changedReplay": 409,
+      "otherAccount": 403,
+      "anonymous": 401,
+      "snapshotUnchanged": true,
+      "databaseReady": 200,
+      "publicMediaAndReviewBoundary": {
+        "/api/artworks/fixture-art01": 200,
+        "/api/uploads/tp4-floor.png": 200,
+        "/api/artworks/fixture-art13": 404,
+        "/api/uploads/fixture-private.png": 404
+      }
+    },
+    "guest": {
+      "works": 3,
+      "picks": 5,
+      "docentStatuses": [
+        502
+      ],
+      "continuedAfterDocentFailure": true,
+      "visitPostCount": 0,
+      "mobileChecks": [
+        {
+          "name": "map",
+          "width": 390,
+          "height": 844,
+          "scrollWidth": 390,
+          "touch": 5
+        },
+        {
+          "name": "artwork",
+          "width": 390,
+          "height": 844,
+          "scrollWidth": 390,
+          "touch": 5
+        },
+        {
+          "name": "docent-failure",
+          "width": 390,
+          "height": 844,
+          "scrollWidth": 390,
+          "touch": 5
+        },
+        {
+          "name": "receipt",
+          "width": 390,
+          "height": 844,
+          "scrollWidth": 390,
+          "touch": 5
+        }
+      ],
+      "databaseAndMediaUnchanged": true
+    }
+  },
+  "backup": {
+    "dumpSha256": "ef06f0b754898a75eea1310a3ef01369e653f060df840476eb9c28beaafabb93",
+    "mediaArchiveSha256": "0ef28f9cd4fe206a25987d446c6499a4cffb558feb8e318104a69cf7421e235f",
+    "mediaFileSha256": {
+      "fixture-private.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+      "fixture-public.png": "e1105c516ed83418caaf3709ddd266744d37d0594b9388bd500c09ae4b59f390",
+      "tp4-floor.png": "2c11a4b8020dc3cc976a71a0c5db10453fef526f99f0e47234c12a057bce4448"
+    },
+    "sourceLogicalSha256": "47584cfccd27e2c5af9beb2ad071642298b747f9054b6b128fed323368158593",
+    "restoredLogicalSha256": "47584cfccd27e2c5af9beb2ad071642298b747f9054b6b128fed323368158593",
+    "beforeRestartLogicalSha256": "e66871c0a113abbc0ef06f9b557c3267b97f035d8467aa550e660f4017d3d624",
+    "afterRestartLogicalSha256": "e66871c0a113abbc0ef06f9b557c3267b97f035d8467aa550e660f4017d3d624",
+    "sourceCounts": {
+      "Account": 1,
+      "Artwork": 13,
+      "Exhibition": 2,
+      "Session": 1,
+      "SurveyEntry": 10,
+      "SurveyPool": 1,
+      "Visit": 1,
+      "VisitReaction": 1
+    },
+    "afterRestartCounts": {
+      "Account": 2,
+      "Artwork": 13,
+      "Exhibition": 2,
+      "Session": 3,
+      "SurveyEntry": 10,
+      "SurveyPool": 1,
+      "Visit": 1,
+      "VisitReaction": 1
+    },
+    "visitAndReactionSha256BeforeAfter": "b4b71f0208343030205c475f36e57c06eb6f4796799282de87569a0bb267ea2c",
+    "reviewBoundary": {
+      "guide": "confirmed",
+      "protected": "source_check",
+      "summary": "confirmed"
+    }
+  },
+  "pending": [
+    "Physical mobile retest",
+    "Approved Yoo Youngkuk works and actual floor-plan content",
+    "Live provider quality and target-host recovery"
+  ],
+  "environment": {
+    "postgres": "17.11",
+    "chrome": "156.0.8078.81",
+    "sourceAndTargetVolumesDistinct": true
+  }
+}

@@ -67,6 +67,8 @@ class Artwork(models.Model):
     show_image = models.BooleanField(default=True)
     tags = models.JSONField(default=list, blank=True)
     tag_scores = models.JSONField(null=True, default=None, blank=True)
+    tag_score_evidence = models.JSONField(null=True, default=None, blank=True)
+    tag_score_revision = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True)
     guided_looking = models.JSONField(default=list, blank=True)
     guided_hints = models.JSONField(default=list, blank=True)
@@ -118,8 +120,39 @@ class Artwork(models.Model):
         if self.tag_scores is not None:
             if not isinstance(self.tag_scores,dict) or any(k not in TAGS or type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for k,v in self.tag_scores.items()):
                 raise ValidationError('Invalid tag scores.')
+        if self.tag_score_evidence is not None:
+            from .tag_scores import validate_stored_evidence
+            validate_stored_evidence(self)
         if self.emotion_status=='confirmed' and (not isinstance(self.analysis,dict) or not isinstance(self.analysis.get('emotions'),dict)):
             raise ValidationError('Confirmed emotion requires reviewed scores.')
+
+
+# 전시와 독립적인 조사 작품군과 명시적 선정 순서를 저장합니다.
+class SurveyPool(models.Model):
+    id = models.CharField(primary_key=True, max_length=64, default=external_id)
+    name = models.CharField(max_length=100)
+    revision = models.PositiveIntegerField(default=1)
+    active = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(revision__gte=1), name='survey_revision_positive'),
+            models.UniqueConstraint(fields=['active'], condition=Q(active=True), name='survey_one_active'),
+        ]
+
+
+class SurveyEntry(models.Model):
+    pool = models.ForeignKey(SurveyPool, on_delete=models.CASCADE, related_name='entries')
+    artwork = models.ForeignKey(Artwork, on_delete=models.PROTECT, related_name='survey_entries')
+    position = models.PositiveSmallIntegerField()
+
+    class Meta:
+        ordering = ['position']
+        constraints = [
+            models.CheckConstraint(condition=Q(position__gte=0, position__lte=9), name='survey_position_bounds'),
+            models.UniqueConstraint(fields=['pool', 'position'], name='survey_position_unique'),
+            models.UniqueConstraint(fields=['pool', 'artwork'], name='survey_artwork_unique'),
+        ]
 
 
 # 회원·관리자 계정과 저장된 취향을 관리합니다.
@@ -134,6 +167,7 @@ class Account(models.Model):
     tastes = models.JSONField(default=list, blank=True)
     taste_profile = models.JSONField(null=True, default=None, blank=True)
     taste_profile_version = models.PositiveIntegerField(default=1)
+    taste_write_receipt = models.JSONField(blank=True, default=None, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     @property

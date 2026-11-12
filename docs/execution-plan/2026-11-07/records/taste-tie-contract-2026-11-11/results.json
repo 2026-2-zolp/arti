@@ -1,0 +1,305 @@
+{
+  "ok": true,
+  "cases": [
+    {
+      "id": "TC01",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC02",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC03",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC04",
+      "passed": true,
+      "tagOrder": [
+        "light",
+        "people",
+        "warm"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC05",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC06",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC07",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC08",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC09",
+      "passed": true,
+      "error": "VERSION_CONFLICT"
+    },
+    {
+      "id": "TC10",
+      "passed": true,
+      "error": "VERSION_CONFLICT"
+    },
+    {
+      "id": "TC11",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary",
+        "frequency"
+      ]
+    },
+    {
+      "id": "TC12",
+      "passed": true,
+      "tagOrder": [
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC13",
+      "passed": true,
+      "error": "VALIDATION_ERROR"
+    },
+    {
+      "id": "TC14",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary"
+      ]
+    },
+    {
+      "id": "TC15",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "abstract",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC16",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC17",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "frozen_snapshot"
+      ]
+    },
+    {
+      "id": "TC18",
+      "passed": true,
+      "error": "VERSION_CONFLICT"
+    },
+    {
+      "id": "TC19",
+      "passed": true,
+      "error": "AUTH_REQUIRED"
+    },
+    {
+      "id": "TC20",
+      "passed": true,
+      "error": "VALIDATION_ERROR"
+    },
+    {
+      "id": "TC21",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC22",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC23",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC24",
+      "passed": true,
+      "tagOrder": [
+        "warm",
+        "light",
+        "people"
+      ],
+      "rules": [
+        "ai_secondary",
+        "frequency"
+      ]
+    },
+    {
+      "id": "TC25",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC26",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback",
+        "frequency"
+      ]
+    },
+    {
+      "id": "TC27",
+      "passed": true,
+      "error": "VERSION_CONFLICT"
+    },
+    {
+      "id": "TC28",
+      "passed": true,
+      "error": "VERSION_CONFLICT"
+    },
+    {
+      "id": "TC29",
+      "passed": true,
+      "tagOrder": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "rules": [
+        "canonical_fallback"
+      ]
+    },
+    {
+      "id": "TC30",
+      "passed": true,
+      "error": "VALIDATION_ERROR"
+    }
+  ],
+  "scope": "synthetic contract cases;no product/API/DB application"
+}

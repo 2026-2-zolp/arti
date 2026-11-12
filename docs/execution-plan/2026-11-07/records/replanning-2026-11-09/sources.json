@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "id": "41334713f16781d7af64feabbc012ea2",
+      "title": "🎓 11/9 교수님 컨설팅 · 완성도·진도표 수정 및 최종 일정",
+      "url": "https://app.notion.com/p/41334713f16781d7af64feabbc012ea2",
+      "lastEdited": "2026-11-09T08:22:40.344Z",
+      "scope": "Notion reconstructed record read; original audio/STT/HWP not opened in this task"
+    },
+    {
+      "id": "41334713f1678159ad5de6058b3b54b9",
+      "title": "📝 11/9 팀 회의 · 통합·태그 검증·시연·보고서 준비",
+      "url": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9",
+      "lastEdited": "2026-11-09T07:37:41.396Z",
+      "scope": "Notion reconstructed record read; original audio/STT/HWP not opened in this task"
+    },
+    {
+      "id": "3d434713f167812c91d8c24ff78e2b70",
+      "title": "개발 90% · 구현진도표",
+      "url": "https://app.notion.com/p/3d434713f167812c91d8c24ff78e2b70",
+      "lastEdited": "2026-11-09T07:39:32.318Z",
+      "scope": "Notion reconstructed record read; original audio/STT/HWP not opened in this task"
+    }
+  ],
+  "remotePushCI": {
+    "id": 42556157089,
+    "head": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/2026-2-zolp/arti/actions/runs/42556157089",
+    "updated": "2026-11-09T03:25:19Z"
+  }
+}

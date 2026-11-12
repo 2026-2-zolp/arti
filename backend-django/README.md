@@ -12,7 +12,7 @@
 - 관리자 비공개 이미지/도면은 /api/admin/uploads를 헤더인증으로 fetch한 뒤 임시objectURL로 표시한다. 토큰을URL에넣거나외부이미지에전송하지않고화면이바뀌면취소/해제한다.
 - POST /api/recommendations는 기존 {exhibitionId,tastes,duration}를 받고 tasteProfile을 선택적으로 검증한다. picks빈도는 서버pool로 재계산, 출처가없는 과거태그는균등가중한다. empty tastes는일반추천0점. saved는 본인서버snapshot만 허용하고 회원 로그인/프로필 저장과 본인 snapshot 재사용을 연결했다.
 - GET /api/exhibitions/:id/taste-pool는 정확히10점5쌍 또는 ready:false다. U05는 서버의 pool/version과 원본 선택·빈도를 전달한다.
-- 상태확인: /api/health는 process/AI미연결 표시, /api/ready는 실제 PostgreSQL과 migration된 테이블 확인.
+- 상태 확인은 `/api/health`에서 API 프로세스와 도슨트·작품 분석 설정(`disabled`, `invalid`, `configured`)을 봅니다. 실제 호출은 격리 작품의 질문·분석 요청으로 확인합니다. `/api/ready`는 PostgreSQL 접속과 필요한 테이블을 확인하며 실패 시 `503 DB_NOT_READY`를 반환합니다.
 - W05 쓰기/회원/영수증과 도슨트 맥락 API를 구현했다. 실제 provider는 W07에서 연결하며 기본 호출은503 AI_UNAVAILABLE다. 비밀번호 재설정/전시 일괄 분석은501 FEATURE_DISABLED다. Express에 숨은 fallback은 없다. 501을 성공/실제AI로 표시하지 않는다.
 
 ## 로컬 실행 — 저장소 루트에서
@@ -82,3 +82,8 @@ requirements.in에서 Django5.2 LTS/DRF3.16 경계를정하고 requirements.lock
 ## 텍스트 AI 연결 설정 준비
 
 기본은 disabled/503이다. 사용자 요청으로 OpenAI 호환 Chat Completions adapter를 준비했다. 서버의 ignored .env.compose에 provider/key/base URL/model을 명시하면 텍스트5종만 연결된다. 태그/감정은 별도이며 Kanana 자동대체는 없다. [설정·지원범위](../docs/operations/AI_설정과모델선택.md), [로컬63검사·미검증경계](../docs/execution-plan/2026-11-07/records/W07-preparation/README.md). 실제 유료 모델 품질을 검증한 상태는 아니다.
+
+
+## 전시 독립 조사 계약 개정 (2026-11-10)
+
+기존 전시별 첫10점 설명은 [조사풀 운영 안내](../docs/operations/취향조사풀-운영.md)로 개정한다. GET /api/taste-pool과 명시적 SurveyPool/SurveyEntry를 사용한다. 원문·태그·이미지 검수와 운영자 활성화가 필요하며, 일반 전시 목록/추천 공개 조건은 유지한다. 활성·준비된 조사풀의 이미지는 소속 전시 공개 상태와 별도로 노출된다. 신규 마이그레이션은 실제 자료를 선정하지 않아 기존 환경은 조사 준비부족일 수 있다.

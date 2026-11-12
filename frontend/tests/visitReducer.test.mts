@@ -33,3 +33,12 @@ test('frequency provenance survives selection and recommendation storage', () =>
   s=reducer(s,{type:'setRecommendations',recs:[],generation:s.requestGeneration});
   assert.equal(s.tasteProfile?.counts.warm,4);assert.equal(s.tasteProfile?.picks[0].artworkId,'a');
 });
+
+test('same duration preserves recommendations, visit ID and recorded reactions', () => {
+  const s={...init(),duration:'30m' as const,startedAt:1,viewed:['a'],reactions:{a:'like' as const},dwell:{a:42},recommendations:[{artworkId:'a'} as any]};
+  const next=reducer(s,{type:'setDuration',duration:'30m'});
+  assert.equal(next,s);
+  assert.equal(next.visitId,s.visitId);
+  assert.deepEqual(next.reactions,{a:'like'});
+  assert.equal(next.dwell.a,42);
+});

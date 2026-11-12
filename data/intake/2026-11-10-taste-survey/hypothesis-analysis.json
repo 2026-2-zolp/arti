@@ -1,0 +1,657 @@
+{
+  "ok": true,
+  "scope": "selection hypotheses, not model/accuracy/human approval",
+  "coverage": {
+    "landscape": 4,
+    "cool": 3,
+    "people": 5,
+    "light": 4,
+    "abstract": 2,
+    "vivid": 2,
+    "soft": 2,
+    "warm": 2
+  },
+  "alwaysPresentTags": [],
+  "selectionCount": 32,
+  "tagCountDistribution": {
+    "7": 14,
+    "6": 9,
+    "8": 6,
+    "5": 3
+  },
+  "topTieSelections": 16,
+  "missingPrivateAssets": [],
+  "choices": [
+    {
+      "bits": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 4,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 4,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "tagCount": 6,
+      "topTieCount": 4,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "tagCount": 6,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "tagCount": 8,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "tagCount": 8,
+      "topTieCount": 2,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 2,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "tagCount": 8,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 4,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 3,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 1,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "tagCount": 6,
+      "topTieCount": 3,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "tagCount": 6,
+      "topTieCount": 3,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "tagCount": 5,
+      "topTieCount": 1,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tagCount": 5,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "tagCount": 6,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "landscape",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 3,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 3,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "tagCount": 8,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "tagCount": 8,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 2,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "tagCount": 6,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "tagCount": 6,
+      "topTieCount": 2,
+      "tags": [
+        "abstract",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "tagCount": 8,
+      "topTieCount": 1,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "tagCount": 7,
+      "topTieCount": 3,
+      "tags": [
+        "abstract",
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "tagCount": 7,
+      "topTieCount": 1,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "tagCount": 6,
+      "topTieCount": 2,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "warm"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "tagCount": 6,
+      "topTieCount": 1,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft",
+        "vivid"
+      ]
+    },
+    {
+      "bits": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "tagCount": 5,
+      "topTieCount": 3,
+      "tags": [
+        "cool",
+        "landscape",
+        "light",
+        "people",
+        "soft"
+      ]
+    }
+  ]
+}

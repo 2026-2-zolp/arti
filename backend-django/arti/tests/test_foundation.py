@@ -141,7 +141,9 @@ class FoundationTests(TestCase):
         self.assertEqual(self.client.get('/api/admin/artworks').status_code, 401)
 
     def test_media_permissions_and_public_show_image(self):
-        self.assertEqual(self.client.get('/api/uploads/fixture-public.png').status_code, 200)
+        public_image = self.client.get('/api/uploads/fixture-public.png')
+        self.assertEqual(public_image.status_code, 200)
+        self.assertTrue(b''.join(public_image.streaming_content).startswith(b'\x89PNG\r\n\x1a\n'))
         self.assertEqual(self.client.get('/api/uploads/fixture-private.png').status_code, 404)
         data = self.client.get('/api/artworks/fixture-art12').json()
         self.assertEqual(data['imageFile'], None)
@@ -235,10 +237,31 @@ class FoundationTests(TestCase):
             work.full_clean()
 
     def test_health_readiness_and_unimplemented_are_honest(self):
-        self.assertEqual(self.client.get('/api/health').json()['ai'], 'not-connected')
+        with override_settings(ARTI_LLM_PROVIDER='disabled', ARTI_MODEL_SERVICE_URL=''):
+            self.assertEqual(self.client.get('/api/health').json(), {
+                'ok': True, 'service': 'django-api',
+                'aiConfiguration': {'docent': 'disabled', 'analysis': 'disabled'},
+            })
         self.assertEqual(self.client.get('/api/ready').status_code, 200)
         self.assertEqual(self.client.post('/api/artworks/fixture-art01/ask', {'question':'test'}, format='json').status_code, 503)
         self.assertEqual(self.client.post('/api/visits', {}, format='json').status_code, 400)
         missing = self.client.get('/api/nonexistent')
         self.assertEqual(missing.status_code, 404)
         self.assertEqual(set(missing.json()), {'error', 'code', 'retryable', 'requestId'})
+
+    @override_settings(
+        ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-health-key',
+        OPENAI_BASE_URL='https://example.test/v1', OPENAI_MODEL='synthetic-model',
+        ARTI_MODEL_SERVICE_URL='http://analysis.test:8000',
+    )
+    def test_health_reports_configuration_without_connecting_or_leaking(self):
+        with patch('arti.llm.build_opener') as llm, patch('arti.model_service.build_opener') as analysis:
+            response = self.client.get('/api/health')
+            self.assertEqual(response.json()['aiConfiguration'], {'docent': 'configured', 'analysis': 'configured'})
+            for private in ('synthetic-health-key', 'synthetic-model', 'example.test', 'analysis.test'):
+                self.assertNotContains(response, private)
+            with override_settings(OPENAI_API_KEY='', ARTI_MODEL_SERVICE_URL='http://user:password@host/'):
+                self.assertEqual(self.client.get('/api/health').json()['aiConfiguration'],
+                                 {'docent': 'invalid', 'analysis': 'invalid'})
+            llm.assert_not_called()
+            analysis.assert_not_called()

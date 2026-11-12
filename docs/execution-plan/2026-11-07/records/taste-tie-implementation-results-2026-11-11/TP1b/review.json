@@ -1,0 +1,41 @@
+{
+  "mode": "same-author role-based review;not independent human review",
+  "findings": [
+    {
+      "role": "technical/senior",
+      "finding": "Scores and evidence must not cross analysis versions",
+      "resolution": "single locked/version-checked transaction;revision increment only for successful tag;other connection sees old bundle until commit"
+    },
+    {
+      "role": "operations/data",
+      "finding": "Lock contention or deadline expiry must not partially save",
+      "resolution": "transaction-local 2-second lock timeout plus final budget check and rollback;retryable503/409 tested"
+    },
+    {
+      "role": "visitor",
+      "finding": "Generated provenance must not become public approval",
+      "resolution": "suggested status preserved;new evidence absent from DTOs;confirm separate;source/file mismatch unusable"
+    },
+    {
+      "role": "team",
+      "finding": "Legacy service and existing profiles must continue to work",
+      "resolution": "absent/null evidence allowed;old binding cleared on new legacy success;no v1/profile/recommendation changes"
+    },
+    {
+      "role": "professor/external-evaluator",
+      "finding": "Integrity and storage tests do not establish accuracy or human acceptance",
+      "resolution": "real cached model,approved signature,independent labels and TP4 explicitly pending"
+    },
+    {
+      "role": "technical/senior",
+      "finding": "Windows full regression leaked streamed files;first direct-close fix also closed test DB",
+      "resolution": "installed Django closing_iterator_wrapper inspected;consume exact download bytes;two targeted and entire suite passed"
+    },
+    {
+      "role": "operations/data",
+      "finding": "Migration must not approve or activate existing data",
+      "resolution": "empty and seeded0002->0003;all old columns preserved including active/draft pools and entries;new null/0 only"
+    }
+  ],
+  "next": "TP2 server resolution and write conflicts;ordinary DB/public/push stay separate"
+}

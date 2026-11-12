@@ -45,3 +45,8 @@ python scripts/export_git_captures.py data/private/captures-new
 export 목적지는 매번 새 디렉터리를 지정한다. 기존 디렉터리·원본 영역에는 덮어쓰지 않으며 검사를 통과하기 전 출력하지 않는다. DB가 아닌 bundle을 만들고, Django의 import_capture_bundle은 별도로 명시 실행한다. stdout 점검 결과를 보존할 수 있으며 자동 승인·좌표 부여·운영 시드를 실행하지 않는다.
 
 해설 입력은 [원본 추적 가능한 참조 사본](../data/reference/git-captures/README.md)이다. Express/Node·legacy backend 폴더를 요구하지 않는다. 모델 평가 이미지·라벨은 ai-service/evaluation에 남겨 두며, 과거 backend 시드와 W03 결함 재현은 역사적 비교용이다. 기존 bundle의 원문 의미·40개ID·이미지 해시는 유지한다. 유영국 실제 자료와 로컬 고유 DB/업로드 인수는 별도다.
+
+
+## 취향 조사 후보의 비공개 검수 준비 (2026-11-10)
+
+[사용 절차](../docs/review/taste-survey-2026-11-10/README.md): `python scripts/survey_blind_review.py build --output data/private/new-review-pack`으로21점/18쌍 익명 HTML을 새 폴더에 만든다. 입력은 이전 해시 고정 이미지·운영자 matrix이며 Python 표준 라이브러리만 사용한다. 원본 누락/변조·기존폴더·비공개 경로 밖 출력은 실패한다. `validate 응답.json`은 형식 검사이고 승인/모델 정답 생성이 아니다. 이미지/실제 응답은 Git에 넣지 않으며 외부 수집·모델/DB 호출도 없다.

@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-11",
+  "status": "passed_tp1a_only",
+  "tp1Overall": "in_progress",
+  "tp1b": "not_started",
+  "acceptance": {
+    "A1": "passed",
+    "A2": "passed",
+    "A3": "passed",
+    "A4": "passed"
+  },
+  "tests": {
+    "ai": 38,
+    "djangoSimpleTestCase": 23,
+    "scripts": 53,
+    "syntheticHttp": true
+  },
+  "generalDbChanged": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "realModelQualityClaim": false,
+  "review": "same-author technical/senior,visitor,operations/data,team/professor/external-evaluator perspectives;not independent review",
+  "limitations": [
+    "No PostgreSQL schema/storage tests in TP1a",
+    "No real cached weights/GPT/model downloads",
+    "Integrity evidence is not authentication or human approval",
+    "Existing Starlette deprecation warning retained"
+  ],
+  "implementationHashes": {
+    ".env.example": "4c51a84fc4aeadf6b912256f8ef784a5666cac3297243e645b20059b901691dc",
+    "ai-service/app/config.py": "6da59ade9701e3505e5e978451d324f8cd929b2c650126e5d0cdab87ca2112c9",
+    "ai-service/app/analyzer.py": "e1168f9fc0cf32d8ca024e069353402d1be2647dcf74682afef11f50b16878cc",
+    "ai-service/app/image_fetch.py": "d092f235815ffd33f95acce7fa22051d08f610e6ca32073a08bf6bcc34de8832",
+    "ai-service/app/main.py": "894cade04726223ebe86d2253e4ce369ac806843a3d486144213f4ba8944467e",
+    "ai-service/app/provenance.py": "c2bd8ada3c782414e4dc45dd02578bbc1dbe46df7789d142141f858093b6217c",
+    "ai-service/tests/test_provenance.py": "3c145d22d18312a0f10f0fd973b90a1266dbb02dbfe98707d2fb82446d7a3ad1",
+    "backend-django/arti/model_service.py": "51b729da46c69a74f38744a8687e46c4ac0ea8462e71e42e84b73b6e442bcfb7",
+    "backend-django/arti/providers.py": "ca5a829979ca8735d5311a8bd23eb71195b0d901ab0030f4e622ba4e3f23e579",
+    "backend-django/arti/tests/test_tag_evidence.py": "a51aa9dd79752153c846eb0756626d5da986e066e14e3cf5cb0291a2cf79074c",
+    "docs/operations/모델서비스_로컬운영.md": "c17de767edac44c576d2dcc08cea39bfcc381796c1753321af9a89095347c408"
+  },
+  "next": "TP1b isolated schema and atomic persistence",
+  "recordChecks": {
+    "preservedSourceFiles": 116,
+    "preservedContractFiles": 8,
+    "protectedArchiveFiles": 38,
+    "planGuardrails": 32,
+    "localLinks": 11,
+    "formalStatePreserved": true
+  }
+}

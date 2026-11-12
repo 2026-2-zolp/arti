@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "baseCommit": "c192974",
+  "date": "2026-11-11",
+  "status": "passed_tp4_technical",
+  "acceptance": {
+    "P4-01": "browser-journey.md",
+    "P4-02": "recommendation-diff.json",
+    "P4-03": "real-provenance-smoke.json",
+    "P4-04": "ordinary-before-after.json",
+    "P4-05": "local-ci-results.json",
+    "P4-06": "rollback-results.json"
+  },
+  "browser": {
+    "chrome": "156.0.8078.81",
+    "picks": 5,
+    "visited": [
+      "fixture-art06",
+      "fixture-art04",
+      "fixture-art02"
+    ],
+    "docentSource": {
+      "artworkId": "fixture-art06",
+      "sourceVersion": 1,
+      "kind": "guide",
+      "revision": 1
+    },
+    "receiptStatuses": [
+      201,
+      200
+    ],
+    "receiptResponsesIdentical": true,
+    "externalGptCalls": 0,
+    "loopbackProviderCalls": 1
+  },
+  "fix": "Equal dwell uses viewedArtworkIds order across original receipt, replay and stored lookup.",
+  "generalDbChanged": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "review": "role-based self-review",
+  "next": "Independent artwork and tag review, then intake decision"
+}

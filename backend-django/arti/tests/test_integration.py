@@ -117,6 +117,20 @@ class IntegrationTests(Helpers,TestCase):
         record=self.a.get('/api/visits/'+pk).json();self.assertEqual(record['artworkSnapshots'][0]['title'],'검증용 작품 01')
         self.assertEqual(self.a.post('/api/visits',p,format='json').status_code,200)
 
+    def test_equal_dwell_preserves_receipt_across_postgres_round_trip(self):
+        payload = self.payload()
+        payload['viewedArtworkIds'] = ['fixture-art02', 'fixture-art01']
+        payload['dwell'] = {'fixture-art02': 5, 'fixture-art01': 5}
+        created = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(created.status_code, 201, created.content)
+        self.assertEqual(created.json()['longestViewedArtworkId'], 'fixture-art02')
+        replayed = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(replayed.status_code, 200, replayed.content)
+        self.assertEqual(replayed.json(), created.json())
+        read = self.a.get('/api/visits/' + created.json()['id'])
+        self.assertEqual(read.status_code, 200, read.content)
+        self.assertEqual(read.json(), created.json())
+
     def test_visit_scope_validation(self):
         for changes in [{'visitId':'bad'},{'dwell':{'fixture-art01':-1}},{'reactionReasons':{'foreign':'x'}},{'viewedArtworkIds':['fixture-private']},{'tasteProfile':[]}]:
             self.assertEqual(self.a.post('/api/visits',{**self.payload(),**changes},format='json').status_code,400,changes)
@@ -139,7 +153,7 @@ class IntegrationTests(Helpers,TestCase):
 
     def test_saved_profile_provenance_and_server_counts_cross_pool(self):
         pool=self.public.get('/api/exhibitions/fixture-ex01/taste-pool').json()
-        profile={'version':1,'source':'picks','poolVersion':pool['poolVersion'],'picks':[{'pairIndex':i,'artworkId':p['leftId']} for i,p in enumerate(pool['pairs'])],'counts':{'warm':99},'selectedTags':['warm','landscape']}
+        profile={'version':1,'source':'picks','poolVersion':pool['poolVersion'],'picks':[{'pairIndex':i,'artworkId':p['rightId'] if i == 0 else p['leftId']} for i,p in enumerate(pool['pairs'])],'counts':{'warm':99},'selectedTags':['warm','landscape']}
         # Parser bounds forged client counts; a valid forged map is still ignored.
         profile['counts']={'warm':0,'landscape':0}
         r=self.a.put('/api/users/'+self.actors[0].id+'/tastes',{'tastes':['warm','landscape'],'tasteProfile':profile,'exhibitionId':'fixture-ex01'},format='json');self.assertEqual(r.status_code,204,r.content)
@@ -176,7 +190,10 @@ class IntegrationTests(Helpers,TestCase):
         r=self.admin.post(path,PNG,content_type='image/png',HTTP_IF_MATCH='"1"');self.assertEqual(r.status_code,200,r.content)
         self.assertEqual(r.json()['reviewStatus'],'source_check')
         self.assertEqual(self.public.get('/api/uploads/'+r.json()['imageFile']).status_code,404)
-        self.assertEqual(self.admin.get('/api/admin/uploads/'+r.json()['imageFile']).status_code,200)
+        download=self.admin.get('/api/admin/uploads/'+r.json()['imageFile'])
+        self.assertEqual(download.status_code,200)
+        # 테스트 클라이언트의 종료 wrapper를 통해 스트림·파일을 함께 닫습니다.
+        self.assertEqual(b''.join(download.streaming_content),PNG)
 
     def test_member_reactions_are_central_and_guest_not_collected(self):
         self.public.post('/api/visits',self.payload(),format='json');self.a.post('/api/visits',self.payload(),format='json')

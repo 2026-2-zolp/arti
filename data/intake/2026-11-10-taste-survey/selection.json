@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "asOfKST": "2026-11-10",
+  "status": "private_proposal_only",
+  "poolId": "survey-candidates-20261110",
+  "name": "기본 취향 조사 10점 후보 v1",
+  "activate": false,
+  "items": [
+    {
+      "key": "cap-03",
+      "dbId": "survey-candidate-cap-03",
+      "title": "미델하르니스의 가로수길",
+      "artist": "메인더르트 호베마",
+      "year": "1689",
+      "originalYear": "1689",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/03.jpg",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c",
+      "referenceUrl": "https://www.nationalgallery.org.uk/paintings/meindert-hobbema-the-avenue-at-middelharnis",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "길과 가로수가 화면 안쪽으로 이어지고 흐린 하늘이 넓게 보입니다.",
+      "candidateTags": [
+        "landscape",
+        "cool"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    },
+    {
+      "key": "cap-06",
+      "dbId": "survey-candidate-cap-06",
+      "title": "우유를 따르는 여인",
+      "artist": "요하네스 페르메이르",
+      "year": "1660년경",
+      "originalYear": "1658년경",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/06.jpg",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7",
+      "referenceUrl": "https://www.rijksmuseum.nl/en/collection/object/The-Milkmaid--42dd0e658c2979aec8e144d2357c55c0",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "한 사람이 그릇에 우유를 따르며 창가의 빛이 얼굴과 식탁에 닿습니다.",
+      "candidateTags": [
+        "people",
+        "light"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "저해상도 원본: 확대·모바일 판독 검토 필요"
+    },
+    {
+      "key": "cap-12",
+      "dbId": "survey-candidate-cap-12",
+      "title": "브로드웨이 부기우기",
+      "artist": "피트 몬드리안",
+      "year": "1942–1943",
+      "originalYear": "1942~43",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/12.jpg",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90",
+      "referenceUrl": "https://www.moma.org/collection/works/78682",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "노란 선과 빨강·파랑의 작은 네모가 격자를 이룹니다.",
+      "candidateTags": [
+        "abstract",
+        "vivid"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    },
+    {
+      "key": "cap-38",
+      "dbId": "survey-candidate-cap-38",
+      "title": "아이의 목욕",
+      "artist": "메리 커샛",
+      "year": "1893",
+      "originalYear": "1893",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/38.jpg",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01",
+      "referenceUrl": "https://www.artic.edu/artworks/111442/the-child-s-bath",
+      "sourceCheck": "official_page_403_secondary_catalogue_support",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "성인과 아이가 가까이 앉아 발을 씻는 장면과 옷의 무늬가 보입니다.",
+      "candidateTags": [
+        "people",
+        "soft"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "저해상도 원본: 확대·모바일 판독 검토 필요"
+    },
+    {
+      "key": "yyk-004",
+      "dbId": "yyk-demo-004",
+      "title": "산(남)",
+      "artist": "유영국",
+      "year": "1968",
+      "sourceGroup": "yoo16",
+      "existingDbReference": true,
+      "assetPath": "data/private/yoo-intake-20261109/04.png",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5",
+      "referenceUrl": "https://www.mmca.go.kr/collections/collectionsDetailPage.do?artistnm=%EC%9C%A0%EC%98%81%EA%B5%AD&wrkinfoSeqno=10392",
+      "sourceCheck": "prior_archived_official_visual_candidate_current_fetch_unavailable",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "web_capture_user_declared_graduation_project_use_no_specific_permission",
+      "contentStatus": "existing_source_check_preserve",
+      "observation": "노랑·초록의 삼각형 색면과 아래쪽 붉은 띠가 보입니다.",
+      "candidateTags": [
+        "abstract",
+        "warm"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "기존DB작품을 그대로 참조하며 메타데이터·검수 상태를 바꾸지 않음"
+    },
+    {
+      "key": "cap-36",
+      "dbId": "survey-candidate-cap-36",
+      "title": "파라솔을 든 여인",
+      "artist": "클로드 모네",
+      "year": "1875",
+      "originalYear": "1875",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/36.jpg",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b",
+      "referenceUrl": "https://www.nga.gov/artworks/61379-woman-parasol-madame-monet-and-her-son",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "양산을 든 인물과 뒤쪽의 작은 인물, 하늘과 풀밭이 보입니다.",
+      "candidateTags": [
+        "landscape",
+        "people",
+        "light",
+        "soft",
+        "cool"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    },
+    {
+      "key": "cap-19",
+      "dbId": "survey-candidate-cap-19",
+      "title": "목수 성 요셉",
+      "artist": "조르주 드 라 투르",
+      "year": "1642–1644년경",
+      "originalYear": "1642년경",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/19.jpg",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08",
+      "referenceUrl": "https://collections.louvre.fr/en/ark:/53355/cl010063817",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "어두운 공간에서 촛불이 인물의 얼굴과 손 주변을 밝힙니다.",
+      "candidateTags": [
+        "people",
+        "light",
+        "warm"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기; warm은 촛불 주변의 색 경향 가설이며 작품 전체의 정답 분류가 아님"
+    },
+    {
+      "key": "cap-28",
+      "dbId": "survey-candidate-cap-28",
+      "title": "가나가와 앞바다의 큰 파도",
+      "artist": "가쓰시카 호쿠사이",
+      "year": "1830–1832년경",
+      "originalYear": "1831년경",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/28.jpg",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c",
+      "referenceUrl": "https://www.metmuseum.org/art/collection/search/45434",
+      "sourceCheck": "motif_record_read_individual_print_unverified",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "큰 파도와 배, 멀리 작은 산이 보입니다. 개별 판본은 미확정입니다.",
+      "candidateTags": [
+        "landscape",
+        "cool"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    },
+    {
+      "key": "cap-21",
+      "dbId": "survey-candidate-cap-21",
+      "title": "춤",
+      "artist": "앙리 마티스",
+      "year": "1910",
+      "originalYear": "1910",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/21.jpg",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70",
+      "referenceUrl": "https://en.wikipedia.org/wiki/Dance_(Matisse)",
+      "sourceCheck": "1910_version_candidate_related_moma1909_record_is_not_same_work",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "붉은 인물들이 손을 이어 원을 이루며 파란색과 초록색 면이 배경에 놓입니다.",
+      "candidateTags": [
+        "people",
+        "vivid"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    },
+    {
+      "key": "cap-02",
+      "dbId": "survey-candidate-cap-02",
+      "title": "시에라네바다 산맥 속에서",
+      "artist": "앨버트 비어슈타트",
+      "year": "1868",
+      "originalYear": "1868",
+      "sourceGroup": "git-captures40",
+      "existingDbReference": false,
+      "assetPath": "ai-service/evaluation/images/02.jpg",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e",
+      "referenceUrl": "https://americanart.si.edu/artwork/among-sierra-nevada-california-2059",
+      "sourceCheck": "official_record_read",
+      "identityStatus": "visual_candidate_not_human_approved",
+      "rightsStatus": "capture_origin_and_specific_reuse_unverified",
+      "contentStatus": "new_visual_observation_draft_not_official_text",
+      "observation": "큰 산과 호수, 구름 사이의 빛, 앞쪽 나무와 동물이 보입니다.",
+      "candidateTags": [
+        "landscape",
+        "light"
+      ],
+      "tagStatus": "selection_hypothesis_not_model_or_ground_truth",
+      "humanReview": "pending",
+      "qualityNote": "전달 캡처의 색·크롭·표시 품질 검수 대기"
+    }
+  ],
+  "pairs": [
+    {
+      "pairIndex": 0,
+      "leftId": "survey-candidate-cap-03",
+      "rightId": "survey-candidate-cap-06",
+      "intent": "풍경의 원근과 일상 인물 장면",
+      "qualification": "여러 시각 특징이 함께 달라지는 탐색 비교이며 단일 태그 인과 실험이 아님"
+    },
+    {
+      "pairIndex": 1,
+      "leftId": "survey-candidate-cap-12",
+      "rightId": "survey-candidate-cap-38",
+      "intent": "격자·원색의 구성과 인물·부드러운 장면",
+      "qualification": "여러 시각 특징이 함께 달라지는 탐색 비교이며 단일 태그 인과 실험이 아님"
+    },
+    {
+      "pairIndex": 2,
+      "leftId": "yyk-demo-004",
+      "rightId": "survey-candidate-cap-36",
+      "intent": "대각선 색면과 야외 인물·붓질",
+      "qualification": "여러 시각 특징이 함께 달라지는 탐색 비교이며 단일 태그 인과 실험이 아님"
+    },
+    {
+      "pairIndex": 3,
+      "leftId": "survey-candidate-cap-19",
+      "rightId": "survey-candidate-cap-28",
+      "intent": "집중된 촛불·인물과 파도·차가운 색",
+      "qualification": "여러 시각 특징이 함께 달라지는 탐색 비교이며 단일 태그 인과 실험이 아님"
+    },
+    {
+      "pairIndex": 4,
+      "leftId": "survey-candidate-cap-21",
+      "rightId": "survey-candidate-cap-02",
+      "intent": "강렬한 인물 색면과 넓은 자연·빛",
+      "qualification": "여러 시각 특징이 함께 달라지는 탐색 비교이며 단일 태그 인과 실험이 아님"
+    }
+  ],
+  "excluded": [
+    {
+      "key": "cap-11",
+      "reason": "구성VII 메타데이터와 구성VIII 이미지 대응 후보 불일치; 원본평가보존",
+      "evidence": "https://www.guggenheim-bilbao.eus/en/learn/schools/teachers-guides/composition-8"
+    },
+    {
+      "key": "cap-18",
+      "reason": "캡처에 워터마크가 보여 조사 선택 편향·품질 우려"
+    },
+    {
+      "key": "cap-40",
+      "reason": "모네 일본식다리 연작 개별 소장품 대응 미확정"
+    },
+    {
+      "key": "cap-15",
+      "reason": "현재 캡처의 전체작품 크롭/대응 검토 필요; 이번10점에서 제외"
+    },
+    {
+      "key": "impressionist21",
+      "reason": "새자료설명 출처URL·검수이력 없음; 회화/풍경 편중과 추가 식별공수 고려해 우선 대안군"
+    },
+    {
+      "key": "yoo-other15",
+      "reason": "기존 주전시자료로 보존; 이번 조사풀의 단일작가/추상 편중을 줄이기 위해1점만 제안"
+    }
+  ],
+  "limits": [
+    "9/10 are reused from legacy calibration/development40; never report evaluation on them as independent holdout accuracy",
+    "candidateTags are explicit visual hypotheses, not confirmed labels or model scores; do not import as tags",
+    "Western canonical painting and male artists still dominate; this is a small graduation-demo pool, not a universal taste test",
+    "five binary choices cannot identify every independent combination of eight traits",
+    "pair directions fixed for now; position/cropping/familiarity biases require later sensitivity check",
+    "all identity/image reuse/content/tag human approvals remain pending; no public activation"
+  ],
+  "selectionFinal": false,
+  "candidateScope": "existing materials plus external sources permitted; current10 are a replaceable comparison draft",
+  "userClarification": "2026-11-10: 취향 조사 그림 선정은 최종 기록하지 않으며 외부 자료도 후보로 검토"
+}

@@ -30,7 +30,17 @@ export function VisitProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     const expired = () => { clearPrivateCaches(false); dispatch({ type: 'logout' }); };
-    const onStorage = (e: StorageEvent) => { if (e.key === 'arti.token') { clearPrivateCaches(); if (localStorage.getItem('arti.token')) api.me().then(user => active && dispatch({type: 'login', user})).catch(expired); else expired(); } };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== 'arti.token') return;
+      clearPrivateCaches(false);
+      dispatch({ type: 'logout' });
+      const token = load('arti.token', null);
+      if (token) api.me().then(user => {
+        if (active && load('arti.token', null) === token) dispatch({ type: 'login', user });
+      }).catch(() => {
+        if (active && load('arti.token', null) === token) expired();
+      });
+    };
     window.addEventListener('arti:expired', expired); window.addEventListener('storage', onStorage);
     const bootstrapToken = load('arti.token', null);
     if (bootstrapToken) api.me().then(user => active && load('arti.token', null) === bootstrapToken && dispatch({type: 'login', user})).catch((e: {status?: number}) => { if (e.status === 401 && load('arti.token', null) === bootstrapToken) expired(); });
@@ -48,7 +58,7 @@ export function VisitProvider({ children }: { children: ReactNode }) {
   // 상태가 바뀔 때마다 저장소에 반영 (새로고침해도 관람 흐름 유지)
   useEffect(() => {
     const { user, ...visit } = state;
-    save(VISIT_KEY, visit, 'session');
+    save(VISIT_KEY, { ...visit, ownerId: user?.id ?? null }, 'session');
     save(USER_KEY, user);
   }, [state]);
 

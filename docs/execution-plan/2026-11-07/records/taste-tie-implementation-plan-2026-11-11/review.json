@@ -1,0 +1,171 @@
+{
+  "date": "2026-11-11",
+  "method": "same-author role-based self review;not independent third-party approval",
+  "codeApplied": false,
+  "findings": [
+    {
+      "id": "R01",
+      "perspective": "기술/시니어",
+      "finding": "모델이름·파일경로만으로실제점수출처를추정할위험",
+      "decision": "D1",
+      "futureCases": [
+        "P1-01",
+        "P1-02"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R02",
+      "perspective": "운영/데이터",
+      "finding": "이미지파일명과실제전송/디코드바이트가다를수있음",
+      "decision": "D1",
+      "futureCases": [
+        "P1-01",
+        "P1-03"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R03",
+      "perspective": "기술/시니어",
+      "finding": "atomic안의다중조회가동일풀시점을보장하지않음",
+      "decision": "D2",
+      "futureCases": [
+        "P2-03"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R04",
+      "perspective": "기술/시니어",
+      "finding": "관리자역순batch와작품ID순잠금의교착가능성",
+      "decision": "D2",
+      "futureCases": [
+        "P2-03"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R05",
+      "perspective": "방문자/운영",
+      "finding": "성공응답유실후CAS재시도가중복쓰기/불필요409가될수있음",
+      "decision": "D3",
+      "futureCases": [
+        "P2-04",
+        "P2-05",
+        "P3-04"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R06",
+      "perspective": "팀/데이터",
+      "finding": "구형v1클라이언트가v2계정을무버전으로덮을수있음",
+      "decision": "D3",
+      "futureCases": [
+        "P2-06"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R07",
+      "perspective": "방문자",
+      "finding": "관람중pool변경이영수증저장을막는연쇄영향",
+      "decision": "D4",
+      "futureCases": [
+        "P2-07",
+        "P3-06"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R08",
+      "perspective": "운영/시니어",
+      "finding": "기능disable/구형바이너리rollback이저장v2를못읽을위험",
+      "decision": "D5",
+      "futureCases": [
+        "P2-09",
+        "P4-06"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R09",
+      "perspective": "방문자/기술",
+      "finding": "늦은preview/PUT/me가새편집/계정/관람을덮을수있음",
+      "decision": "D6",
+      "futureCases": [
+        "P3-01",
+        "P3-02",
+        "P3-04"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R10",
+      "perspective": "팀",
+      "finding": "성현중간ZIP을동섭종합완료로오인할수있음",
+      "decision": "D6",
+      "futureCases": [
+        "P3-05"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R11",
+      "perspective": "운영/시니어",
+      "finding": "존재하지않는서비스별env예시나모델Compose서비스가있다고가정할위험",
+      "decision": "D1",
+      "futureCases": [
+        "P1-04",
+        "P4-03"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R12",
+      "perspective": "교수/외부평가위원",
+      "finding": "출처보완/합성검사를정확도·최종선정통과로과장할위험",
+      "decision": "D7",
+      "futureCases": [
+        "P4-02",
+        "P4-03"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R13",
+      "perspective": "교수/외부평가위원",
+      "finding": "계획상시험을미리pass로표시할위험",
+      "decision": "D7",
+      "futureCases": [
+        "P4-01",
+        "P4-05"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    },
+    {
+      "id": "R14",
+      "perspective": "기술/팀",
+      "finding": "현재미적용hash검사를구현후CI에계속강제할위험",
+      "decision": "D7",
+      "futureCases": [
+        "P4-05"
+      ],
+      "resolution": "addressed_in_plan_not_in_product"
+    }
+  ],
+  "boundaries": [
+    "no new model registry/platform",
+    "no additional exhibition or final10 choice",
+    "no v1 snapshot migration",
+    "no GPT or network model download in deterministic CI",
+    "no live DB/env changes or remote push"
+  ],
+  "externalPrerequisites": [
+    "separate product work authorization",
+    "latest team UI integration baseline before optional UI merge",
+    "actual cached model artifact verification before TP4 pass",
+    "human content/label reviews and actual remote CI remain separate"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "modeTransitions": [
+    "enabled",
+    "disabled",
+    "enabled"
+  ],
+  "newPreviewDisabled": 503,
+  "newSaveDisabled": 503,
+  "newPicksDisabled": 503,
+  "exactMutationRetry": 204,
+  "savedProfileRecommendationPreserved": true,
+  "legacyRecommendationPreserved": true,
+  "originalVisitRetry": 200,
+  "pendingSignedVisitCreatedWhileDisabled": 201,
+  "pendingRetry": 200,
+  "schemaRetained": true,
+  "sameAccountSnapshot": true,
+  "originalReceiptResponseIdentical": true,
+  "distinctVisits": 2,
+  "databaseVisitAndReactionCounts": "2 1"
+}

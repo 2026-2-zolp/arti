@@ -1,0 +1,23 @@
+{
+  "sourceHead": "a94ebd8",
+  "document": "../../operations/2026-11-09_필수시연흐름과잔여결함.md",
+  "documentSha256": "2431f3513bc2ffad95c469a9d0d2211e159ee122c88a44b0e4d8916a142a51c1",
+  "flowStages": 10,
+  "scope": "Source/historical-evidence inventory; no fresh browser/real Yoo/multi-device/cloud run",
+  "realDemoPrerequisites": [
+    "human identity/content/use-scope review",
+    "actual tag/recommendation distribution and independent labels",
+    "adopted layout/positions and prepared public taste pool",
+    "actual devices/storage sharing",
+    "operations account/budget/TLS/model location/deployment restore"
+  ],
+  "newCurrentCodeObservation": "health ai/stage remains constant and is not a provider-readiness assertion; R07 follow-up",
+  "featureProposals": [
+    "U05 visibility",
+    "U10 emphasis",
+    "error/warn semantic colors",
+    "headers",
+    "optional second exhibition/card/selector"
+  ],
+  "productGatePromotion": false
+}

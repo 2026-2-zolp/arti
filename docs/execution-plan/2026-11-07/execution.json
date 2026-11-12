@@ -1,4 +1,23 @@
 {
+  "docentBaselineReview": {
+    "record": "records/docent-baseline-2026-11-09/README.md",
+    "flowInventory": "../../operations/2026-11-09_필수시연흐름과잔여결함.md",
+    "scope": "R02 inventory/R05 synthetic actual-GPT preparation",
+    "paidCalls": 24,
+    "result": "initial issues corrected; targeted constraints pass; real content/human acceptance pending",
+    "formalGatesUnchanged": true,
+    "userProgressHwp": "user edits directly; not changed by agent",
+    "nextAgentWork": "R04 private raw model/recommendation distribution; independent label accuracy pending"
+  },
+  "consultationReplanning": {
+    "record": "13-consultation-replan.md",
+    "executionOverlay": "records/replanning-2026-11-09/plan.json",
+    "sourceRecord": "records/replanning-2026-11-09/sources.json",
+    "asOf": "2026-11-09",
+    "status": "plan prepared; implementation/human/cloud gates unchanged",
+    "priority": "progress report and core completeness, dialogue signal adaptation, optional expansion conditional",
+    "latestPushCI": "success at 89cdc6b; PR acceptance pending"
+  },
   "version": "2.1",
   "asOf": "2026-11-09",
   "scope": "동섭 통합본 기준 W01~W05; G4 Git기준 인수 통과, 실제모델/배포 후속",
@@ -1110,12 +1129,13 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "실제 GPT smoke/제한 품질, 오류·timeout 구분 및 모델 운영 장애 검사",
-        "remaining": "실제 유영국 근거로 AC20 정식 평가",
+        "implemented": "실제 GPT 합성12기준선+12보완·맥락별 재설명/심화와 근거/위치 경계, 모델 운영 장애 검증",
+        "remaining": "실제 승인 유영국 근거의 AC20/21 정식 평가·사람 이해도·반복 확인",
         "nextWork": "W07",
         "evidencePaths": [
           "records/W07-preparation/model-operations-2026-11-09/README.md",
-          "records/W07-quality/2026-11-09/README.md"
+          "records/W07-quality/2026-11-09/README.md",
+          "records/docent-baseline-2026-11-09/README.md"
         ]
       }
     },
@@ -1351,12 +1371,13 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "관람/계정/작품 격리·질문 맥락/4왕복·복귀와 실제 합성 GPT 확인",
-        "remaining": "실제 전시 근거의 AC20 정식 평가",
+        "implemented": "관람/계정/작품 격리·4왕복/복귀와 실제 합성 GPT, 최근 요청 우선·관찰 연결 및 무맥락 비교 검증",
+        "remaining": "실제 전시 근거의 AC20 정식 평가·장기/다기기 대화 확인",
         "nextWork": "W07",
         "evidencePaths": [
           "records/W05/gate-review.md",
-          "records/journey/2026-11-09/README.md"
+          "records/journey/2026-11-09/README.md",
+          "records/docent-baseline-2026-11-09/README.md"
         ]
       }
     },
@@ -1967,12 +1988,13 @@
       "resolvedCommit": null,
       "currentReview": {
         "asOf": "2026-11-09",
-        "implemented": "공개 권한·임의 이미지 fetch 제한·provider 경계·자료 지시 방어 일부 검사",
-        "remaining": "실제 근거 질문셋 및 배포 내부접근/파일경로 확인",
+        "implemented": "공개 권한·임의 이미지 fetch·provider/자료 지시 방어, 합성 실응답의 미제공 위치 전제를 보완·재검증",
+        "remaining": "실제 근거 질문셋·반복 검증과 배포 내부접근/파일경로 확인",
         "nextWork": "W07 → W08",
         "evidencePaths": [
           "records/W05/gate-review.md",
-          "records/W07-preparation/model-operations-2026-11-09/README.md"
+          "records/W07-preparation/model-operations-2026-11-09/README.md",
+          "records/docent-baseline-2026-11-09/README.md"
         ]
       }
     },

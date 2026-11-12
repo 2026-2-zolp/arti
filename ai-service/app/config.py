@@ -3,6 +3,8 @@
 import os
 
 CLIP_MODEL = os.getenv("ARTI_CLIP_MODEL", "openai/clip-vit-base-patch32")
+# 같은 commit의 모델/processor를 고정합니다. 없거나 출처 불명인 로컬 폴더는 점수 근거를 추정하지 않습니다.
+CLIP_REVISION = os.getenv("ARTI_CLIP_REVISION", "").strip() or None
 NLI_MODEL = os.getenv("ARTI_NLI_MODEL", "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli")
 
 # 이미지·텍스트 결과를 합칠 때 이미지 비중 (이미지가 없으면 텍스트 100%)

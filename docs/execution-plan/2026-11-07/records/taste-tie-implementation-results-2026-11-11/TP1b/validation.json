@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-11",
+  "status": "passed_tp1b_only",
+  "acceptance": {
+    "B1": "passed",
+    "B2": "passed",
+    "B3": "passed",
+    "B4": "passed",
+    "B5": "passed",
+    "B6": "passed"
+  },
+  "generalDbChanged": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "realModelQualityClaim": false,
+  "tieSortingEnabled": false,
+  "implementationHashes": {
+    "backend-django/arti/models.py": "63ba53864af0e5798c0289bc49c26e6907280719b7c176a18e17c0ae37b1bc9d",
+    "backend-django/arti/providers.py": "4d663fda57cff5d9a296c0ff9866ddf22282b483937b071ecb8b41fb8db85566",
+    "backend-django/arti/editing.py": "033ec5bca73779628c8674f1f2f7344094fa6e9a1a1a0a6077df18f7ddd2a49c",
+    "backend-django/arti/tag_scores.py": "4dae3fd6ba095c677ae0c5be326e29d5e11fad5af701bc86a59e11b69748a645",
+    "backend-django/arti/migrations/0003_tag_score_evidence.py": "98c8ac76b3ddc3da664cda55aeb6f512e4953832cb6f8664b4db364f58ce4bc4",
+    "backend-django/arti/tests/test_tag_evidence.py": "e0b9140dd19f2c9651ba5afbc318277b7a9d7b0a2f83eeffbba525d80464a9f6",
+    "backend-django/arti/tests/test_tag_persistence.py": "26e958a56b965714eedde7c362203d16dc1eea19f599fa31d01035e7ac0a0f90",
+    "docs/operations/모델서비스_로컬운영.md": "309c999e51cbee4499d908f555da7105287f8bcb0f670aebd04315aa6cbd0c2a",
+    "backend-django/arti/tests/test_integration.py": "52cfe8681935d162fb3a3649e1e9d379fd91c6ece7627ecd0940d057aa9dea0e",
+    "backend-django/arti/tests/test_map_management.py": "462156b8b1c35cce9ba96b2a0db661deaa03a3ee8b54dbed0344a19cd495a7e9"
+  },
+  "plannedCaseCoverage": {
+    "P1-01": "TP1a fake/transport inherited;real cached model still TP4",
+    "P1-02": "legacy storage passed;resolver fallback still TP2",
+    "P1-03": "passed PostgreSQL failure/timeout/version/confirmed/budget protection",
+    "P1-04": "passed empty and seeded migration",
+    "P1-05": "TP1a fake-loader tests inherited;cross-connection storage/slot regression passed"
+  },
+  "next": "TP2 server preview and persistence conflict protection",
+  "recordChecks": {
+    "preservedSourceFiles": 120,
+    "preservedContractFiles": 8,
+    "preservedTP1aRecords": 6,
+    "protectedArchiveFiles": 38,
+    "planGuardrails": 32,
+    "localLinks": 7,
+    "formalStatePreserved": true,
+    "ordinaryContainersUnchanged": true,
+    "isolatedContainerStopped": true
+  }
+}

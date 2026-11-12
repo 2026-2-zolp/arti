@@ -202,8 +202,6 @@ a.history-card { text-decoration: none; }
 .duel-dots span.on { width: 22px; background: var(--accent); }
 .duel { display: flex; flex-direction: column; }
 .duel-or { margin: 4px 0; text-align: center; font-size: 13px; color: var(--muted); }
-.duel-card img,
-.duel-card svg[role='img'] { max-height: 22dvh; object-fit: cover; }
 .duel-card {
   width: 100%; padding: 8px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
   text-align: left; display: flex; flex-direction: column; gap: 8px;
@@ -610,3 +608,6 @@ a.history-card { text-decoration: none; }
 
 /* U-09 경로선 안내: 위 진행 표시·아래 지도와 간격 */
 .route-note { margin: 0 0 12px; }
+
+/* 작품 원문·요약의 줄바꿈을 보존하고 긴 문장이 화면 밖으로 넘지 않게 합니다. */
+.artwork-prose { white-space: pre-wrap; overflow-wrap: anywhere; }

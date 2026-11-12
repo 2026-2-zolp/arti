@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import threading
 from pathlib import Path
 from dataclasses import dataclass
@@ -27,6 +28,7 @@ from PIL import Image
 from . import config
 from .emotions import EMOTION_KEYS, EMOTIONS, NLI_HYPOTHESIS
 from .tags import TAG_KEYS, TAG_NLI_HYPOTHESIS, TAGS
+from .provenance import cached_snapshot, snapshot_manifest, loaded_provenance
 
 Scores = dict[str, float]
 
@@ -132,9 +134,12 @@ def combine(image: Scores | None, text: Scores | None, image_weight: float) -> S
 class HuggingFaceScorer:
     """Hugging Face transformers로 CLIP·mDeBERTa를 CPU에서 실행"""
 
-    def __init__(self, clip_model: str = config.CLIP_MODEL, nli_model: str = config.NLI_MODEL):
+    def __init__(self, clip_model: str = config.CLIP_MODEL, nli_model: str = config.NLI_MODEL,
+                 clip_revision: str | None = config.CLIP_REVISION):
         self.clip_name = clip_model
         self.nli_name = nli_model
+        self.clip_revision = clip_revision
+        self._tag_model_provenance = None
         self._lock = threading.Lock()
         self._clip = None
         self._clip_processor = None
@@ -145,6 +150,11 @@ class HuggingFaceScorer:
     def loaded(self) -> bool:
         return self._clip is not None and self._nli is not None
 
+    @property
+    def tag_model_provenance(self):
+        # ready가 되기 전의 부분 로드 정보나 호출자가 수정할 수 있는 내부 dict를 게시하지 않습니다.
+        return copy.deepcopy(self._tag_model_provenance) if self.loaded else None
+
     def load(self) -> None:
         # torch·transformers는 무거워서 실제로 필요할 때만 import (테스트는 이것 없이도 돈다)
         with self._lock:
@@ -153,9 +163,22 @@ class HuggingFaceScorer:
             from transformers import CLIPModel, CLIPProcessor, pipeline
 
             # 모두 성공한 뒤에만 게시해 부분 초기화를 ready로 오인하지 않습니다.
-            clip = CLIPModel.from_pretrained(self.clip_name).eval()
-            processor = CLIPProcessor.from_pretrained(self.clip_name)
+            cached = cached_snapshot(self.clip_name, self.clip_revision)
+            if cached:
+                root, before = cached
+                clip = CLIPModel.from_pretrained(str(root), local_files_only=True,
+                                                use_safetensors=before['weightFormat'] == 'safetensors').eval()
+                processor = CLIPProcessor.from_pretrained(str(root), local_files_only=True)
+            else:
+                options = {'revision': self.clip_revision} if self.clip_revision else {}
+                clip = CLIPModel.from_pretrained(self.clip_name, **options).eval()
+                processor = CLIPProcessor.from_pretrained(self.clip_name, **options)
             nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            provenance = None
+            if cached and snapshot_manifest(root, self.clip_name, self.clip_revision) == before:
+                provenance = loaded_provenance(before)
+            # 출처 미확정은 기존 점수 동작을 막지 않되,성공한 모델 전체와 함께만 게시합니다.
+            self._tag_model_provenance = provenance
             self._clip, self._clip_processor, self._nli = clip, processor, nli
 
     def image_scores(self, image: Image.Image) -> Scores:

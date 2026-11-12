@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "11edcff",
+  "status": "passed_tp2_only",
+  "acceptance": {
+    "P2-01": {
+      "status": "passed",
+      "tests": [
+        "test_contract_cases (TC01–TC30)",
+        "test_approved_scores_drive_ties_and_unselected_revision_invalidates_preview",
+        "test_recommendations_reuse_preview_order_only_for_coverage"
+      ]
+    },
+    "P2-02": {
+      "status": "passed",
+      "tests": [
+        "test_preview_read_only_and_server_counts"
+      ]
+    },
+    "P2-03": {
+      "status": "passed",
+      "tests": [
+        "test_pool_switch_and_score_change_during_preview",
+        "test_real_postgres_cas_and_reverse_batch",
+        "test_preview_lock_timeout_is_retryable"
+      ]
+    },
+    "P2-04": {
+      "status": "passed",
+      "tests": [
+        "test_real_postgres_cas_and_reverse_batch"
+      ]
+    },
+    "P2-05": {
+      "status": "passed",
+      "tests": [
+        "test_retry_precedes_pool_and_feature_checks",
+        "test_legacy_guard_noop_and_frozen_saved_order"
+      ]
+    },
+    "P2-06": {
+      "status": "passed",
+      "tests": [
+        "test_legacy_guard_noop_and_frozen_saved_order",
+        "test_existing_profile_preserved",
+        "legacy Django regression suite"
+      ]
+    },
+    "P2-07": {
+      "status": "passed",
+      "tests": [
+        "test_visit_proof_survives_pool_change_but_rejects_wrong_context"
+      ]
+    },
+    "P2-08": {
+      "status": "passed",
+      "tests": [
+        "test_auth_and_forged_payload",
+        "test_recommendations_reuse_preview_order_only_for_coverage"
+      ]
+    },
+    "P2-09": {
+      "status": "passed",
+      "tests": [
+        "test_retry_precedes_pool_and_feature_checks",
+        "test_legacy_guard_noop_and_frozen_saved_order",
+        "test_visit_proof_survives_pool_change_but_rejects_wrong_context"
+      ]
+    }
+  },
+  "testSource": "backend-django/arti/tests/test_taste_v2.py",
+  "counts": {
+    "django": 150,
+    "newDjango": 12,
+    "contractCases": 30,
+    "scripts": 53
+  },
+  "djangoSeconds": 183.657,
+  "isolation": {
+    "image": "postgres:17-alpine",
+    "database": "test_arti_tp2",
+    "host": "127.0.0.1",
+    "port": 61150,
+    "tmpfs": true,
+    "generalContainersUnchanged": true,
+    "sharedVolumes": false
+  },
+  "featureDefault": false,
+  "generalDbChanged": false,
+  "publicActivation": false,
+  "remotePush": false,
+  "review": "role-based self-review",
+  "next": "TP3 preview-first user confirmation, account save and visit state"
+}

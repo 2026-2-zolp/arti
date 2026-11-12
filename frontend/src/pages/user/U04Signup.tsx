@@ -77,7 +77,7 @@ export default function U04Signup() {
           onChange={set('confirm')}
           error={errors.confirm}
         />
-        <Field label="닉네임 (선택)" value={form.nickname} onChange={set('nickname')} maxLength={12} />
+        <Field label="닉네임 (선택)" value={form.nickname} onChange={set('nickname')} maxLength={100} />
 
         <fieldset className="terms">
           <label className="check all">

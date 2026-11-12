@@ -1,8 +1,10 @@
 # ARTI 통합·리팩토링 실행계획 v2.1
 
-최신 정리: 2026-11-09 KST / dev/임준억. [현재 W 상태·다음 순서](12-current-status.md)와 [37개 이슈 재정합화](records/reconciliation-2026-11-09/README.md)를 먼저 확인한다. 과거 push CI 성공과 최신 로컬 전용 변경을 구분한다.
+최신 정리: 2026-11-09 KST / dev/임준억. [컨설팅·팀 회의 반영 재계획](13-consultation-replan.md)과 [현재 W 상태·다음 순서](12-current-status.md)를 먼저 확인한다. 개발 기준89cdc6b의 push CI4job은 성공했으며 PR 인수·main 병합·배포는 별도다. 과거 기록은 당시 상태로 보존한다.
 
 [통합 준비 문서](../../통합준비문서.md) · [누적 작업기록](../../작업기록/README.md)
+
+후속 실행: [R02 필수 시연·잔여 결함](../../operations/2026-11-09_필수시연흐름과잔여결함.md), [R05 실제 도슨트 기준선·보완](records/docent-baseline-2026-11-09/README.md). 진도표는 사용자 직접 수정, 다음 개발은 R04 격리 원시 분석/추천 분포 점검이다.
 
 ## 기준과 절차
 
@@ -22,6 +24,7 @@
 | [10-persona-review-and-improvements.md](10-persona-review-and-improvements.md) | 검증단 관점과 개선 사항 |
 | [11-plan-readiness-review.md](11-plan-readiness-review.md) | 착수 준비도와 잔여 조건 |
 | [12-current-status.md](12-current-status.md) | 현재 W 상태·검수 대기 중 실행 순서·다음 한 작업 |
+| [13-consultation-replan.md](13-consultation-replan.md) | 11/9 교수님 직접 요구·팀 합의/제안 구분, 진도표·핵심 여정·대화 적응·UI·자료/운영의 재실행 순서 |
 
 ## 단계별 증거
 
@@ -32,7 +35,7 @@
 - [W03 / G2 검토](records/W03/gate-review.md)
 - [W04 / G3 검토](records/W04/gate-review.md)
 
-W01~W05/G0~G4는 통과했다. [새 API 실행 안내](../../../backend-django/README.md). W06은16점 비공개 인수·평가/검수 준비 후 사람 확인 대기다. W07은 실제 GPT·분류모델·운영 안정성의 선행 실적이 있지만 정식 품질/G5는 미통과다. W11은 과거 원격 push 성공·최신 로컬 재현과 PR 인수 대기를 구분한다. 로컬 고유자료 별도 이전·AWS/CD·실기기 전체여정은 미완료다. 아래 날짜별 후속 문장은 당시 기록이며 최신 판정은 현재 상태 문서와 execution.json을 따른다.
+W01~W05/G0~G4는 통과했다. [새 API 실행 안내](../../../backend-django/README.md). W06은16점 비공개 인수·평가/검수 준비 후 사람 확인 대기다. W07은 실제 GPT·분류모델·운영 안정성의 선행 실적이 있지만 정식 품질/G5는 미통과다. W11은 최신89cdc6b 원격 push4job 성공과 PR 인수 대기를 구분한다. 로컬 고유자료 별도 이전·AWS/CD·실기기 전체여정은 미완료다. 아래 날짜별 후속 문장은 당시 기록이며 최신 판정은 현재 상태 문서와 execution.json을 따른다.
 
 ## 과거 자료
 
@@ -40,6 +43,6 @@ W01~W05/G0~G4는 통과했다. [새 API 실행 안내](../../../backend-django/R
 
 2026-11-08 후속: [W11 CI 도입](records/W11/README.md)은 workflow/로컬 Linux 검증 완료·원격 run 대기다. [W07 텍스트 provider 준비](records/W07-preparation/README.md)는 실제 모델 게이트를 통과시킨 것이 아니다.
 
-후속 원격 결과: [W11 push4job 실제 성공](records/W11/remote-run-1.json), PR 이벤트는 아직 없어 AC07/GCI 완료와 구분한다. [누적 원격 기록](../../../docs/작업기록/2026-11-08_최종검토와원격CI검증.md).
+후속 원격 결과: [W11 push4job 실제 성공](records/W11/remote-run-1.json), PR 이벤트는 아직 없어 AC07/GCI 완료와 구분한다. [누적 원격 기록](../../작업기록/일지/2026-11-08_개발환경과CI.md#ci-도입과-원격-실행).
 
 2026-11-09 후속: [유영국16점 전시 구성·관리자 지도 확인과 남은W 순서](../../../docs/operations/2026-11-09_유영국전시구성과동선검토.md). W06 실제 자료 준비와 지도 API부분 확인, W11/W12 병행·W07/W08~W10 의존관계를 연결한다. EVALUATOR/SENIOR는 사용자 동의로 추가한 AI검토 관점이며 실제 외부 승인 아님.

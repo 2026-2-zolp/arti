@@ -34,6 +34,6 @@ CI의 기존 Plan and contract checks에 자료 unittest와 audit 두 명령을 
 
 ## 산출물/남은 일
 
-audit.json·tests.log·linux.log·payload-comparison.json은 실제 검사 근거다. [현재 구조와 의존](../../../../operations/현재구조와legacy의존.md), [참조자료 정책](../../../../../data/reference/git-captures/README.md), [작업기록](../../../../작업기록/2026-11-08_구조안내와Git자료의존분리.md).
+audit.json·tests.log·linux.log·payload-comparison.json은 실제 검사 근거다. [현재 구조와 의존](../../../../operations/현재구조와legacy의존.md), [참조자료 정책](../../../../../data/reference/git-captures/README.md), [작업기록](../../../../작업기록/일지/2026-11-08_개발환경과CI.md#git-자료-점검과-express-경로-분리).
 
 유영국 자료/출처/사람검수·실모델 평가·로컬고유DB 인수·Express 전체 제거는 남아 있다. 다음 독립 과업은 시험 DB/미디어 로컬 백업·복원 준비다. 원격push는하지않는다.

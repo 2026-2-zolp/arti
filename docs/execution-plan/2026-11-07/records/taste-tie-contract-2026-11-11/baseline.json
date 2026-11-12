@@ -1,0 +1,27 @@
+{
+  "baselineCommit": "ce5e487a15a5cb3d70ad478939fb2d49f9bbf460",
+  "sourceHashes": {
+    "frontend/src/lib/tasteFromPicks.ts": "95d13e7d6d85bca500a6b8b3259595d9ea8a8e7c0c1e8f079060f566b9c47f3b",
+    "frontend/src/api/client.ts": "100904f89c1fe1ad3ef4ad65c021b20c4bff7198ec9c949c5c7b836bae726ef4",
+    "frontend/src/types.ts": "8e9c1354a344d35379f552cf92ab71c8ddfac379ff30d4ebcaf7816bce1f6737",
+    "frontend/src/pages/user/U05Taste.tsx": "a84d5915efae73f69dd795edb710b8b921c0a3ffc527984e283dbf1673188bed",
+    "frontend/src/pages/user/U06SavedTaste.tsx": "13a71fac3403c7ee1f5fbb58a3c0944b742d2ea7422a015fafadf8a05425995a",
+    "frontend/src/pages/user/U07Time.tsx": "dd670954b20fc33b19064ce16e579b5fabb8ef943af0841b2c7a7859e336589c",
+    "frontend/src/pages/user/U10Artwork.tsx": "0eba02ef45a2ec651d59b61fb7a33fb9d582bf87b0cdffb42c07a2ecbcc1ac8e",
+    "frontend/src/components/ArtImage.tsx": "09472a76c8183b1128f26963c936f42311b18aac4b7206940e13ab231b683e24",
+    "frontend/src/styles/app.css": "7cf4c5fb7136b77003eda49ac81b8f0b3609c3c5c15261f5614a746f15d0cefa",
+    "frontend/src/store/visitReducer.ts": "97fc59fbb45347c3bd2b76ec2c05afe66c8d91382166266b9d6f2a5f54ba3071",
+    "backend-django/arti/recommendations.py": "e8c9550a0f8b4ed5ac389e9fc5ac90a0b5c1500687a2bdb81760c3d6081126d9",
+    "backend-django/arti/survey.py": "30ae32a2856a3edd7e0c139710c3a3af39466310834b1c35639acf435a272399",
+    "backend-django/arti/serializers.py": "4d4c9b0d32ea957979cfa7d39ea56df7589e06a5803425582a85f32fee6499a5",
+    "backend-django/arti/member.py": "566f2530351b2ff23f64e2bfe29273f3ef015d823d1b6399691095ad0a485c08",
+    "backend-django/arti/providers.py": "bd24c14aadba1d7437b05f45b11f26681ca25e16e651fd494f92ee547b69d76d",
+    "backend-django/arti/editing.py": "705ce92f64a6b8cef39d226f3e0e8ad36426caa594edfb0c4d08256f920cdb32",
+    "backend-django/arti/model_service.py": "8c3f846f799296c2792c0982608597026c7c2034fd0aa5f4678832b8c497828c",
+    "backend-django/arti/models.py": "1641b4a7f59fe67df23be142fec58d725cb1d5e310e1a9c075824d40b4e4b9f0",
+    "backend-django/arti/constants.py": "b4cdc5c4d5aae111e657cbb45f60a307feb4625cdfce57619e93518b7c379cc9",
+    "backend-django/arti/tests/test_survey.py": "508aa2b5bbffff7ec5284f8934a1442f6e51d92a191a992cfdf3eae0ff9b9e0f"
+  },
+  "formalStateSha256": "586be0cc9ab0991ffe227eb1306ada78391df9ef9b7e91b14c406961ebef75fd",
+  "scope": "contract only;current product and formal state are read-only anchors"
+}

@@ -1,0 +1,327 @@
+{
+  "format": "arti-survey-blind-pack",
+  "version": 1,
+  "items": [
+    {
+      "code": "Q01",
+      "sha256": "af0e3486621c210b54932d055294051b5601aa3362af4b84ab97e2831f8163bc"
+    },
+    {
+      "code": "Q02",
+      "sha256": "365e0005d4f13012f19f12c9a193f6d6812b50f05db4f37001fc8f9170d6fc3c"
+    },
+    {
+      "code": "Q03",
+      "sha256": "6f1c4b129cc7302098a4bfc3c835e5b932c3b0fa8566544bdb54a694ab4c7656"
+    },
+    {
+      "code": "Q04",
+      "sha256": "6630baa71988c3d33957fbf29fdf5a5675e757641073f99cc1d7156dee4dfe08"
+    },
+    {
+      "code": "Q05",
+      "sha256": "090c7891eebf50608b5f8c601035befa3e3d88657db321e19457465ba390133c"
+    },
+    {
+      "code": "Q06",
+      "sha256": "504ec1961b6b730028d6b27624bb9d74ad91fd72fb592648686cd019658321f5"
+    },
+    {
+      "code": "Q07",
+      "sha256": "03e6bb58feb2e091dbd56adb601b3fccba17386402d5676c994b806058a797da"
+    },
+    {
+      "code": "Q08",
+      "sha256": "525c8b861d616b8c55bff075d6808a47a4a4d29de5ddadfb903be5b3b24dd16f"
+    },
+    {
+      "code": "Q09",
+      "sha256": "b0d49c8c196eef1aef0a2bd4b8d0d8462ae878d3fe98d96474a10a6171c025b7"
+    },
+    {
+      "code": "Q10",
+      "sha256": "0b9fba184d463349df09b8c6e7ecfcff89bc1c1db31e526551250fcadf884f0e"
+    },
+    {
+      "code": "Q11",
+      "sha256": "e06ff1c9490053cf3f9c8351d0f939febf9ef92b8059a809ba541d16ebfccde0"
+    },
+    {
+      "code": "Q12",
+      "sha256": "cf028c0b33e1036c8d115aaba54b0a0922ea5dd90324e367b361b0675b450c70"
+    },
+    {
+      "code": "Q13",
+      "sha256": "6abd896645953b2aa0737daa40fcb4881abeef3286f8befbcbe2513595491c01"
+    },
+    {
+      "code": "Q14",
+      "sha256": "19a4dcdbb31a5aaf1d890ac6778f73046fce8095197d120d90898de07fb69e90"
+    },
+    {
+      "code": "Q15",
+      "sha256": "98dc6d6e23c008b23056108d04d9143b8c7f73fe6fa2a940fd09663290135e25"
+    },
+    {
+      "code": "Q16",
+      "sha256": "13120aa067755f1f50d2b900417807ef9da3f8b2b63a1bbea428fe3f2d8d00a9"
+    },
+    {
+      "code": "Q17",
+      "sha256": "cd3c299d8355a994507bfac03093397080a65b281b71e3e9166126caa9b362af"
+    },
+    {
+      "code": "Q18",
+      "sha256": "431d5bb737eea3e570ab29a1c48a534b01b14c7992e7c873e03e52729b35aaff"
+    },
+    {
+      "code": "Q19",
+      "sha256": "5f30ee908910e71a789447fa8b0c3eda0070602d9ddd1daa1145554d617deaef"
+    },
+    {
+      "code": "Q20",
+      "sha256": "a1d77d070e6a2c36ed0598c37931adb176309f5eb45875d900e6c77131d4594b"
+    },
+    {
+      "code": "Q21",
+      "sha256": "1e71bb2882de06748a586616b4bc502af184a8bd32d9845545721435e618902e"
+    }
+  ],
+  "variants": {
+    "V1": {
+      "itemOrder": [
+        "Q01",
+        "Q16",
+        "Q17",
+        "Q06",
+        "Q12",
+        "Q13",
+        "Q15",
+        "Q04",
+        "Q11",
+        "Q07",
+        "Q18",
+        "Q20",
+        "Q02",
+        "Q03",
+        "Q08",
+        "Q19",
+        "Q09",
+        "Q21",
+        "Q05",
+        "Q10",
+        "Q14"
+      ],
+      "pairs": [
+        {
+          "code": "R15",
+          "left": "Q07",
+          "right": "Q16"
+        },
+        {
+          "code": "R02",
+          "left": "Q14",
+          "right": "Q13"
+        },
+        {
+          "code": "R01",
+          "left": "Q05",
+          "right": "Q09"
+        },
+        {
+          "code": "R08",
+          "left": "Q08",
+          "right": "Q21"
+        },
+        {
+          "code": "R05",
+          "left": "Q12",
+          "right": "Q21"
+        },
+        {
+          "code": "R04",
+          "left": "Q04",
+          "right": "Q02"
+        },
+        {
+          "code": "R18",
+          "left": "Q11",
+          "right": "Q08"
+        },
+        {
+          "code": "R07",
+          "left": "Q14",
+          "right": "Q17"
+        },
+        {
+          "code": "R14",
+          "left": "Q10",
+          "right": "Q18"
+        },
+        {
+          "code": "R09",
+          "left": "Q05",
+          "right": "Q21"
+        },
+        {
+          "code": "R13",
+          "left": "Q12",
+          "right": "Q02"
+        },
+        {
+          "code": "R12",
+          "left": "Q04",
+          "right": "Q20"
+        },
+        {
+          "code": "R11",
+          "left": "Q14",
+          "right": "Q06"
+        },
+        {
+          "code": "R17",
+          "left": "Q03",
+          "right": "Q15"
+        },
+        {
+          "code": "R16",
+          "left": "Q01",
+          "right": "Q19"
+        },
+        {
+          "code": "R03",
+          "left": "Q06",
+          "right": "Q20"
+        },
+        {
+          "code": "R06",
+          "left": "Q05",
+          "right": "Q07"
+        },
+        {
+          "code": "R10",
+          "left": "Q09",
+          "right": "Q13"
+        }
+      ]
+    },
+    "V2": {
+      "itemOrder": [
+        "Q14",
+        "Q10",
+        "Q05",
+        "Q21",
+        "Q09",
+        "Q19",
+        "Q08",
+        "Q03",
+        "Q02",
+        "Q20",
+        "Q18",
+        "Q07",
+        "Q11",
+        "Q04",
+        "Q15",
+        "Q13",
+        "Q12",
+        "Q06",
+        "Q17",
+        "Q16",
+        "Q01"
+      ],
+      "pairs": [
+        {
+          "code": "R10",
+          "left": "Q13",
+          "right": "Q09"
+        },
+        {
+          "code": "R06",
+          "left": "Q07",
+          "right": "Q05"
+        },
+        {
+          "code": "R03",
+          "left": "Q20",
+          "right": "Q06"
+        },
+        {
+          "code": "R16",
+          "left": "Q19",
+          "right": "Q01"
+        },
+        {
+          "code": "R17",
+          "left": "Q15",
+          "right": "Q03"
+        },
+        {
+          "code": "R11",
+          "left": "Q06",
+          "right": "Q14"
+        },
+        {
+          "code": "R12",
+          "left": "Q20",
+          "right": "Q04"
+        },
+        {
+          "code": "R13",
+          "left": "Q02",
+          "right": "Q12"
+        },
+        {
+          "code": "R09",
+          "left": "Q21",
+          "right": "Q05"
+        },
+        {
+          "code": "R14",
+          "left": "Q18",
+          "right": "Q10"
+        },
+        {
+          "code": "R07",
+          "left": "Q17",
+          "right": "Q14"
+        },
+        {
+          "code": "R18",
+          "left": "Q08",
+          "right": "Q11"
+        },
+        {
+          "code": "R04",
+          "left": "Q02",
+          "right": "Q04"
+        },
+        {
+          "code": "R05",
+          "left": "Q21",
+          "right": "Q12"
+        },
+        {
+          "code": "R08",
+          "left": "Q21",
+          "right": "Q08"
+        },
+        {
+          "code": "R01",
+          "left": "Q09",
+          "right": "Q05"
+        },
+        {
+          "code": "R02",
+          "left": "Q13",
+          "right": "Q14"
+        },
+        {
+          "code": "R15",
+          "left": "Q16",
+          "right": "Q07"
+        }
+      ]
+    }
+  },
+  "digest": "d85202dd52d2559f7c7499099d432f4da274e45ecb009661fc55bb8e6ca31e6e"
+}

@@ -22,6 +22,7 @@ import type {
 } from '../types';
 import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
+import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
   constructor(message: string, public status = 0, public code = '', public retryAfterSeconds?:number) {
@@ -159,9 +160,16 @@ export const api = {
   },
 
   me: () => request<User>('GET', '/auth/me'),
-  tastePool: (id: string) => request<{ ready: boolean; poolVersion: string; pairs: {leftId: string; rightId: string}[]; artworks: Artwork[] }>('GET', `/exhibitions/${enc(id)}/taste-pool`),
-  updateTastes: (userId: string, tastes: TasteTag[], tasteProfile?: TasteProfile, exhibitionId?: string) =>
-    request<void>('PUT', `/users/${enc(userId)}/tastes`, { tastes, tasteProfile, exhibitionId }),
+  tastePool: () => request<{
+    poolId: string | null; revision: number | null; ready: boolean; poolVersion: string;
+    pairs: {leftId: string; rightId: string}[]; artworks: Artwork[];
+    supportedTasteProfileVersions?: number[]; tasteTieV2Enabled?: boolean;
+    tieContext?: { policyVersion: string; tieContextVersion: string | null };
+  }>('GET', '/taste-pool'),
+  resolveTaste: (tasteProfile: TasteProfile, visitId: string, exhibitionId: string) =>
+    request<TastePreview>('POST', '/taste-profiles/resolve', { tasteProfile, visitId, exhibitionId }),
+  updateTastes: (userId: string, tastes: TasteTag[], tasteProfile?: TasteProfile, exhibitionId?: string, mutation?: TasteMutation) =>
+    request<void>('PUT', `/users/${enc(userId)}/tastes`, { tastes, tasteProfile, exhibitionId, ...mutation }),
 
   /** 현재 Django에서는 FEATURE_DISABLED. 실제 메일 발송 성공으로 표시하지 않는다. */
   requestPasswordReset: (email: string) =>

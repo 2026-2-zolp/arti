@@ -5,7 +5,7 @@ import secrets
 from pathlib import Path
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction, connection
+from django.db import transaction, connection, OperationalError
 from contextlib import contextmanager
 from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
 from rest_framework.parsers import BaseParser
@@ -14,6 +14,7 @@ from .authentication import IsAdmin
 from .http import ContractError
 from .models import Artwork, Exhibition
 from .serializers import artwork_dto, exhibition_dto
+from .taste_resolution import taste_transaction
 from .views import with_etag
 from . import providers
 from .docent import AIThrottle
@@ -207,11 +208,13 @@ def image(request, artwork_id=None, ex_id=None):
 def confirm_ai(request, ex_id):
     items=request.data.get('items')
     if not isinstance(items,list) or not 1<=len(items)<=100:fail('검토한 작품과 필드를 선택해 주세요.')
-    if len({i.get('id') for i in items if isinstance(i,dict)})!=len(items):fail()
-    with transaction.atomic():
+    if any(not isinstance(item, dict) or not isinstance(item.get('id'), str) for item in items):
+        fail()
+    if len({item['id'] for item in items}) != len(items):
+        fail()
+    with taste_transaction():
         works=[]
-        for item in items:
-            if not isinstance(item,dict):fail()
+        for item in sorted(items, key=lambda item: item['id']):
             w=get_locked(Artwork,item.get('id'))
             if w.exhibition_id!=ex_id:fail('다른 전시의 작품이 포함됐어요.')
             version(w,item.get('version'))
@@ -263,18 +266,38 @@ def analyze(request,artwork_id):
             if code=='RATE_LIMITED':error.wait=min(30,max(1,int(max(retry_waits or [30]))))
             raise error
         return Response({'artwork':artwork_dto(w,True),**results})
-    with transaction.atomic():
+    with analysis_write():
         current=get_locked(Artwork,w.id);version(current,w.version);old=before(current)
         budget.remaining(deadline, budget.ANALYSIS_SECONDS)
         for kind,value in updates.items():
             if not isinstance(value,dict):raise ContractError(502,'PROVIDER_ERROR','분석 결과 형식을 확인할 수 없어요.',retryable=True)
             if kind=='summary':current.summary=value.get('summary','');current.summary_keywords=value.get('keywords',[])
             elif kind=='guide':current.guide_intro=value.get('intro','');current.guided_looking=value.get('questions',[]);current.guided_hints=value.get('hints',[])
-            elif kind=='tag':current.tag_scores=value.get('scores')
+            elif kind=='tag':
+                from .tag_scores import bind_evidence
+                current.tag_scores=value['scores']
+                current.tag_score_evidence=bind_evidence(value.get('tagEvidence'),value['scores'],current)
+                current.tag_score_revision+=1
             else:current.analysis=value
             setattr(current,STATES[kind],'suggested')
         finish(current,old)
+        budget.remaining(deadline, budget.ANALYSIS_SECONDS)
     return Response({'artwork':artwork_dto(current,True),**results})
+
+
+@contextmanager
+def analysis_write():
+    # 외부 모델 호출 뒤의 짧은 저장에만 적용하고 전역 DB 설정은 바꾸지 않습니다.
+    try:
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL lock_timeout = '2s'")
+            yield
+    except OperationalError as exc:
+        if getattr(exc.__cause__, 'sqlstate', None) == '55P03':
+            raise ContractError(503, 'TEMPORARY_UNAVAILABLE', '다른 수정이 저장 중이에요. 같은 입력으로 다시 시도해 주세요.', retryable=True) from None
+        raise
+
 
 @contextmanager
 def analysis_slot():

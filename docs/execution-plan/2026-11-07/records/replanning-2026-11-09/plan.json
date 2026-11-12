@@ -1,0 +1,376 @@
+{
+  "asOfKST": "2026-11-09",
+  "sourceHead": "89cdc6b26785cafc8fd3d4146d006b500a649c66",
+  "scope": "Remaining execution overlay, not new W/G/AC or product acceptance",
+  "requirements": [
+    {
+      "id": "S01",
+      "level": "교수님 직접 피드백",
+      "requirement": "기존 핵심 기능 실제 완성도 우선; 불가능한 확장은 명시적으로 범위 조정",
+      "source": "https://app.notion.com/p/41334713f16781d7af64feabbc012ea2"
+    },
+    {
+      "id": "S02",
+      "level": "교수님 직접 수정 요구",
+      "requirement": "11주차부터 실제 작업 설명식으로 수정·재제출; 과거 기록 보존",
+      "source": "https://app.notion.com/p/3d434713f167812c91d8c24ff78e2b70"
+    },
+    {
+      "id": "S03",
+      "level": "팀 컨설팅 진행 설명·구현/효과 미완료",
+      "requirement": "질문 표현·대화 흐름의 신호에 따른 재설명/심화; 직접 선택UI만으로 대체하지 않음",
+      "source": "https://app.notion.com/p/41334713f16781d7af64feabbc012ea2"
+    },
+    {
+      "id": "S04",
+      "level": "팀 회의 공감·실제 품질 검증 대기",
+      "requirement": "유영국·고정8태그 우선 유지/검증;40점은 별도 개발 평가",
+      "source": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9"
+    },
+    {
+      "id": "S05",
+      "level": "후보 조사 합의·채택 미정",
+      "requirement": "광권11/10 실제 전시 후보 공유, 동섭·성현 조사 협조; 작품 수 미확정",
+      "source": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9"
+    },
+    {
+      "id": "S06",
+      "level": "UI 개선 제안·채택/적용 미확정",
+      "requirement": "U05/U10·오류색·대시보드 경고·헤더; 팔레트 유지 제안",
+      "source": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9"
+    },
+    {
+      "id": "S07",
+      "level": "팀 병렬 준비 방향·일부 담당/중간 목표 제안",
+      "requirement": "보고서·설계서·영상·QR/현장 검토, 주말 절반은 공식 마감 아님",
+      "source": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9"
+    },
+    {
+      "id": "S08",
+      "level": "교수님 일정·공식자료와 교차 확인된 회의록",
+      "requirement": "11/22 18:00 제출란 재확인,11/23~24 양일 발표 준비; 순서 미정",
+      "source": "https://app.notion.com/p/41334713f16781d7af64feabbc012ea2"
+    },
+    {
+      "id": "S09",
+      "level": "팀 협업 방향·세부 담당 조율",
+      "requirement": "최신 통합 기준·구체 링크/질문·담당 파일·검수 회신 방식 정리",
+      "source": "https://app.notion.com/p/41334713f1678159ad5de6058b3b54b9"
+    },
+    {
+      "id": "S10",
+      "level": "실제 GitHub Actions 확인",
+      "requirement": "89cdc6b push4job 성공; PR/required checks·GCI·main·배포는 별도",
+      "source": "https://github.com/2026-2-zolp/arti/actions/runs/42556157089"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R01",
+      "title": "11주차 진도표 수정·재제출",
+      "works": [
+        "W10"
+      ],
+      "criteria": [
+        "AC31",
+        "AC32"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S02"
+      ],
+      "owner": "전원 확인; 취합/제출 담당 미정",
+      "required": true,
+      "status": "planned",
+      "acceptance": "원본 양식 대조·팀원 확인·시각 검수·실제 접수 증거. 초안만으로 완료 금지",
+      "userSteering": "2026-11-09 user will edit progress HWP directly; no agent document editing/submission this task"
+    },
+    {
+      "id": "R02",
+      "title": "필수 시연 범위·결함 표 고정",
+      "works": [
+        "W05",
+        "W10"
+      ],
+      "criteria": [
+        "AC29",
+        "AC31"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S01",
+        "S09"
+      ],
+      "owner": "준억 통합; 동섭·성현 사용자 관점",
+      "required": true,
+      "status": "in_progress",
+      "acceptance": "단계별 환경/버전·재현·중대 결함·담당·대기를 연결",
+      "progress": "10-stage source/evidence inventory prepared; actual demo prerequisites still open",
+      "progressEvidence": [
+        "../../operations/2026-11-09_필수시연흐름과잔여결함.md",
+        "records/docent-baseline-2026-11-09/flow-inventory.json"
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "유영국16점 콘텐츠·배치 인수",
+      "works": [
+        "W06"
+      ],
+      "criteria": [
+        "AC18",
+        "AC19"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S01",
+        "S04"
+      ],
+      "owner": "광권 자료; 준억 인수; 독립 검수자",
+      "required": true,
+      "status": "planned",
+      "acceptance": "독립 라벨 우선·식별/사용조건/내용/배치 별도 검수. 핵심3점 우선 후16점 확장"
+    },
+    {
+      "id": "R04",
+      "title": "태그·감정·추천 분포와 품질",
+      "works": [
+        "W07"
+      ],
+      "criteria": [
+        "AC22"
+      ],
+      "startAfter": [
+        "R02"
+      ],
+      "requirements": [
+        "S01",
+        "S04"
+      ],
+      "owner": "준억 실행·광권 해석·독립 평가자",
+      "required": true,
+      "status": "in_progress",
+      "progress": "TP1 through TP4 passed technical checks, including the real Django/PostgreSQL browser journey, offline cached CLIP provenance and disable/recovery. Independent artwork and tag review remains pending.",
+      "progressEvidence": [
+        "records/W07-preparation/survey-comparison-2026-11-10/README.md",
+        "records/W07-preparation/survey-comparison-2026-11-10/validation.json",
+        "../../review/taste-survey-2026-11-10/validation.json",
+        "records/taste-tie-contract-2026-11-11/validation.json",
+        "records/taste-tie-implementation-plan-2026-11-11/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP1a/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP1b/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP2/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP3/validation.json",
+        "records/taste-tie-implementation-results-2026-11-11/TP4/validation.json"
+      ],
+      "acceptance": "고정8태그·원시 점수/동률·3/5/7점·없는 태그 안내. 미검수 승인 우회 금지; 정확도는 독립 라벨 후"
+    },
+    {
+      "id": "R05",
+      "title": "도슨트 맥락 재설명·심화",
+      "works": [
+        "W07"
+      ],
+      "criteria": [
+        "AC20",
+        "AC21"
+      ],
+      "startAfter": [
+        "R02"
+      ],
+      "requirements": [
+        "S01",
+        "S03"
+      ],
+      "owner": "준억; 작성자 외 콘텐츠/이해도 검토",
+      "required": true,
+      "status": "in_progress",
+      "acceptance": "현재 실응답 기준선 후 최소 정책 보완.4상황·근거밖/지시문, 필수 사실/출처 오류0. 실제 사용자 효과 별도",
+      "progress": "Synthetic route/GPT baseline12 + correction/retest12 passed; actual Yoo/human/robustness pending",
+      "progressEvidence": [
+        "records/docent-baseline-2026-11-09/README.md",
+        "records/docent-baseline-2026-11-09/targeted-review.json"
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "모바일 UI·오류 의미·흐름",
+      "works": [
+        "W05",
+        "W10"
+      ],
+      "criteria": [
+        "AC29",
+        "AC30"
+      ],
+      "startAfter": [
+        "R02"
+      ],
+      "requirements": [
+        "S01",
+        "S06"
+      ],
+      "owner": "동섭·성현; 화면/공통CSS 소유 범위 조율",
+      "required": true,
+      "status": "in_progress",
+      "progressEvidence": ["records/team-feedback-2026-11-10/validation.json"],
+      "acceptance": "뷰포트 전후·실기기·접근성·선택/복귀/저장 회귀. 팔레트 전면교체를 기정사실화하지 않음"
+    },
+    {
+      "id": "R07",
+      "title": "운영 결정·PR CI·배포/복원",
+      "works": [
+        "W12",
+        "W11",
+        "W08",
+        "W09"
+      ],
+      "criteria": [
+        "AC33",
+        "AC07",
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26",
+        "AC27",
+        "AC28"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S01",
+        "S10"
+      ],
+      "owner": "준억 조율; 계정/비용 소유자 미정",
+      "required": true,
+      "status": "planned",
+      "acceptance": "실제 계정/비용/모델 위치 결정과 기존 게이트 준수; 로컬 합성 준비는 병렬, 실제 대상 복원·접속 증거"
+    },
+    {
+      "id": "R08",
+      "title": "두 번째 실제 전시 후보·채택 판단",
+      "works": [
+        "W06"
+      ],
+      "criteria": [
+        "AC18"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S05"
+      ],
+      "owner": "광권 후보11/10; 동섭·성현 자료 협조",
+      "required": false,
+      "status": "planned",
+      "acceptance": "실재성/자료/사용범위/태그 대비/배치/공수 기준으로 채택 또는 보류. 자동 적재/필수 확장 금지"
+    },
+    {
+      "id": "R09",
+      "title": "보고서·설계서·시연 영상·제출",
+      "works": [
+        "W10"
+      ],
+      "criteria": [
+        "AC31",
+        "AC32"
+      ],
+      "startAfter": [],
+      "requirements": [
+        "S01",
+        "S07",
+        "S08"
+      ],
+      "owner": "전원; 장별/편집/업로드 담당 미정",
+      "required": true,
+      "status": "planned",
+      "acceptance": "초안은 즉시 시작; 최종본은R10 결과·실제스택/실패/한계 반영, 접수·최종본 보존"
+    },
+    {
+      "id": "R10",
+      "title": "실제 자료·두 기기·작성자 외 최종 인수",
+      "works": [
+        "W10"
+      ],
+      "criteria": [
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ],
+      "startAfter": [
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07"
+      ],
+      "requirements": [
+        "S01",
+        "S08"
+      ],
+      "owner": "팀 검토자·준억 보완",
+      "required": true,
+      "status": "planned",
+      "acceptance": "실제 검수 자료·환경의 회원/guest/관리자 완주·반영/재전송/복귀·범위 정합. 기존 정식G 선행;R08은 필수 선행 아님"
+    }
+  ],
+  "dialoguePolicy": {
+    "implementation": "planned baseline-first refinement",
+    "fixedExpertiseClassification": false,
+    "explicitDepthSelector": "optional auxiliary, not primary deliverable",
+    "modelRouting": "not implemented; no new Kanana path assumed",
+    "signals": [
+      "needs simplification",
+      "asks reason/context",
+      "shares actual observation",
+      "insufficient signal/request changes"
+    ]
+  },
+  "controls": {
+    "canonicalState": "execution.json",
+    "formalGatesUnchanged": true,
+    "keepFixedEightTags": true,
+    "primaryExhibition": "Yoo Youngkuk 16 private intake",
+    "additionalExhibitionMandatory": false,
+    "noHumanApprovalInference": true,
+    "noUnreviewedPublication": true
+  },
+  "schedule": {
+    "candidateShare": {
+      "date": "2026-11-10",
+      "level": "meeting target"
+    },
+    "optionalAdoptionReview": {
+      "date": "2026-11-12",
+      "level": "author recommendation"
+    },
+    "freeze": {
+      "date": "2026-11-20",
+      "level": "author recommendation"
+    },
+    "submission": {
+      "local": "2026-11-22T18:00:00+09:00",
+      "level": "official-material deadline recorded in Notion; verify actual submission portal"
+    },
+    "presentation": {
+      "dates": [
+        "2026-11-23",
+        "2026-11-24"
+      ],
+      "level": "professor announcement; order unknown"
+    }
+  },
+  "teamFeedback20261110": {
+    "record": "14-team-feedback-2026-11-10.md",
+    "surveyDirection": "C1/C2 passed; arti-dev migrated; real10 candidate draft registered inactive; human/tag review and activation pending",
+    "nextContract": "R04-P C1 committed d5fbea9; C2 implemented",
+    "currentFixes": "R06-A signup/time/image/prose",
+    "tieProposal": "AI score secondary comparison and editable representative tags; max3 server limit not adopted"
+  },
+  "next": [
+    "R04 next independent artwork and tag review, then intake decision on the approved works and their permitted use.",
+    "TP4 technical checks cover the isolated browser journey, cached model provenance and disable/recovery. Optional team styling intake requires the latest integrated source.",
+    "R03 human-approved core3 then actual-grounded dialogue extension",
+    "R06 UI and R07 operations parallel; progress HWP owned by user"
+  ]
+}

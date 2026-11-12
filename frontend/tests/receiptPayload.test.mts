@@ -14,3 +14,9 @@ test('zero completed works form an empty valid receipt instead of claiming a vie
  const record=buildRecord(state,[],{id:'ex',title:'시험 전시',venue:'가상'} as any);
  assert.deepEqual(record.dwell,{});assert.equal(record.longestViewedArtworkId,null);assert.equal(record.visitId,state.visitId);
 });
+
+test('equal dwell uses visit order even when the dwell keys arrive in another order', () => {
+ const state = {...init(), viewed: ['second', 'first'], dwell: {first: 5, second: 5}};
+ const record = buildRecord(state, [], {id: 'ex', title: '시험 전시', venue: '가상'} as any);
+ assert.equal(record.longestViewedArtworkId, 'second');
+});
