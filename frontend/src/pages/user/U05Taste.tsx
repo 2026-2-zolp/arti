@@ -33,7 +33,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
   const to = useExhibitionPath();
   const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
-  const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), []);
+  const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), [], true);
   const v2 = pool?.tasteTieV2Enabled === true && pool.supportedTasteProfileVersions?.includes(2) === true;
   const version = draft.version ?? (v2 ? 2 : 1);
   const contextVersion = pool?.tieContext?.tieContextVersion ?? undefined;
@@ -45,8 +45,10 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     const pair = pairs[index];
     return pair?.leftId === id || pair?.rightId === id;
   });
-  const changed = !!draft.picks.length && (draft.poolVersion !== pool?.poolVersion ||
+  const changed = !!pool && !!draft.picks.length && (draft.poolVersion !== pool.poolVersion ||
     (version === 2) !== v2 || draft.tieContextVersion !== (v2 ? contextVersion : undefined) || !samePairs);
+  const blocked = loading || !!error || !pool?.ready || changed || missingContext;
+  const needsReload = !!error || missingContext || changed || !pool?.ready;
   const currentPair = pairs[draft.picks.length];
   const works = currentPair ? [currentPair.leftId, currentPair.rightId].flatMap(id => pool?.artworks.find(w => w.id === id) ?? []) : [];
   const manual = selected.some(tag => !draft.options?.includes(tag));
@@ -69,7 +71,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   }
 
   function choose(id: string) {
-    if (!pool?.ready || missingContext || changed || complete) return;
+    if (!pool?.ready || blocked || complete) return;
     const picks = [...draft.picks, id];
     const options = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
     update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
@@ -82,12 +84,16 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
         update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
       <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'}
         desc={complete ? undefined : '전시와 관계없이 취향을 알아보는 작품이에요. 더 끌리는 쪽을 다섯 번 골라 주세요.'} />
-      {loading && <Spinner label="작품을 불러오는 중…" />}
-      {error && <p role="alert">{error}</p>}
-      {!loading && !pool?.ready && <p>취향 조사 작품을 불러올 수 없어요.</p>}
-      {missingContext && <p role="alert">취향 조사 근거를 다시 불러와 주세요.</p>}
-      {(changed || error || missingContext || (!loading && !pool?.ready)) && <button type="button" className="btn outline" onClick={reload}>조사 근거 다시 불러오기</button>}
-      {pool?.ready && changed && (
+      {!complete && loading && !pool && <Spinner label="작품을 불러오는 중…" />}
+      {!complete && error && <p role="alert">{error}</p>}
+      {!complete && !loading && !error && !pool?.ready && <p>취향 조사 작품을 불러올 수 없어요.</p>}
+      {!complete && !loading && missingContext && <p role="alert">취향 조사 근거를 다시 불러와 주세요.</p>}
+      {!complete && (loading ? !!pool : needsReload) && (
+        <button type="button" className="btn outline" disabled={loading} aria-busy={loading} onClick={reload}>
+          {loading ? '조사 근거 확인 중…' : '조사 근거 다시 불러오기'}
+        </button>
+      )}
+      {pool?.ready && changed && !loading && !error && !missingContext && (
         <div className="stack gap-12">
           <p role="status">조사 근거가 바뀌었어요. 고른 작품은 초안에 남아 있어요.</p>
           {samePairs && (version === 1 || v2)
@@ -111,10 +117,13 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
           {manual && <p>고른 작품에 없는 태그를 포함했어요. 선택한 태그를 같은 비중으로 추천에 사용합니다.</p>}
           {!selected.length && <p>취향 태그를 하나 이상 골라 주세요.</p>}
           {selected.length > 0 && (version === 2 || pool?.ready) && (
-            <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile}
-              blocked={!pool?.ready || changed || (version === 2 && !contextVersion)} />
+            <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile} blocked={blocked} />
           )}
-          {pool?.ready && !changed && <button type="button" className="text-btn" onClick={reload}>조사 근거 다시 불러오기</button>}
+          {error && <p role="alert">{error} 고른 작품과 태그는 남아 있어요.</p>}
+          {!loading && !error && (!pool?.ready || missingContext) && <p role="status">취향 조사 근거를 다시 확인해 주세요.</p>}
+          <button type="button" className="text-btn" disabled={loading} aria-busy={loading} onClick={reload}>
+            {loading ? '조사 근거 확인 중…' : '조사 근거 다시 불러오기'}
+          </button>
         </div>
       )}
       {pool?.ready && !complete && !changed && !missingContext && works.length === 2 && (
@@ -126,7 +135,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             {works.map((work, index) => (
               <div key={work.id} className="duel-slot">
                 {index === 1 && <p className="duel-or">또는</p>}
-                <button type="button" className="duel-card" onClick={() => choose(work.id)}>
+                <button type="button" className="duel-card" disabled={blocked} onClick={() => choose(work.id)}>
                   <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt={work.title} ratio={16 / 9} fit="contain" />
                   <span className="duel-title">{work.title}</span>
                   <span className="muted small">{work.artist}{work.year ? ` · ${work.year}` : ''}</span>
