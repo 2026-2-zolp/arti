@@ -370,6 +370,11 @@ a.history-card { text-decoration: none; }
 .chat-artwork { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: var(--surface-2); }
 .chat-thumb { width: 52px !important; border-radius: 8px; overflow: hidden; flex: none; }
 .chat-artwork div { display: flex; flex-direction: column; gap: 2px; }
+.guide-question-actions { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+.docent-question { display: grid; gap: 10px; margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.docent-question h2 { font-size: 14px; color: var(--muted); }
+.docent-question p { font-size: 18px; font-weight: 650; line-height: 1.45; }
+.docent-question .btn { justify-self: start; }
 .chat-log { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
 .bubble { max-width: 86%; padding: 12px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; white-space: pre-line; }
 .bubble.ai { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; align-self: flex-start; }

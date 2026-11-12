@@ -25,6 +25,7 @@ export default function U11AskAI() {
 
   // 대화 내용은 작품별로 sessionStorage에 보관 → U-10에 갔다 와도 유지
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loadedChatKey, setLoadedChatKey] = useState('');
   const [failure, setFailure] = useState('');
   const generation = useRef(0);
   const [contentChanged, setContentChanged] = useState(false);
@@ -35,22 +36,31 @@ export default function U11AskAI() {
 
   const key = w ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
-  const canAsk = Boolean(w && key && !pending && !contentChanged);
+  const entry = reading?.entry;
+  const questionIndex = entry?.questionIndex;
+  const selectedQuestion = questionIndex === undefined ? undefined :
+    entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
+    entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
+  const chatReady = !!key && loadedChatKey === key;
+  const canAsk = chatReady && !pending && !contentChanged;
   useEffect(() => {
     generation.current += 1; setPending(false);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
+    setLoadedChatKey(key);
     return () => { generation.current += 1; };
   }, [key]);
-  useEffect(() => { bottomRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'}); }, [messages, pending]);
+  useEffect(() => {
+    if (messages.length || pending) bottomRef.current?.scrollIntoView({block: 'end'});
+  }, [messages, pending]);
   if (!rec) return <Navigate to={to('/route')} replace />;
   const ask = async (question: string) => {
     const q = question.trim();
-    if (!q || q.length > 500 || pending || contentChanged || !w || !key) return;
+    if (!q || q.length > 500 || !canAsk || !w) return;
     const active = generation.current; setPending(true); setFailure('');
     const eligible = messages.flatMap((m, i) => m.role === 'user' && messages[i+1]?.role === 'ai' && messages[i+1].mode === 'llm' ? [m, messages[i+1]] : []);
     const history = eligible.slice(-8).map(m => ({role: m.role === 'ai' ? 'assistant' as const : 'user' as const, text: m.text.slice(0,1000)}));
     try {
-      const result = await api.askAI(artworkId, q, state.visitId, reading?.entry, history);
+      const result = await api.askAI(artworkId, q, state.visitId, entry, history);
       if (generation.current !== active) return;
       const next: ChatMessage[] = [...messages, {id: newId(), role: 'user', text: q}, {id: newId(), role: 'ai', text: result.answer, mode: result.mode, sourceRefs: result.sourceRefs}];
       setMessages(next); save(key + '.chat', next, 'session'); setInput('');
@@ -79,7 +89,7 @@ export default function U11AskAI() {
             maxLength={500}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="작품에 대해 궁금한 점을 물어보세요"
+            placeholder={selectedQuestion && !messages.length ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
             aria-label="질문 입력"
           />
           <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
@@ -102,12 +112,19 @@ export default function U11AskAI() {
 
       {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
       {failure && <p className="error-text" role="alert">{failure}</p>}
-      {reading?.entry && <p className="muted">{reading.entry.tab === 'guided' ? '관람가이드에서 보던 질문' : '작품 해설에서 보던 내용'}을 이어서 이야기해요. 아직 말하지 않은 감상은 대신 추측하지 않아요.<br />{reading.entry.kind === 'guide' ? w?.guidedLooking[reading.entry.questionIndex ?? 0] : reading.entry.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[reading.entry.questionIndex ?? 0] : reading.entry.kind === 'summary' ? w?.summary : w?.description}</p>}
+      {selectedQuestion && (
+        <section className="docent-question" aria-labelledby="docent-question-heading">
+          <h2 id="docent-question-heading">고른 관찰 질문</h2>
+          <p>{selectedQuestion}</p>
+          {chatReady && !messages.length && <button type="button" className="btn outline" disabled={!canAsk}
+            onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>}
+        </section>
+      )}
       <div className="chat-log" aria-live="polite">
-        {messages.length === 0 && (
+        {chatReady && messages.length === 0 && !selectedQuestion && (
           <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
         )}
-        {messages.map((m) => (
+        {chatReady && messages.map((m) => (
           <div key={m.id} className={`bubble ${m.role}`}>
             {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
           </div>
@@ -116,7 +133,7 @@ export default function U11AskAI() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="suggested">
+      {chatReady && !selectedQuestion && <div className="suggested">
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
           {SUGGESTED.map((q) => (
@@ -125,7 +142,7 @@ export default function U11AskAI() {
             </button>
           ))}
         </div>
-      </div>
+      </div>}
     </MobileShell>
   );
 }

@@ -162,11 +162,12 @@ export default function U10Artwork() {
     setSummaryOn((v) => !v);
   };
 
-  const goDocent = (questionIndex = 0) => {
+  const goDocent = (questionIndex?: number) => {
     if (!w || !readingKey) return;
-    const entry: EntryContext = tab === 'desc'
+    const entry: EntryContext | undefined = tab === 'desc'
       ? {tab, kind: showSummary ? 'summary' : 'original', contentVersion: w.contentVersion ?? 1}
-      : {tab, kind: hasGuide && w.guidedLooking.length ? 'guide' : 'generic_tip', contentVersion: w.contentVersion ?? 1, questionIndex, ...(!(hasGuide && w.guidedLooking.length) ? {tipVersion: 'basic-v1' as const} : {})};
+      : questionIndex === undefined ? undefined
+        : {tab, kind: hasGuide && w.guidedLooking.length ? 'guide' : 'generic_tip', contentVersion: w.contentVersion ?? 1, questionIndex, ...(!(hasGuide && w.guidedLooking.length) ? {tipVersion: 'basic-v1' as const} : {})};
     save(readingKey, {tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0, entry}, 'session');
     navigate(to('/artwork/ask'));
   };
@@ -302,24 +303,20 @@ export default function U10Artwork() {
             {tab === 'guided' && (
               <>
                 {guideIntro && <p className="guide-intro">{guideIntro}</p>}
-                {!hasGuide && (
-                  <p className="muted small">아직 이 작품의 관찰 질문이 없어서, 어느 그림에나 쓸 수 있는 보는 방법을 알려 드려요.</p>
-                )}
-                <span className="ai-label">{hasGuide ? '천천히 보며 답해 보세요' : '이렇게 보세요'}</span>
+                <span className="ai-label">{hasGuide && w.guidedLooking.length ? '관찰 질문' : '기본 감상 팁'}</span>
                 <ol className="guided-list">
                   {questions.map((q, i) => (
                     <li key={`${i}-${q}`}>
                       {q}
-                      <button className="link-btn" onClick={() => goDocent(i)}>이 질문으로 내 생각 이야기하기</button>
-                      {hints[i] && (
-                        <>
-                          {' '}
+                      <div className="guide-question-actions">
+                        <button className="link-btn" onClick={() => goDocent(i)} aria-label={`${i + 1}번 질문으로 대화하기`}>이 질문으로 대화하기</button>
+                        {hints[i] && (
                           <button className="link-btn inline hint-btn" aria-expanded={openHints.includes(i)} onClick={() => toggleHint(i)}>
                             {openHints.includes(i) ? '힌트 닫기' : '힌트 보기'}
                           </button>
-                          {openHints.includes(i) && <span className="hint-text">💡 {hints[i]}</span>}
-                        </>
-                      )}
+                        )}
+                      </div>
+                      {hints[i] && openHints.includes(i) && <span className="hint-text">💡 {hints[i]}</span>}
                     </li>
                   ))}
                 </ol>
@@ -332,8 +329,8 @@ export default function U10Artwork() {
               <Icon name={tts.speaking ? 'stop' : 'speaker'} size={20} />
               {tts.speaking ? '재생 중지' : '음성 설명 듣기'}
             </button>
-            <button className="btn outline" onClick={() => goDocent(0)}>
-              <Icon name="chat" size={20} /> {tab === 'guided' ? '내 생각 이야기하기' : '이 부분 더 알아보기'}
+            <button className="btn outline" onClick={() => goDocent()}>
+              <Icon name="chat" size={20} /> {tab === 'guided' ? '작품에 대해 질문하기' : '이 부분 더 알아보기'}
             </button>
           </div>
 
