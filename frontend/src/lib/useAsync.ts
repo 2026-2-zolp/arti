@@ -2,10 +2,11 @@
  * 비동기 API 호출 결과를 { data, loading, error } 형태로 돌려주는 커스텀 훅.
  * deps(의존성 배열)가 바뀔 때마다 다시 호출하고,
  * 화면이 먼저 사라지면(cancelled) 늦게 도착한 응답으로 상태를 바꾸지 않는다.
+ * 같은 자료를 다시 확인할 때는 keepPreviousData로 직전 응답을 유지할 수 있다.
  */
 import { useCallback, useEffect, useState, type DependencyList } from 'react';
 
-export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
+export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList, keepPreviousData = false) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,7 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setData(null);
+    if (!keepPreviousData) setData(null);
     setError(null);
     fn()
       .then((d) => !cancelled && setData(d))
