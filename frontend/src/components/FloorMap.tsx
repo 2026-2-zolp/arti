@@ -25,8 +25,8 @@ export interface MapMarker {
 interface Props {
   exhibition: Exhibition;
   markers: MapMarker[];
-  /** 관람 경로 (입구 → 1 → 2 → …) */
-  route?: MapPoint[];
+  /** 관람 경로 (입구 → 1 → 2 → …). 위치가 없는 지점에서 선을 끊는다. */
+  route?: (MapPoint | null)[];
   /** 강조할 다음 이동 구간 */
   activeLeg?: [MapPoint, MapPoint] | null;
   aspect?: number;       // 가로/세로 (평면도 이미지가 있으면 이미지 비율을 쓴다)
@@ -65,6 +65,11 @@ export function FloorMap({
   const H = 100 / ratio;
   const sy = (y: number) => (y * H) / 100;
   const toPts = (ps: MapPoint[]) => ps.map((p) => `${p.x},${sy(p.y)}`).join(' ');
+  const routePath = route?.map((point, i) => {
+    if (!point) return '';
+    const command = route[i - 1] ? 'L' : 'M';
+    return `${command}${point.x},${sy(point.y)}`;
+  }).join(' ');
 
   const [drag, setDrag] = useState<Drag | null>(null);
   // 끌기가 끝난 직후 svg에 발생하는 click을 무시하기 위한 표시
@@ -153,7 +158,7 @@ export function FloorMap({
         </g>
       )}
 
-      {route && route.length > 1 && <polyline className="fm-route" points={toPts(route)} />}
+      {routePath && <path className="fm-route" d={routePath} />}
       {activeLeg && <polyline className="fm-route active" points={toPts(activeLeg)} />}
 
       {markers.map((m) => {

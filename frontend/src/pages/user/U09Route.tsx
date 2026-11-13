@@ -12,7 +12,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Artwork } from '../../types';
+import type { Artwork, MapPoint } from '../../types';
 
 /** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
@@ -84,6 +84,13 @@ export default function U09Route() {
   const isFirst = current === 0 && !startedAt;
   const locationLabel = (w: Artwork) => w.position ? roomName(w) || '전시실 미등록' : '위치 미등록';
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
+  const route = mapOpen
+    ? [ex.entrance, ...recommendations.map((r) => byId.get(r.artworkId)?.position ?? null)]
+    : undefined;
+  const activeLeg: [MapPoint, MapPoint] | null = from && target.position ? [from, target.position] : null;
+  let routeNote = '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.';
+  if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';
+  else if (route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
 
   const go = () => {
     if (fromArtwork) {
@@ -128,16 +135,12 @@ export default function U09Route() {
       </div>
 
       <div className="map-card route-map">
-        <p className="muted small route-note">
-          {from && target.position
-            ? '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.'
-            : '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.'}
-        </p>
+        <p className="muted small route-note">{routeNote}</p>
         <FloorMap
           exhibition={ex}
           markers={mapOpen ? markers : focusedMarkers}
-          route={mapOpen ? [ex.entrance, ...markers.map((m) => m.point)] : undefined}
-          activeLeg={from && target.position ? [from, target.position] : null}
+          route={route}
+          activeLeg={activeLeg}
           showEntrance={mapOpen || current === 0}
           showCompletedNumbers={!mapOpen}
           aspect={0.95}
