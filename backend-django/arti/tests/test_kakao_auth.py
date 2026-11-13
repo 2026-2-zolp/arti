@@ -88,15 +88,19 @@ class KakaoAuthTests(TestCase):
 
         return patch('arti.kakao.request_json', side_effect=response)
 
-    def callback(self, browser, params, **query):
+    def callback(self, browser, params, *, accepted=True, **query):
         response = browser.get(BASE + '/callback', {'state': params['state'], **query})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], COMPLETE_PATH)
+        expected = f"{COMPLETE_PATH}#state={params['state']}" if accepted else COMPLETE_PATH
+        self.assertEqual(response['Location'], expected)
         self.assertEqual(response['Referrer-Policy'], 'no-referrer')
         self.assertIn('no-store', response['Cache-Control'])
 
-    def finish(self, browser, status):
-        response = browser.post(BASE + '/finish')
+    def submit_finish(self, browser, params, **headers):
+        return browser.post(BASE + '/finish', {'state': params['state']}, format='json', **headers)
+
+    def finish(self, browser, params, status):
+        response = self.submit_finish(browser, params)
         self.assertEqual(response.status_code, 200, response.data)
         self.assertEqual(response.data['status'], status)
         self.assertEqual(response.cookies[FLOW_COOKIE]['max-age'], 0)
@@ -114,11 +118,11 @@ class KakaoAuthTests(TestCase):
         self.assertEqual(link['prompt'], 'login')
         with self.provider(link) as provider:
             self.callback(self.client, link, code='one-time-code')
-            self.callback(self.client, link, code='one-time-code')
+            self.callback(self.client, link, code='one-time-code', accepted=False)
             self.assertEqual(provider.call_count, 2)
         flow = KakaoOAuthFlow.objects.get()
         self.assertEqual((flow.nonce, flow.verifier), ('', ''))
-        self.assertEqual(self.finish(self.client, 'linked'), {'status': 'linked', 'returnTo': '/mypage'})
+        self.assertEqual(self.finish(self.client, link, 'linked'), {'status': 'linked', 'returnTo': '/mypage'})
         self.assertEqual(self.client.get(BASE + '/status').data, {'enabled': True, 'linked': True})
         self.assertEqual(self.client.post('/api/auth/logout').status_code, 204)
         self.client.credentials()
@@ -127,7 +131,7 @@ class KakaoAuthTests(TestCase):
         login = self.start(self.client, 'login', returnTo=target)
         with self.provider(login):
             self.callback(self.client, login, code='one-time-code')
-        result = self.finish(self.client, 'logged_in')
+        result = self.finish(self.client, login, 'logged_in')
         self.assertEqual(result['returnTo'], target)
         self.assertEqual(result['user']['id'], self.account.pk)
         self.assertEqual(result['user']['tastes'], self.account.tastes)
@@ -136,14 +140,14 @@ class KakaoAuthTests(TestCase):
         self.assertEqual(self.client.get('/api/auth/me').data['id'], self.account.pk)
         records = self.client.get(f'/api/users/{self.account.pk}/visits')
         self.assertEqual([record['id'] for record in records.data], [visit.pk])
-        self.assertEqual(self.client.post(BASE + '/finish').status_code, 400)
+        self.assertEqual(self.submit_finish(self.client, login).status_code, 400)
         self.assertFalse(KakaoOAuthFlow.objects.exists())
 
     def test_matching_email_never_links_or_creates_accounts(self):
         params = self.start(self.client, 'login', returnTo='/%2fevil.example')
         with self.provider(params):
             self.callback(self.client, params, code='one-time-code')
-        self.assertEqual(self.finish(self.client, 'unlinked'), {'status': 'unlinked', 'returnTo': '/'})
+        self.assertEqual(self.finish(self.client, params, 'unlinked'), {'status': 'unlinked', 'returnTo': '/'})
         self.assertEqual(Account.objects.count(), 2)
         self.assertFalse(Session.objects.exists())
         self.assertFalse(KakaoIdentity.objects.exists())
@@ -157,12 +161,12 @@ class KakaoAuthTests(TestCase):
         with self.provider(params):
             self.callback(self.client, params, code='one-time-code')
         self.login(self.client, self.other)
-        self.assertEqual(self.client.post(BASE + '/finish').status_code, 403)
+        self.assertEqual(self.submit_finish(self.client, params).status_code, 403)
         self.login(self.client, self.account)
-        self.assertEqual(self.client.post(BASE + '/finish').status_code, 403)
+        self.assertEqual(self.submit_finish(self.client, params).status_code, 403)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + first_token)
         self.assertEqual(self.client.post('/api/auth/logout').status_code, 204)
-        self.assertEqual(self.client.post(BASE + '/finish').status_code, 403)
+        self.assertEqual(self.submit_finish(self.client, params).status_code, 403)
         self.assertFalse(KakaoIdentity.objects.exists())
 
     def test_one_kakao_subject_cannot_be_linked_to_another_account(self):
@@ -171,18 +175,18 @@ class KakaoAuthTests(TestCase):
         params = self.start(self.client, 'link', password=PASSWORD)
         with self.provider(params):
             self.callback(self.client, params, code='one-time-code')
-        self.assertNotIn('token', self.finish(self.client, 'conflict'))
+        self.assertNotIn('token', self.finish(self.client, params, 'conflict'))
         self.assertEqual(KakaoIdentity.objects.get().account_id, self.other.pk)
 
     def test_state_is_bound_to_browser_and_expires(self):
         params = self.start(self.client, 'login')
         with patch('arti.kakao.request_json') as provider:
-            self.callback(APIClient(), params, code='one-time-code')
-            self.callback(self.client, {'state': 'x' * 43}, code='one-time-code')
-            self.assertEqual(self.client.post(BASE + '/finish').status_code, 400)
+            self.callback(APIClient(), params, code='one-time-code', accepted=False)
+            self.callback(self.client, {'state': 'x' * 43}, code='one-time-code', accepted=False)
+            self.assertEqual(self.submit_finish(self.client, params).status_code, 400)
             KakaoOAuthFlow.objects.update(expires_at=timezone.now() - timedelta(seconds=1))
-            self.callback(self.client, params, code='one-time-code')
-            self.assertEqual(self.client.post(BASE + '/finish').status_code, 400)
+            self.callback(self.client, params, code='one-time-code', accepted=False)
+            self.assertEqual(self.submit_finish(self.client, params).status_code, 400)
             provider.assert_not_called()
         self.start(self.client, 'login')
         self.assertEqual(KakaoOAuthFlow.objects.count(), 1)
@@ -195,7 +199,7 @@ class KakaoAuthTests(TestCase):
                 params = self.start(self.client, 'login')
                 with self.provider(params, **case):
                     self.callback(self.client, params, code='one-time-code')
-                self.finish(self.client, 'failed')
+                self.finish(self.client, params, 'failed')
         self.assertFalse(Session.objects.exists())
 
     def test_cancellation_and_provider_timeout_are_recoverable(self):
@@ -203,11 +207,11 @@ class KakaoAuthTests(TestCase):
         with patch('arti.kakao.request_json') as provider:
             self.callback(self.client, params, error='access_denied')
             provider.assert_not_called()
-        self.finish(self.client, 'cancelled')
+        self.finish(self.client, params, 'cancelled')
         params = self.start(self.client, 'login')
         with patch('arti.kakao.request_json', side_effect=TimeoutError):
             self.callback(self.client, params, code='one-time-code')
-        self.finish(self.client, 'failed')
+        self.finish(self.client, params, 'failed')
 
     def test_foreign_origin_cannot_start_or_consume_flow(self):
         foreign = {'HTTP_ORIGIN': 'https://other.example.test'}
@@ -215,8 +219,8 @@ class KakaoAuthTests(TestCase):
         self.assertEqual(result.status_code, 403)
         params = self.start(self.client, 'login')
         self.callback(self.client, params, error='access_denied')
-        self.assertEqual(self.client.post(BASE + '/finish', **foreign).status_code, 403)
-        result = self.client.post(BASE + '/finish', HTTP_ORIGIN='https://arti.example.test')
+        self.assertEqual(self.submit_finish(self.client, params, **foreign).status_code, 403)
+        result = self.submit_finish(self.client, params, HTTP_ORIGIN='https://arti.example.test')
         self.assertEqual(result.data['status'], 'cancelled')
 
     def test_guest_flow_cannot_overwrite_session_and_dormant_or_admin_cannot_log_in(self):
@@ -225,7 +229,7 @@ class KakaoAuthTests(TestCase):
         with self.provider(params):
             self.callback(self.client, params, code='one-time-code')
         self.login(self.client, self.other)
-        self.assertEqual(self.client.post(BASE + '/finish').status_code, 409)
+        self.assertEqual(self.submit_finish(self.client, params).status_code, 409)
         self.assertEqual(self.client.post(BASE + '/start', {'mode': 'login'}, format='json').status_code, 400)
         self.client.credentials()
         for role, status in [('user', 'dormant'), ('admin', 'active')]:
@@ -234,7 +238,20 @@ class KakaoAuthTests(TestCase):
                 params = self.start(self.client, 'login')
                 with self.provider(params):
                     self.callback(self.client, params, code='one-time-code')
-                self.finish(self.client, 'unlinked')
+                self.finish(self.client, params, 'unlinked')
+
+    def test_old_completion_page_cannot_consume_new_callback_in_same_browser(self):
+        KakaoIdentity.objects.create(client_id=CLIENT_ID, subject='123456789', account=self.account)
+        first = self.start(self.client, 'login', returnTo='/')
+        self.callback(self.client, first, error='access_denied')
+        second = self.start(self.client, 'login', returnTo='/mypage')
+        with self.provider(second):
+            self.callback(self.client, second, code='one-time-code')
+        self.assertEqual(self.submit_finish(self.client, first).status_code, 400)
+        self.assertEqual(self.client.post(BASE + '/finish').status_code, 400)
+        self.assertFalse(Session.objects.exists())
+        result = self.finish(self.client, second, 'logged_in')
+        self.assertEqual(result['returnTo'], '/mypage')
 
     def test_no_secrets_or_https_callback_disables_oauth(self):
         for override in ({'ARTI_KAKAO_CLIENT_SECRET': ''}, {'ARTI_KAKAO_CALLBACK_URL': CALLBACK.replace('https:', 'http:')}):

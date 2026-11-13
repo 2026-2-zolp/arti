@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { withRedirect } from '../../store/ExhibitionRoute';
@@ -14,15 +14,18 @@ const MESSAGES = {
 
 export default function KakaoComplete() {
   const navigate = useNavigate();
+  const { hash } = useLocation();
+  const callbackState = new URLSearchParams(hash.slice(1)).get('state');
   const { state, dispatch } = useVisit();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
   const [returnTo, setReturnTo] = useState('/');
 
   const finish = async () => {
+    if (!callbackState) return;
     setPending(true);
     try {
-      const result = await api.finishKakao();
+      const result = await api.finishKakao(callbackState);
       if (result.status === 'logged_in') {
         dispatch({ type: 'login', user: result.user });
         navigate(result.returnTo, { replace: true });
@@ -42,9 +45,9 @@ export default function KakaoComplete() {
   return (
     <MobileShell back={false}>
       <Lead title="카카오 인증 확인" />
-      {message ? (
+      {message || !callbackState ? (
         <div className="stack gap-16">
-          <p role="status">{message}</p>
+          <p role="status">{message || '카카오 로그인 요청을 다시 시작해 주세요.'}</p>
           <Link className="btn outline block" to={state.user ? '/mypage' : withRedirect('/login', returnTo)} replace>
             {state.user ? '마이페이지로 돌아가기' : '로그인 화면으로 돌아가기'}
           </Link>

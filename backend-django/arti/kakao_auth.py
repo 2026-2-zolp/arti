@@ -25,6 +25,7 @@ FLOW_COOKIE = '__Host-arti-kakao-flow'
 COOKIE_PATH = '/'
 FLOW_TTL = timedelta(minutes=10)
 COMPLETE_PATH = '/auth/kakao/complete'
+FLOW_KEY = re.compile(r'[A-Za-z0-9_-]{43}')
 RETURN_ROUTE = re.compile(r'/(?:mypage|receipt/[^/]+|exhibitions/[^/]+(?:/(?:entry|taste(?:/saved)?))?)?')
 
 
@@ -67,7 +68,7 @@ def require_same_origin(request):
 
 def flow_query(request):
     browser_key = request.COOKIES.get(FLOW_COOKIE, '')
-    if not re.fullmatch(r'[A-Za-z0-9_-]{43}', browser_key):
+    if not FLOW_KEY.fullmatch(browser_key):
         return KakaoOAuthFlow.objects.none()
     return KakaoOAuthFlow.objects.filter(browser_hash=digest(browser_key),
                                         client_id=settings.ARTI_KAKAO_CLIENT_ID, expires_at__gt=timezone.now())
@@ -124,15 +125,14 @@ def start(request):
 @api_view(['GET'])
 def callback(request):
     require_configuration()
-    response = private(HttpResponseRedirect(COMPLETE_PATH))
     states = request.query_params.getlist('state')
-    if len(states) != 1 or not re.fullmatch(r'[A-Za-z0-9_-]{43}', states[0]):
-        return response
+    if len(states) != 1 or not FLOW_KEY.fullmatch(states[0]):
+        return private(HttpResponseRedirect(COMPLETE_PATH))
     query = flow_query(request).filter(state_hash=digest(states[0]))
     with transaction.atomic():
         flow = query.select_for_update().filter(status='pending').first()
         if flow is None:
-            return response
+            return private(HttpResponseRedirect(COMPLETE_PATH))
         # 외부 요청 전에 한 번만 가져갈 수 있도록 상태를 바꿉니다.
         flow.status = 'exchanging'
         flow.save(update_fields=['status'])
@@ -150,7 +150,8 @@ def callback(request):
         except ContractError:
             result = 'failed'
     query.filter(status='exchanging').update(status=result, subject=subject, nonce='', verifier='')
-    return response
+    # The fragment stays in the browser and ties the completion screen to this callback.
+    return private(HttpResponseRedirect(f'{COMPLETE_PATH}#state={states[0]}'))
 
 
 @api_view(['POST'])
@@ -158,8 +159,12 @@ def callback(request):
 def finish(request):
     require_configuration()
     require_same_origin(request)
+    state = request.data.get('state')
+    if not isinstance(state, str) or not FLOW_KEY.fullmatch(state):
+        raise ContractError(400, 'KAKAO_INVALID_FLOW', '카카오 로그인 요청을 다시 시작해 주세요.')
     with transaction.atomic():
-        flow = flow_query(request).select_for_update().exclude(status__in=['pending', 'exchanging']).first()
+        flow = flow_query(request).select_for_update().filter(state_hash=digest(state)).exclude(
+            status__in=['pending', 'exchanging']).first()
         if flow is None:
             raise ContractError(400, 'KAKAO_INVALID_FLOW', '카카오 로그인 요청을 다시 시작해 주세요.')
         if flow.account_id:

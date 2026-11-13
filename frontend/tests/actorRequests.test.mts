@@ -86,7 +86,7 @@ test('late Kakao login completion cannot overwrite an email login', async () => 
  storage.removeItem('arti.token');
  const response=deferred<Response>();
  globalThis.fetch=(async () => response.promise) as typeof fetch;
- const pending=api.finishKakao();
+ const pending=api.finishKakao('callback-state');
  storage.setItem('arti.token',JSON.stringify('email-account-token'));
  response.resolve(Response.json({status:'logged_in',user:{id:'other-account'},token:'late-token',returnTo:'/mypage'}));
  await assert.rejects(pending);
@@ -97,7 +97,7 @@ test('Kakao link and cancellation leave the original email session in storage', 
  const {storage}=setup();
  for (const status of ['linked','cancelled']) {
   globalThis.fetch=(async () => Response.json({status,returnTo:'/mypage'})) as typeof fetch;
-  assert.equal((await api.finishKakao()).status,status);
+  assert.equal((await api.finishKakao('callback-state')).status,status);
   assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));
  }
 });

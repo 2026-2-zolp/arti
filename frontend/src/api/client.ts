@@ -157,8 +157,8 @@ export const api = {
   startKakao: (input: { mode: 'link'; password: string } | { mode: 'login'; returnTo: string }) =>
     request<{ authorizationUrl: string }>('POST', '/auth/kakao/start', input),
 
-  async finishKakao(): Promise<KakaoResult> {
-    const result = await request<KakaoFinish>('POST', '/auth/kakao/finish');
+  async finishKakao(state: string): Promise<KakaoResult> {
+    const result = await request<KakaoFinish>('POST', '/auth/kakao/finish', { state });
     if (result.status !== 'logged_in') return result;
     if (load(USER_TOKEN, null)) throw new ApiError('로그인한 계정이 바뀌었어요. 다시 시도해 주세요.');
     save(USER_TOKEN, result.token);
