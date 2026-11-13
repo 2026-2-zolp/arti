@@ -201,7 +201,15 @@ a.history-card { text-decoration: none; }
 .duel-dots span.done { background: var(--ink); }
 .duel-dots span.on { width: 22px; background: var(--accent); }
 .duel { display: flex; flex-direction: column; }
-.duel-or { margin: 4px 0; text-align: center; font-size: 13px; color: var(--muted); }
+.duel-compact { gap: 8px; }
+[data-screen='U-05']:has(.duel-compact) .lead { margin-bottom: 8px; }
+[data-screen='U-05']:has(.duel-compact) .duel-dots { margin: 8px 0; }
+.duel-compact .duel-card { position: relative; gap: 4px; padding: 6px; }
+.duel-compact .duel-card :is(img, svg[role='img']) { max-height: 22dvh; background: var(--surface-2); }
+.duel-compact .duel-title { font-size: 15px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-compact .duel-card > .small { padding-inline: 4px; }
+.duel-picked { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 12px; color: white; background: var(--ink); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .duel-card { transition: none; } }
 .duel-card {
   width: 100%; padding: 8px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
   text-align: left; display: flex; flex-direction: column; gap: 8px;
@@ -314,6 +322,7 @@ a.history-card { text-decoration: none; }
 .progress-dots span.done { background: #bdb7ae; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
+.route-map { margin-top: 12px; }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .next-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .next-row strong { font-size: 16px; }
@@ -377,7 +386,9 @@ a.history-card { text-decoration: none; }
 .docent-question { display: grid; gap: 10px; margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
 .docent-question h2 { font-size: 14px; color: var(--muted); }
 .docent-question p { font-size: 18px; font-weight: 650; line-height: 1.45; }
-.docent-question .btn { justify-self: start; }
+.docent-compose { display: grid; gap: 8px; margin-top: 12px; }
+.docent-compose .link-btn { justify-self: start; }
+.docent-question + .chat-log:not(:has(.bubble)) { margin: 0; }
 .chat-log { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
 .bubble { max-width: 86%; padding: 12px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; white-space: pre-line; }
 .bubble.ai { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; align-self: flex-start; }
@@ -385,7 +396,7 @@ a.history-card { text-decoration: none; }
 .bubble.typing { color: var(--muted); }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
 .chat-input { display: flex; gap: 8px; }
-.chat-input input { flex: 1; height: 50px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; }
+.chat-input input { flex: 1; min-width: 0; height: 50px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
 .chat-input input:focus { outline: none; border-color: var(--ink); }
 .send-btn { width: 50px; height: 50px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
 .send-btn:disabled { background: #c9c6c0; }

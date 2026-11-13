@@ -1,5 +1,5 @@
 /** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
@@ -33,6 +33,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
   const to = useExhibitionPath();
   const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
+  const [picked, setPicked] = useState<string | null>(null);
+  const pickTimer = useRef<number | null>(null);
   const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), [], true);
   const v2 = pool?.tasteTieV2Enabled === true && pool.supportedTasteProfileVersions?.includes(2) === true;
   const version = draft.version ?? (v2 ? 2 : 1);
@@ -48,6 +50,14 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const changed = !!pool && !!draft.picks.length && (draft.poolVersion !== pool.poolVersion ||
     (version === 2) !== v2 || draft.tieContextVersion !== (v2 ? contextVersion : undefined) || !samePairs);
   const blocked = loading || !!error || !pool?.ready || changed || missingContext;
+  const poolVersion = pool?.poolVersion;
+  useEffect(() => {
+    setPicked(null);
+    return () => {
+      if (pickTimer.current !== null) window.clearTimeout(pickTimer.current);
+      pickTimer.current = null;
+    };
+  }, [blocked, poolVersion, contextVersion]);
   const needsReload = !!error || missingContext || changed || !pool?.ready;
   const currentPair = pairs[draft.picks.length];
   const works = currentPair ? [currentPair.leftId, currentPair.rightId].flatMap(id => pool?.artworks.find(w => w.id === id) ?? []) : [];
@@ -71,16 +81,21 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   }
 
   function choose(id: string) {
-    if (!pool?.ready || blocked || complete) return;
+    if (!pool?.ready || blocked || complete || pickTimer.current !== null) return;
     const picks = [...draft.picks, id];
     const options = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
-    update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
+    setPicked(id);
+    pickTimer.current = window.setTimeout(() => {
+      pickTimer.current = null;
+      setPicked(null);
+      update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
+    }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420);
   }
 
   const reviewKey = `${draftKey}.review.${JSON.stringify(profile)}`;
   return (
     <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
-      right={draft.picks.length > 0 && <button type="button" className="text-btn" onClick={() =>
+      right={draft.picks.length > 0 && <button type="button" className="text-btn" disabled={picked !== null} onClick={() =>
         update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
       <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'}
         desc={complete ? undefined : '전시와 관계없이 취향을 알아보는 작품이에요. 더 끌리는 쪽을 다섯 번 골라 주세요.'} />
@@ -131,14 +146,15 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
           <div className="duel-dots" aria-label={`${draft.picks.length + 1}번째, 모두 ${pairs.length}번`}>
             {pairs.map((_, index) => <span key={index} className={index === draft.picks.length ? 'on' : index < draft.picks.length ? 'done' : ''} />)}
           </div>
-          <div className="duel">
-            {works.map((work, index) => (
+          <div className="duel duel-compact">
+            {works.map((work) => (
               <div key={work.id} className="duel-slot">
-                {index === 1 && <p className="duel-or">또는</p>}
-                <button type="button" className="duel-card" disabled={blocked} onClick={() => choose(work.id)}>
-                  <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt={work.title} ratio={16 / 9} fit="contain" />
+                <button type="button" className={`duel-card${picked === work.id ? ' picked' : ''}`}
+                  aria-pressed={picked === work.id} disabled={blocked || picked !== null} onClick={() => choose(work.id)}>
+                  <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt="" ratio={5 / 2} fit="contain" />
                   <span className="duel-title">{work.title}</span>
                   <span className="muted small">{work.artist}{work.year ? ` · ${work.year}` : ''}</span>
+                  {picked === work.id && <span className="duel-picked" aria-hidden="true">선택함</span>}
                 </button>
               </div>
             ))}

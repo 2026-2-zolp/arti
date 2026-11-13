@@ -33,10 +33,11 @@ export default function U11AskAI() {
   const [contentChanged, setContentChanged] = useState(false);
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
+  const sending = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { data: w, error, reload } = useAsync(() => (artworkId ? api.getArtwork(artworkId) : Promise.resolve(null)), [artworkId]);
 
-  const key = w ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
+  const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
   const entry = reading?.entry;
   const questionIndex = entry?.questionIndex;
@@ -46,18 +47,19 @@ export default function U11AskAI() {
   const chatReady = !!key && loadedChatKey === key;
   const canAsk = chatReady && !pending && !contentChanged;
   useEffect(() => {
-    generation.current += 1; setPending(false);
+    generation.current += 1; sending.current = false; setPending(false);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
     setLoadedChatKey(key);
     return () => { generation.current += 1; };
   }, [key]);
   useEffect(() => {
-    if (messages.length || pending) bottomRef.current?.scrollIntoView({block: 'end'});
-  }, [messages, pending]);
+    if (messages.length) bottomRef.current?.scrollIntoView({block: 'nearest'});
+  }, [messages]);
   if (!rec) return <Navigate to={to('/route')} replace />;
-  const ask = async (question: string) => {
+  const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
-    if (!q || q.length > 500 || !canAsk || !w) return;
+    if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
+    sending.current = true;
     const active = generation.current; setPending(true); setFailure('');
     const eligible = messages.flatMap((m, i) => m.role === 'user' && messages[i+1]?.role === 'ai' && messages[i+1].mode === 'llm' ? [m, messages[i+1]] : []);
     const history = eligible.slice(-8).map(m => ({role: m.role === 'ai' ? 'assistant' as const : 'user' as const, text: m.text.slice(0,1000)}));
@@ -65,19 +67,25 @@ export default function U11AskAI() {
       const result = await api.askAI(artworkId, q, state.visitId, entry, history);
       if (generation.current !== active) return;
       const next: ChatMessage[] = [...messages, {id: newId(), role: 'user', text: q}, {id: newId(), role: 'ai', text: result.answer, mode: result.mode, sourceRefs: result.sourceRefs}];
-      setMessages(next); save(key + '.chat', next, 'session'); setInput('');
+      setMessages(next); save(key + '.chat', next, 'session');
+      if (fromInput) setInput('');
     } catch (e) {
       if (generation.current !== active) return;
-      setInput(q);
       if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') { setContentChanged(true); setFailure('작품 자료가 변경됐어요. 해설로 돌아가 새 내용을 확인한 뒤 질문해 주세요.'); reload(); }
       else setFailure(e instanceof Error ? e.message : '답변을 가져오지 못했어요. 입력을 유지했으니 다시 보내 주세요.');
-    } finally { if (generation.current === active) setPending(false); }
+    } finally {
+      if (generation.current === active) {
+        sending.current = false;
+        setPending(false);
+      }
+    }
   };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    ask(input);
+    ask(input, true);
   };
+  const guidedStart = !!selectedQuestion && !messages.length;
 
   return (
     <MobileShell
@@ -87,21 +95,6 @@ export default function U11AskAI() {
         if (entryLocation?.fromArtwork) navigate(-1);
         else navigate(to('/artwork'), { replace: true });
       }}
-      footer={
-        <form className="chat-input" onSubmit={onSubmit}>
-          <input
-            disabled={pending || contentChanged}
-            maxLength={500}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={selectedQuestion && !messages.length ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
-            aria-label="질문 입력"
-          />
-          <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
-            <Icon name="send" size={20} />
-          </button>
-        </form>
-      }
     >
       {w && (
         <div className="chat-artwork">
@@ -116,13 +109,10 @@ export default function U11AskAI() {
       )}
 
       {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
-      {failure && <p className="error-text" role="alert">{failure}</p>}
       {selectedQuestion && (
         <section className="docent-question" aria-labelledby="docent-question-heading">
           <h2 id="docent-question-heading">고른 관찰 질문</h2>
-          <p>{selectedQuestion}</p>
-          {chatReady && !messages.length && <button type="button" className="btn outline" disabled={!canAsk}
-            onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>}
+          <p id="docent-question-text">{selectedQuestion}</p>
         </section>
       )}
       <div className="chat-log" aria-live="polite">
@@ -134,8 +124,30 @@ export default function U11AskAI() {
             {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
           </div>
         ))}
-        {pending && <div className="bubble ai typing">답변을 작성하고 있어요…</div>}
         <div ref={bottomRef} />
+      </div>
+
+      <div className="docent-compose">
+        <form className="chat-input" onSubmit={onSubmit}>
+          <input
+            disabled={pending || contentChanged}
+            maxLength={500}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={guidedStart ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
+            aria-label="질문 입력"
+            aria-describedby={guidedStart ? 'docent-question-text' : undefined}
+          />
+          <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
+            <Icon name="send" size={20} />
+          </button>
+        </form>
+        {chatReady && selectedQuestion && (
+          <button type="button" className="link-btn" disabled={!canAsk}
+            onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>
+        )}
+        {pending && <p className="muted small" role="status">답변을 작성하고 있어요…</p>}
+        {failure && <p className="error-text" role="alert">{failure}</p>}
       </div>
 
       {chatReady && !selectedQuestion && <div className="suggested">

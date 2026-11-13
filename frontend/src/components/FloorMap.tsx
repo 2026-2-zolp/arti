@@ -37,6 +37,7 @@ interface Props {
   /** 입구를 끌어다 놓았을 때 */
   onEntranceMove?: (p: MapPoint) => void;
   showEntrance?: boolean;
+  showCompletedNumbers?: boolean;
   forAdmin?: boolean;
 }
 
@@ -55,6 +56,7 @@ export function FloorMap({
   onMarkerMove,
   onEntranceMove,
   showEntrance = true,
+  showCompletedNumbers = false,
   forAdmin = false,
 }: Props) {
   const plan = exhibition.floorPlan;
@@ -172,7 +174,7 @@ export function FloorMap({
             {m.state === 'current' && <circle className="fm-pulse" r={5.5} />}
             <circle r={3.4} />
             <text textAnchor="middle" dy="1.25">
-              {m.state === 'done' ? '✓' : m.label}
+              {m.state === 'done' && !showCompletedNumbers ? '✓' : m.label}
             </text>
           </g>
         );

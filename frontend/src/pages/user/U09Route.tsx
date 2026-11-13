@@ -12,7 +12,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Artwork, MapPoint } from '../../types';
+import type { Artwork } from '../../types';
 
 /** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
@@ -67,14 +67,9 @@ export default function U09Route() {
     );
   }
 
-  // 현재 구간은 바로 앞의 좌표가 있는 작품(없으면 입구)부터 표시합니다.
-  const from: MapPoint = (() => {
-    for (let i = current - 1; i >= 0; i--) {
-      const prev = byId.get(recommendations[i].artworkId);
-      if (prev?.position) return prev.position;
-    }
-    return ex.entrance;
-  })();
+  const previousId = recommendations[current - 1]?.artworkId;
+  const previous = previousId ? byId.get(previousId) : undefined;
+  const from = current === 0 ? ex.entrance : previous?.position;
   const roomName = (w: Artwork) => ex.rooms.find((r) => r.id === w.roomId)?.name ?? '';
   const orderOf = (id: string) => recommendations.findIndex((r) => r.artworkId === id) + 1;
 
@@ -88,6 +83,7 @@ export default function U09Route() {
   const focus = focusId ? byId.get(focusId) : null;
   const isFirst = current === 0 && !startedAt;
   const locationLabel = (w: Artwork) => w.position ? roomName(w) || '전시실 미등록' : '위치 미등록';
+  const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
 
   const go = () => {
     if (fromArtwork) {
@@ -121,39 +117,46 @@ export default function U09Route() {
       </div>
 
       <div className="next-card">
-        <span className="eyebrow">{current + 1}번 작품</span>
+        {current > 0 && (
+          <p className="muted small">출발 · {current}번 {previous?.title ?? '직전 작품'}{previous ? ` · ${locationLabel(previous)}` : ''}</p>
+        )}
+        <span className="eyebrow">{current > 0 ? '다음 · ' : ''}{current + 1}번 작품</span>
         <div className="next-row">
           <h2>{target.title}{target.year ? ` (${target.year})` : ''}</h2>
           <span className="muted small">{locationLabel(target)}</span>
         </div>
       </div>
 
+      <div className="map-card route-map">
+        <p className="muted small route-note">
+          {from && target.position
+            ? '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.'
+            : '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.'}
+        </p>
+        <FloorMap
+          exhibition={ex}
+          markers={mapOpen ? markers : focusedMarkers}
+          route={mapOpen ? [ex.entrance, ...markers.map((m) => m.point)] : undefined}
+          activeLeg={from && target.position ? [from, target.position] : null}
+          showEntrance={mapOpen || current === 0}
+          showCompletedNumbers={!mapOpen}
+          aspect={0.95}
+          onMarkerClick={mapOpen ? (id) => setFocusId((f) => (f === id ? null : id)) : undefined}
+        />
+        {mapOpen && focus && focus.id !== target.id && (
+          <div className="next-card">
+            <span className="eyebrow">{orderOf(focus.id)}번 작품</span>
+            <div className="next-row">
+              <strong>{focus.title} · {locationLabel(focus)}</strong>
+              <button className="text-btn" onClick={() => setFocusId(null)}>
+                {current + 1}번 작품 정보 보기
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       <details className="route-details" open={mapOpen} onToggle={(event) => setMapOpen(event.currentTarget.open)}>
         <summary>전체 지도와 관람 순서</summary>
-        <p className="muted small route-note">선은 관람 순서를 이은 거예요. 실제 길과 다를 수 있어요.</p>
-        <div className="map-card">
-          <FloorMap
-            exhibition={ex}
-            markers={markers}
-            route={[ex.entrance, ...markers.map((m) => m.point)]}
-            activeLeg={target.position ? [from, target.position] : null}
-            aspect={0.95}
-            onMarkerClick={(id) => setFocusId((f) => (f === id ? null : id))}
-          />
-          {focus && focus.id !== target.id && (
-            <div className="next-card">
-              <span className="eyebrow">{orderOf(focus.id)}번 작품</span>
-              <div className="next-row">
-                <strong>
-                  {focus.title} · {locationLabel(focus)}
-                </strong>
-                <button className="text-btn" onClick={() => setFocusId(null)}>
-                  {current + 1}번 작품 정보 보기
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
         <ol className="route-list">
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);
