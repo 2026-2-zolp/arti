@@ -11,7 +11,7 @@ from django.utils import timezone
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from .http import ContractError
-from .models import Account, Session
+from .models import Account, Session, SignupTermsAcceptance
 from .model_service import evidence_digest
 from .recommendations import profile_snapshot
 from .serializers import TasteProfileInput
@@ -19,6 +19,8 @@ from .taste_evidence import profile_input, uuid_value
 from .taste_resolution import conflict, invalid, locked_actor, resolve, taste_transaction
 from .constants import TAGS
 from .views import DUMMY_PASSWORD, LoginThrottle, public_exhibition
+
+SIGNUP_TERMS_VERSION = '2026-11-14-draft.1'
 
 
 def member(request, user_id=None):
@@ -60,12 +62,19 @@ def signup(request):
     # 닉네임은 화면과 동일하게 선택 입력이며, 공백은 빈 값으로 보존합니다.
     if len(nickname.strip()) > 100:
         raise ContractError(400, 'VALIDATION_ERROR', '닉네임은 100자 이내로 입력해 주세요.')
+    if request.data.get('termsAccepted') is not True:
+        raise ContractError(400, 'TERMS_REQUIRED', '서비스 이용약관에 동의해 주세요.')
+    if request.data.get('termsVersion') != SIGNUP_TERMS_VERSION:
+        raise ContractError(409, 'TERMS_VERSION_CHANGED', '가입 화면을 새로 열어 최신 이용약관을 확인해 주세요.')
+    password_hash = make_password(password)
     try:
         with transaction.atomic():
-            a = Account.objects.create(login_id=email, email=email, nickname=nickname.strip(), role='user', password=make_password(password))
+            a = Account.objects.create(login_id=email, email=email, nickname=nickname.strip(),
+                                       role='user', password=password_hash)
+            SignupTermsAcceptance.objects.create(account=a, version=SIGNUP_TERMS_VERSION)
+            return issue(a)
     except IntegrityError:
         raise ContractError(400, 'VALIDATION_ERROR', '가입 정보를 확인해 주세요.')
-    return issue(a)
 
 
 @api_view(['POST'])

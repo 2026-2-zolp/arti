@@ -38,6 +38,7 @@ import { ExhibitionLayout } from './store/ExhibitionRoute';
 import U01Start from './pages/user/U01Start';
 import U02Entry from './pages/user/U02Entry';
 import U03Login from './pages/user/U03Login';
+import KakaoComplete from './pages/user/KakaoComplete';
 import U04Signup from './pages/user/U04Signup';
 import U05Taste from './pages/user/U05Taste';
 import U06SavedTaste from './pages/user/U06SavedTaste';
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="receipt" element={<U12Receipt />} />
         </Route>
         <Route path="/login" element={<U03Login />} />
+        <Route path="/auth/kakao/complete" element={<KakaoComplete />} />
         <Route path="/signup" element={<U04Signup />} />
         <Route path="/receipt/:visitId" element={<U12Receipt />} />
         <Route path="/mypage" element={<U13MyPage />} />

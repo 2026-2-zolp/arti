@@ -13,6 +13,7 @@ import { email, password, tasteTag } from '../schemas.js';
 
 /** 로그인 실패 시 이메일 존재 여부를 알 수 없도록 같은 메시지를 쓴다 */
 const LOGIN_FAILED = '이메일 또는 비밀번호가 올바르지 않아요.';
+const SIGNUP_TERMS_VERSION = '2026-11-14-draft.1';
 /** 가입되지 않은 이메일로 로그인할 때도 해시 계산 시간을 맞추기 위한 더미 해시 */
 const DUMMY_HASH = hashPassword('dummy-password-0');
 
@@ -28,12 +29,32 @@ export function authRoutes(db: DB) {
 
   r.post('/auth/signup', limit, (req, res) => {
     const body = parse(
-      z.object({ email, password, nickname: z.string().trim().max(20, '닉네임은 20자 이내로 입력해 주세요.').default('') }),
+      z.object({
+        email, password, nickname: z.string().trim().max(20, '닉네임은 20자 이내로 입력해 주세요.').default(''),
+        termsAccepted: z.boolean().optional(), termsVersion: z.string().optional(),
+      }),
       req.body,
     );
+    // 비교용 Express의 기존 가입 호출도 지원합니다. 새 화면은 두 필드를 보냅니다.
+    const hasTerms = body.termsAccepted !== undefined || body.termsVersion !== undefined;
+    if (hasTerms && body.termsAccepted !== true) throw new HttpError(400, '서비스 이용약관에 동의해 주세요.');
+    if (hasTerms && body.termsVersion !== SIGNUP_TERMS_VERSION) {
+      return res.status(409).json({
+        code: 'TERMS_VERSION_CHANGED',
+        error: '가입 화면을 새로 열어 최신 이용약관을 확인해 주세요.',
+      });
+    }
     if (repo.findUserByEmail(db, body.email)) throw new HttpError(409, '이미 가입된 이메일이에요.');
-    const user = repo.createUser(db, { email: body.email, passwordHash: hashPassword(body.password), nickname: body.nickname });
-    res.status(201).json({ user: repo.publicUser(user), token: issueSession(user.id) });
+    const passwordHash = hashPassword(body.password);
+    const result = tx(db, () => {
+      const user = repo.createUser(db, { email: body.email, passwordHash, nickname: body.nickname });
+      if (hasTerms) {
+        db.prepare('INSERT INTO signup_terms_acceptances (user_id, version, accepted_at) VALUES (?, ?, ?)')
+          .run(user.id, SIGNUP_TERMS_VERSION, new Date().toISOString());
+      }
+      return { user: repo.publicUser(user), token: issueSession(user.id) };
+    });
+    res.status(201).json(result);
   });
 
   r.post('/auth/login', limit, (req, res) => {

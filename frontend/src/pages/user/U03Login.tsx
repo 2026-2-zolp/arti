@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { Field, isEmail } from '../../components/Field';
 import { api } from '../../api/client';
+import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect, withRedirect } from '../../store/ExhibitionRoute';
 
@@ -12,12 +13,26 @@ export default function U03Login() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const redirect = params.get('redirect');
-  const { dispatch } = useVisit();
+  const { state, dispatch } = useVisit();
+  const kakao = useAsync(api.kakaoStatus, [state.user?.id]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [startingKakao, setStartingKakao] = useState(false);
+
+  const onKakaoLogin = async () => {
+    setError(null);
+    setStartingKakao(true);
+    try {
+      const { authorizationUrl } = await api.startKakao({ mode: 'login', returnTo: safeRedirect(redirect) ?? '/' });
+      window.location.assign(authorizationUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '카카오 로그인을 시작하지 못했어요.');
+      setStartingKakao(false);
+    }
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault(); // form 기본 동작(페이지 새로고침) 막기
@@ -60,10 +75,16 @@ export default function U03Login() {
           placeholder="비밀번호"
         />
         {error && <p className="error-text" role="alert">{error}</p>}
-        <button className="btn primary block" type="submit" disabled={submitting}>
+        <button className="btn primary block" type="submit" disabled={submitting || startingKakao}>
           {submitting ? '로그인 중…' : '로그인'}
         </button>
       </form>
+
+      {!state.user && kakao.data?.enabled && (
+        <button className="btn outline block mt-12" type="button" disabled={submitting || startingKakao} onClick={onKakaoLogin}>
+          {startingKakao ? '카카오로 이동 중…' : '연결한 카카오 계정으로 로그인'}
+        </button>
+      )}
 
       <div className="row-links">
         <button className="link-btn" onClick={() => navigate('/password/forgot')}>

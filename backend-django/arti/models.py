@@ -179,11 +179,43 @@ class Account(models.Model):
                        models.CheckConstraint(condition=Q(status__in=['active', 'dormant']), name='account_status_valid')]
 
 
+class SignupTermsAcceptance(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    version = models.CharField(max_length=64)
+    accepted_at = models.DateTimeField(default=timezone.now)
+
+
 # 원문 대신 해시한 세션 토큰과 만료를 저장합니다.
 class Session(models.Model):
     token_hash = models.CharField(primary_key=True, max_length=64)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     expires_at = models.DateTimeField()
+
+
+class KakaoIdentity(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    client_id = models.CharField(max_length=128)
+    subject = models.CharField(max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['client_id', 'subject'], name='kakao_unique_subject'),
+            models.UniqueConstraint(fields=['client_id', 'account'], name='kakao_unique_account'),
+        ]
+
+
+class KakaoOAuthFlow(models.Model):
+    browser_hash = models.CharField(max_length=64, primary_key=True)
+    state_hash = models.CharField(max_length=64)
+    client_id = models.CharField(max_length=128)
+    account = models.ForeignKey(Account, null=True, on_delete=models.CASCADE)
+    session_hash = models.CharField(max_length=64, blank=True)
+    nonce = models.CharField(max_length=64)
+    verifier = models.CharField(max_length=64)
+    return_path = models.CharField(max_length=500)
+    expires_at = models.DateTimeField(db_index=True)
+    status = models.CharField(max_length=12, default='pending')
+    subject = models.CharField(max_length=255, blank=True)
 
 
 # 회원 관람의 중복 방지 키와 당시 작품 정보를 보존합니다.

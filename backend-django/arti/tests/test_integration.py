@@ -15,6 +15,7 @@ from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 from arti.http import ContractError
+from arti.member import SIGNUP_TERMS_VERSION
 from arti.models import Account, Artwork, Exhibition, Session, Visit, VisitReaction
 from arti.serializers import artwork_dto, exhibition_dto
 
@@ -146,7 +147,8 @@ class IntegrationTests(Helpers,TestCase):
         Account.objects.filter(pk=self.actors[1].id).update(status='dormant');self.assertEqual(self.b.get('/api/auth/me').status_code,401)
 
     def test_signup_login_no_plaintext_and_reset_disabled(self):
-        r=self.public.post('/api/auth/signup',{'email':'NEW@example.test','nickname':'새회원','password':'longer-password-123'},format='json');self.assertEqual(r.status_code,200,r.content)
+        r=self.public.post('/api/auth/signup',{'email':'NEW@example.test','nickname':'새회원','password':'longer-password-123',
+                           'termsAccepted':True,'termsVersion':SIGNUP_TERMS_VERSION},format='json');self.assertEqual(r.status_code,200,r.content)
         a=Account.objects.get(email='new@example.test');self.assertNotEqual(a.password,'longer-password-123');self.assertFalse(Session.objects.filter(token_hash=r.json()['token']).exists())
         self.assertEqual(self.public.post('/api/auth/login',{'email':'new@example.test','password':'longer-password-123'},format='json').status_code,200)
         self.assertEqual(self.public.post('/api/auth/password-reset/request',{},format='json').status_code,501)

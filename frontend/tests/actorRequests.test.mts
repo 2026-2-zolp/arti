@@ -53,10 +53,53 @@ test('late logout completion cannot erase a newer login', async()=>{
  response.resolve(new Response(null,{status:204}));assert.equal(await logout,false);assert.equal(storage.getItem('arti.token'),JSON.stringify('new-account-token'));
 });
 
+test('failed logout keeps the current token for retry and success removes it', async () => {
+ const {storage,events}=setup();
+ globalThis.fetch=(async () => { throw new TypeError('offline'); }) as typeof fetch;
+ await assert.rejects(api.logout());
+ assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));
+ globalThis.fetch=(async () => Response.json({error:'unavailable'},{status:503})) as typeof fetch;
+ await assert.rejects(api.logout());
+ assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));
+ assert.deepEqual(events,[]);
+ globalThis.fetch=(async () => new Response(null,{status:204})) as typeof fetch;
+ assert.equal(await api.logout(),true);
+ assert.equal(storage.getItem('arti.token'),null);
+});
+
+test('logout completes locally when the server session has already expired', async () => {
+ const {storage,events}=setup();
+ globalThis.fetch=(async () => Response.json({code:'SESSION_EXPIRED'},{status:401})) as typeof fetch;
+ assert.equal(await api.logout(),true);
+ assert.equal(storage.getItem('arti.token'),null);
+ assert.deepEqual(events,['arti:expired']);
+});
+
 test('failed login credentials do not expire an existing valid session', async()=>{
  const {storage,events}=setup();globalThis.fetch=(async()=>Response.json({error:'incorrect credentials'},{status:401})) as typeof fetch;
  await assert.rejects(api.login('synthetic@example.test','incorrect'));
  assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));assert.deepEqual(events,[]);
+});
+
+test('late Kakao login completion cannot overwrite an email login', async () => {
+ const {storage}=setup();
+ storage.removeItem('arti.token');
+ const response=deferred<Response>();
+ globalThis.fetch=(async () => response.promise) as typeof fetch;
+ const pending=api.finishKakao('callback-state');
+ storage.setItem('arti.token',JSON.stringify('email-account-token'));
+ response.resolve(Response.json({status:'logged_in',user:{id:'other-account'},token:'late-token',returnTo:'/mypage'}));
+ await assert.rejects(pending);
+ assert.equal(storage.getItem('arti.token'),JSON.stringify('email-account-token'));
+});
+
+test('Kakao link and cancellation leave the original email session in storage', async () => {
+ const {storage}=setup();
+ for (const status of ['linked','cancelled']) {
+  globalThis.fetch=(async () => Response.json({status,returnTo:'/mypage'})) as typeof fetch;
+  assert.equal((await api.finishKakao('callback-state')).status,status);
+  assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));
+ }
 });
 
 test('survey lookup uses a global endpoint without an exhibition parameter', async () => {

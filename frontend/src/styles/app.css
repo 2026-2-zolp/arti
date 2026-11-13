@@ -158,8 +158,19 @@ h1, h2, h3, p { margin: 0; }
 .field-hint { color: var(--muted); font-size: 13px; }
 .terms { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.check.all { font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
-.check input { width: 18px; height: 18px; accent-color: var(--ink); }
+.check input { flex: none; width: 18px; height: 18px; accent-color: var(--ink); }
+.signup-document-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.signup-document-links button { min-height: 36px; }
+.signup-document { width: min(420px, calc(100% - 32px)); max-height: min(560px, calc(100dvh - 32px)); padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); }
+.signup-document[open] { display: flex; flex-direction: column; }
+.signup-document::backdrop { background: rgb(0 0 0 / 45%); }
+.signup-document-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.signup-document-header h2 { font-size: 18px; }
+.signup-document-header button { flex: none; min-height: 44px; }
+.signup-document-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; }
+.signup-document-body section { margin-top: 16px; }
+.signup-document-body h3 { font-size: 15px; margin-bottom: 4px; }
+.signup-document-body p { line-height: 1.55; }
 .row-links { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 22px; }
 .divider-dot { width: 3px; height: 3px; background: var(--muted); border-radius: 50%; }
 .demo-hint {
@@ -287,6 +298,11 @@ a.history-card { text-decoration: none; }
 .option-count { font-size: 14px; color: var(--ink-2); background: var(--surface-2); padding: 4px 10px; border-radius: 999px; }
 
 /* ---------- U-08 ---------- */
+.rec-retry { margin-top: 16px; }
+.notice-card .notice-body:has(+ .notice-body) { margin-bottom: 4px; }
+/* 화면에 오류 카드만 있을 때 본문 세로 가운데에 둔다 */
+.m-body:has(> .notice-center) { display: flex; flex-direction: column; }
+.notice-card.notice-center { margin-top: auto; margin-bottom: auto; }
 .missing-note { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: #fff7e6; color: #8a5a00; font-size: 14px; line-height: 1.5; }
 .rec-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .rec-card { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
@@ -329,8 +345,7 @@ a.history-card { text-decoration: none; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
 .route-map { margin-top: 12px; }
-.route-map-focused { padding: 8px 10px; }
-.route-map-focused .floor-map { max-height: min(38svh, 320px); }
+.route-map-next .floor-map { max-height: min(38svh, 320px); }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .next-artwork { display: flex; align-items: center; gap: 12px; }
 .next-thumb { width: 64px !important; flex: none; border-radius: 8px; background: var(--surface-2); }

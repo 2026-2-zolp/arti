@@ -45,6 +45,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024
 SECURE_CONTENT_TYPE_NOSNIFF = True
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.PBKDF2PasswordHasher']
 
+ARTI_KAKAO_CLIENT_ID = os.environ.get('ARTI_KAKAO_CLIENT_ID', '').strip()
+ARTI_KAKAO_CLIENT_SECRET = os.environ.get('ARTI_KAKAO_CLIENT_SECRET', '').strip()
+ARTI_KAKAO_CALLBACK_URL = os.environ.get('ARTI_KAKAO_CALLBACK_URL', '').strip()
+
 # Server only. No key/model is required to boot or run normal CI.
 ARTI_LLM_PROVIDER = os.environ.get('ARTI_LLM_PROVIDER', 'disabled')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')

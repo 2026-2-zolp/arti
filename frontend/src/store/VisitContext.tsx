@@ -7,7 +7,7 @@
  * 관람 진행 정보는 sessionStorage(탭을 닫으면 사라짐)에,
  * 로그인 사용자는 localStorage(다시 방문해도 유지)에 저장한다.
  */
-import { createContext, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState, type Dispatch, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import {init, reducer, type VisitState, type Action} from './visitReducer';
@@ -76,10 +76,22 @@ export function useVisit(): Ctx {
 export function useLogout() {
   const { dispatch } = useVisit();
   const navigate = useNavigate();
-  return async (to = '/') => {
-    if (!await api.logout()) return;
-    clearPrivateCaches();
-    dispatch({ type: 'logout' });
-    navigate(to, { replace: true });
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const logout = async (to = '/') => {
+    if (logoutPending) return;
+    setLogoutPending(true);
+    setLogoutError('');
+    try {
+      if (!await api.logout()) return;
+      clearPrivateCaches();
+      dispatch({ type: 'logout' });
+      navigate(to, { replace: true });
+    } catch {
+      setLogoutError('로그아웃을 완료하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setLogoutPending(false);
+    }
   };
+  return { logout, logoutPending, logoutError };
 }
