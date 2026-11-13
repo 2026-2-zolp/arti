@@ -154,9 +154,18 @@ export const api = {
 
   async logout(): Promise<boolean> {
     const token = load(USER_TOKEN, null);
-    await request<void>('POST', '/auth/logout').catch(() => undefined);
-    if (load(USER_TOKEN, null) !== token && load(USER_TOKEN, null) !== null) return false;
-    remove(USER_TOKEN); return true;
+    try {
+      await request<void>('POST', '/auth/logout');
+    } catch (error) {
+      const current = load(USER_TOKEN, null);
+      if (current !== null && current !== token) return false;
+      // 만료된 세션은 서버에서 이미 사용할 수 없습니다.
+      if (!(error instanceof ApiError && error.status === 401)) throw error;
+    }
+    const current = load(USER_TOKEN, null);
+    if (current !== null && current !== token) return false;
+    remove(USER_TOKEN);
+    return true;
   },
 
   me: () => request<User>('GET', '/auth/me'),

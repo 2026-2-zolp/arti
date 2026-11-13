@@ -25,7 +25,7 @@ const TABS: { id: Tab; label: string }[] = [
 /** 회원 정보와 관람 기록·선호 작품을 표시하는 화면 */
 export default function U13MyPage() {
   const { state } = useVisit();
-  const logout = useLogout();
+  const { logout, logoutPending, logoutError } = useLogout();
   const user = state.user;
   const [tab, setTab] = useState<Tab>('history');
   const visits = useAsync(() => (user ? api.listVisits(user.id) : Promise.resolve([])), [user?.id]);
@@ -36,12 +36,13 @@ export default function U13MyPage() {
     <MobileShell
       screenId="U-13"
       right={
-        <button className="text-btn" onClick={() => logout()}>
-          로그아웃
+        <button className="text-btn" disabled={logoutPending} onClick={() => logout()}>
+          {logoutPending ? '로그아웃 중…' : '로그아웃'}
         </button>
       }
     >
 
+      {logoutError && <p className="error-text" role="alert">{logoutError}</p>}
       <PendingReceipts onRecovered={visits.reload} />
       <Lead title={`${user.nickname || '회원'}님, 안녕하세요`} />
 

@@ -9,7 +9,7 @@ import { useExhibitionPath, withRedirect } from '../../store/ExhibitionRoute';
 export default function U02Entry() {
   const navigate = useNavigate();
   const { state, dispatch } = useVisit();
-  const logout = useLogout();
+  const { logout, logoutPending, logoutError } = useLogout();
   const to = useExhibitionPath();
   // 로그인·회원가입은 전시 밖 주소라, 끝나고 이 전시로 돌아올 주소를 넘긴다
   const loginPath = withRedirect('/login', to('/taste/saved'));
@@ -38,7 +38,7 @@ export default function U02Entry() {
       <div className="stack gap-12 mt-24">
         {/* 로그인한 사람은 회원 관람만 한다. 비회원으로 하려면 아래 [로그아웃] */}
         {state.user ? (
-          <button className="btn primary block" onClick={() => navigate(to('/taste/saved'))}>
+          <button className="btn primary block" disabled={logoutPending} onClick={() => navigate(to('/taste/saved'))}>
             {state.user.nickname || state.user.email}님으로 계속
           </button>
         ) : (
@@ -55,15 +55,16 @@ export default function U02Entry() {
 
       {state.user && (
         <p className="center muted mt-24">
-          <button className="link-btn" onClick={() => logout(loginPath)}>
+          <button className="link-btn" disabled={logoutPending} onClick={() => logout(loginPath)}>
             다른 계정으로 로그인
           </button>
           <span className="dot-sep" aria-hidden="true">·</span>
-          <button className="link-btn" onClick={() => logout(to('/entry'))}>
-            로그아웃
+          <button className="link-btn" disabled={logoutPending} onClick={() => logout(to('/entry'))}>
+            {logoutPending ? '로그아웃 중…' : '로그아웃'}
           </button>
         </p>
       )}
+      {state.user && logoutError && <p className="error-text center" role="alert">{logoutError}</p>}
 
       {!state.user && (
         <p className="center muted mt-24">
