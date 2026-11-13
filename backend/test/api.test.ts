@@ -15,9 +15,10 @@ const { openDb } = await import('../src/db.js');
 
 let base = '';
 let close: () => void;
+const db = openDb(':memory:');
 
 before(async () => {
-  const server = createApp(openDb(':memory:')).listen(0);
+  const server = createApp(db).listen(0);
   await new Promise((r) => server.once('listening', r));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
   close = () => server.close();
@@ -117,6 +118,22 @@ describe('회원', () => {
     const r = await call('POST', '/auth/signup', { email: 'weak@example.com', password: 'abcdefgh' });
     assert.equal(r.status, 400);
     assert.equal(r.body.error, '비밀번호에 숫자를 포함해 주세요.');
+  });
+
+  test('새 가입 화면은 이용약관 버전과 서버 시각을 기록한다', async () => {
+    const signup = { email: 'terms@example.test', password: 'abcd1234', termsAccepted: true };
+    const rejected = await call('POST', '/auth/signup', { ...signup, termsVersion: 'older' });
+    assert.equal(rejected.status, 409);
+    assert.equal(rejected.body.code, 'TERMS_VERSION_CHANGED');
+    assert.equal(db.prepare('SELECT id FROM users WHERE email = ?').get(signup.email), undefined);
+
+    const before = Date.now();
+    const accepted = await call('POST', '/auth/signup', { ...signup, termsVersion: '2026-11-14-draft.1' });
+    assert.equal(accepted.status, 201);
+    const row = db.prepare('SELECT version, accepted_at FROM signup_terms_acceptances WHERE user_id = ?')
+      .get(accepted.body.user.id) as { version: string; accepted_at: string };
+    assert.equal(row.version, '2026-11-14-draft.1');
+    assert.ok(Date.parse(row.accepted_at) >= before);
   });
 
   test('틀린 비밀번호 / 없는 계정은 같은 메시지', async () => {

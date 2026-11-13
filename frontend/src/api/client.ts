@@ -146,7 +146,7 @@ export const api = {
     return user;
   },
 
-  async signup(input: { email: string; password: string; nickname: string }): Promise<User> {
+  async signup(input: { email: string; password: string; nickname: string; termsAccepted: boolean; termsVersion: string }): Promise<User> {
     const { user, token } = await request<{ user: User; token: string }>('POST', '/auth/signup', input);
     save(USER_TOKEN, token);
     return user;

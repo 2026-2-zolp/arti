@@ -56,6 +56,12 @@ CREATE TABLE IF NOT EXISTS users (
   status        TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','dormant'))
 );
 
+CREATE TABLE IF NOT EXISTS signup_terms_acceptances (
+  user_id     TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  version     TEXT NOT NULL,
+  accepted_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS admins (
   id            TEXT PRIMARY KEY,
   login_id      TEXT NOT NULL UNIQUE,

@@ -3,7 +3,9 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lead, MobileShell } from '../../components/MobileShell';
 import { Field, isEmail, isValidPassword } from '../../components/Field';
-import { api } from '../../api/client';
+import { SignupDocument } from '../../components/SignupDocument';
+import { ApiError, api } from '../../api/client';
+import { SIGNUP_TERMS_VERSION, signupPrivacy, signupTerms } from '../../data/signupDocuments';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect } from '../../store/ExhibitionRoute';
 
@@ -15,7 +17,7 @@ export default function U04Signup() {
   const [params] = useSearchParams();
   const { dispatch } = useVisit();
   const [form, setForm] = useState({ email: '', password: '', confirm: '', nickname: '' });
-  const [terms, setTerms] = useState({ service: false, privacy: false });
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,31 +30,37 @@ export default function U04Signup() {
     if (!isEmail(form.email)) er.email = '이메일 형식을 확인해 주세요.';
     if (!isValidPassword(form.password)) er.password = '8자 이상, 영문과 숫자를 함께 써 주세요.';
     if (form.confirm !== form.password) er.confirm = '비밀번호가 일치하지 않아요.';
-    if (!terms.service || !terms.privacy) er.terms = '필수 약관에 동의해 주세요.';
+    if (!termsAccepted) er.terms = '서비스 이용약관에 동의해 주세요.';
     return er;
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const er = validate();
     setErrors(er);
     if (Object.keys(er).length) return;
     setSubmitting(true);
     try {
-      const user = await api.signup({ email: form.email, password: form.password, nickname: form.nickname });
+      const user = await api.signup({
+        email: form.email,
+        password: form.password,
+        nickname: form.nickname,
+        termsAccepted,
+        termsVersion: SIGNUP_TERMS_VERSION,
+      });
       dispatch({ type: 'login', user });
       dispatch({ type: 'setTastes', tastes: [] });
       // 새 계정은 저장된 취향이 없으니, 로그인 화면에서 넘어온 「저장 취향 확인」 주소는 취향 파악으로 바꾼다
       const redirect = safeRedirect(params.get('redirect'))?.replace(/\/taste\/saved$/, '/taste');
       navigate(redirect ?? '/', { replace: true });
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'TERMS_VERSION_CHANGED') setTermsAccepted(false);
       setErrors({ form: err instanceof Error ? err.message : '가입에 실패했어요.' });
     } finally {
       setSubmitting(false);
     }
   };
-
-  const allChecked = terms.service && terms.privacy;
 
   return (
     <MobileShell screenId="U-04">
@@ -80,23 +88,25 @@ export default function U04Signup() {
         <Field label="닉네임 (선택)" value={form.nickname} onChange={set('nickname')} maxLength={100} />
 
         <fieldset className="terms">
-          <label className="check all">
+          <legend className="sr-only">가입 안내</legend>
+          <label className="check">
             <input
               type="checkbox"
-              checked={allChecked}
-              onChange={(e) => setTerms({ service: e.target.checked, privacy: e.target.checked })}
+              required
+              checked={termsAccepted}
+              disabled={submitting}
+              aria-invalid={Boolean(errors.terms)}
+              aria-describedby={errors.terms ? 'signup-terms-error' : undefined}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
             />
-            전체 동의
+            [필수] 서비스 이용약관에 동의합니다
           </label>
-          <label className="check">
-            <input type="checkbox" checked={terms.service} onChange={(e) => setTerms((t) => ({ ...t, service: e.target.checked }))} />
-            [필수] 서비스 이용약관
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={terms.privacy} onChange={(e) => setTerms((t) => ({ ...t, privacy: e.target.checked }))} />
-            [필수] 개인정보 수집·이용 (취향·관람 기록)
-          </label>
-          {errors.terms && <span className="field-error">{errors.terms}</span>}
+          {errors.terms && <span id="signup-terms-error" className="field-error" role="alert">{errors.terms}</span>}
+          <p className="muted small">이메일과 비밀번호는 가입과 로그인에 사용해요. 회원의 관람기록과 직접 저장한 취향은 계정에 남아요.</p>
+          <div className="signup-document-links">
+            <SignupDocument title="서비스 이용약관" version={SIGNUP_TERMS_VERSION} sections={signupTerms} />
+            <SignupDocument title="개인정보 처리방침" sections={signupPrivacy} />
+          </div>
         </fieldset>
 
         {errors.form && <p className="error-text" role="alert">{errors.form}</p>}

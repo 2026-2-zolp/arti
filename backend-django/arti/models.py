@@ -179,6 +179,12 @@ class Account(models.Model):
                        models.CheckConstraint(condition=Q(status__in=['active', 'dormant']), name='account_status_valid')]
 
 
+class SignupTermsAcceptance(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    version = models.CharField(max_length=64)
+    accepted_at = models.DateTimeField(default=timezone.now)
+
+
 # 원문 대신 해시한 세션 토큰과 만료를 저장합니다.
 class Session(models.Model):
     token_hash = models.CharField(primary_key=True, max_length=64)
