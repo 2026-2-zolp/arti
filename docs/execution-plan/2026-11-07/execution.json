@@ -348,7 +348,7 @@
         "W04"
       ],
       "completionGates": [],
-      "status": "in_progress",
+      "status": "complete",
       "owner": "준억(통합·리팩토링 중심)",
       "criteria": [
         "AC07"
@@ -467,11 +467,14 @@
       "dependsOn": [
         "G2"
       ],
-      "status": "not_run",
+      "status": "pass",
       "criteria": [
         "AC07"
       ],
-      "reviewEvidence": []
+      "reviewEvidence": [
+        "records/W11/remote-2026-11-11/README.md",
+        "records/W11/remote-2026-11-11/remote-evidence.json"
+      ]
     },
     {
       "id": "GOPS",
@@ -619,11 +622,13 @@
       "criterion": "PR Actions에 frontend 빌드/타입·최종 대상 API의 실제 PostgreSQL migration/저장/권한/계약·fake 모델 실패검사를 실행. 실모델·유료키는 별도. Actions권한 대기여도 로컬 W04/W05는 진행 가능",
       "evidence": "Actions run·job 정의",
       "reviewer": "운영",
-      "status": "not_run",
+      "status": "pass",
       "evidencePaths": [
         "records/W11/README.md",
         "records/W11/validation-summary.json",
-        "records/W11/remote-run-1.json"
+        "records/W11/remote-run-1.json",
+        "records/W11/remote-2026-11-11/README.md",
+        "records/W11/remote-2026-11-11/remote-evidence.json"
       ]
     },
     {
@@ -1772,24 +1777,26 @@
       "title": "GitHub Actions CI 미구성",
       "check": "PR빌드·계약·Postgres 검사/실제AI별도",
       "source": "new:CI",
-      "status": "verification_pending",
+      "status": "closed",
       "owner": "준억 통합 조율",
       "fixLocation": ".github/workflows/ci.yml; records/W11/README.md",
       "resolutionEvidence": [
         "records/W11/remote-run-1.json",
-        "records/W11/README.md"
+        "records/W11/README.md",
+        "records/W11/remote-2026-11-11/README.md",
+        "records/W11/remote-2026-11-11/remote-evidence.json"
       ],
       "releaseRequired": true,
       "observation": "2026-11-09 재정합화: CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록. 남은 조건: 최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
-      "resolvedCommit": null,
+      "resolvedCommit": "d0a2f9dfd6e887aae53449165d22d143b1bebfa6",
       "currentReview": {
-        "asOf": "2026-11-09",
-        "implemented": "CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록",
-        "remaining": "최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인",
-        "nextWork": "W11",
+        "asOf": "2026-11-11",
+        "implemented": "PR #8·#9 및 병합된 main에서 CI 4개 작업 실행·통과. main 필수 상태 검사는 미설정으로 확인.",
+        "remaining": "없음: CI 구성·실행 이슈를 종결한다. 병합 강제는 팀 운영 결정으로 별도 관리한다.",
+        "nextWork": "W12",
         "evidencePaths": [
-          "records/W11/local-current-2026-11-09/README.md",
-          "records/push-review/2026-11-09/remote-ci.json"
+          "records/W11/remote-2026-11-11/README.md",
+          "records/W11/remote-2026-11-11/remote-evidence.json"
         ]
       }
     },

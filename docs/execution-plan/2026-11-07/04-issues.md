@@ -27,7 +27,7 @@
 | F21 | open | 좌표 최근접 기준선·최단 보행 미구현 한계를 명시 | 설계 대비 최종 범위 결정·발표 설명 AC31 / W10 |
 | F22 | open | 로컬 PG 검증, AWS 운영 구성 미결 | 권한·리전·비용·DB 방식 결정 후 실제 시험환경 / W12 → W08 |
 | F23 | in_progress | 로컬 제한 미디어·권한·복원 경계 확인 | AWS 저장/모델 읽기·서버 재생성 후 보존 / W08 |
-| F24 | verification_pending | CI4job 구성·과거 push 성공, 최신 Linux 재현은 이번 기록 | 최신 SHA 원격 실행·PR 이벤트 및 required-check 적용 여부 확인 / W11 |
+| F24 | closed | PR #8·#9 및 최신 main의 CI 네 작업 통과 | CI 실행 인수 완료. 병합 필수 검사 미설정은 별도 운영 결정 / W11 |
 | F25 | open | CD 미구현. CI와 로컬 복원 검사를 배포 성공으로 해석하지 않음 | 운영 구성 후 OIDC/digest/직렬 migration/복귀 실제 시험 / W09 |
 | F26 | in_progress | CLIP/mDeBERTa 준비/메모리/단일 프로세스 운용 실측 | 모델 위치·외부 용량·유영국 정식 품질 평가 / W12 → W07/W08 |
 | F27 | in_progress | 모델 HTTP30초·timeout 저장 보호, legacy 장기 timeout과 분리 | 관리자 전체 요청/프록시/배포 제한의 총 지연 검증 / W07 → W08 |

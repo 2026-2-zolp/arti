@@ -6,7 +6,7 @@ import {useConfirm} from '../../components/Confirmation';
  * - /receipt/:visitId : U-13 마이페이지(관람기록)에서 들어온 과거 기록 조회 모드
  */
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { api, ApiError } from '../../api/client';
 import { Icon } from '../../components/Icon';
@@ -24,7 +24,7 @@ type Interpretation = { text: string; emotionProfile: EmotionScores | null };
 /** 현재·과거 관람의 영수증을 표시하는 화면 */
 export default function U12Receipt() {
   const { visitId } = useParams();
-  return visitId ? <HistoryReceipt visitId={visitId} /> : <LiveReceipt />;
+  return visitId ? <HistoryReceipt key={visitId} visitId={visitId} /> : <LiveReceipt />;
 }
 
 /** 현재 세션 상태로 영수증 데이터 만들기 */
@@ -174,6 +174,7 @@ function LiveReceipt() {
 /** 저장된 관람 기록의 영수증을 조회합니다. */
 function HistoryReceipt({ visitId }: { visitId: string }) {
   const navigate = useNavigate();
+  const { state: entry } = useLocation();
   const { state } = useVisit();
   const captureRef = useRef<HTMLDivElement>(null);
   const { data, loading, error } = useAsync(
@@ -183,33 +184,32 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
 
   if (!state.user) return <Navigate to={`/login?redirect=/receipt/${visitId}`} replace />;
 
+  function backToHistory() {
+    // 관람기록에서 열었으면 기존 목록 이력으로 돌아가고, 직접 연 주소는 목록으로 교체한다.
+    if (entry?.from === '/mypage') navigate(-1);
+    else navigate('/mypage', { replace: true });
+  }
+
   return (
     <MobileShell
       screenId="U-12"
-      back="/mypage"
-      footer={
-        <button className="btn outline block" onClick={() => navigate('/mypage')}>
-          마이페이지로
-        </button>
-      }
+      title="아트 영수증"
+      back={backToHistory}
+      footer={data && (
+        <ReceiptImageSave targetRef={captureRef} ready fileName={receiptFileName(data[0].date)} inFooter />
+      )}
     >
       {loading && <Spinner />}
       {error && <p className="error-text">{error}</p>}
       {data && (
-        <>
-          <div className="lead center">
-            <h2>{data[0].exhibitionTitle}</h2>
-          </div>
-          <div ref={captureRef}>
-            <Receipt
-              record={data[0]}
-              artworks={data[1]}
-              interpretation={data[0].interpretation ?? null}
-              profile={data[0].emotionProfile ?? null}
-            />
-          </div>
-          <ReceiptImageSave targetRef={captureRef} ready fileName={receiptFileName(data[0].date)} />
-        </>
+        <div ref={captureRef}>
+          <Receipt
+            record={data[0]}
+            artworks={data[1]}
+            interpretation={data[0].interpretation ?? null}
+            profile={data[0].emotionProfile ?? null}
+          />
+        </div>
       )}
     </MobileShell>
   );
@@ -238,18 +238,13 @@ function Receipt({
         <h3>ART RECEIPT</h3>
         <p className="receipt-title">{record.exhibitionTitle}</p>
         {record.venue && <p className="receipt-venue">{record.venue}</p>}
+        <time className="receipt-date" dateTime={record.date}>{formatDateWithDay(record.date)}</time>
       </header>
       <dl className="receipt-rows">
-        <div>
-          <dt>관람 날짜</dt>
-          <dd>{formatDateWithDay(record.date)}</dd>
-        </div>
         <div>
           <dt>관람 시간</dt>
           <dd>{record.durationMin}분</dd>
         </div>
-      </dl>
-      <dl className="receipt-rows">
         <div>
           <dt>관람 작품</dt>
           <dd>{record.viewedArtworkIds.length}점</dd>
@@ -282,6 +277,16 @@ function Receipt({
         </ol>
       </div>
 
+      <div className="receipt-section">
+        <span className="muted small">오늘의 취향 키워드</span>
+        <div className="chips wrap">
+          {record.keywords.map((k) => (
+            <span key={k} className="chip accent">
+              {k}
+            </span>
+          ))}
+        </div>
+      </div>
       {interpretation !== null && (
         <div className="receipt-section">
           <span className="muted small">AI 취향 해석</span>
@@ -293,17 +298,6 @@ function Receipt({
           {profile && <EmotionBars scores={profile} />}
         </div>
       )}
-
-      <div className="receipt-section">
-        <span className="muted small">오늘의 취향 키워드</span>
-        <div className="chips wrap">
-          {record.keywords.map((k) => (
-            <span key={k} className="chip accent">
-              {k}
-            </span>
-          ))}
-        </div>
-      </div>
       <p className="receipt-foot">오늘 본 작품을 기억해두세요.</p>
     </article>
   );

@@ -86,7 +86,7 @@ function HistoryList({ visits }: { visits: VisitRecord[] }) {
     <ul className="history-list">
       {visits.map((v) => (
         <li key={v.id}>
-          <button className="history-card" onClick={() => navigate(`/receipt/${v.id}`)}>
+          <button className="history-card" onClick={() => navigate(`/receipt/${v.id}`, { state: { from: '/mypage' } })}>
             <div className="history-top">
               <span className="muted small">
                 <Icon name="pin" size={15} /> {v.venue}

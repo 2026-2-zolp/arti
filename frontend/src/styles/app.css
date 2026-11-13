@@ -196,12 +196,26 @@ a.history-card { text-decoration: none; }
   display: inline-flex; align-items: center; justify-content: center; color: #fff;
 }
 .taste-card.on .check-circle { background: var(--accent); }
-.duel-dots { display: flex; gap: 8px; align-items: center; margin: 16px 0 14px; }
+.duel-progress { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; color: var(--ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.duel-dots { display: flex; gap: 8px; align-items: center; }
 .duel-dots span { width: 8px; height: 8px; border-radius: 99px; background: var(--line); }
 .duel-dots span.done { background: var(--ink); }
 .duel-dots span.on { width: 22px; background: var(--accent); }
 .duel { display: flex; flex-direction: column; }
-.duel-or { margin: 4px 0; text-align: center; font-size: 13px; color: var(--muted); }
+.duel-compact { gap: 2px; }
+[data-screen='U-05']:has(.duel-compact) .lead { margin: 0 0 8px; }
+[data-screen='U-05']:has(.duel-compact) .lead h2 { font-size: clamp(19px, 5.8vw, 22px); }
+.duel-separator { color: var(--ink-2); font-size: 13px; line-height: 18px; text-align: center; }
+.duel-compact .duel-card { position: relative; gap: 4px; padding: 6px; }
+.duel-compact .duel-card :is(img, svg[role='img']) { height: clamp(96px, calc((100svh - 270px) / 2), 196px); background: var(--surface-2); }
+.duel-compact .duel-title { font-size: 15px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-metadata { margin-top: 4px; color: var(--ink-2); font-size: 13px; }
+.duel-metadata summary { padding: 10px 4px; cursor: pointer; }
+.duel-metadata dl { display: grid; gap: 10px; margin: 0; padding: 4px; }
+.duel-metadata dt { font-weight: 600; overflow-wrap: anywhere; }
+.duel-metadata dd { margin: 2px 0 0; }
+.duel-picked { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 12px; color: white; background: var(--ink); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .duel-card { transition: none; } }
 .duel-card {
   width: 100%; padding: 8px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
   text-align: left; display: flex; flex-direction: column; gap: 8px;
@@ -314,9 +328,18 @@ a.history-card { text-decoration: none; }
 .progress-dots span.done { background: #bdb7ae; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
+.route-map { margin-top: 12px; }
+.route-map-focused { padding: 8px 10px; }
+.route-map-focused .floor-map { max-height: min(38svh, 320px); }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.next-artwork { display: flex; align-items: center; gap: 12px; }
+.next-thumb { width: 64px !important; flex: none; border-radius: 8px; background: var(--surface-2); }
+.next-artwork-info { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.next-artwork-info h2 { font-size: 16px; line-height: 1.35; }
 .next-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .next-row strong { font-size: 16px; }
+.route-details { margin-top: 12px; }
+.route-details > summary { padding: 10px 0; color: var(--ink); cursor: pointer; font-weight: 600; }
 .route-list { list-style: none; padding: 0; margin: 18px 0 0; display: flex; flex-direction: column; }
 .route-list li { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); font-size: 15px; }
 .route-list li.done { color: var(--muted); }
@@ -367,19 +390,44 @@ a.history-card { text-decoration: none; }
 .round-btn.down.on { background: var(--surface-2); border-color: var(--ink); color: var(--ink); }
 
 /* ---------- U-11 ---------- */
+.m-shell[data-screen='U-11'] {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--docent-top, 0px);
+  height: var(--docent-height, 100dvh);
+  min-height: 0;
+}
+.m-shell[data-screen='U-11'] .m-header { position: static; flex: none; }
+.m-shell[data-screen='U-11'] .m-body { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.m-shell[data-screen='U-11'] .m-footer {
+  position: static;
+  flex: none;
+  padding: 10px 24px max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
 .chat-artwork { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: var(--surface-2); }
 .chat-thumb { width: 52px !important; border-radius: 8px; overflow: hidden; flex: none; }
-.chat-artwork div { display: flex; flex-direction: column; gap: 2px; }
-.chat-log { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
-.bubble { max-width: 86%; padding: 12px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; white-space: pre-line; }
+.chat-artwork div { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.guide-question-actions { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+.docent-question { display: grid; justify-items: start; gap: 4px; margin: 12px 0; }
+.docent-question h2 { font-size: 14px; color: var(--muted); }
+.docent-question p { font-weight: 650; line-height: 1.45; }
+.docent-question .link-btn { min-height: 44px; }
+.chat-log { display: flex; flex-direction: column; gap: 10px; }
+.chat-log:not(:empty) { margin: 12px 0; }
+.bubble { max-width: 92%; padding: 12px 14px; border-radius: 16px; font-size: 15px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
 .bubble.ai { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; align-self: flex-start; }
 .bubble.user { background: var(--ink); color: #fff; border-top-right-radius: 4px; align-self: flex-end; }
-.bubble.typing { color: var(--muted); }
+.chat-log .bubble small { display: block; color: var(--ink-2); }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
-.chat-input { display: flex; gap: 8px; }
-.chat-input input { flex: 1; height: 50px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; }
-.chat-input input:focus { outline: none; border-color: var(--ink); }
-.send-btn { width: 50px; height: 50px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+.docent-send-error { display: flex; align-items: center; justify-content: space-between; gap: 4px 8px; flex-wrap: wrap; }
+.docent-send-error .error-text { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; }
+.docent-send-error .link-btn { flex: none; min-height: 44px; }
+.chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
+.chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
+.chat-input input:focus { outline: 1px solid var(--ink); outline-offset: -1px; }
+.send-btn { height: 50px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
 .send-btn:disabled { background: #c9c6c0; }
 
 /* ---------- U-12 ---------- */
@@ -388,6 +436,8 @@ a.history-card { text-decoration: none; }
 .receipt-head h3 { font-weight: 500; font-size: 20px; letter-spacing: 0.02em; }
 .receipt-title { margin-top: 12px; font-weight: 700; font-size: 16px; line-height: 1.4; word-break: keep-all; }
 .receipt-venue { margin-top: 4px; color: var(--muted); font-size: 13px; }
+.receipt-date { display: block; margin-top: 10px; color: var(--ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.receipt-save-error { margin-bottom: 8px; }
 /* 길게 눌러 저장 안내 (공유 시트·다운로드가 안 되는 환경) */
 .receipt-preview { display: flex; flex-direction: column; gap: 14px; padding: 20px; max-height: calc(100dvh - 40px); }
 .receipt-preview img { width: 100%; min-height: 0; flex: 1 1 auto; object-fit: contain; border-radius: 8px; -webkit-touch-callout: default; }
