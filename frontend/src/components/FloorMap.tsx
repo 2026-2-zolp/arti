@@ -28,7 +28,7 @@ interface Props {
   /** 관람 경로 (입구 → 1 → 2 → …). 위치가 없는 지점에서 선을 끊는다. */
   route?: (MapPoint | null)[];
   /** 강조할 다음 이동 구간 */
-  activeLeg?: [MapPoint, MapPoint] | null;
+  activeLeg?: MapPoint[] | null;
   aspect?: number;       // 가로/세로 (평면도 이미지가 있으면 이미지 비율을 쓴다)
   onMapClick?: (p: MapPoint) => void;
   onMarkerClick?: (id: string) => void;

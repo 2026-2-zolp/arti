@@ -8,11 +8,13 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
+import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
+import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
-import type { Artwork, MapPoint } from '../../types';
+import type { Artwork } from '../../types';
 
 /** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
@@ -84,13 +86,21 @@ export default function U09Route() {
   const isFirst = current === 0 && !startedAt;
   const locationLabel = (w: Artwork) => w.position ? roomName(w) || '전시실 미등록' : '위치 미등록';
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
-  const route = mapOpen
-    ? [ex.entrance, ...recommendations.map((r) => byId.get(r.artworkId)?.position ?? null)]
-    : undefined;
-  const activeLeg: [MapPoint, MapPoint] | null = from && target.position ? [from, target.position] : null;
+  const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
+  const focused = current > 0 && !showFullMap && !mapOpen;
+  const stops = recommendations.map((r) => byId.get(r.artworkId));
+  const route = mapOpen ? [ex.entrance, ...stops.flatMap((stop, i) => {
+    if (!stop?.position) return [null];
+    const prior = stops[i - 1];
+    const start = i === 0 ? ex.entrance : prior?.position;
+    return isMapFixture && start ? galaxyMapLeg(start, stop.position, prior?.roomId, stop.roomId).slice(1) : [stop.position];
+  })] : undefined;
+  let activeLeg = from && target.position ? [from, target.position] : null;
+  if (isMapFixture && from && target.position) activeLeg = galaxyMapLeg(from, target.position, previous?.roomId, target.roomId);
   let routeNote = '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.';
+  if (isMapFixture) routeNote = '검증용 도면이에요. 출입문과 복도를 따라 이동하는 예시입니다.';
   if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';
-  else if (route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
+  else if (!isMapFixture && route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
 
   const go = () => {
     if (fromArtwork) {
@@ -127,14 +137,18 @@ export default function U09Route() {
         {current > 0 && (
           <p className="muted small">출발 · {current}번 {previous?.title ?? '직전 작품'}{previous ? ` · ${locationLabel(previous)}` : ''}</p>
         )}
-        <span className="eyebrow">{current > 0 ? '다음 · ' : ''}{current + 1}번 작품</span>
-        <div className="next-row">
-          <h2>{target.title}{target.year ? ` (${target.year})` : ''}</h2>
-          <span className="muted small">{locationLabel(target)}</span>
+        <div className="next-artwork">
+          <ArtImage key={target.id} className="next-thumb" seed={target.id} palette={target.palette}
+            imageUrl={artworkImageSrc(target)} alt="" ratio={1} fit="contain" />
+          <div className="next-artwork-info">
+            <span className="eyebrow">{current > 0 ? '다음 · ' : ''}{current + 1}번 작품</span>
+            <h2>{target.title}{target.year ? ` (${target.year})` : ''}</h2>
+            <span className="muted small">{locationLabel(target)}</span>
+          </div>
         </div>
       </div>
 
-      <div className="map-card route-map">
+      <div className={`map-card route-map${focused ? ' route-map-focused' : ''}`}>
         <p className="muted small route-note">{routeNote}</p>
         <FloorMap
           exhibition={ex}
