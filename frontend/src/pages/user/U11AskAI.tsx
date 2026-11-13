@@ -183,7 +183,12 @@ export default function U11AskAI() {
         </div>
       )}
 
-      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {error && (
+        <div className="notice-card is-err notice-center" role="alert">
+          <p className="notice-body">작품 정보를 불러오지 못했어요. {error}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
+      )}
       {selectedQuestion && (
         <section className="docent-question bubble ai" aria-labelledby="docent-question-heading">
           <h2 id="docent-question-heading">고른 관찰 질문</h2>
