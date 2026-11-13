@@ -32,8 +32,8 @@ export default function U09Route() {
   );
   const fromArtwork = entry?.fromArtwork === true;
   const fromRecommend = entry?.fromRecommend === true;
-  const showFullMap = current === 0 || fromArtwork || entry?.showMap === true;
-  const [mapOpen, setMapOpen] = useState(showFullMap);
+  const isNextGuide = current > 0 && !fromArtwork && entry?.showMap !== true;
+  const [mapOpen, setMapOpen] = useState(!isNextGuide);
   const back = () => {
     if (fromArtwork || fromRecommend) navigate(-1);
     else navigate(to('/recommend'), { replace: true });
@@ -87,7 +87,6 @@ export default function U09Route() {
   const locationLabel = (w: Artwork) => w.position ? roomName(w) || '전시실 미등록' : '위치 미등록';
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
   const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
-  const focused = current > 0 && !showFullMap && !mapOpen;
   const stops = recommendations.map((r) => byId.get(r.artworkId));
   const route = mapOpen ? [ex.entrance, ...stops.flatMap((stop, i) => {
     if (!stop?.position) return [null];
@@ -114,7 +113,7 @@ export default function U09Route() {
   return (
     <MobileShell
       screenId="U-09"
-      title={current > 0 && !showFullMap ? '다음 작품 안내' : '추천 관람 경로'}
+      title={isNextGuide ? '다음 작품 안내' : '추천 관람 경로'}
       back={back}
       footer={
         <button className="btn primary block" onClick={go}>
@@ -148,7 +147,7 @@ export default function U09Route() {
         </div>
       </div>
 
-      <div className={`map-card route-map${focused ? ' route-map-focused' : ''}`}>
+      <div className={`map-card route-map${isNextGuide ? ' route-map-next' : ''}`}>
         <p className="muted small route-note">{routeNote}</p>
         <FloorMap
           exhibition={ex}

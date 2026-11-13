@@ -334,7 +334,7 @@ a.history-card { text-decoration: none; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
 .route-map { margin-top: 12px; }
-.route-map-focused .floor-map { max-height: min(38svh, 320px); }
+.route-map-next .floor-map { max-height: min(38svh, 320px); }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .next-artwork { display: flex; align-items: center; gap: 12px; }
 .next-thumb { width: 64px !important; flex: none; border-radius: 8px; background: var(--surface-2); }
