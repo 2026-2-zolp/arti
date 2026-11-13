@@ -53,7 +53,7 @@ export default function U08Recommend() {
       screenId="U-08"
       back={to('/time')}
       footer={
-        <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'))}>
+        <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'), { state: { fromRecommend: true } })}>
           2D 지도에서 경로 보기
         </button>
       }

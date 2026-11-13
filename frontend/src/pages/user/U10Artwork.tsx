@@ -3,7 +3,7 @@
  * 추천 이유 · 작품 해설(원문 ↔ AI 요약) / 관람가이드 탭 · 음성 설명(TTS) · AI 질문 · 👍/👎 · 다음 작품 안내
  */
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
@@ -33,6 +33,7 @@ const BASIC_TIPS = BASIC_LOOKING_TIPS;
 /** 작품해설·관람가이드와 감상 반응을 제공하는 화면 */
 export default function U10Artwork() {
   const navigate = useNavigate();
+  const { state: entry } = useLocation();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
   const { recommendations, current, reactions, reactionReasons } = state;
@@ -48,6 +49,7 @@ export default function U10Artwork() {
   const [openHints, setOpenHints] = useState<number[]>([]); // 관람가이드에서 힌트를 펼친 질문 번호
   const [fullscreen, setFullscreen] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
+  const advancing = useRef(false);
   const tts = useSpeech();
 
   const { data: w, loading, error, reload } = useAsync(
@@ -132,9 +134,16 @@ export default function U10Artwork() {
   };
 
   const goNext = () => {
+    if (advancing.current || loading || error || w?.id !== rec.artworkId) return;
+    advancing.current = true;
     tts.stop();
-    dispatch({ type: 'completeCurrent' });
-    navigate(to(isLast ? '/receipt' : '/route'));
+    dispatch({ type: 'completeCurrent', visitId: state.visitId, artworkId: rec.artworkId });
+    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+  };
+
+  const openMap = () => {
+    tts.stop();
+    navigate(to('/route'), { state: { fromArtwork: true } });
   };
 
   // 원문을 먼저 보여 주고, 관리자가 확정한 AI 요약이 있을 때만 「AI 요약 보기」로 바꿔 볼 수 있다
@@ -169,14 +178,17 @@ export default function U10Artwork() {
       : questionIndex === undefined ? undefined
         : {tab, kind: hasGuide && w.guidedLooking.length ? 'guide' : 'generic_tip', contentVersion: w.contentVersion ?? 1, questionIndex, ...(!(hasGuide && w.guidedLooking.length) ? {tipVersion: 'basic-v1' as const} : {})};
     save(readingKey, {tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0, entry}, 'session');
-    navigate(to('/artwork/ask'));
+    navigate(to('/artwork/ask'), { state: { fromArtwork: true } });
   };
   const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`));
 
   return (
     <MobileShell
       screenId="U-10"
-      back={to('/route')}
+      back={() => {
+        tts.stop();
+        navigate(to('/route'), { replace: true, state: { showMap: true, fromRecommend: entry?.fromRecommend === true } });
+      }}
       title={
         <span className="progress-title">
           {current + 1} / {total}
@@ -188,7 +200,7 @@ export default function U10Artwork() {
         </span>
       }
       right={
-        <button className="pill-btn" onClick={() => navigate(to('/route'))}>
+        <button className="pill-btn" onClick={openMap}>
           <Icon name="map" size={18} /> 지도 보기
         </button>
       }
@@ -205,13 +217,13 @@ export default function U10Artwork() {
               onClose={() => setAsk(null)}
             />
           )}
-          <button className="btn primary block" onClick={goNext}>
+          <button className="btn primary block" onClick={goNext} disabled={loading || !!error || w?.id !== rec.artworkId}>
             {isLast ? '관람 마치기' : '다음 작품 안내'} <Icon name="arrow" size={20} />
           </button>
         </div>
       }
     >
-      {error ? <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={() => navigate(to('/route'))}>지도로 돌아가기</button></p> : loading || !w ? (
+      {error ? <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={openMap}>지도 보기</button></p> : loading || !w ? (
         <Spinner />
       ) : (
         <>

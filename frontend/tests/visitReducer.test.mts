@@ -42,3 +42,23 @@ test('same duration preserves recommendations, visit ID and recorded reactions',
   assert.deepEqual(next.reactions,{a:'like'});
   assert.equal(next.dwell.a,42);
 });
+
+test('repeated or stale artwork completion cannot skip the next artwork', () => {
+  const initial = init();
+  const state = reducer(initial, {
+    type: 'setRecommendations',
+    recs: ['a', 'b'].map((artworkId, index) => ({
+      artworkId, order: index + 1, score: 1, matchedTags: [], reason: '',
+    })),
+  });
+  const action = { type: 'completeCurrent' as const, visitId: state.visitId, artworkId: 'a' };
+  assert.equal(reducer(state, { ...action, visitId: 'previous-visit' }), state);
+  const next = reducer(state, action);
+  assert.equal(next.current, 1);
+  assert.deepEqual(next.viewed, ['a']);
+  assert.equal(reducer(next, action), next);
+  const finished = reducer(next, { ...action, artworkId: 'b' });
+  assert.deepEqual(finished.viewed, ['a', 'b']);
+  assert.equal(finished.current, 2);
+  assert.equal(reducer(finished, { ...action, artworkId: 'b' }), finished);
+});

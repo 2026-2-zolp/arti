@@ -317,6 +317,9 @@ a.history-card { text-decoration: none; }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .next-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .next-row strong { font-size: 16px; }
+.next-row h2 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
+.route-details { margin-top: 12px; }
+.route-details > summary { padding: 10px 0; color: var(--ink); cursor: pointer; font-weight: 600; }
 .route-list { list-style: none; padding: 0; margin: 18px 0 0; display: flex; flex-direction: column; }
 .route-list li { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--line); font-size: 15px; }
 .route-list li.done { color: var(--muted); }

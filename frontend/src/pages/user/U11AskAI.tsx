@@ -1,6 +1,6 @@
 /** U-11 AI 자유 질문 — 현재 작품에 대한 질의응답 (답변은 등록된 작품 자료 근거) */
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
@@ -18,6 +18,8 @@ const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 /** 현재 작품과 해설·질문 맥락을 이어 도슨트와 대화하는 화면 */
 export default function U11AskAI() {
+  const navigate = useNavigate();
+  const { state: entryLocation } = useLocation();
   const { state } = useVisit();
   const to = useExhibitionPath();
   const rec = state.recommendations[state.current];
@@ -81,7 +83,10 @@ export default function U11AskAI() {
     <MobileShell
       screenId="U-11"
       title="AI에게 질문하기"
-      back={to('/artwork')}
+      back={() => {
+        if (entryLocation?.fromArtwork) navigate(-1);
+        else navigate(to('/artwork'), { replace: true });
+      }}
       footer={
         <form className="chat-input" onSubmit={onSubmit}>
           <input

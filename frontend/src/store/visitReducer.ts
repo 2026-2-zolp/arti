@@ -41,7 +41,7 @@ export type Action =
   | { type: 'startVisit' }
   | { type: 'addDwell'; artworkId: string; seconds: number }
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
-  | { type: 'completeCurrent' }
+  | { type: 'completeCurrent'; visitId: string; artworkId: string }
   | { type: 'resetVisit' };
 
 const VISIT_KEY = 'arti.visit';
@@ -138,7 +138,7 @@ export function reducer(s: VisitState, a: Action): VisitState {
     }
     case 'completeCurrent': {
       const rec = s.recommendations[s.current];
-      if (!rec) return s;
+      if (a.visitId !== s.visitId || rec?.artworkId !== a.artworkId) return s;
       const viewed = s.viewed.includes(rec.artworkId) ? s.viewed : [...s.viewed, rec.artworkId];
       return { ...s, viewed, current: s.current + 1 };
     }
