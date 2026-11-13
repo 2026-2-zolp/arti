@@ -196,18 +196,24 @@ a.history-card { text-decoration: none; }
   display: inline-flex; align-items: center; justify-content: center; color: #fff;
 }
 .taste-card.on .check-circle { background: var(--accent); }
-.duel-dots { display: flex; gap: 8px; align-items: center; margin: 16px 0 14px; }
+.duel-progress { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; color: var(--ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.duel-dots { display: flex; gap: 8px; align-items: center; }
 .duel-dots span { width: 8px; height: 8px; border-radius: 99px; background: var(--line); }
 .duel-dots span.done { background: var(--ink); }
 .duel-dots span.on { width: 22px; background: var(--accent); }
 .duel { display: flex; flex-direction: column; }
-.duel-compact { gap: 8px; }
-[data-screen='U-05']:has(.duel-compact) .lead { margin-bottom: 8px; }
-[data-screen='U-05']:has(.duel-compact) .duel-dots { margin: 8px 0; }
+.duel-compact { gap: 2px; }
+[data-screen='U-05']:has(.duel-compact) .lead { margin: 0 0 8px; }
+[data-screen='U-05']:has(.duel-compact) .lead h2 { font-size: clamp(19px, 5.8vw, 22px); }
+.duel-separator { color: var(--ink-2); font-size: 13px; line-height: 18px; text-align: center; }
 .duel-compact .duel-card { position: relative; gap: 4px; padding: 6px; }
-.duel-compact .duel-card :is(img, svg[role='img']) { max-height: 22dvh; background: var(--surface-2); }
+.duel-compact .duel-card :is(img, svg[role='img']) { height: clamp(96px, calc((100svh - 270px) / 2), 196px); background: var(--surface-2); }
 .duel-compact .duel-title { font-size: 15px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.duel-compact .duel-card > .small { padding-inline: 4px; }
+.duel-metadata { margin-top: 4px; color: var(--ink-2); font-size: 13px; }
+.duel-metadata summary { padding: 10px 4px; cursor: pointer; }
+.duel-metadata dl { display: grid; gap: 10px; margin: 0; padding: 4px; }
+.duel-metadata dt { font-weight: 600; overflow-wrap: anywhere; }
+.duel-metadata dd { margin: 2px 0 0; }
 .duel-picked { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 12px; color: white; background: var(--ink); font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .duel-card { transition: none; } }
 .duel-card {

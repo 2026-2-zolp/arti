@@ -1,5 +1,5 @@
 /** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
@@ -97,8 +97,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
       right={draft.picks.length > 0 && <button type="button" className="text-btn" disabled={picked !== null} onClick={() =>
         update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
-      <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'}
-        desc={complete ? undefined : '전시와 관계없이 취향을 알아보는 작품이에요. 더 끌리는 쪽을 다섯 번 골라 주세요.'} />
+      <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'} />
       {!complete && loading && !pool && <Spinner label="작품을 불러오는 중…" />}
       {!complete && error && <p role="alert">{error}</p>}
       {!complete && !loading && !error && !pool?.ready && <p>취향 조사 작품을 불러올 수 없어요.</p>}
@@ -143,22 +142,37 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
       )}
       {pool?.ready && !complete && !changed && !missingContext && works.length === 2 && (
         <>
-          <div className="duel-dots" aria-label={`${draft.picks.length + 1}번째, 모두 ${pairs.length}번`}>
-            {pairs.map((_, index) => <span key={index} className={index === draft.picks.length ? 'on' : index < draft.picks.length ? 'done' : ''} />)}
+          <div className="duel-progress" role="status">
+            <div className="duel-dots" aria-hidden="true">
+              {pairs.map((_, index) => <span key={index} className={index === draft.picks.length ? 'on' : index < draft.picks.length ? 'done' : ''} />)}
+            </div>
+            <span aria-hidden="true">{draft.picks.length + 1}/{pairs.length}</span>
+            <span className="sr-only">{draft.picks.length + 1}번째, 모두 {pairs.length}번</span>
           </div>
           <div className="duel duel-compact">
-            {works.map((work) => (
-              <div key={work.id} className="duel-slot">
+            {works.map((work, index) => (
+              <Fragment key={work.id}>
+                {index > 0 && <p className="duel-separator" aria-hidden="true">또는</p>}
                 <button type="button" className={`duel-card${picked === work.id ? ' picked' : ''}`}
                   aria-pressed={picked === work.id} disabled={blocked || picked !== null} onClick={() => choose(work.id)}>
                   <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt="" ratio={5 / 2} fit="contain" />
                   <span className="duel-title">{work.title}</span>
-                  <span className="muted small">{work.artist}{work.year ? ` · ${work.year}` : ''}</span>
                   {picked === work.id && <span className="duel-picked" aria-hidden="true">선택함</span>}
                 </button>
-              </div>
+              </Fragment>
             ))}
           </div>
+          <details key={draft.picks.length} className="duel-metadata">
+            <summary>작가·연도</summary>
+            <dl>
+              {works.map((work) => (
+                <div key={work.id}>
+                  <dt>{work.title}</dt>
+                  <dd>{[work.artist, work.year].filter(Boolean).join(' · ') || '정보 없음'}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
         </>
       )}
       {state.duration && <Link to={to('/recommend')}>현재 관람으로 돌아가기</Link>}
