@@ -1,5 +1,5 @@
 /** U-11 AI 자유 질문 — 현재 작품에 대한 질의응답 (답변은 등록된 작품 자료 근거) */
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
@@ -34,7 +34,7 @@ export default function U11AskAI() {
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
   const sending = useRef(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
   const { data: w, error, reload } = useAsync(() => (artworkId ? api.getArtwork(artworkId) : Promise.resolve(null)), [artworkId]);
 
   const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
@@ -46,15 +46,38 @@ export default function U11AskAI() {
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
   const chatReady = !!key && loadedChatKey === key;
   const canAsk = chatReady && !pending && !contentChanged;
+  const hasArtwork = !!artworkId;
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    const viewport = window.visualViewport;
+    if (!shell || !viewport) return;
+
+    // Android Chrome에서 키보드가 열린 동안 보이는 영역에 입력부를 맞춥니다.
+    const syncViewport = () => {
+      if (viewport.scale !== 1) return;
+      shell.style.setProperty('--docent-height', `${viewport.height}px`);
+      shell.style.setProperty('--docent-top', `${viewport.offsetTop}px`);
+    };
+    syncViewport();
+    viewport.addEventListener('resize', syncViewport);
+    viewport.addEventListener('scroll', syncViewport);
+    return () => {
+      viewport.removeEventListener('resize', syncViewport);
+      viewport.removeEventListener('scroll', syncViewport);
+    };
+  }, [hasArtwork]);
+
   useEffect(() => {
     generation.current += 1; sending.current = false; setPending(false);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
     setLoadedChatKey(key);
     return () => { generation.current += 1; };
   }, [key]);
-  useEffect(() => {
-    if (messages.length) bottomRef.current?.scrollIntoView({block: 'nearest'});
-  }, [messages]);
+  useLayoutEffect(() => {
+    if (!messages.length && !failure && !pending) return;
+    const conversation = shellRef.current?.querySelector('main');
+    if (conversation) conversation.scrollTop = conversation.scrollHeight;
+  }, [messages, failure, pending]);
   if (!rec) return <Navigate to={to('/route')} replace />;
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
@@ -68,7 +91,7 @@ export default function U11AskAI() {
       if (generation.current !== active) return;
       const next: ChatMessage[] = [...messages, {id: newId(), role: 'user', text: q}, {id: newId(), role: 'ai', text: result.answer, mode: result.mode, sourceRefs: result.sourceRefs}];
       setMessages(next); save(key + '.chat', next, 'session');
-      if (fromInput) setInput('');
+      if (fromInput) setInput((draft) => draft === question ? '' : draft);
     } catch (e) {
       if (generation.current !== active) return;
       if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') { setContentChanged(true); setFailure('작품 자료가 변경됐어요. 해설로 돌아가 새 내용을 확인한 뒤 질문해 주세요.'); reload(); }
@@ -89,48 +112,19 @@ export default function U11AskAI() {
 
   return (
     <MobileShell
+      ref={shellRef}
       screenId="U-11"
       title="AI에게 질문하기"
       back={() => {
         if (entryLocation?.fromArtwork) navigate(-1);
         else navigate(to('/artwork'), { replace: true });
       }}
-    >
-      {w && (
-        <div className="chat-artwork">
-          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1} />
-          <div>
-            <strong>{w.title}</strong>
-            <span className="muted small">
-              {w.artist} · {w.year}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
-      {selectedQuestion && (
-        <section className="docent-question" aria-labelledby="docent-question-heading">
-          <h2 id="docent-question-heading">고른 관찰 질문</h2>
-          <p id="docent-question-text">{selectedQuestion}</p>
-        </section>
-      )}
-      <div className="chat-log" aria-live="polite">
-        {chatReady && messages.length === 0 && !selectedQuestion && (
-          <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
-        )}
-        {chatReady && messages.map((m) => (
-          <div key={m.id} className={`bubble ${m.role}`}>
-            {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-
-      <div className="docent-compose">
+      footer={
         <form className="chat-input" onSubmit={onSubmit}>
           <input
-            disabled={pending || contentChanged}
+            type="text"
+            enterKeyHint="send"
+            disabled={contentChanged}
             maxLength={500}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -142,15 +136,45 @@ export default function U11AskAI() {
             <Icon name="send" size={20} />
           </button>
         </form>
-        {chatReady && selectedQuestion && (
-          <button type="button" className="link-btn" disabled={!canAsk}
-            onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>
-        )}
-        {pending && <p className="muted small" role="status">답변을 작성하고 있어요…</p>}
-        {failure && <p className="error-text" role="alert">{failure}</p>}
-      </div>
+      }
+    >
+      {w && (
+        <div className="chat-artwork">
+          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1} fit="contain" />
+          <div>
+            <strong>{w.title}</strong>
+            <span className="muted small">
+              {w.artist} · {w.year}
+            </span>
+          </div>
+        </div>
+      )}
 
-      {chatReady && !selectedQuestion && <div className="suggested">
+      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button></p>}
+      {selectedQuestion && (
+        <section className="docent-question bubble ai" aria-labelledby="docent-question-heading">
+          <h2 id="docent-question-heading">고른 관찰 질문</h2>
+          <p id="docent-question-text">{selectedQuestion}</p>
+          {chatReady && (
+            <button type="button" className="link-btn" disabled={!canAsk}
+              onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>
+          )}
+        </section>
+      )}
+      <div className="chat-log" role="log" aria-label="도슨트 대화">
+        {chatReady && messages.length === 0 && !selectedQuestion && (
+          <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
+        )}
+        {chatReady && messages.map((m) => (
+          <div key={m.id} className={`bubble ${m.role}`}>
+            {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
+          </div>
+        ))}
+      </div>
+      {pending && <p className="muted small" role="status">답변을 작성하고 있어요…</p>}
+      {failure && <p className="error-text" role="alert">{failure}</p>}
+
+      {chatReady && !selectedQuestion && messages.length === 0 && <div className="suggested">
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
           {SUGGESTED.map((q) => (

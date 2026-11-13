@@ -1,7 +1,7 @@
 /**
  * 사용자 모바일 화면 공통 틀: 상단 헤더(뒤로가기·제목·우측 버튼) + 본문 + 하단 고정 버튼 영역
  */
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from './Icon';
 
@@ -13,10 +13,11 @@ interface Props {
   footer?: ReactNode;
   children: ReactNode;
   screenId?: string; // 설계서 화면 ID (data 속성으로 남겨 테스트·디버깅에 활용)
+  ref?: Ref<HTMLDivElement>;
 }
 
 /** 사용자 화면의 공통 틀·제목·하단 동작을 구성합니다. */
-export function MobileShell({ title, back, right, footer, children, screenId }: Props) {
+export function MobileShell({ title, back, right, footer, children, screenId, ref }: Props) {
   const navigate = useNavigate();
 
   const onBack = () => {
@@ -26,7 +27,7 @@ export function MobileShell({ title, back, right, footer, children, screenId }: 
   };
 
   return (
-    <div className="m-shell" data-screen={screenId}>
+    <div ref={ref} className="m-shell" data-screen={screenId}>
       <header className="m-header">
         <div className="m-header-side">
           {back !== false && (
