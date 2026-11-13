@@ -14,6 +14,7 @@ import { useAsync } from '../../lib/useAsync';
 import { TASTE_LABEL } from '../../data/mock';
 import { useLogout, useVisit } from '../../store/VisitContext';
 import { formatDate } from './U12Receipt';
+import { KakaoAccountLink } from './KakaoAccountLink';
 import type { Artwork, VisitRecord } from '../../types';
 
 type Tab = 'history' | 'likes';
@@ -45,6 +46,7 @@ export default function U13MyPage() {
       {logoutError && <p className="error-text" role="alert">{logoutError}</p>}
       <PendingReceipts onRecovered={visits.reload} />
       <Lead title={`${user.nickname || '회원'}님, 안녕하세요`} />
+      <KakaoAccountLink key={user.id} />
 
       <div className="tabs" role="tablist">
         {TABS.map((t) => (

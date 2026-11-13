@@ -192,6 +192,32 @@ class Session(models.Model):
     expires_at = models.DateTimeField()
 
 
+class KakaoIdentity(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    client_id = models.CharField(max_length=128)
+    subject = models.CharField(max_length=255)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['client_id', 'subject'], name='kakao_unique_subject'),
+            models.UniqueConstraint(fields=['client_id', 'account'], name='kakao_unique_account'),
+        ]
+
+
+class KakaoOAuthFlow(models.Model):
+    browser_hash = models.CharField(max_length=64, primary_key=True)
+    state_hash = models.CharField(max_length=64)
+    client_id = models.CharField(max_length=128)
+    account = models.ForeignKey(Account, null=True, on_delete=models.CASCADE)
+    session_hash = models.CharField(max_length=64, blank=True)
+    nonce = models.CharField(max_length=64)
+    verifier = models.CharField(max_length=64)
+    return_path = models.CharField(max_length=500)
+    expires_at = models.DateTimeField(db_index=True)
+    status = models.CharField(max_length=12, default='pending')
+    subject = models.CharField(max_length=255, blank=True)
+
+
 # 회원 관람의 중복 방지 키와 당시 작품 정보를 보존합니다.
 class Visit(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)

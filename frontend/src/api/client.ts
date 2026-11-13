@@ -40,6 +40,12 @@ const ADMIN_INFO = 'arti.admin';
 /** 사용자 정보 저장 키 (store/VisitContext.tsx의 USER_KEY와 같은 값) */
 const USER_INFO = 'arti.user';
 
+type KakaoResult =
+  | { status: 'logged_in'; user: User; returnTo: string }
+  | { status: 'linked' | 'unlinked' | 'conflict' | 'cancelled' | 'failed'; returnTo: string };
+type KakaoFinish = Exclude<KakaoResult, { status: 'logged_in' }>
+  | { status: 'logged_in'; user: User; token: string; returnTo: string };
+
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
 export const uploadedImageUrl = (file: string, forAdmin = false) =>
   `${BASE}${forAdmin ? ADMIN_READ : ''}/uploads/${encodeURIComponent(file)}`;
@@ -144,6 +150,19 @@ export const api = {
     const { user, token } = await request<{ user: User; token: string }>('POST', '/auth/login', { email, password });
     save(USER_TOKEN, token);
     return user;
+  },
+
+  kakaoStatus: () => request<{ enabled: boolean; linked: boolean }>('GET', '/auth/kakao/status'),
+
+  startKakao: (input: { mode: 'link'; password: string } | { mode: 'login'; returnTo: string }) =>
+    request<{ authorizationUrl: string }>('POST', '/auth/kakao/start', input),
+
+  async finishKakao(): Promise<KakaoResult> {
+    const result = await request<KakaoFinish>('POST', '/auth/kakao/finish');
+    if (result.status !== 'logged_in') return result;
+    if (load(USER_TOKEN, null)) throw new ApiError('로그인한 계정이 바뀌었어요. 다시 시도해 주세요.');
+    save(USER_TOKEN, result.token);
+    return { status: result.status, user: result.user, returnTo: result.returnTo };
   },
 
   async signup(input: { email: string; password: string; nickname: string; termsAccepted: boolean; termsVersion: string }): Promise<User> {

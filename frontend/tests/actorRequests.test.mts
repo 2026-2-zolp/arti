@@ -81,6 +81,27 @@ test('failed login credentials do not expire an existing valid session', async()
  assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));assert.deepEqual(events,[]);
 });
 
+test('late Kakao login completion cannot overwrite an email login', async () => {
+ const {storage}=setup();
+ storage.removeItem('arti.token');
+ const response=deferred<Response>();
+ globalThis.fetch=(async () => response.promise) as typeof fetch;
+ const pending=api.finishKakao();
+ storage.setItem('arti.token',JSON.stringify('email-account-token'));
+ response.resolve(Response.json({status:'logged_in',user:{id:'other-account'},token:'late-token',returnTo:'/mypage'}));
+ await assert.rejects(pending);
+ assert.equal(storage.getItem('arti.token'),JSON.stringify('email-account-token'));
+});
+
+test('Kakao link and cancellation leave the original email session in storage', async () => {
+ const {storage}=setup();
+ for (const status of ['linked','cancelled']) {
+  globalThis.fetch=(async () => Response.json({status,returnTo:'/mypage'})) as typeof fetch;
+  assert.equal((await api.finishKakao()).status,status);
+  assert.equal(storage.getItem('arti.token'),JSON.stringify('original-token'));
+ }
+});
+
 test('survey lookup uses a global endpoint without an exhibition parameter', async () => {
  setup(); const urls:string[]=[];
  globalThis.fetch=(async (url)=>{urls.push(String(url));return Response.json({ready:false,poolId:null,revision:null,poolVersion:'empty',pairs:[],artworks:[]});}) as typeof fetch;
