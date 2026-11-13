@@ -421,6 +421,9 @@ a.history-card { text-decoration: none; }
 .bubble.user { background: var(--ink); color: #fff; border-top-right-radius: 4px; align-self: flex-end; }
 .chat-log .bubble small { display: block; color: var(--ink-2); }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
+.docent-send-error { display: flex; align-items: center; justify-content: space-between; gap: 4px 8px; flex-wrap: wrap; }
+.docent-send-error .error-text { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; }
+.docent-send-error .link-btn { flex: none; min-height: 44px; }
 .chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
 .chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
 .chat-input input:focus { outline: 1px solid var(--ink); outline-offset: -1px; }

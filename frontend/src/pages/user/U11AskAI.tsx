@@ -14,6 +14,11 @@ import type { ChatMessage } from '../../types';
 
 const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는 어떤 사람인가요?', '색은 어떤 의미가 있나요?', '왜 유명한 작품인가요?'];
 
+type AskFailure = {
+  message: string;
+  retry?: { question: string; fromInput: boolean };
+};
+
 // crypto.randomUUID는 https에서만 동작해 휴대폰 LAN 테스트(http)에서 실패하므로 간단한 id 생성기를 쓴다
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 /** 현재 작품과 해설·질문 맥락을 이어 도슨트와 대화하는 화면 */
@@ -28,7 +33,7 @@ export default function U11AskAI() {
   // 대화 내용은 작품별로 sessionStorage에 보관 → U-10에 갔다 와도 유지
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadedChatKey, setLoadedChatKey] = useState('');
-  const [failure, setFailure] = useState('');
+  const [failure, setFailure] = useState<AskFailure | null>(null);
   const generation = useRef(0);
   const [contentChanged, setContentChanged] = useState(false);
   const [input, setInput] = useState('');
@@ -74,16 +79,16 @@ export default function U11AskAI() {
     return () => { generation.current += 1; };
   }, [key]);
   useLayoutEffect(() => {
-    if (!messages.length && !failure && !pending) return;
+    if (!messages.length && !pending) return;
     const conversation = shellRef.current?.querySelector('main');
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
-  }, [messages, failure, pending]);
+  }, [messages, pending]);
   if (!rec) return <Navigate to={to('/route')} replace />;
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
     sending.current = true;
-    const active = generation.current; setPending(true); setFailure('');
+    const active = generation.current; setPending(true); setFailure(null);
     const eligible = messages.flatMap((m, i) => m.role === 'user' && messages[i+1]?.role === 'ai' && messages[i+1].mode === 'llm' ? [m, messages[i+1]] : []);
     const history = eligible.slice(-8).map(m => ({role: m.role === 'ai' ? 'assistant' as const : 'user' as const, text: m.text.slice(0,1000)}));
     try {
@@ -94,8 +99,17 @@ export default function U11AskAI() {
       if (fromInput) setInput((draft) => draft === question ? '' : draft);
     } catch (e) {
       if (generation.current !== active) return;
-      if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') { setContentChanged(true); setFailure('작품 자료가 변경됐어요. 해설로 돌아가 새 내용을 확인한 뒤 질문해 주세요.'); reload(); }
-      else setFailure(e instanceof Error ? e.message : '답변을 가져오지 못했어요. 입력을 유지했으니 다시 보내 주세요.');
+      if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') {
+        setContentChanged(true);
+        setFailure({ message: '작품 자료가 변경됐어요. 작품 화면에서 새 내용을 확인해 주세요.' });
+        reload();
+      } else {
+        const retryable = !(e instanceof ApiError) || e.status === 0 || e.status === 429 || e.status >= 500;
+        setFailure({
+          message: e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
+          retry: retryable ? { question, fromInput } : undefined,
+        });
+      }
     } finally {
       if (generation.current === active) {
         sending.current = false;
@@ -109,33 +123,52 @@ export default function U11AskAI() {
     ask(input, true);
   };
   const guidedStart = !!selectedQuestion && !messages.length;
+  const retry = failure?.retry;
+  const backToArtwork = () => {
+    if (entryLocation?.fromArtwork) navigate(-1);
+    else navigate(to('/artwork'), { replace: true });
+  };
 
   return (
     <MobileShell
       ref={shellRef}
       screenId="U-11"
       title="AI에게 질문하기"
-      back={() => {
-        if (entryLocation?.fromArtwork) navigate(-1);
-        else navigate(to('/artwork'), { replace: true });
-      }}
+      back={backToArtwork}
       footer={
-        <form className="chat-input" onSubmit={onSubmit}>
-          <input
-            type="text"
-            enterKeyHint="send"
-            disabled={contentChanged}
-            maxLength={500}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={guidedStart ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
-            aria-label="질문 입력"
-            aria-describedby={guidedStart ? 'docent-question-text' : undefined}
-          />
-          <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
-            <Icon name="send" size={20} />
-          </button>
-        </form>
+        <>
+          {failure && (
+            <div className="docent-send-error">
+              <p id="docent-send-error" className="error-text" role="alert">{failure.message}</p>
+              {retry && (
+                <button type="button" className="link-btn" disabled={!canAsk}
+                  onClick={() => ask(retry.question, retry.fromInput)}>
+                  {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
+                </button>
+              )}
+              {contentChanged && <button type="button" className="link-btn" onClick={backToArtwork}>작품으로 돌아가기</button>}
+            </div>
+          )}
+          <form className="chat-input" onSubmit={onSubmit}>
+            <input
+              type="text"
+              enterKeyHint="send"
+              disabled={contentChanged}
+              maxLength={500}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={guidedStart ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
+              aria-label="질문 입력"
+              aria-describedby={[
+                guidedStart ? 'docent-question-text' : '',
+                failure ? 'docent-send-error' : '',
+              ].filter(Boolean).join(' ') || undefined}
+            />
+            <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
+              <Icon name="send" size={20} />
+            </button>
+          </form>
+        </>
       }
     >
       {w && (
@@ -172,7 +205,6 @@ export default function U11AskAI() {
         ))}
       </div>
       {pending && <p className="muted small" role="status">답변을 작성하고 있어요…</p>}
-      {failure && <p className="error-text" role="alert">{failure}</p>}
 
       {chatReady && !selectedQuestion && messages.length === 0 && <div className="suggested">
         <span className="eyebrow">추천 질문</span>

@@ -61,6 +61,20 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const needsReload = !!error || missingContext || changed || !pool?.ready;
   const currentPair = pairs[draft.picks.length];
   const works = currentPair ? [currentPair.leftId, currentPair.rightId].flatMap(id => pool?.artworks.find(w => w.id === id) ?? []) : [];
+  const nextPair = pairs[draft.picks.length + 1];
+  const nextLeft = pool?.artworks.find((work) => work.id === nextPair?.leftId);
+  const nextRight = pool?.artworks.find((work) => work.id === nextPair?.rightId);
+  const nextLeftImage = nextLeft && artworkImageSrc(nextLeft);
+  const nextRightImage = nextRight && artworkImageSrc(nextRight);
+  useEffect(() => {
+    if (blocked || complete) return;
+    for (const url of new Set([nextLeftImage, nextRightImage])) {
+      if (!url) continue;
+      const image = new Image();
+      image.fetchPriority = 'low';
+      image.src = url;
+    }
+  }, [blocked, complete, nextLeftImage, nextRightImage]);
   const manual = selected.some(tag => !draft.options?.includes(tag));
   const counts: TasteProfile['counts'] = {};
   if (!manual && version === 1) {
