@@ -287,6 +287,11 @@ a.history-card { text-decoration: none; }
 .option-count { font-size: 14px; color: var(--ink-2); background: var(--surface-2); padding: 4px 10px; border-radius: 999px; }
 
 /* ---------- U-08 ---------- */
+.rec-retry { margin-top: 16px; }
+.notice-card .notice-body:has(+ .notice-body) { margin-bottom: 4px; }
+/* 화면에 오류 카드만 있을 때 본문 세로 가운데에 둔다 */
+.m-body:has(> .notice-center) { display: flex; flex-direction: column; }
+.notice-card.notice-center { margin-top: auto; margin-bottom: auto; }
 .missing-note { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: #fff7e6; color: #8a5a00; font-size: 14px; line-height: 1.5; }
 .rec-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .rec-card { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
@@ -329,7 +334,6 @@ a.history-card { text-decoration: none; }
 .progress-dots span.cur { background: var(--accent); }
 .map-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px; }
 .route-map { margin-top: 12px; }
-.route-map-focused { padding: 8px 10px; }
 .route-map-focused .floor-map { max-height: min(38svh, 320px); }
 .next-card { margin-top: 12px; background: var(--surface); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .next-artwork { display: flex; align-items: center; gap: 12px; }

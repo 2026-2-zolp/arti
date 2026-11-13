@@ -73,9 +73,12 @@ export default function U08Recommend() {
       screenId="U-08"
       back={to('/time')}
       footer={
-        <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'), { state: { fromRecommend: true } })}>
-          2D 지도에서 경로 보기
-        </button>
+        // 추천이 없거나 실패한 동안에는 누를 수 없는 버튼을 남기지 않는다.
+        issue || (artworkError && !ready) ? undefined : (
+          <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'), { state: { fromRecommend: true } })}>
+            2D 지도에서 경로 보기
+          </button>
+        )
       }
     >
       <Lead title={title} desc={desc} />
@@ -84,16 +87,37 @@ export default function U08Recommend() {
           현재 추천 가능한 작품 중 {missing.map((t) => `「${TASTE_LABEL[t]}」`).join(' · ')} 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요.
         </p>
       )}
-      {artworkError && <p className="error-text" role="alert">작품 목록을 불러오지 못했어요. {artworkError}<button onClick={reloadArtworks}>작품 목록 다시 불러오기</button></p>}
-      {coverageError && <p className="error-text" role="alert">태그별 추천 후보 수를 확인하지 못했어요.<button onClick={reloadCoverage}>후보 수 다시 확인</button></p>}
-      {issue && (
-        <div className="stack gap-12">
-          {issue.kind === 'error' && <p className="error-text" role="alert">{issue.message}</p>}
-          <button className="btn ghost" onClick={retry}>다시 시도</button>
-          {issue.kind === 'error' && <button className="text-btn" onClick={() => navigate(to('/taste'))}>취향 다시 선택</button>}
+      {/* 추천 요청이 실패·0건이면 실패한 항목 문구를 한 카드에 모으고, 버튼은 [다시 시도] 하나로 둔다.
+          [다시 시도](retry)가 추천·작품 목록·후보 수를 함께 다시 불러온다. */}
+      {issue ? (
+        <div className={issue.kind === 'error' || artworkError || coverageError ? 'notice-card is-err' : 'rec-retry'}
+          role={issue.kind === 'error' || artworkError || coverageError ? 'alert' : undefined}>
+          {issue.kind === 'error' && <p className="notice-body">{issue.message}</p>}
+          {artworkError && (
+            <p className="notice-body">
+              작품 목록을 불러오지 못했어요.{issue.kind === 'error' && artworkError === issue.message ? '' : ` ${artworkError}`}
+            </p>
+          )}
+          {coverageError && <p className="notice-body">태그별 추천 후보 수를 확인하지 못했어요.</p>}
+          <button className={`btn block ${issue.kind === 'error' ? 'primary' : 'outline'}`} onClick={retry}>다시 시도</button>
+          {issue.kind === 'error' && <button className="btn ghost block" onClick={() => navigate(to('/taste'))}>취향 다시 선택</button>}
         </div>
+      ) : (
+        <>
+          {artworkError && (
+            <div className="notice-card is-err" role="alert">
+              <p className="notice-body">작품 목록을 불러오지 못했어요. {artworkError}</p>
+              <button className="btn primary block" onClick={reloadArtworks}>작품 목록 다시 불러오기</button>
+            </div>
+          )}
+          {coverageError && (
+            <p className="missing-note" role="alert">
+              태그별 추천 후보 수를 확인하지 못했어요. <button className="link-btn" onClick={reloadCoverage}>후보 수 다시 확인</button>
+            </p>
+          )}
+        </>
       )}
-      {ready && recommendations.length < requestedCount && <p>선택한 시간의 기준은 {requestedCount}점이에요. 지금 추천할 수 있는 작품만 안내해요.</p>}
+      {ready && recommendations.length < requestedCount && <p className="missing-note" role="note">선택한 시간의 기준은 {requestedCount}점이에요. 지금 추천할 수 있는 작품만 안내해요.</p>}
       {!ready && !issue && !artworkError && <Spinner label="추천 작품을 불러오는 중…" />}
 
       {ready && (
