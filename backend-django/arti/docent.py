@@ -25,6 +25,10 @@ class AIThrottle(AnonRateThrottle):
 def bad():raise ContractError(400,'VALIDATION_ERROR','질문과 맥락을 확인해 주세요.')
 
 
+def content_changed():
+    return ContractError(409, 'CONTENT_CHANGED', '작품 자료가 변경됐어요. 새 내용을 확인해 주세요.')
+
+
 @api_view(['POST'])
 @throttle_classes([AIThrottle])
 def ask(request,artwork_id):
@@ -40,7 +44,7 @@ def ask(request,artwork_id):
     if entry is not None:
         if not isinstance(entry,dict) or entry.get('tab') not in ('desc','guided'):bad()
         if type(entry.get('contentVersion')) is not int:bad()
-        if entry['contentVersion']!=w.content_version:raise ContractError(409,'CONTENT_CHANGED','작품 자료가 변경됐어요. 새 내용을 확인해 주세요.')
+        if entry['contentVersion']!=w.content_version:raise content_changed()
         kind=entry.get('kind')
         if kind in ('original','summary'):
             if entry['tab']!='desc' or 'questionIndex' in entry:bad()
@@ -71,6 +75,9 @@ def ask(request,artwork_id):
     if not isinstance(result,dict) or not isinstance(result.get('answer'),str) or not result['answer'].strip():
         raise ContractError(502,'PROVIDER_ERROR','답변 형식을 확인할 수 없어요.',retryable=True)
     providers.validate('answer',result)
+    # 모델을 기다리는 사이에 편집되거나 공개가 중단된 작품의 답변은 내보내지 않습니다.
+    if not public_works().filter(pk=w.pk, content_version=w.content_version).exists():
+        raise content_changed()
     # Source references are selected by the server, never accepted from provider/client.
     if not refs and data['description']:refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'original','revision':w.source_version}]
     return Response({'answer':result['answer'],'mode':'llm','sourceRefs':refs,'requestId':request.request_id})

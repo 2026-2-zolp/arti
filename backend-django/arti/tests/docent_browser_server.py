@@ -1,11 +1,15 @@
 """Serve the product API with a loopback-only docent provider for browser tests."""
 
 import json
+import os
+from threading import Event, Lock
 from time import sleep
+from uuid import UUID
 from unittest.mock import patch
 from wsgiref.simple_server import make_server
 
 from django.conf import settings
+from django.core.servers.basehttp import ThreadedWSGIServer, WSGIRequestHandler
 from django.core.wsgi import get_wsgi_application
 from django.test import override_settings
 
@@ -18,6 +22,14 @@ def serve():
 
     pending = {}
     faults = {'502': 500, '429': 429, '504': 200}
+    races = os.environ.get('ARTI_DOCENT_RACE_TESTS') == '1'
+    gates = {}
+    gates_lock = Lock()
+
+    def gate_for(value):
+        key = str(UUID(value))
+        with gates_lock:
+            return gates.setdefault(key, (Event(), Event()))
 
     def respond(attempt):
         wire = requests[attempt - 1]
@@ -36,8 +48,19 @@ def serve():
             elif previous != wire['raw']:
                 return 400, b'the provider retry did not preserve the original prompt'
 
+        text = '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>'
+        if races and len(parts) == 4 and parts[:2] == ['[합성', '대기']:
+            started, release = gate_for(parts[2])
+            started.set()
+            try:
+                if not release.wait(20):
+                    return 500, b'synthetic gate expired'
+            finally:
+                with gates_lock:
+                    gates.pop(parts[2], None)
+            text = f'합성 지연 답변 · {prompt["artworkData"]["description"]}'
         answer = {
-            'answer': '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>',
+            'answer': text,
             'sourceRefs': [{'artworkId': 'forged-work', 'kind': 'summary'}],
         }
         response = {'choices': [{
@@ -51,12 +74,24 @@ def serve():
         def mark(status, headers, exc_info=None):
             return start_response(status, [*headers, ('X-Arti-Docent-Mock', '1')], exc_info)
 
+        prefix = '/api/__docent_test__/gate/'
+        if races and environ['PATH_INFO'].startswith(prefix):
+            try:
+                started, release = gate_for(environ['PATH_INFO'][len(prefix):])
+            except ValueError:
+                mark('404 Not Found', [('Content-Length', '0')])
+                return [b'']
+            if environ['REQUEST_METHOD'] == 'POST':
+                release.set()
+            body = json.dumps({'started': started.is_set(), 'released': release.is_set()}).encode()
+            mark('200 OK', [('Content-Type', 'application/json'), ('Content-Length', str(len(body)))])
+            return [body]
         return application(environ, mark)
 
     with override_settings(
         ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-browser-only',
         OPENAI_MODEL='synthetic-browser-only', ARTI_LLM_MODELS={}, ARTI_MODEL_SERVICE_URL='',
-    ), endpoint(respond=respond) as requests, patch('arti.llm.TIMEOUT_SECONDS', 1), make_server(
-        '0.0.0.0', 8000, mock_application,
+    ), endpoint(respond=respond) as requests, patch('arti.llm.TIMEOUT_SECONDS', 22 if races else 1), make_server(
+        '0.0.0.0', 8000, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         server.serve_forever()
