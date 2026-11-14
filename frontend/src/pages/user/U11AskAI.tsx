@@ -7,7 +7,7 @@ import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
-import { load, save } from '../../lib/storage';
+import { load, remove, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
@@ -24,12 +24,21 @@ type AskFailure = {
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 /** 현재 작품과 해설·질문 맥락을 이어 도슨트와 대화하는 화면 */
 export default function U11AskAI() {
+  const { state } = useVisit();
+  const to = useExhibitionPath();
+  const rec = state.recommendations[state.current];
+  if (!rec) return <Navigate to={to('/route')} replace />;
+
+  // 보낸 대화는 자료 버전별로 나누고, 미전송 원문은 같은 관람·작품에서 다시 쓸 수 있게 둡니다.
+  const draftKey = `${scopeKey(state, rec.artworkId, 0)}.questionDraft`;
+  return <ArtworkChat key={draftKey} draftKey={draftKey} artworkId={rec.artworkId} />;
+}
+
+function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: string }) {
   const navigate = useNavigate();
   const { state: entryLocation } = useLocation();
   const { state } = useVisit();
   const to = useExhibitionPath();
-  const rec = state.recommendations[state.current];
-  const artworkId = rec?.artworkId ?? '';
 
   // 대화 내용은 작품별로 sessionStorage에 보관 → U-10에 갔다 와도 유지
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -37,11 +46,15 @@ export default function U11AskAI() {
   const [failure, setFailure] = useState<AskFailure | null>(null);
   const generation = useRef(0);
   const [contentChanged, setContentChanged] = useState(false);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(() => load(draftKey, '', 'session'));
+  useEffect(() => {
+    if (input) save(draftKey, input, 'session');
+    else remove(draftKey, 'session');
+  }, [draftKey, input]);
   const [pending, setPending] = useState(false);
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
-  const { data: w, error, reload } = useAsync(() => (artworkId ? api.getArtwork(artworkId) : Promise.resolve(null)), [artworkId]);
+  const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
 
   const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
@@ -52,7 +65,6 @@ export default function U11AskAI() {
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
   const chatReady = !!key && loadedChatKey === key;
   const canAsk = chatReady && !pending && !contentChanged;
-  const hasArtwork = !!artworkId;
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -71,7 +83,7 @@ export default function U11AskAI() {
       viewport.removeEventListener('resize', syncViewport);
       viewport.removeEventListener('scroll', syncViewport);
     };
-  }, [hasArtwork]);
+  }, []);
 
   useEffect(() => {
     generation.current += 1; sending.current = false; setPending(false);
@@ -84,7 +96,6 @@ export default function U11AskAI() {
     const conversation = shellRef.current?.querySelector('main');
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
   }, [messages, pending]);
-  if (!rec) return <Navigate to={to('/route')} replace />;
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;

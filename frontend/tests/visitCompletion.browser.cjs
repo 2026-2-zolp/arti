@@ -316,6 +316,52 @@ async function visitHistory(browser) {
   } finally { await page.close(); }
 }
 
+async function recoverDocentDraft(browser) {
+  const { page, button, artwork, errors } = await fixture(browser, 360, false);
+  const question = '가운데 색이 먼저 보이는 이유가 뭔가요?';
+  const input = page.getByRole('textbox', { name: '질문 입력' });
+  const sent = [];
+  let version = 1;
+  await page.route(base + '/api/artworks/a', route => route.fulfill({ json: { ...works[0], contentVersion: version } }));
+  await page.route(base + '/api/artworks/a/ask', route => {
+    sent.push(route.request().postDataJSON());
+    if (sent.length === 1) return route.fulfill({ json: { answer: '이전 자료의 합성 답변', mode: 'llm', sourceRefs: [] } });
+    if (sent.length === 2) {
+      version = 2;
+      return route.fulfill({ status: 409, json: { error: '작품 자료 변경', code: 'CONTENT_CHANGED' } });
+    }
+    return route.fulfill({ json: { answer: '새 자료의 합성 답변', mode: 'llm', sourceRefs: [] } });
+  });
+  try {
+    await page.goto(base + path + '/artwork', { waitUntil: 'domcontentloaded' });
+    await button('이 부분 더 알아보기').click();
+    await input.fill('첫 질문');
+    await button('보내기').click();
+    await page.getByText('이전 자료의 합성 답변', { exact: false }).waitFor();
+    await input.fill(question);
+    await button('보내기').click();
+    await button('작품으로 돌아가기').click();
+    await artwork(1).waitFor();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await button('이 부분 더 알아보기').click();
+    assert.equal(await input.inputValue(), question);
+    await button('보내기').click();
+    await page.getByText('새 자료의 합성 답변', { exact: false }).waitFor();
+    assert.equal(sent[2].question, question);
+    assert.equal(sent[2].entryContext.contentVersion, 2);
+    assert.deepEqual(sent[2].history, []);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await input.inputValue(), '');
+    await input.fill('이 작품에만 남길 질문');
+    await button('뒤로가기').click();
+    await button('다음 작품 안내').click();
+    await button('2번 작품 감상하기').click();
+    await button('이 부분 더 알아보기').click();
+    assert.equal(await input.inputValue(), '');
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
 async function recoverPendingReceipt(browser, discard) {
   const { page, button, requests, errors } = await fixture(browser, 360, true, 3);
   let attempts = 0;
@@ -466,6 +512,7 @@ async function completeVisit(browser, member) {
       ['취향 조사·확인, 관람 시간, 마이페이지·과거 영수증 오류 복구', recoverNewErrorCards],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
+      ['도슨트 자료 변경 후 미전송 질문 복구', recoverDocentDraft],
       ['세션 만료 후 같은 계정의 미저장 기록 복구', browser => recoverPendingReceipt(browser, false)],
       ['버린 미저장 기록의 뒤로가기 재저장 차단', browser => recoverPendingReceipt(browser, true)],
       ['하루 지난 관람의 영수증 저장', saveLongVisit],
