@@ -9,7 +9,7 @@ const exhibition = '/exhibitions/fixture-ex01';
 const answer = '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>';
 const isAsk = url => /^\/api\/artworks\/[^/]+\/ask$/.test(new URL(url).pathname);
 
-async function journey(page, useClock = false) {
+async function journey(page, { useClock = false, enterDocent = true } = {}) {
   page.setDefaultTimeout(10000);
   const button = name => page.getByRole('button', { name, exact: true });
   const input = page.getByRole('textbox', { name: '질문 입력' });
@@ -61,8 +61,10 @@ async function journey(page, useClock = false) {
   await button('관람 시작하기').click();
   await artwork(titles[0]).waitFor();
   const before = await visit();
-  await button('이 부분 더 알아보기').click();
-  await page.locator('.chat-artwork').getByText(titles[0], { exact: true }).waitFor();
+  if (enterDocent) {
+    await button('이 부분 더 알아보기').click();
+    await page.locator('.chat-artwork').getByText(titles[0], { exact: true }).waitFor();
+  }
   return { button, input, send, chat, askRequests, pageErrors, respondTo, visit, artwork, recommendations, titles, before };
 }
 
@@ -72,7 +74,7 @@ async function inspectJourney(browser, status, code) {
   const page = await newPage(browser);
   try {
     const { button, input, send, chat, askRequests, pageErrors, respondTo, visit, artwork, recommendations, titles, before } =
-      await journey(page, status === 429);
+      await journey(page, { useClock: status === 429 });
     const first = '이 작품은 어디부터 보면 좋을까요?';
     await input.fill(first);
     const firstResponse = await respondTo(() => send.click());
@@ -107,7 +109,7 @@ async function inspectJourney(browser, status, code) {
       assert.equal(await retry.isDisabled(), true);
       assert.equal(askRequests.length, 2);
       await page.clock.fastForward(2000);
-      await retry.waitFor();
+      await button('다시 시도').and(page.locator(':enabled')).waitFor();
       assert.equal(await retry.isEnabled(), true);
       assert.equal(await input.inputValue(), draft);
       assert.equal(askRequests.length, 2, 'retry requires a user action');
@@ -151,6 +153,7 @@ async function inspectJourney(browser, status, code) {
       assert.equal(await input.inputValue(), refreshDraft);
       assert.equal(await send.isDisabled(), true);
       await page.clock.fastForward(31000);
+      await send.and(page.locator(':enabled')).waitFor();
       assert.equal(await send.isEnabled(), true);
       assert.equal(askRequests.length, 4);
       const resumed = await respondTo(() => send.click());
@@ -354,13 +357,147 @@ async function inspectArtworkChange(browser) {
   }
 }
 
+async function inspectEntryContexts(browser) {
+  const page = await newPage(browser);
+  let restoreArtwork;
+  try {
+    const { button, input, send, chat, recommendations, titles, artwork, respondTo, before, askRequests, pageErrors } =
+      await journey(page, { enterDocent: false });
+    const adminPassword = process.env.ARTI_BOOTSTRAP_PASSWORD;
+    assert.ok(adminPassword, 'set the synthetic admin password');
+    const login = await page.request.post('/api/admin/login', {
+      data: { id: 'docent-race-admin', password: adminPassword },
+    });
+    assert.equal(login.status(), 200);
+    const headers = { 'X-Admin-Token': (await login.json()).token };
+    const artworkId = recommendations[0];
+    const path = '/api/admin/artworks/' + artworkId;
+    const current = await page.request.get(path, { headers });
+    assert.equal(current.status(), 200);
+    const original = await current.json();
+    const fixtureId = randomUUID();
+    const selectedQuestion = '합성 관찰 질문 ' + fixtureId;
+    const confirmedHint = '합성 힌트 · 화면 왼쪽을 살펴보세요.';
+    const summary = '합성 쉬운 요약 · 파란 바탕과 노란 원을 함께 보세요.';
+    assert.equal(original.reviewStatus, 'approved');
+    const updated = await page.request.put(path, {
+      headers,
+      data: {
+        ...original,
+        guidedLooking: ['합성 첫 관찰 질문', selectedQuestion],
+        guidedHints: ['합성 첫 힌트', confirmedHint],
+        guideStatus: 'confirmed',
+        summary,
+        summaryStatus: 'confirmed',
+      },
+    });
+    assert.equal(updated.status(), 200);
+    const work = await updated.json();
+    restoreArtwork = async () => {
+      const restored = await page.request.put(path, { headers, data: { ...original, version: work.version } });
+      assert.equal(restored.status(), 200);
+    };
+    assert.equal(work.reviewStatus, 'approved');
+    assert.equal(work.sourceVersion, original.sourceVersion);
+    assert.ok(work.guideRevision > original.guideRevision);
+    assert.ok(work.summaryRevision > original.summaryRevision);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await artwork(titles[0]).waitFor();
+
+    const expectedHistory = [];
+    const verifyRetry = async ({ action, question, draft, remains, entry, revision, evidence }) => {
+      const requestCount = askRequests.length;
+      const failed = await respondTo(action);
+      assert.equal(failed.status(), 502);
+      assert.equal((await failed.json()).code, 'PROVIDER_ERROR');
+      const retry = button('다시 시도');
+      await retry.waitFor();
+      assert.equal(await input.inputValue(), draft);
+      assert.equal(await chat.locator('.bubble.user').count(), expectedHistory.length / 2);
+      assert.equal(askRequests.length, requestCount + 1);
+      const recovered = await respondTo(() => retry.click());
+      assert.equal(recovered.status(), 200);
+      assert.equal(new URL(recovered.url()).pathname, `/api/artworks/${artworkId}/ask`);
+      const payload = failed.request().postDataJSON();
+      assert.deepEqual(payload, {
+        question, entryContext: entry, visitId: before.visitId, history: expectedHistory,
+      });
+      assert.deepEqual(recovered.request().postDataJSON(), payload);
+      const reply = await recovered.json();
+      assert.equal(reply.answer, '합성 근거 · ' + evidence);
+      assert.equal(reply.mode, 'llm');
+      assert.deepEqual(reply.sourceRefs, [{
+        artworkId, kind: entry.kind, revision, sourceVersion: work.sourceVersion,
+      }]);
+      await chat.locator('.bubble.user').filter({ hasText: question }).waitFor();
+      expectedHistory.push({ role: 'user', text: question }, { role: 'assistant', text: reply.answer });
+      assert.equal(await chat.locator('.bubble.user').count(), expectedHistory.length / 2);
+      assert.equal(await input.inputValue(), remains);
+      assert.equal(askRequests.length, requestCount + 2);
+    };
+
+    const guideEntry = { tab: 'guided', kind: 'guide', contentVersion: work.contentVersion, questionIndex: 1 };
+    const guideQuestion = `[합성 502 ${randomUUID()} 시험] 방금 본 색에 관해 더 알고 싶어요.`;
+    await page.getByRole('tab', { name: '관람가이드' }).click();
+    const selected = page.locator('.guided-list li').filter({ hasText: selectedQuestion });
+    await selected.getByRole('button', { name: '힌트 보기' }).click();
+    await selected.getByText(confirmedHint, { exact: false }).waitFor();
+    await button('2번 질문으로 대화하기').click();
+    await page.getByText(selectedQuestion, { exact: true }).waitFor();
+    await input.fill(guideQuestion);
+    await verifyRetry({
+      action: () => send.click(), question: guideQuestion, draft: guideQuestion, remains: '',
+      entry: guideEntry, revision: work.guideRevision, evidence: selectedQuestion,
+    });
+    console.log('PASS 관람가이드 2번 질문 · 동일 질문과 가이드 리비전');
+
+    const hintQuestion = '이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.';
+    const hintDraft = '힌트를 읽고 이어서 보낼 방문자 초안';
+    await input.fill(hintDraft);
+    await verifyRetry({
+      action: () => button('힌트 받기').click(), question: hintQuestion, draft: hintDraft, remains: hintDraft,
+      entry: guideEntry, revision: work.guideRevision, evidence: selectedQuestion,
+    });
+    await button('뒤로가기').click();
+    await artwork(titles[0]).waitFor();
+    await selected.getByText(confirmedHint, { exact: false }).waitFor();
+    console.log('PASS AI 힌트 · 동일 질문과 가이드 리비전 · 별도 입력 초안 보존');
+
+    await page.getByRole('tab', { name: '작품 해설' }).click();
+    await button('AI 요약 보기').click();
+    await page.getByText(summary, { exact: true }).waitFor();
+    await button('이 부분 더 알아보기').click();
+    assert.equal(await input.inputValue(), hintDraft);
+    const summaryQuestion = `[합성 502 ${randomUUID()} 시험] 이 요약을 조금 더 쉽게 설명해 주세요.`;
+    const summaryDraft = '  ' + summaryQuestion + '  ';
+    await input.fill(summaryDraft);
+    await verifyRetry({
+      action: () => send.click(), question: summaryQuestion, draft: summaryDraft, remains: '',
+      entry: { tab: 'desc', kind: 'summary', contentVersion: work.contentVersion },
+      revision: work.summaryRevision, evidence: summary,
+    });
+    await button('뒤로가기').click();
+    await page.getByText(summary, { exact: true }).waitFor();
+    await button('다음 작품 안내').click();
+    await button('2번 작품 감상하기').click();
+    await artwork(titles[1]).waitFor();
+    assert.deepEqual(pageErrors, []);
+    console.log('PASS 쉬운 요약 · 동일 질문과 요약 리비전 · 관람 이어가기');
+  } finally {
+    try { await restoreArtwork?.(); }
+    finally { await page.close(); }
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const checks = process.env.ARTI_DOCENT_RACE_TESTS === '1'
       ? [['작품 자료 갱신', inspectContentUpdate], ['다음 작품 이동', inspectArtworkChange]]
-      : [[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
-        .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]);
+      : process.env.ARTI_DOCENT_ENTRY_TESTS === '1'
+        ? [['관람가이드·힌트·쉬운 요약', inspectEntryContexts]]
+        : [[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
+          .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]);
     for (const [name, check] of checks) {
       try { await check(browser); }
       catch (error) {

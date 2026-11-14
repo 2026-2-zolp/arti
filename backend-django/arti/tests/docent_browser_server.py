@@ -16,6 +16,9 @@ from django.test import override_settings
 from arti.tests.test_provider import endpoint
 
 
+GUIDE_HINT_REQUEST = '이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.'
+
+
 def serve():
     if settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES:
         raise RuntimeError('Use an isolated ARTI test database with synthetic fixtures.')
@@ -23,6 +26,7 @@ def serve():
     pending = {}
     faults = {'502': 500, '429': 429, '504': 200}
     races = os.environ.get('ARTI_DOCENT_RACE_TESTS') == '1'
+    entries = os.environ.get('ARTI_DOCENT_ENTRY_TESTS') == '1'
     gates = {}
     gates_lock = Lock()
 
@@ -35,12 +39,17 @@ def serve():
         wire = requests[attempt - 1]
         prompt = json.loads(wire['body']['messages'][1]['content'])
         question = prompt.get('question') or ''
+        entry = prompt.get('entry') or {}
         parts = question.split(' ', 3)
         fault = parts[1] if len(parts) == 4 and parts[0] == '[합성' else ''
+        retry_key = question
+        if entries and question == GUIDE_HINT_REQUEST:
+            fault = '502'
+            retry_key = question, entry.get('question')
         if fault in faults:
-            previous = pending.pop(question, None)
+            previous = pending.pop(retry_key, None)
             if previous is None:
-                pending[question] = wire['raw']
+                pending[retry_key] = wire['raw']
                 if fault == '504':
                     sleep(1.5)  # The real HTTP read exceeds the shortened adapter timeout.
                 else:
@@ -49,6 +58,8 @@ def serve():
                 return 400, b'the provider retry did not preserve the original prompt'
 
         text = '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>'
+        if entries and entry.get('kind') in ('guide', 'summary'):
+            text = '합성 근거 · ' + (entry.get('question') or entry['text'])
         if races and len(parts) == 4 and parts[:2] == ['[합성', '대기']:
             started, release = gate_for(parts[2])
             started.set()
