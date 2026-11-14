@@ -12,14 +12,14 @@ const works = ['a', 'b', 'c'].map((id, i) => ({
 }));
 const recommendations = works.map(({ id }) => ({ artworkId: id, matchedTags: ['warm'] }));
 
-async function fixture(browser, width, member, current = 0, seedRecommendations = true) {
+async function fixture(browser, width, member, current = 0, seedRecommendations = true, elapsedMinutes = 1) {
   const page = await browser.newPage({ viewport: { width, height: 812 } });
   page.setDefaultTimeout(8000);
   const requests = [];
   const errors = [];
   const failures = new Map();
   page.on('pageerror', error => errors.push(error.message));
-  await page.addInitScript(({ visitId, recommendations, user, current }) => {
+  await page.addInitScript(({ visitId, recommendations, user, current, elapsedMinutes }) => {
     let dwellNow = 0;
     performance.now = () => dwellNow;
     window.advanceDwell = ms => { dwellNow += ms; };
@@ -32,9 +32,9 @@ async function fixture(browser, width, member, current = 0, seedRecommendations 
       visitId, ownerId: user?.id ?? null, exhibitionId: 'visit-test', requestGeneration: 1,
       duration: '30m', tastes: ['warm'], recommendations, current,
       viewed: recommendations.slice(0, current).map(rec => rec.artworkId),
-      startedAt: current > 0 ? Date.now() - 60000 : null,
+      startedAt: current > 0 ? Date.now() - elapsedMinutes * 60000 : null,
     }));
-  }, { visitId: randomUUID(), recommendations: seedRecommendations ? recommendations : [], user: member ? user : null, current });
+  }, { visitId: randomUUID(), recommendations: seedRecommendations ? recommendations : [], user: member ? user : null, current, elapsedMinutes });
   await page.route(base + '/api/**', async route => {
     const { pathname } = new URL(route.request().url());
     if (failures.has(pathname)) return route.fulfill({ status: 503, json: { error: failures.get(pathname) } });
@@ -316,6 +316,52 @@ async function visitHistory(browser) {
   } finally { await page.close(); }
 }
 
+async function recoverDocentDraft(browser) {
+  const { page, button, artwork, errors } = await fixture(browser, 360, false);
+  const question = '가운데 색이 먼저 보이는 이유가 뭔가요?';
+  const input = page.getByRole('textbox', { name: '질문 입력' });
+  const sent = [];
+  let version = 1;
+  await page.route(base + '/api/artworks/a', route => route.fulfill({ json: { ...works[0], contentVersion: version } }));
+  await page.route(base + '/api/artworks/a/ask', route => {
+    sent.push(route.request().postDataJSON());
+    if (sent.length === 1) return route.fulfill({ json: { answer: '이전 자료의 합성 답변', mode: 'llm', sourceRefs: [] } });
+    if (sent.length === 2) {
+      version = 2;
+      return route.fulfill({ status: 409, json: { error: '작품 자료 변경', code: 'CONTENT_CHANGED' } });
+    }
+    return route.fulfill({ json: { answer: '새 자료의 합성 답변', mode: 'llm', sourceRefs: [] } });
+  });
+  try {
+    await page.goto(base + path + '/artwork', { waitUntil: 'domcontentloaded' });
+    await button('이 부분 더 알아보기').click();
+    await input.fill('첫 질문');
+    await button('보내기').click();
+    await page.getByText('이전 자료의 합성 답변', { exact: false }).waitFor();
+    await input.fill(question);
+    await button('보내기').click();
+    await button('작품으로 돌아가기').click();
+    await artwork(1).waitFor();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await button('이 부분 더 알아보기').click();
+    assert.equal(await input.inputValue(), question);
+    await button('보내기').click();
+    await page.getByText('새 자료의 합성 답변', { exact: false }).waitFor();
+    assert.equal(sent[2].question, question);
+    assert.equal(sent[2].entryContext.contentVersion, 2);
+    assert.deepEqual(sent[2].history, []);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await input.inputValue(), '');
+    await input.fill('이 작품에만 남길 질문');
+    await button('뒤로가기').click();
+    await button('다음 작품 안내').click();
+    await button('2번 작품 감상하기').click();
+    await button('이 부분 더 알아보기').click();
+    assert.equal(await input.inputValue(), '');
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
 async function recoverPendingReceipt(browser, discard) {
   const { page, button, requests, errors } = await fixture(browser, 360, true, 3);
   let attempts = 0;
@@ -357,6 +403,24 @@ async function recoverPendingReceipt(browser, discard) {
       assert.deepEqual(submitted, [submitted[0], submitted[0]], '원래 방문 ID와 저장 본문으로 재시도');
       assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
     }
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
+async function saveLongVisit(browser) {
+  const { page, requests, errors } = await fixture(browser, 360, true, 3, true, 48 * 60);
+  await page.route(base + '/api/visits', route => {
+    const record = route.request().postDataJSON();
+    if (record.durationMin <= 1440) return route.fallback();
+    return route.fulfill({ status: 400, json: { error: '관람 기록 입력을 확인해 주세요.', code: 'VALIDATION_ERROR' } });
+  });
+  try {
+    await page.goto(base + path + '/receipt', { waitUntil: 'domcontentloaded' });
+    await page.getByText('관람기록에 저장되었어요').waitFor();
+    await page.getByText('1440분', { exact: true }).waitFor();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].durationMin, 1440);
+    assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
     assert.deepEqual(errors, []);
   } finally { await page.close(); }
 }
@@ -448,8 +512,10 @@ async function completeVisit(browser, member) {
       ['취향 조사·확인, 관람 시간, 마이페이지·과거 영수증 오류 복구', recoverNewErrorCards],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
+      ['도슨트 자료 변경 후 미전송 질문 복구', recoverDocentDraft],
       ['세션 만료 후 같은 계정의 미저장 기록 복구', browser => recoverPendingReceipt(browser, false)],
       ['버린 미저장 기록의 뒤로가기 재저장 차단', browser => recoverPendingReceipt(browser, true)],
+      ['하루 지난 관람의 영수증 저장', saveLongVisit],
     ]) {
       try { await check(browser); console.log(`PASS ${name}`); }
       catch (error) { console.error(`FAIL ${name}`, error.message); process.exitCode = 1; }
