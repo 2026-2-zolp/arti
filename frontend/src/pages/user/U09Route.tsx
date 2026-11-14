@@ -12,6 +12,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork } from '../../types';
@@ -46,9 +47,10 @@ export default function U09Route() {
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
         {error ? (
-          <p className="error-text" role="alert">
-            {error} <button onClick={reload}>다시 불러오기</button>
-          </p>
+          <div className="notice-card is-err notice-center screen-center" role="alert">
+            <p className="notice-body">지도 정보를 불러오지 못했어요.{errorDetail(error)}</p>
+            <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          </div>
         ) : <Spinner />}
       </MobileShell>
     );
@@ -62,9 +64,10 @@ export default function U09Route() {
   if (!target) {
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
-        <p className="error-text" role="alert">
-          추천 작품 정보를 불러올 수 없어요. <button onClick={reload}>다시 불러오기</button>
-        </p>
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
       </MobileShell>
     );
   }

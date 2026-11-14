@@ -11,6 +11,7 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useVisit } from '../../store/VisitContext';
 import { exhibitionPath, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Exhibition } from '../../types';
@@ -97,7 +98,13 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
       }
     >
       {loading && <Spinner />}
-      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><a href="/">전시 목록으로</a></p>}
+      {error && (
+        <div className="notice-card is-err" role="alert">
+          <p className="notice-body">전시 정보를 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          <a className="btn ghost block" href="/">전시 목록으로</a>
+        </div>
+      )}
       {ex && (
         <div className="current-ex">
           <span className="eyebrow">현재 전시</span>
@@ -128,7 +135,13 @@ function ExhibitionPicker() {
     <StartShell footer={<p className="footnote">전시장 입구의 QR로 접속하면 바로 시작할 수 있어요</p>}>
       <span className="eyebrow ex-list-head">진행 중인 전시</span>
       {loading && <Spinner />}
-      {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><a href="/">전시 목록으로</a></p>}
+      {/* 이미 전시 목록 화면이라 [전시 목록으로]는 두지 않는다(같은 화면이 다시 열리기만 함). */}
+      {error && (
+        <div className="notice-card is-err" role="alert">
+          <p className="notice-body">전시 목록을 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
+      )}
       {data && running.length === 0 && <p className="muted center">지금 진행 중인 전시가 없어요.</p>}
       <ul className="history-list">
         {running.map((ex) => (

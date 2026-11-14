@@ -22,6 +22,7 @@ import type {
 } from '../types';
 import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
+import { GENERIC_ERROR } from '../lib/errorText';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -106,7 +107,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const wait=Number(res.headers.get('Retry-After'));
-    throw new ApiError(data?.error ?? '요청을 처리하지 못했어요.', res.status, data?.code,
+    throw new ApiError(data?.error ?? GENERIC_ERROR, res.status, data?.code,
       Number.isInteger(wait) && wait>0 && wait<=300 ? wait : undefined);
   }
   const remember = (item: { id?: string; version?: number; exhibitionId?: string }) => {
