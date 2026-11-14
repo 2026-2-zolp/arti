@@ -44,6 +44,7 @@ export type Action =
   | ({ type: 'addDwell' } & ArtworkDwell)
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | ({ type: 'completeCurrent' } & ArtworkDwell)
+  | ({ type: 'skipCurrent' } & Omit<ArtworkDwell, 'seconds'>)
   | { type: 'resetVisit' }
   | { type: 'discardVisit'; visitId: string };
 
@@ -138,9 +139,11 @@ export function reducer(s: VisitState, a: Action): VisitState {
       return { ...s, reactions, reactionReasons };
     }
     case 'addDwell':
+    case 'skipCurrent':
     case 'completeCurrent': {
       const rec = s.recommendations[s.current];
       if (a.visitId !== s.visitId || a.generation !== s.requestGeneration || rec?.artworkId !== a.artworkId) return s;
+      if (a.type === 'skipCurrent') return { ...s, current: s.current + 1 };
       const seconds = Math.min(86400, (s.dwell[a.artworkId] ?? 0) + a.seconds);
       const dwell = { ...s.dwell, [a.artworkId]: seconds };
       if (a.type === 'addDwell') return { ...s, dwell };

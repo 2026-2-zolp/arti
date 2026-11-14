@@ -18,6 +18,8 @@ async function fixture(browser, width, member, current = 0, seedRecommendations 
   const requests = [];
   const errors = [];
   const failures = new Map();
+  const hidden = new Set();
+  const unplaced = new Set();
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(({ visitId, recommendations, user, current, elapsedMinutes }) => {
     let dwellNow = 0;
@@ -42,11 +44,13 @@ async function fixture(browser, width, member, current = 0, seedRecommendations 
     if (pathname === '/api/exhibitions/visit-test') {
       return route.fulfill({ json: { id: 'visit-test', title: '합성 전시', rooms: [], entrance: { x: 5, y: 40 } } });
     }
-    if (pathname === '/api/artworks') return route.fulfill({ json: works });
+    if (pathname === '/api/artworks') return route.fulfill({
+      json: works.filter(work => !hidden.has(work.id)).map(work => unplaced.has(work.id) ? { ...work, position: null } : work),
+    });
     if (pathname === '/api/recommendations') return route.fulfill({ json: recommendations });
     if (pathname.endsWith('/tag-coverage')) return route.fulfill({ json: { warm: 3 } });
     const work = works.find(work => `/api/artworks/${work.id}` === pathname);
-    if (work) return route.fulfill({ json: work });
+    if (work && !hidden.has(work.id)) return route.fulfill({ json: work });
     if (pathname === '/api/visits' && route.request().method() === 'POST') {
       const record = route.request().postDataJSON();
       requests.push(record);
@@ -63,7 +67,58 @@ async function fixture(browser, width, member, current = 0, seedRecommendations 
       resolve();
     }));
   }), ms);
-  return { page, button, artwork, requests, errors, failures, spend };
+  return { page, button, artwork, requests, errors, failures, hidden, unplaced, spend };
+}
+
+async function changedExhibition(browser, fromArtwork) {
+  const { page, button, artwork, requests, hidden, unplaced, spend } = await fixture(browser, 360, true);
+  const visit = () => page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
+  try {
+    await page.goto(base + path + '/route', { waitUntil: 'domcontentloaded' });
+    await button('관람 시작하기').click();
+    await artwork(1).waitFor();
+    await spend(4000);
+    if (!fromArtwork) {
+      ['a', 'b', 'c'].forEach(id => unplaced.add(id));
+      hidden.add('b');
+    }
+    await button('다음 작품 안내').click();
+    if (fromArtwork) {
+      await button('2번 작품 감상하기').waitFor();
+      hidden.add('b');
+      await button('2번 작품 감상하기').click();
+      await page.getByText('작품 정보를 불러오지 못했어요.', {exact: false}).waitFor();
+    } else {
+      await page.getByText('추천 작품 정보를 불러올 수 없어요.', {exact: false}).waitFor();
+      await button('뒤로가기').click();
+      await button('2D 지도에서 경로 보기').click();
+    }
+    await button('다시 시도하기').click();
+    await button('이 작품 건너뛰기').click();
+    await button('3번 작품 감상하기').waitFor();
+    await page.locator('.route-details summary').click();
+    await page.locator('.route-list').getByText('건너뜀', {exact: true}).waitFor();
+    if (!fromArtwork) {
+      await page.getByText('작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.').waitFor();
+      assert.equal(await page.locator('.fm-route.active').count(), 0);
+    }
+    const before = await visit();
+    assert.equal(before.current, 2);
+    assert.deepEqual(before.viewed, ['a']);
+    assert.equal(before.dwell.a, 4);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await button('3번 작품 감상하기').click();
+    await artwork(3).waitFor();
+    await spend(2000);
+    await button('관람 마치기').click();
+    await page.getByText('관람기록에 저장되었어요').waitFor();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].visitId, before.visitId);
+    assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'c']);
+    assert.deepEqual(requests[0].dwell, {a: 4, c: 2});
+  } finally {
+    await page.close();
+  }
 }
 
 async function recoverErrors(browser, member) {
@@ -516,6 +571,8 @@ async function completeVisit(browser, member) {
       ['세션 만료 후 같은 계정의 미저장 기록 복구', browser => recoverPendingReceipt(browser, false)],
       ['버린 미저장 기록의 뒤로가기 재저장 차단', browser => recoverPendingReceipt(browser, true)],
       ['하루 지난 관람의 영수증 저장', saveLongVisit],
+      ['도면 교체와 비공개 작품 뒤로가기·재시도·건너뛰기', browser => changedExhibition(browser, false)],
+      ['지도 이후 비공개로 바뀐 작품 건너뛰기', browser => changedExhibition(browser, true)],
     ]) {
       try { await check(browser); console.log(`PASS ${name}`); }
       catch (error) { console.error(`FAIL ${name}`, error.message); process.exitCode = 1; }

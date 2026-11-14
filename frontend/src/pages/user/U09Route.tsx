@@ -24,7 +24,7 @@ export default function U09Route() {
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
-  const { recommendations, current, startedAt } = state;
+  const { recommendations, current, viewed, startedAt } = state;
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsync(
@@ -64,27 +64,32 @@ export default function U09Route() {
   // 지도 위치가 없는 작품(관람 도중 위치가 지워진 경우 등)은 마커만 빼고 목록에는 '위치 미등록'으로 남긴다.
   const target = byId.get(recommendations[current].artworkId);
   if (!target) {
+    const skip = () => {
+      dispatch({ type: 'skipCurrent', visitId: state.visitId, generation: state.requestGeneration, artworkId: recommendations[current].artworkId });
+      navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { fromRecommend } });
+    };
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
         <div className="notice-card is-err notice-center screen-center" role="alert">
           <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          <button className="btn ghost block" onClick={skip}>이 작품 건너뛰기</button>
         </div>
       </MobileShell>
     );
   }
 
-  const previousId = recommendations[current - 1]?.artworkId;
+  const previousId = viewed.at(-1);
   const previous = previousId ? byId.get(previousId) : undefined;
-  const from = current === 0 ? ex.entrance : previous?.position;
+  const from = previousId ? previous?.position : ex.entrance;
   const roomName = (w: Artwork) => ex.rooms.find((r) => r.id === w.roomId)?.name ?? '';
   const orderOf = (id: string) => recommendations.findIndex((r) => r.artworkId === id) + 1;
 
   const markers: MapMarker[] = recommendations.flatMap((r, i) => {
     const w = byId.get(r.artworkId);
-    if (!w?.position) return [];
-    const state: MapMarker['state'] = i < current ? 'done' : i === current ? 'current' : focusId === w.id ? 'selected' : 'upcoming';
-    return [{ id: w.id, label: String(i + 1), point: w.position, title: w.title, state }];
+    if (!w?.position || (i < current && !viewed.includes(r.artworkId))) return [];
+    const markerState: MapMarker['state'] = i < current ? 'done' : i === current ? 'current' : focusId === w.id ? 'selected' : 'upcoming';
+    return [{ id: w.id, label: String(i + 1), point: w.position, title: w.title, state: markerState }];
   });
 
   const focus = focusId ? byId.get(focusId) : null;
@@ -94,6 +99,7 @@ export default function U09Route() {
   const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
   const stops = recommendations.map((r) => byId.get(r.artworkId));
   const route = mapOpen ? [ex.entrance, ...stops.flatMap((stop, i) => {
+    if (i < current && !viewed.includes(recommendations[i].artworkId)) return [];
     if (!stop?.position) return [null];
     const prior = stops[i - 1];
     const start = i === 0 ? ex.entrance : prior?.position;
@@ -132,14 +138,14 @@ export default function U09Route() {
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (
-            <span key={r.artworkId} className={i < current ? 'done' : i === current ? 'cur' : ''} />
+            <span key={r.artworkId} className={viewed.includes(r.artworkId) ? 'done' : i === current ? 'cur' : ''} />
           ))}
         </div>
       </div>
 
       <div className="next-card">
         {current > 0 && (
-          <p className="muted small">출발 · {current}번 {previous?.title ?? '직전 작품'}{previous ? ` · ${locationLabel(previous)}` : ''}</p>
+          <p className="muted small">출발 · {previous ? `${orderOf(previous.id)}번 ${previous.title} · ${locationLabel(previous)}` : previousId ? '직전 감상 작품' : '입구'}</p>
         )}
         <div className="next-artwork">
           <ArtImage key={target.id} className="next-thumb" seed={target.id} palette={target.palette}
@@ -159,7 +165,7 @@ export default function U09Route() {
           markers={mapOpen ? markers : focusedMarkers}
           route={route}
           activeLeg={activeLeg}
-          showEntrance={mapOpen || current === 0}
+          showEntrance={mapOpen || !previousId}
           showCompletedNumbers={!mapOpen}
           aspect={0.95}
           onMarkerClick={mapOpen ? (id) => setFocusId((f) => (f === id ? null : id)) : undefined}
@@ -181,12 +187,13 @@ export default function U09Route() {
         <ol className="route-list">
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);
+            const completed = viewed.includes(r.artworkId);
             return (
-              <li key={r.artworkId} aria-current={i === current ? 'step' : undefined} className={i < current ? 'done' : i === current ? 'cur' : ''}>
-                <span className="route-num" aria-hidden="true">{i < current ? '✓' : i + 1}</span>
-                {i < current && <span className="sr-only">감상 완료</span>}
+              <li key={r.artworkId} aria-current={i === current ? 'step' : undefined} className={completed ? 'done' : i === current ? 'cur' : ''}>
+                <span className="route-num" aria-hidden="true">{completed ? '✓' : i + 1}</span>
+                {completed && <span className="sr-only">감상 완료</span>}
                 <span className="route-title">{w ? `${w.title}${w.year ? `(${w.year})` : ''}` : '작품 정보 없음'}</span>
-                <span className="muted small">{w ? locationLabel(w) : ''}</span>
+                <span className="muted small">{i < current && !completed ? '건너뜀' : w ? locationLabel(w) : ''}</span>
               </li>
             );
           })}
