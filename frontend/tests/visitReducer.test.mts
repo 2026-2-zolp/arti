@@ -43,6 +43,15 @@ test('same duration preserves recommendations, visit ID and recorded reactions',
   assert.equal(next.dwell.a,42);
 });
 
+test('discarding a pending receipt only clears its own active visit', () => {
+  const s = { ...init(), current: 1, viewed: ['a'] };
+  assert.equal(reducer(s, { type: 'discardVisit', visitId: 'older-visit' }), s);
+  const cleared = reducer(s, { type: 'discardVisit', visitId: s.visitId });
+  assert.notEqual(cleared.visitId, s.visitId);
+  assert.equal(cleared.current, 0);
+  assert.deepEqual(cleared.viewed, []);
+});
+
 test('repeated or stale artwork completion cannot skip the next artwork', () => {
   const initial = init();
   const state = reducer(initial, {

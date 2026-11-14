@@ -316,6 +316,51 @@ async function visitHistory(browser) {
   } finally { await page.close(); }
 }
 
+async function recoverPendingReceipt(browser, discard) {
+  const { page, button, requests, errors } = await fixture(browser, 360, true, 3);
+  let attempts = 0;
+  const submitted = [];
+  await page.route(base + '/api/**', async route => {
+    const { pathname } = new URL(route.request().url());
+    if (pathname === '/api/visits' && route.request().method() === 'POST') {
+      const body = route.request().postDataJSON();
+      submitted.push(body);
+      if (++attempts === 1) return route.fulfill({ status: discard ? 503 : 401, json: { error: '합성 저장 실패' } });
+      return route.fallback();
+    }
+    if (pathname === '/api/auth/login') return route.fulfill({ json: { user, token: 'replacement-token' } });
+    if (pathname === '/api/auth/kakao/status') return route.fulfill({ json: { enabled: false, linked: false } });
+    if (pathname === '/api/users/test-member/visits') return route.fulfill({ json: requests.map(record => ({ ...record, id: record.visitId })) });
+    return route.fallback();
+  });
+  try {
+    await page.goto(base + path + '/receipt', { waitUntil: 'domcontentloaded' });
+    await page.getByText(discard ? '관람기록을 저장하지 못했어요' : '로그인이 만료돼 저장하지 못했어요', { exact: true }).waitFor();
+    assert.equal(submitted.length, 1);
+    if (discard) {
+      await page.goto(base + '/mypage', { waitUntil: 'domcontentloaded' });
+      await button('버리기').click();
+      await button('확인하고 계속').click();
+      await button('기록 확인 후 복구').waitFor({ state: 'hidden' });
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await page.waitForURL('**/visit-test', { waitUntil: 'domcontentloaded' });
+      assert.equal(submitted.length, 1, '버린 기록은 뒤로가기로 다시 저장되지 않음');
+    } else {
+      await button('로그인하고 복구하기').click();
+      await page.getByLabel('이메일', { exact: true }).fill(user.email);
+      await page.getByLabel('비밀번호', { exact: true }).fill('synthetic-password');
+      await button('로그인').click();
+      await button('기록 확인 후 복구').click();
+      await button('확인하고 계속').click();
+      await page.getByText('미저장 기록을 복구했어요.', { exact: true }).waitFor();
+      assert.equal(requests.length, 1);
+      assert.deepEqual(submitted, [submitted[0], submitted[0]], '원래 방문 ID와 저장 본문으로 재시도');
+      assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
+    }
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
 async function prematureReceipt(browser, current) {
   const { page, button, requests, errors } = await fixture(browser, 360, true, current);
   try {
@@ -403,6 +448,8 @@ async function completeVisit(browser, member) {
       ['취향 조사·확인, 관람 시간, 마이페이지·과거 영수증 오류 복구', recoverNewErrorCards],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
+      ['세션 만료 후 같은 계정의 미저장 기록 복구', browser => recoverPendingReceipt(browser, false)],
+      ['버린 미저장 기록의 뒤로가기 재저장 차단', browser => recoverPendingReceipt(browser, true)],
     ]) {
       try { await check(browser); console.log(`PASS ${name}`); }
       catch (error) { console.error(`FAIL ${name}`, error.message); process.exitCode = 1; }
