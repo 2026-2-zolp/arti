@@ -19,7 +19,7 @@ from arti.tests.test_provider import endpoint
 GUIDE_HINT_REQUEST = '이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.'
 
 
-def serve():
+def serve(host='0.0.0.0'):
     if settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES:
         raise RuntimeError('Use an isolated ARTI test database with synthetic fixtures.')
 
@@ -103,6 +103,6 @@ def serve():
         ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-browser-only',
         OPENAI_MODEL='synthetic-browser-only', ARTI_LLM_MODELS={}, ARTI_MODEL_SERVICE_URL='',
     ), endpoint(respond=respond) as requests, patch('arti.llm.TIMEOUT_SECONDS', 22 if races else 1), make_server(
-        '0.0.0.0', 8000, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
+        host, 8000, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         server.serve_forever()

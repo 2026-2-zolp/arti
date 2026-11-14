@@ -1,13 +1,23 @@
 /** 실제 Django API와 루프백 제공자를 거쳐 관람 중 도슨트 장애를 검증합니다. */
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 
 const baseURL = process.env.ARTI_REVIEW_BASE || 'http://127.0.0.1:5239';
-assert.equal(new URL(baseURL).hostname, '127.0.0.1', 'use a local preview');
 const exhibition = '/exhibitions/fixture-ex01';
 const answer = '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>';
 const isAsk = url => /^\/api\/artworks\/[^/]+\/ask$/.test(new URL(url).pathname);
+const requestIdFormat = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+const version = value => Number.isSafeInteger(value) && value > 0 ? value : null;
+
+let failureDetails = [];
+let evidenceReads = [];
+
+async function reportFailure() {
+  await Promise.allSettled(evidenceReads);
+  const entries = failureDetails.length ? failureDetails : [{ requestId: null, status: null, evidenceVersion: null }];
+  for (const entry of entries) console.error(JSON.stringify(entry));
+  process.exitCode = 1;
+}
 
 async function journey(page, { useClock = false, enterDocent = true } = {}) {
   page.setDefaultTimeout(10000);
@@ -68,7 +78,35 @@ async function journey(page, { useClock = false, enterDocent = true } = {}) {
   return { button, input, send, chat, askRequests, pageErrors, respondTo, visit, artwork, recommendations, titles, before };
 }
 
-const newPage = browser => browser.newPage({ baseURL, viewport: { width: 360, height: 812 }, reducedMotion: 'reduce' });
+async function newPage(browser) {
+  const page = await browser.newPage({ baseURL, viewport: { width: 360, height: 812 }, reducedMotion: 'reduce' });
+  const recordAttempt = (request, response) => {
+    if (!isAsk(request.url())) return;
+    const id = response?.headers()['x-request-id'];
+    const detail = {
+      requestId: requestIdFormat.test(id ?? '') ? id : null,
+      status: response?.status() ?? null,
+      evidenceVersion: { contentVersion: null, sourceVersion: null, revision: null },
+    };
+    failureDetails.push(detail);
+    try {
+      detail.evidenceVersion.contentVersion = version(request.postDataJSON()?.entryContext?.contentVersion);
+    } catch {
+      // A malformed request has no readable evidence version.
+    }
+    if (response?.ok()) {
+      evidenceReads.push(response.json().then(body => {
+        detail.evidenceVersion.sourceVersion = version(body?.sourceRefs?.[0]?.sourceVersion);
+        detail.evidenceVersion.revision = version(body?.sourceRefs?.[0]?.revision);
+      }).catch(() => {}));
+    }
+  };
+  page.on('response', response => recordAttempt(response.request(), response));
+  page.on('requestfailed', async request => {
+    if (isAsk(request.url()) && !await request.response()) recordAttempt(request);
+  });
+  return page;
+}
 
 async function inspectJourney(browser, status, code) {
   const page = await newPage(browser);
@@ -490,6 +528,8 @@ async function inspectEntryContexts(browser) {
 }
 
 (async () => {
+  assert.equal(new URL(baseURL).hostname, '127.0.0.1', 'use a local preview');
+  const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const checks = process.env.ARTI_DOCENT_RACE_TESTS === '1'
@@ -498,14 +538,14 @@ async function inspectEntryContexts(browser) {
         ? [['관람가이드·힌트·쉬운 요약', inspectEntryContexts]]
         : [[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
           .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]);
-    for (const [name, check] of checks) {
+    for (const [, check] of checks) {
+      failureDetails = [];
+      evidenceReads = [];
       try { await check(browser); }
-      catch (error) {
-        console.error(`FAIL ${name}`, error);
-        process.exitCode = 1;
-      }
+      catch { await reportFailure(); }
+      finally { failureDetails = []; evidenceReads = []; }
     }
   } finally {
     await browser.close();
   }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(reportFailure);

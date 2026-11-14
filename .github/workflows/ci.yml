@@ -81,6 +81,89 @@ jobs:
       - run: python manage.py migrate --noinput
       - run: python manage.py test arti.tests --noinput -v 2
 
+  docent-browser:
+    name: Docent Chrome (${{ matrix.suite }})
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [retry, artwork-change, guide-summary]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: arti
+          POSTGRES_USER: arti
+          POSTGRES_PASSWORD: ci-only-disposable-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U arti -d arti"
+          --health-interval 5s --health-timeout 5s --health-retries 15
+    env:
+      DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
+      ARTI_ENV: test
+      ALLOW_TEST_FIXTURES: 'true'
+      ARTI_TASTE_PROFILE_V2_ENABLED: 'true'
+      ARTI_LLM_PROVIDER: disabled
+      OPENAI_API_KEY: ''
+      ARTI_BOOTSTRAP_PASSWORD: ci-only-synthetic-docent-admin-42
+      PGDATABASE: arti
+      PGUSER: arti
+      PGPASSWORD: ci-only-disposable-password
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      MEDIA_ROOT: /tmp/arti-docent-media
+      VITE_API_TARGET: django
+      VITE_API_PROXY: http://127.0.0.1:8000
+      ARTI_REVIEW_BASE: http://127.0.0.1:5239
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend-django/requirements.lock
+      - run: npm --prefix frontend ci --ignore-scripts --no-audit --no-fund
+      - run: npm --prefix frontend run build
+      - run: python -m pip install -r backend-django/requirements.lock
+      - name: Load synthetic exhibition and administrator
+        working-directory: backend-django
+        run: |
+          python manage.py migrate --noinput
+          python manage.py load_test_fixture
+          python manage.py bootstrap_admin --login-id docent-race-admin --name 'Synthetic administrator'
+      - name: Run loopback Chrome regression
+        shell: bash
+        env:
+          ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
+          ARTI_DOCENT_ENTRY_TESTS: ${{ matrix.suite == 'guide-summary' && '1' || '0' }}
+        run: |
+          python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')" >/dev/null 2>&1 &
+          api_pid=$!
+          node frontend/node_modules/vite/bin/vite.js preview --config frontend/vite.config.ts --host 127.0.0.1 --port 5239 --strictPort >/dev/null 2>&1 &
+          frontend_pid=$!
+          trap 'kill "$api_pid" "$frontend_pid" 2>/dev/null || true' EXIT
+
+          for ((attempt = 0; attempt < 30; attempt++)); do
+            if [[ "$(curl --silent --fail --max-time 2 --output /dev/null --write-out '%header{x-arti-docent-mock}' "$ARTI_REVIEW_BASE/api/ready")" == 1 ]]; then
+              node frontend/tests/docentRetry.browser.cjs
+              exit
+            fi
+            kill -0 "$api_pid" "$frontend_pid" 2>/dev/null || break
+            sleep 1
+          done
+          printf '%s\n' '{"requestId":null,"status":null,"evidenceVersion":null}' >&2
+          exit 1
+
   model-contracts:
     name: Model service fake checks
     runs-on: ubuntu-24.04
