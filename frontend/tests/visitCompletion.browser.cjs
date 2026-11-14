@@ -193,14 +193,14 @@ async function recoverNewErrorCards(browser) {
     const visitId = await page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')).visitId);
     failures.delete('/api/taste-pool');
     await retry.click();
-    await button('조사 작품 0').click();
-    await button('조사 작품 2').waitFor();
+    await button('조사 작품 0 선택').click();
+    await button('조사 작품 2 선택').waitFor();
     failures.set('/api/taste-pool', generic);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await issue('취향 조사 작품을 불러오지 못했어요.');
     failures.delete('/api/taste-pool');
     await retry.click();
-    await button('조사 작품 2').waitFor();
+    await button('조사 작품 2 선택').waitFor();
     await page.getByRole('link', { name: '현재 관람으로 돌아가기' }).click();
     await button('2D 지도에서 경로 보기').click();
     await button('2번 작품 감상하기').waitFor();

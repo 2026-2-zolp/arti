@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -242,16 +243,16 @@ export default function U10Artwork() {
         <Spinner />
       ) : (
         <>
-          <div className={`art-frame ${fullscreen ? 'fullscreen' : ''}`}>
-            <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={fullscreen ? 3 / 4 : 3 / 2} />
-            <button
-              className="frame-btn"
-              aria-label={fullscreen ? '전체 화면 닫기' : '전체 화면'}
-              onClick={() => setFullscreen((f) => !f)}
-            >
-              <Icon name={fullscreen ? 'close' : 'expand'} size={18} />
+          <div className="art-frame">
+            <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={3 / 2} />
+            <button className="frame-btn" aria-label="전체 화면" onClick={() => setFullscreen(true)}>
+              <Icon name="expand" size={18} />
             </button>
           </div>
+          {/* 크게 보기: 작품 전체를 보여 주고 확대·축소·이동할 수 있다(U-05 비교 카드와 공통 화면). */}
+          {fullscreen && (
+            <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} onClose={() => setFullscreen(false)} />
+          )}
 
           <h2 className="art-title">{w.title}</h2>
           <p className="art-meta">
