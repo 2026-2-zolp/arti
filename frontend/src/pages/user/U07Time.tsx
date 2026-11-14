@@ -12,6 +12,7 @@ import type { VisitDuration } from '../../types';
 import { api } from '../../api/client';
 import { authSession, tasteScope } from '../../lib/tasteFlow';
 import { newVisitId } from '../../lib/visitScope';
+import { errorDetail } from '../../lib/errorText';
 
 /** 관람 시간을 선택하는 화면 */
 export default function U07Time() {
@@ -76,7 +77,7 @@ export default function U07Time() {
       }
     >
       <Lead title="얼마나 관람할 수 있나요?" desc="시간에 맞춰 추천 작품 수와 관람 순서를 정해 드려요." />
-      {error && <p role="alert">{error}</p>}
+      {error && <div className="notice-card is-err" role="alert"><p className="notice-body">관람 시간을 적용하지 못했어요.{errorDetail(error)}</p></div>}
 
       <div className="stack gap-12" role="radiogroup" aria-label="관람 시간">
         {DURATION_OPTIONS.map((o) => {
