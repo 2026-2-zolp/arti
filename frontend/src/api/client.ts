@@ -294,6 +294,8 @@ export const api = {
     request<{ confirmed: number }>('POST', `/admin/exhibitions/${enc(exhibitionId)}/confirm-ai`, { items }),
 
   listReactions: () => request<{total: number; items: {artworkId: string; reaction: Reaction; reason: string; date: string; visitId: string}[]}>('GET', '/admin/reactions'),
+  listMemberVisits: (userId: string) => request<VisitRecord[]>('GET',
+    ADMIN_READ === '/admin' ? `/admin/members/${enc(userId)}/visits` : `/users/${enc(userId)}/visits`),
   listMembers: (query = '') =>
     request<(User & { visitCount: number; lastVisit: string | null })[]>(
       'GET',

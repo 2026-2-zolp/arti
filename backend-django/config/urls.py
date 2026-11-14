@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/admin/artworks/<str:artwork_id>/analyze', editing.analyze),
     path('api/admin/exhibitions/<str:ex_id>/confirm-ai', editing.confirm_ai),
     path('api/admin/members', records.members), path('api/admin/reactions', records.reactions),
+    path('api/admin/members/<str:user_id>/visits', records.admin_member_visits),
     path('api/admin/visits/<str:visit_id>', records.admin_visit),
     path('api/auth/signup', member.signup),path('api/auth/login', member.login),
     path('api/auth/me', member.me),path('api/auth/logout', member.logout),
