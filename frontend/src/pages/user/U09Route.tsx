@@ -30,12 +30,14 @@ export default function U09Route() {
     () => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]),
     [exhibitionId],
   );
-  const fromArtwork = entry?.fromArtwork === true;
+  const returnToArtwork = entry?.returnToArtwork === true;
   const fromRecommend = entry?.fromRecommend === true;
-  const isNextGuide = current > 0 && !fromArtwork && entry?.showMap !== true;
+  const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
   const [mapOpen, setMapOpen] = useState(!isNextGuide);
+  const openArtwork = () => navigate(to('/artwork'), { replace: true, state: { fromRecommend } });
   const back = () => {
-    if (fromArtwork || fromRecommend) navigate(-1);
+    if (returnToArtwork) openArtwork();
+    else if (fromRecommend) navigate(-1);
     else navigate(to('/recommend'), { replace: true });
   };
 
@@ -102,12 +104,12 @@ export default function U09Route() {
   else if (!isMapFixture && route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
 
   const go = () => {
-    if (fromArtwork) {
-      navigate(-1);
+    if (returnToArtwork) {
+      openArtwork();
       return;
     }
     dispatch({ type: 'startVisit' });
-    navigate(to('/artwork'), { replace: true, state: { fromRecommend } });
+    openArtwork();
   };
 
   return (
@@ -117,7 +119,7 @@ export default function U09Route() {
       back={back}
       footer={
         <button className="btn primary block" onClick={go}>
-          {fromArtwork ? '감상으로 돌아가기' : isFirst ? '관람 시작하기' : `${current + 1}번 작품 감상하기`}
+          {returnToArtwork ? '감상으로 돌아가기' : isFirst ? '관람 시작하기' : `${current + 1}번 작품 감상하기`}
         </button>
       }
     >

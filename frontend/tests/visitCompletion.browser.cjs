@@ -39,6 +39,7 @@ async function fixture(browser, width, member, current = 0) {
       return route.fulfill({ json: { id: 'visit-test', title: '합성 전시', rooms: [], entrance: { x: 5, y: 40 } } });
     }
     if (pathname === '/api/artworks') return route.fulfill({ json: works });
+    if (pathname.endsWith('/tag-coverage')) return route.fulfill({ json: { warm: 3 } });
     const work = works.find(work => `/api/artworks/${work.id}` === pathname);
     if (work) return route.fulfill({ json: work });
     if (pathname === '/api/visits' && route.request().method() === 'POST') {
@@ -51,6 +52,63 @@ async function fixture(browser, width, member, current = 0) {
   const button = name => page.getByRole('button', { name, exact: true });
   const artwork = n => page.getByRole('heading', { name: `합성 작품 ${n}`, exact: true });
   return { page, button, artwork, requests, errors };
+}
+
+async function visitHistory(browser) {
+  const { page, button, artwork, requests, errors } = await fixture(browser, 360, true);
+  try {
+    const nextGuide = page.getByRole('heading', { name: '다음 작품 안내', exact: true });
+    await page.goto(base + path + '/recommend', { waitUntil: 'domcontentloaded' });
+    await button('2D 지도에서 경로 보기').click();
+    await button('관람 시작하기').click();
+    await artwork(1).waitFor();
+
+    await button('지도 보기').click();
+    await button('감상으로 돌아가기').waitFor();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/recommend');
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await button('감상으로 돌아가기').waitFor();
+    await button('뒤로가기').click();
+    await artwork(1).waitFor();
+
+    await button('다음 작품 안내').click();
+    await nextGuide.waitFor();
+    await button('2번 작품 감상하기').waitFor();
+    const guideKey = await page.evaluate(() => history.state.key);
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await nextGuide.waitFor();
+    await button('2번 작품 감상하기').waitFor();
+    assert.equal(await page.evaluate(() => history.state.key), guideKey, '닫은 지도가 앞으로가기에 남지 않음');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await nextGuide.waitFor();
+    await button('2번 작품 감상하기').waitFor();
+    await button('뒤로가기').click();
+    await page.waitForURL('**/recommend');
+    await button('2D 지도에서 경로 보기').click();
+    await button('2번 작품 감상하기').click();
+    await artwork(2).waitFor();
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/recommend');
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await artwork(2).waitFor();
+
+    await button('뒤로가기').click();
+    await button('2번 작품 감상하기').click();
+    await artwork(2).waitFor();
+    await button('다음 작품 안내').click();
+    await button('3번 작품 감상하기').waitFor();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await button('3번 작품 감상하기').click();
+    await artwork(3).waitFor();
+    await button('관람 마치기').click();
+    await page.getByText('관람기록에 저장되었어요').waitFor();
+    assert.equal(requests.length, 1);
+    assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
 }
 
 async function prematureReceipt(browser, current) {
@@ -132,6 +190,7 @@ async function completeVisit(browser, member) {
     for (const [name, check] of [
       ['관람 시작 전 영수증 직접 진입', browser => prematureReceipt(browser, 0)],
       ['관람 도중 영수증 직접 진입', browser => prematureReceipt(browser, 1)],
+      ['지도와 다음 작품 안내의 뒤로가기·새로고침', visitHistory],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
     ]) {

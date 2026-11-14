@@ -149,7 +149,8 @@ export default function U10Artwork() {
 
   const openMap = () => {
     tts.stop();
-    navigate(to('/route'), { state: { fromArtwork: true } });
+    // 지도와 현재 작품은 같은 기록을 사용해 이동 후 이전 작품의 지도가 앞으로가기에 남지 않게 합니다.
+    navigate(to('/route'), { replace: true, state: { returnToArtwork: true, fromRecommend: entry?.fromRecommend === true } });
   };
 
   // 원문을 먼저 보여 주고, 관리자가 확정한 AI 요약이 있을 때만 「AI 요약 보기」로 바꿔 볼 수 있다
