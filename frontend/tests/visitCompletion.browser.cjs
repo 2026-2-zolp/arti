@@ -12,14 +12,17 @@ const works = ['a', 'b', 'c'].map((id, i) => ({
 }));
 const recommendations = works.map(({ id }) => ({ artworkId: id, matchedTags: ['warm'] }));
 
-async function fixture(browser, width, member, current = 0) {
+async function fixture(browser, width, member, current = 0, seedRecommendations = true) {
   const page = await browser.newPage({ viewport: { width, height: 812 } });
   page.setDefaultTimeout(8000);
-  await page.clock.install();
   const requests = [];
   const errors = [];
+  const failures = new Map();
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(({ visitId, recommendations, user, current }) => {
+    let dwellNow = 0;
+    performance.now = () => dwellNow;
+    window.advanceDwell = ms => { dwellNow += ms; };
     if (sessionStorage.getItem('arti.visit')) return;
     if (user) {
       localStorage.setItem('arti.user', JSON.stringify(user));
@@ -31,14 +34,16 @@ async function fixture(browser, width, member, current = 0) {
       viewed: recommendations.slice(0, current).map(rec => rec.artworkId),
       startedAt: current > 0 ? Date.now() - 60000 : null,
     }));
-  }, { visitId: randomUUID(), recommendations, user: member ? user : null, current });
+  }, { visitId: randomUUID(), recommendations: seedRecommendations ? recommendations : [], user: member ? user : null, current });
   await page.route(base + '/api/**', async route => {
     const { pathname } = new URL(route.request().url());
+    if (failures.has(pathname)) return route.fulfill({ status: 503, json: { error: failures.get(pathname) } });
     if (pathname === '/api/auth/me') return route.fulfill({ json: user });
     if (pathname === '/api/exhibitions/visit-test') {
       return route.fulfill({ json: { id: 'visit-test', title: '합성 전시', rooms: [], entrance: { x: 5, y: 40 } } });
     }
     if (pathname === '/api/artworks') return route.fulfill({ json: works });
+    if (pathname === '/api/recommendations') return route.fulfill({ json: recommendations });
     if (pathname.endsWith('/tag-coverage')) return route.fulfill({ json: { warm: 3 } });
     const work = works.find(work => `/api/artworks/${work.id}` === pathname);
     if (work) return route.fulfill({ json: work });
@@ -51,7 +56,104 @@ async function fixture(browser, width, member, current = 0) {
   });
   const button = name => page.getByRole('button', { name, exact: true });
   const artwork = n => page.getByRole('heading', { name: `합성 작품 ${n}`, exact: true });
-  return { page, button, artwork, requests, errors };
+  // 두 프레임을 기다려 작품 표시와 레이아웃 효과 적용 뒤에 감상 시간을 진행합니다.
+  const spend = ms => page.evaluate(ms => new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.advanceDwell(ms);
+      resolve();
+    }));
+  }), ms);
+  return { page, button, artwork, requests, errors, failures, spend };
+}
+
+async function recoverErrors(browser, member) {
+  const { page, button, artwork, requests, errors, failures } = await fixture(browser, member ? 360 : 412, member, 0, false);
+  const generic = '요청을 처리하지 못했어요.';
+  const retry = button('다시 시도하기');
+  const back = button('뒤로가기');
+  const visit = () => page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
+  const checkProgress = async (id, viewed) => {
+    const state = await visit();
+    assert.equal(state.visitId, id);
+    assert.equal(state.current, viewed.length);
+    assert.deepEqual(state.viewed, viewed);
+    assert.deepEqual(state.recommendations.map(rec => rec.artworkId), ['a', 'b', 'c']);
+  };
+  const errorCard = async (message) => {
+    const alert = page.getByRole('alert').filter({ hasText: message });
+    await alert.waitFor();
+    assert(!((await alert.textContent()).includes(generic)), '중복 기본 오류 문구 생략');
+  };
+  try {
+    failures.set('/api/recommendations', generic);
+    await page.goto(base + path + '/recommend', { waitUntil: 'domcontentloaded' });
+    await errorCard('추천 작품을 불러오지 못했어요.');
+    const id = (await visit()).visitId;
+    const headerHeight = await page.locator('.m-shell').evaluate(shell => ({
+      measured: getComputedStyle(shell).getPropertyValue('--m-header-h').trim(),
+      actual: `${shell.querySelector('.m-header').offsetHeight}px`,
+    }));
+    assert.equal(headerHeight.measured, headerHeight.actual);
+    failures.delete('/api/recommendations');
+    await retry.click();
+    await button('2D 지도에서 경로 보기').click();
+    await button('관람 시작하기').click();
+    await artwork(1).waitFor();
+    await checkProgress(id, []);
+
+    failures.set('/api/exhibitions/visit-test', '합성 지도 장애');
+    await button('다음 작품 안내').click();
+    await errorCard('합성 지도 장애');
+    await checkProgress(id, ['a']);
+    await back.click();
+    await page.waitForURL('**/recommend');
+    await button('2D 지도에서 경로 보기').click();
+    await errorCard('지도 정보를 불러오지 못했어요.');
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/recommend');
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await errorCard('지도 정보를 불러오지 못했어요.');
+    failures.delete('/api/exhibitions/visit-test');
+    await retry.click();
+    await checkProgress(id, ['a']);
+
+    failures.set('/api/artworks/b', generic);
+    await button('2번 작품 감상하기').click();
+    await errorCard('작품 정보를 불러오지 못했어요.');
+    assert.equal(await button('다음 작품 안내').count(), 0);
+    await back.click();
+    await button('2번 작품 감상하기').click();
+    await errorCard('작품 정보를 불러오지 못했어요.');
+    await page.getByRole('alert').getByRole('button', { name: '지도 보기' }).click();
+    await button('감상으로 돌아가기').waitFor();
+    await back.click();
+    await errorCard('작품 정보를 불러오지 못했어요.');
+    failures.delete('/api/artworks/b');
+    await retry.click();
+    await artwork(2).waitFor();
+    await checkProgress(id, ['a']);
+
+    failures.set('/api/artworks/b', generic);
+    await button('이 부분 더 알아보기').click();
+    await errorCard('작품 정보를 불러오지 못했어요.');
+    await back.click();
+    await errorCard('작품 정보를 불러오지 못했어요.');
+    failures.delete('/api/artworks/b');
+    await retry.click();
+    await artwork(2).waitFor();
+    await checkProgress(id, ['a']);
+    await button('다음 작품 안내').click();
+    await button('3번 작품 감상하기').click();
+    await artwork(3).waitFor();
+    await checkProgress(id, ['a', 'b']);
+    await button('관람 마치기').click();
+    await page.getByRole('heading', { name: '오늘의 관람이 완성됐어요' }).waitFor();
+    if (member) await page.getByText('관람기록에 저장되었어요').waitFor();
+    await checkProgress(id, ['a', 'b', 'c']);
+    assert.equal(requests.length, member ? 1 : 0);
+    if (member) assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
 }
 
 async function visitHistory(browser) {
@@ -125,19 +227,22 @@ async function prematureReceipt(browser, current) {
 }
 
 async function completeVisit(browser, member) {
-  const { page, button, artwork, requests, errors } = await fixture(browser, member ? 360 : 412, member);
+  const { page, button, artwork, requests, errors, spend } = await fixture(browser, member ? 360 : 412, member);
   try {
     await page.goto(base + path + '/route', { waitUntil: 'domcontentloaded' });
     await button('관람 시작하기').click();
     await artwork(1).waitFor();
-    await page.clock.fastForward(2200);
+    await spend(2200);
     await button('지도 보기').click();
     await button('감상으로 돌아가기').waitFor();
-    await page.clock.fastForward(12000);
+    const firstDwell = () => page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')).dwell.a);
+    await page.waitForFunction(() => JSON.parse(sessionStorage.getItem('arti.visit')).dwell.a === 2);
+    await spend(120000);
+    assert.equal(await firstDwell(), 2);
     await button('감상으로 돌아가기').click();
     await artwork(1).waitFor();
-    await page.clock.fastForward(2100);
-    await button('다음 작품 안내').dblclick();
+    await spend(2100);
+    await button('다음 작품 안내').evaluate(element => { element.click(); element.click(); });
     await page.getByRole('heading', { name: '다음 작품 안내', exact: true }).waitFor();
     await button('2번 작품 감상하기').click();
     await artwork(2).waitFor();
@@ -145,11 +250,11 @@ async function completeVisit(browser, member) {
     await page.getByRole('heading', { name: '추천 관람 경로', exact: true }).waitFor();
     await button('2번 작품 감상하기').click();
     await artwork(2).waitFor();
-    await page.clock.fastForward(2100);
+    await spend(2100);
     await button('다음 작품 안내').click();
     await button('3번 작품 감상하기').click();
     await artwork(3).waitFor();
-    await page.clock.fastForward(8000);
+    await spend(60000);
     if (member) {
       await page.evaluate(() => {
         const { visitId } = JSON.parse(sessionStorage.getItem('arti.visit'));
@@ -167,9 +272,7 @@ async function completeVisit(browser, member) {
     if (member) {
       const { viewedArtworkIds, dwell } = requests[0];
       assert.deepEqual(viewedArtworkIds, ['a', 'b', 'c']);
-      assert(dwell.a >= 4 && dwell.a < 10, '지도에 머문 시간과 중복 감상 시간은 제외');
-      assert(dwell.b >= 2 && dwell.b < 6);
-      assert(dwell.c >= 8 && dwell.c < 12, '마지막 감상 시간을 영수증 요청에 포함');
+      assert.deepEqual(dwell, { a: 4, b: 2, c: 60 });
     }
     await page.reload({ waitUntil: 'domcontentloaded' });
     assert.match(await longest.textContent(), /합성 작품 3/);
@@ -180,7 +283,8 @@ async function completeVisit(browser, member) {
     assert.deepEqual(errors, []);
   } catch (error) {
     const body = await page.locator('body').innerText({ timeout: 1000 });
-    throw new Error(`${error.message}\nURL ${page.url()} · ${body.slice(0, 400)} · ${errors.join(' / ')}`);
+    const dwell = await page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')).dwell);
+    throw new Error(`${error.message}\nURL ${page.url()} · ${JSON.stringify(dwell)} · ${body.slice(0, 400)} · ${errors.join(' / ')}`);
   } finally { await page.close(); }
 }
 
@@ -191,6 +295,8 @@ async function completeVisit(browser, member) {
       ['관람 시작 전 영수증 직접 진입', browser => prematureReceipt(browser, 0)],
       ['관람 도중 영수증 직접 진입', browser => prematureReceipt(browser, 1)],
       ['지도와 다음 작품 안내의 뒤로가기·새로고침', visitHistory],
+      ['회원 오류 복구와 관람 순서', browser => recoverErrors(browser, true)],
+      ['비회원 오류 복구와 관람 순서', browser => recoverErrors(browser, false)],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
     ]) {

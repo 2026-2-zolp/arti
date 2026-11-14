@@ -6,6 +6,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { countForDuration } from '../../lib/recommend';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import { TASTE_LABEL } from '../../data/mock';
@@ -51,11 +52,19 @@ export default function U08Recommend() {
   const byId = new Map<string, Artwork>((artworks ?? []).map((w) => [w.id, w]));
   const ready = recommendations.length > 0 && artworks;
   const requestedCount = countForDuration(duration);
+  const failureDetails = [...new Set(
+    [issue?.kind === 'error' ? issue.message : null, artworkError, coverageError].map((m) => errorDetail(m).trim()).filter(Boolean),
+  )];
   const retry = () => {
     setAttempt((n) => n + 1);
     reloadArtworks();
     reloadCoverage();
   };
+  const missingNote = missing.length > 0 && (
+    <p className="missing-note" role="note">
+      현재 추천 가능한 작품 중 {missing.map((t) => `「${TASTE_LABEL[t]}」`).join(' · ')} 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요.
+    </p>
+  );
   let title = '오늘은 이 작품들을 만나보세요';
   let desc = '추천 작품을 고르고 있어요…';
   if (ready) {
@@ -81,32 +90,31 @@ export default function U08Recommend() {
         )
       }
     >
-      <Lead title={title} desc={desc} />
-      {missing.length > 0 && (
-        <p className="missing-note" role="note">
-          현재 추천 가능한 작품 중 {missing.map((t) => `「${TASTE_LABEL[t]}」`).join(' · ')} 태그 후보가 없어요. 미검수·위치 미등록·태그 준비 여부에 따라 달라질 수 있어요.
-        </p>
-      )}
-      {/* 추천 요청이 실패·0건이면 실패한 항목 문구를 한 카드에 모으고, 버튼은 [다시 시도] 하나로 둔다.
-          [다시 시도](retry)가 추천·작품 목록·후보 수를 함께 다시 불러온다. */}
+      {/* 추천 요청이 실패·0건이면 제목·안내·카드를 한 덩어리로 화면(헤더 포함) 세로 가운데에 둔다. 정상일 때는 위에서부터 놓는다. */}
       {issue ? (
-        <div className={issue.kind === 'error' || artworkError || coverageError ? 'notice-card is-err' : 'rec-retry'}
+        <div className="notice-group notice-center screen-center">
+          <Lead title={title} desc={desc} />
+          {missingNote}
+          {/* 실패한 항목 문구를 한 카드에 모으고, 버튼은 [다시 시도하기] 하나로 둔다.
+              [다시 시도하기](retry)가 추천·작품 목록·후보 수를 함께 다시 불러온다. */}
+          <div className={issue.kind === 'error' || artworkError || coverageError ? 'notice-card is-err' : 'rec-retry'}
           role={issue.kind === 'error' || artworkError || coverageError ? 'alert' : undefined}>
-          {issue.kind === 'error' && <p className="notice-body">{issue.message}</p>}
-          {artworkError && (
-            <p className="notice-body">
-              작품 목록을 불러오지 못했어요.{issue.kind === 'error' && artworkError === issue.message ? '' : ` ${artworkError}`}
-            </p>
-          )}
+          {issue.kind === 'error' && <p className="notice-body">추천 작품을 불러오지 못했어요.</p>}
+          {artworkError && <p className="notice-body">작품 목록을 불러오지 못했어요.</p>}
           {coverageError && <p className="notice-body">태그별 추천 후보 수를 확인하지 못했어요.</p>}
-          <button className={`btn block ${issue.kind === 'error' ? 'primary' : 'outline'}`} onClick={retry}>다시 시도</button>
+          {/* 서버가 준 구체적인 이유는 같은 내용이 여러 번 나오지 않게 한 번만 붙인다. */}
+          {failureDetails.length > 0 && <p className="notice-body">{failureDetails.join(' ')}</p>}
+          <button className={`btn block ${issue.kind === 'error' ? 'primary' : 'outline'}`} onClick={retry}>다시 시도하기</button>
           {issue.kind === 'error' && <button className="btn ghost block" onClick={() => navigate(to('/taste'))}>취향 다시 선택</button>}
+          </div>
         </div>
       ) : (
         <>
+          <Lead title={title} desc={desc} />
+          {missingNote}
           {artworkError && (
             <div className="notice-card is-err" role="alert">
-              <p className="notice-body">작품 목록을 불러오지 못했어요. {artworkError}</p>
+              <p className="notice-body">작품 목록을 불러오지 못했어요.{errorDetail(artworkError)}</p>
               <button className="btn primary block" onClick={reloadArtworks}>작품 목록 다시 불러오기</button>
             </div>
           )}

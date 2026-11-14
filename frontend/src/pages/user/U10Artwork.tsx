@@ -9,6 +9,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
@@ -211,7 +212,8 @@ export default function U10Artwork() {
           <Icon name="map" size={18} /> 지도 보기
         </button>
       }
-      footer={
+      footer={error ? undefined : (
+        // 작품 정보를 못 불러온 동안에는 누를 수 없는 [다음 작품 안내]를 남기지 않는다(카드의 버튼으로 빠져나간다).
         <div className="footer-stack">
           {ask && (
             <ReasonPicker
@@ -228,9 +230,15 @@ export default function U10Artwork() {
             {isLast ? '관람 마치기' : '다음 작품 안내'} <Icon name="arrow" size={20} />
           </button>
         </div>
-      }
+      )}
     >
-      {error ? <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={openMap}>지도 보기</button></p> : loading || !w ? (
+      {error ? (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">작품 정보를 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          <button className="btn ghost block" onClick={openMap}>지도 보기</button>
+        </div>
+      ) : loading || !w ? (
         <Spinner />
       ) : (
         <>
