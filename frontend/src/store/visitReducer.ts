@@ -28,6 +28,8 @@ export interface VisitState {
   startedAt: number | null;
 }
 
+type ArtworkDwell = { visitId: string; generation: number; artworkId: string; seconds: number };
+
 export type Action =
   | { type: 'setExhibition'; id: string }
   | { type: 'login'; user: User }
@@ -39,9 +41,9 @@ export type Action =
   | { type: 'setDuration'; duration: VisitDuration; newVisit?: boolean; scope?: string; proof?: {visitId: string; receipt: string} }
   | { type: 'setRecommendations'; recs: Recommendation[]; generation?: number }
   | { type: 'startVisit' }
-  | { type: 'addDwell'; artworkId: string; seconds: number }
+  | ({ type: 'addDwell' } & ArtworkDwell)
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
-  | { type: 'completeCurrent'; visitId: string; artworkId: string }
+  | ({ type: 'completeCurrent' } & ArtworkDwell)
   | { type: 'resetVisit' };
 
 const VISIT_KEY = 'arti.visit';
@@ -122,8 +124,6 @@ export function reducer(s: VisitState, a: Action): VisitState {
       return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, reactionReasons: {}, dwell: {}, startedAt: null };
     case 'startVisit':
       return s.startedAt ? s : { ...s, startedAt: Date.now() };
-    case 'addDwell':
-      return { ...s, dwell: { ...s.dwell, [a.artworkId]: (s.dwell[a.artworkId] ?? 0) + a.seconds } };
     case 'react': {
       const reactions = { ...s.reactions };
       const reactionReasons = { ...s.reactionReasons };
@@ -136,11 +136,15 @@ export function reducer(s: VisitState, a: Action): VisitState {
       }
       return { ...s, reactions, reactionReasons };
     }
+    case 'addDwell':
     case 'completeCurrent': {
       const rec = s.recommendations[s.current];
-      if (a.visitId !== s.visitId || rec?.artworkId !== a.artworkId) return s;
-      const viewed = s.viewed.includes(rec.artworkId) ? s.viewed : [...s.viewed, rec.artworkId];
-      return { ...s, viewed, current: s.current + 1 };
+      if (a.visitId !== s.visitId || a.generation !== s.requestGeneration || rec?.artworkId !== a.artworkId) return s;
+      const seconds = Math.min(86400, (s.dwell[a.artworkId] ?? 0) + a.seconds);
+      const dwell = { ...s.dwell, [a.artworkId]: seconds };
+      if (a.type === 'addDwell') return { ...s, dwell };
+      const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
+      return { ...s, dwell, viewed, current: s.current + 1 };
     }
     case 'resetVisit':
       return { ...s, ...emptyVisit, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1 };

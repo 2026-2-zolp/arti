@@ -33,6 +33,7 @@ function LiveReceipt() {
   const confirmAction = useConfirm();
   const navigate = useNavigate(); const {state, dispatch} = useVisit();
   const initial = useRef(state).current;
+  const finished = initial.current >= initial.recommendations.length;
   const actor = useRef(state.user?.id); actor.current = state.user?.id;
   const currentScope = `${state.user?.id ?? 'guest'}.${state.visitId}.${state.exhibitionId}`;
   const scope = useRef(currentScope); scope.current = currentScope;
@@ -45,8 +46,13 @@ function LiveReceipt() {
   const cacheKey = `arti.receipt.${initial.user?.id ?? 'guest'}.${initial.visitId}`;
   const pendingKey = `arti.pendingReceipt.${initial.user?.id}.${initial.visitId}`;
   const {data, error, reload} = useAsync(() => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]), [exhibitionId]);
-  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() =>
-    load(pendingKey, load(cacheKey, null, 'session'), 'session'));
+  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() => {
+    if (!finished) return null;
+    const cached = load<Omit<VisitRecord, 'id'> | null>(pendingKey, load(cacheKey, null, 'session'), 'session');
+    // 이전 버전이 관람 도중 만든 영수증을 완료된 기록으로 재사용하지 않습니다.
+    if (cached?.viewedArtworkIds.length !== initial.viewed.length) return null;
+    return initial.viewed.every((id, i) => id === cached.viewedArtworkIds[i]) ? cached : null;
+  });
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
   const [interp, setInterp] = useState<Interpretation | null>(() => {
     const cached = load<Interpretation | 'failed' | null>(cacheKey + '.interpretation', null, 'session');
@@ -66,11 +72,11 @@ function LiveReceipt() {
     if (interpretFailed) interpCardRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [interpretFailed]);
   useEffect(() => {
-    if (!data || record) return;
+    if (!finished || !data || record) return;
     const value = buildRecord(initial, data[1], data[0]); save(cacheKey, value, 'session'); setRecord(value);
-  }, [data, record, initial, cacheKey]);
+  }, [finished, data, record, initial, cacheKey]);
   useEffect(() => {
-    if (!record || !initial.user || saved) return;
+    if (!finished || !record || !initial.user || saved) return;
     let active = true;
     save(pendingKey, record, 'session'); setBusy(true); setFailure(''); setExpired(false);
     // Never silently retry a pending member receipt as a guest after token expiry.
@@ -85,7 +91,7 @@ function LiveReceipt() {
       setFailure(e instanceof Error ? e.message : '기록 저장에 실패했어요.');
     }).finally(() => active && setBusy(false));
     return () => {active = false;};
-  }, [record, initial.user, saved, attempt, pendingKey]);
+  }, [finished, record, initial.user, saved, attempt, pendingKey]);
   const interpret = async () => {
     if (!record || interpreting.current || scope.current !== initialScope || (initial.user && (!saved || actor.current !== initial.user.id))) return;
     interpreting.current = true; setInterpretPending(true);
@@ -107,6 +113,7 @@ function LiveReceipt() {
     dispatch({type: 'resetVisit'}); navigate(to(), {replace: true});
   };
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
+  if (!finished) return <Navigate to={to('/route')} replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
   return <MobileShell screenId="U-12" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
     <div className="lead center"><h2>오늘의 관람이 완성됐어요</h2></div>
