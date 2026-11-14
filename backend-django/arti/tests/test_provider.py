@@ -14,20 +14,27 @@ from arti.llm import MAX_RESPONSE_BYTES
 
 
 @contextmanager
-def endpoint(status=200, body=None):
+def endpoint(status=200, body=None, *, respond=None):
     requests = []
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args): pass
         def do_POST(self):
+            raw = self.rfile.read(int(self.headers['Content-Length']))
             requests.append({'path': self.path, 'authorization': self.headers.get('Authorization'),
-                             'body': json.loads(self.rfile.read(int(self.headers['Content-Length'])))})
-            self.send_response(status)
-            if status == 302: self.send_header('Location', '/credential-must-not-arrive')
-            self.end_headers()
-            self.wfile.write(body if body is not None else json.dumps({'choices': [{
-                'finish_reason': 'stop', 'message': {'content': '{"answer":"관찰을 이어 볼까요?"}'}}]}, ensure_ascii=False).encode())
+                             'body': json.loads(raw), 'raw': raw})
+            code, response = respond(len(requests)) if respond else (status, body)
+            if response is None:
+                response = json.dumps({'choices': [{
+                    'finish_reason': 'stop', 'message': {'content': '{"answer":"관찰을 이어 볼까요?"}'}}]}, ensure_ascii=False).encode()
+            try:
+                self.send_response(code)
+                if code == 302: self.send_header('Location', '/credential-must-not-arrive')
+                self.end_headers()
+                self.wfile.write(response)
+            except (BrokenPipeError, ConnectionResetError):
+                pass  # A timed-out test request may close its socket before the response.
     server = HTTPServer(('127.0.0.1', 0), Handler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    thread = threading.Thread(target=server.serve_forever, kwargs={'poll_interval': .05}, daemon=True); thread.start()
     try:
         with override_settings(OPENAI_BASE_URL=f'http://127.0.0.1:{server.server_port}/v1'):
             yield requests

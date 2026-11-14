@@ -14,11 +14,14 @@ import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visit
 import type { ChatMessage } from '../../types';
 
 const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는 어떤 사람인가요?', '색은 어떤 의미가 있나요?', '왜 유명한 작품인가요?'];
+// 요청 제한은 작품에서 나가거나 새로고침해도 같은 탭의 도슨트에 적용합니다.
+const RETRY_WINDOW_KEY = 'arti.docent.retryWindow';
 
 type AskFailure = {
   message: string;
   retry?: { question: string; fromInput: boolean };
 };
+type RetryWindow = { expiresAt: number; seconds: number };
 
 // crypto.randomUUID는 https에서만 동작해 휴대폰 LAN 테스트(http)에서 실패하므로 간단한 id 생성기를 쓴다
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -44,6 +47,18 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadedChatKey, setLoadedChatKey] = useState('');
   const [failure, setFailure] = useState<AskFailure | null>(null);
+  const [retryWindow, setRetryWindow] = useState<RetryWindow | null>(() => {
+    const saved = load<RetryWindow | null>(RETRY_WINDOW_KEY, null, 'session');
+    return saved && saved.expiresAt > Date.now() ? saved : null;
+  });
+  useEffect(() => {
+    if (!retryWindow) return;
+    const timer = window.setTimeout(() => {
+      remove(RETRY_WINDOW_KEY, 'session');
+      setRetryWindow(null);
+    }, Math.max(0, retryWindow.expiresAt - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [retryWindow]);
   const generation = useRef(0);
   const [contentChanged, setContentChanged] = useState(false);
   const [input, setInput] = useState(() => load(draftKey, '', 'session'));
@@ -64,7 +79,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
   const chatReady = !!key && loadedChatKey === key;
-  const canAsk = chatReady && !pending && !contentChanged;
+  const canAsk = chatReady && !pending && !contentChanged && !retryWindow;
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -117,8 +132,15 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         reload();
       } else {
         const retryable = !(e instanceof ApiError) || e.status === 0 || e.status === 429 || e.status >= 500;
+        if (e instanceof ApiError && e.status === 429 && e.retryAfterSeconds) {
+          const nextWindow = { expiresAt: Date.now() + e.retryAfterSeconds * 1000, seconds: e.retryAfterSeconds };
+          save(RETRY_WINDOW_KEY, nextWindow, 'session');
+          setRetryWindow(nextWindow);
+        }
         setFailure({
-          message: e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
+          message: e instanceof ApiError && e.status === 429 && e.retryAfterSeconds
+            ? 'AI 사용량이 많아 질문을 보내지 못했어요.'
+            : e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
           retry: retryable ? { question, fromInput } : undefined,
         });
       }
@@ -136,6 +158,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   };
   const guidedStart = !!selectedQuestion && !messages.length;
   const retry = failure?.retry;
+  const sendError = retryWindow
+    ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
+    : failure?.message;
   const backToArtwork = () => {
     if (entryLocation?.fromArtwork) navigate(-1);
     else navigate(to('/artwork'), { replace: true });
@@ -149,9 +174,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       back={backToArtwork}
       footer={
         <>
-          {failure && (
+          {sendError && (
             <div className="docent-send-error">
-              <p id="docent-send-error" className="error-text" role="alert">{failure.message}</p>
+              <p id="docent-send-error" className="error-text" role="alert">{sendError}</p>
               {retry && (
                 <button type="button" className="link-btn" disabled={!canAsk}
                   onClick={() => ask(retry.question, retry.fromInput)}>
@@ -173,7 +198,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
               aria-label="질문 입력"
               aria-describedby={[
                 guidedStart ? 'docent-question-text' : '',
-                failure ? 'docent-send-error' : '',
+                sendError ? 'docent-send-error' : '',
               ].filter(Boolean).join(' ') || undefined}
             />
             <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
