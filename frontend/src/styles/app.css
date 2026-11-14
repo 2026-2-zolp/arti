@@ -226,6 +226,17 @@ a.history-card { text-decoration: none; }
 .duel-metadata dl { display: grid; gap: 10px; margin: 0; padding: 4px; }
 .duel-metadata dt { font-weight: 600; overflow-wrap: anywhere; }
 .duel-metadata dd { margin: 2px 0 0; }
+/* U-05: 그림 영역 = 크게 보기, 제목 옆 [선택] = 작품 고르기 */
+.duel-image { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: 10px; background: none; cursor: zoom-in; }
+.duel-zoom-hint { position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(20, 20, 20, 0.7); color: #fff; display: inline-flex; align-items: center; justify-content: center; pointer-events: none; }
+/* [빈칸(선택 크기)] [제목 가운데] [선택] — 양쪽 칸이 같아서 제목이 항상 카드 정가운데, 남는 폭을 넘으면 "…" */
+.duel-title-row { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; align-items: center; gap: 8px; }
+.duel-title-row .duel-title { min-width: 0; text-align: center; padding: 0; }
+.duel-select-spacer { visibility: hidden; pointer-events: none; }
+/* 흰 바탕 + 검은 테두리·글자. 테두리 1px만큼 좌우 여백을 줄여 크기는 전과 같다(box-sizing: border-box). */
+.duel-select { flex: none; min-height: 36px; padding: 0 15px; border: 1px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); font-size: 14px; font-weight: 600; }
+.duel-select:disabled { border-color: #c9c6c0; color: #c9c6c0; }
+.duel-card.picked .duel-select:disabled { border-color: var(--accent); background: var(--accent); color: #fff; }
 .duel-picked { position: absolute; top: 12px; right: 12px; padding: 2px 8px; border-radius: 12px; color: white; background: var(--ink); font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .duel-card { transition: none; } }
 .duel-card {
@@ -377,10 +388,19 @@ a.history-card { text-decoration: none; }
 .progress-bars span { flex: 1; min-width: 6px; height: 3px; border-radius: 2px; background: var(--line); }
 .progress-bars span.on { background: var(--ink); }
 .art-frame { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
-.art-frame.fullscreen { position: fixed; inset: 0; z-index: 50; border-radius: 0; background: #111; display: flex; align-items: center; }
+/* 크게 보기 배경: 어두운 작품도 잘 보이게 U-05 카드 그림 배경과 같은 밝은 베이지 */
+.art-frame.fullscreen { position: fixed; inset: 0; z-index: 50; border-radius: 0; background: var(--surface-2); display: flex; align-items: center; }
 .art-frame.fullscreen svg[role='img'] { max-height: 100dvh; }
 .frame-btn { position: absolute; right: 10px; bottom: 10px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(20, 20, 20, 0.8); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-.art-frame.fullscreen .frame-btn { top: 16px; bottom: auto; right: 16px; }
+.art-frame.fullscreen .frame-btn { top: 16px; bottom: auto; right: 16px; z-index: 2; }
+/* 크게 보기: 화면 전체에 작품 전체를 보여 주고, 그림만 확대·이동한다(브라우저 화면 확대·스크롤은 막음) */
+.zoom-stage { position: absolute; inset: 0; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.zoom-stage:active { cursor: grabbing; }
+.zoom-content { width: 100%; height: 100%; transform-origin: 0 0; will-change: transform; }
+.zoom-content > img, .zoom-content > svg {
+  width: 100% !important; height: 100% !important; aspect-ratio: auto !important;
+  object-fit: contain !important; max-height: none !important; pointer-events: none; -webkit-user-drag: none;
+}
 .art-title { font-size: 26px; font-weight: 800; margin-top: 18px; }
 .art-meta { color: var(--muted); font-size: 16px; margin-top: 6px; }
 .art-meta .sep { margin: 0 10px; color: var(--line); }
