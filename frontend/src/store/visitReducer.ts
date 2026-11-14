@@ -44,7 +44,8 @@ export type Action =
   | ({ type: 'addDwell' } & ArtworkDwell)
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | ({ type: 'completeCurrent' } & ArtworkDwell)
-  | { type: 'resetVisit' };
+  | { type: 'resetVisit' }
+  | { type: 'discardVisit'; visitId: string };
 
 const VISIT_KEY = 'arti.visit';
 const USER_KEY = 'arti.user';
@@ -146,7 +147,9 @@ export function reducer(s: VisitState, a: Action): VisitState {
       const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
       return { ...s, dwell, viewed, current: s.current + 1 };
     }
+    case 'discardVisit':
     case 'resetVisit':
+      if (a.type === 'discardVisit' && a.visitId !== s.visitId) return s;
       return { ...s, ...emptyVisit, visitId: newVisitId(), requestGeneration: s.requestGeneration + 1 };
   }
 }
