@@ -40,6 +40,20 @@ test('same-owner explicit recovery transmits the original frozen payload once', 
  const result=await api.saveMemberVisit(payload as any,'original');assert.equal(result.persisted,true);assert.deepEqual(posts,[payload]);
 });
 
+test('a pending receipt from an older build can be saved within the duration limit', async () => {
+ setup();
+ const payload = {userId: 'original', visitId: 'frozen-visit', durationMin: 2880, date: '2026-11-14T00:00:00Z', viewedArtworkIds: ['a'], reactionReasons: {a: '색감'}};
+ const posts: unknown[] = [];
+ globalThis.fetch = (async (_url, options) => {
+   if (options?.method === 'GET') return Response.json({id: 'original'});
+   posts.push(JSON.parse(options?.body as string));
+   return Response.json({persisted: true});
+ }) as typeof fetch;
+ await api.saveMemberVisit(payload as any, 'original');
+ assert.deepEqual(posts, [{...payload, durationMin: 1440}]);
+ assert.equal(payload.durationMin, 2880);
+});
+
 test('inactive receipt scope stops POST after successful account check', async () => {
  setup();const calls:string[]=[];
  globalThis.fetch=(async (_url,options)=>{calls.push(options?.method??'GET');return Response.json({id:'original'});}) as typeof fetch;

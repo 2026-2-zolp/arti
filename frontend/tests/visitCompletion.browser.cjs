@@ -12,14 +12,14 @@ const works = ['a', 'b', 'c'].map((id, i) => ({
 }));
 const recommendations = works.map(({ id }) => ({ artworkId: id, matchedTags: ['warm'] }));
 
-async function fixture(browser, width, member, current = 0, seedRecommendations = true) {
+async function fixture(browser, width, member, current = 0, seedRecommendations = true, elapsedMinutes = 1) {
   const page = await browser.newPage({ viewport: { width, height: 812 } });
   page.setDefaultTimeout(8000);
   const requests = [];
   const errors = [];
   const failures = new Map();
   page.on('pageerror', error => errors.push(error.message));
-  await page.addInitScript(({ visitId, recommendations, user, current }) => {
+  await page.addInitScript(({ visitId, recommendations, user, current, elapsedMinutes }) => {
     let dwellNow = 0;
     performance.now = () => dwellNow;
     window.advanceDwell = ms => { dwellNow += ms; };
@@ -32,9 +32,9 @@ async function fixture(browser, width, member, current = 0, seedRecommendations 
       visitId, ownerId: user?.id ?? null, exhibitionId: 'visit-test', requestGeneration: 1,
       duration: '30m', tastes: ['warm'], recommendations, current,
       viewed: recommendations.slice(0, current).map(rec => rec.artworkId),
-      startedAt: current > 0 ? Date.now() - 60000 : null,
+      startedAt: current > 0 ? Date.now() - elapsedMinutes * 60000 : null,
     }));
-  }, { visitId: randomUUID(), recommendations: seedRecommendations ? recommendations : [], user: member ? user : null, current });
+  }, { visitId: randomUUID(), recommendations: seedRecommendations ? recommendations : [], user: member ? user : null, current, elapsedMinutes });
   await page.route(base + '/api/**', async route => {
     const { pathname } = new URL(route.request().url());
     if (failures.has(pathname)) return route.fulfill({ status: 503, json: { error: failures.get(pathname) } });
@@ -361,6 +361,24 @@ async function recoverPendingReceipt(browser, discard) {
   } finally { await page.close(); }
 }
 
+async function saveLongVisit(browser) {
+  const { page, requests, errors } = await fixture(browser, 360, true, 3, true, 48 * 60);
+  await page.route(base + '/api/visits', route => {
+    const record = route.request().postDataJSON();
+    if (record.durationMin <= 1440) return route.fallback();
+    return route.fulfill({ status: 400, json: { error: '관람 기록 입력을 확인해 주세요.', code: 'VALIDATION_ERROR' } });
+  });
+  try {
+    await page.goto(base + path + '/receipt', { waitUntil: 'domcontentloaded' });
+    await page.getByText('관람기록에 저장되었어요').waitFor();
+    await page.getByText('1440분', { exact: true }).waitFor();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].durationMin, 1440);
+    assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
 async function prematureReceipt(browser, current) {
   const { page, button, requests, errors } = await fixture(browser, 360, true, current);
   try {
@@ -450,6 +468,7 @@ async function completeVisit(browser, member) {
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
       ['세션 만료 후 같은 계정의 미저장 기록 복구', browser => recoverPendingReceipt(browser, false)],
       ['버린 미저장 기록의 뒤로가기 재저장 차단', browser => recoverPendingReceipt(browser, true)],
+      ['하루 지난 관람의 영수증 저장', saveLongVisit],
     ]) {
       try { await check(browser); console.log(`PASS ${name}`); }
       catch (error) { console.error(`FAIL ${name}`, error.message); process.exitCode = 1; }

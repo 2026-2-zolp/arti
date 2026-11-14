@@ -23,6 +23,7 @@ import type {
 import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
+import { limitReceiptDuration } from '../lib/receiptPayload';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -240,7 +241,7 @@ export const api = {
     const token = load<string | null>(USER_TOKEN, null);
     const user = await request<User>('GET', '/auth/me');
     if (!token || load(USER_TOKEN, null) !== token || user.id !== expectedActor || !isCurrent()) throw new ApiError('원래 계정과 관람에서 다시 시도해 주세요.', 401);
-    return request<VisitRecord>('POST', '/visits', v);
+    return request<VisitRecord>('POST', '/visits', limitReceiptDuration(v));
   },
 
   listVisits: (userId: string) => request<VisitRecord[]>('GET', `/users/${enc(userId)}/visits`),
