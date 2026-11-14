@@ -11,6 +11,7 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { api, ApiError } from '../../api/client';
 import { Icon } from '../../components/Icon';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { load, save, remove } from '../../lib/storage';
 import {buildRecord} from '../../lib/receiptPayload';
 import { useVisit } from '../../store/VisitContext';
@@ -190,7 +191,7 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
   const { state: entry } = useLocation();
   const { state } = useVisit();
   const captureRef = useRef<HTMLDivElement>(null);
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getVisit(visitId).then(record => [record, record.artworkSnapshots ?? []] as const),
     [visitId],
   );
@@ -213,7 +214,12 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
       )}
     >
       {loading && <Spinner />}
-      {error && <p className="error-text">{error}</p>}
+      {error && (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">영수증을 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
+      )}
       {data && (
         <div ref={captureRef}>
           <Receipt

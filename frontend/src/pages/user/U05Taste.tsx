@@ -6,6 +6,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import TasteReview from '../../components/TasteReview';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { load, save } from '../../lib/storage';
 import { tasteScope } from '../../lib/tasteFlow';
 import { tastesFromPicks } from '../../lib/tasteFromPicks';
@@ -29,12 +30,16 @@ export default function U05Taste() {
   return <TasteDraft key={scope} draftKey={`arti.tasteDraft.${scope}`} />;
 }
 
+type LoadIssue = 'error' | 'notReady' | 'noContext' | null;
+
 function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
   const to = useExhibitionPath();
   const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
   const [picked, setPicked] = useState<string | null>(null);
   const pickTimer = useRef<number | null>(null);
+  // 다시 불러오는 동안에도 직전 오류 카드를 그대로 보여 주기 위해 마지막 상태를 기억한다.
+  const lastLoadIssue = useRef<LoadIssue>(null);
   const { data: pool, loading, error, reload } = useAsync(() => api.tastePool(), [], true);
   const v2 = pool?.tasteTieV2Enabled === true && pool.supportedTasteProfileVersions?.includes(2) === true;
   const version = draft.version ?? (v2 ? 2 : 1);
@@ -107,16 +112,51 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   }
 
   const reviewKey = `${draftKey}.review.${JSON.stringify(profile)}`;
+  // 관람 도중 취향을 다시 고르러 왔을 때만 보이는 [현재 관람으로 돌아가기]. 다른 화면의 보조 버튼(회색 글자)과 같은 모양으로 둔다.
+  const backToVisit = state.duration && (
+    <Link className="btn ghost block" to={to('/recommend')}>현재 관람으로 돌아가기</Link>
+  );
+  const retryButton = (
+    <button type="button" className="btn primary block" disabled={loading} aria-busy={loading} onClick={reload}>
+      {loading ? '확인 중…' : '다시 시도하기'}
+    </button>
+  );
+  // 작품을 고르기 전 불러오기 문제(실패·준비 안 됨·근거 다시 필요)일 때는 제목 없이 안내 카드만 화면 가운데에 둔다.
+  // 다시 불러오는 동안에는 직전 카드를 유지하고, 카드 안 버튼만 "확인 중…"으로 바뀐다.
+  const issueNow: LoadIssue = complete ? null : error ? 'error' : loading ? null
+    : !pool?.ready ? 'notReady' : missingContext ? 'noContext' : null;
+  if (!loading) lastLoadIssue.current = issueNow;
+  const loadIssue: LoadIssue = loading && !complete ? lastLoadIssue.current : issueNow;
   return (
     <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
       right={draft.picks.length > 0 && <button type="button" className="text-btn" disabled={picked !== null} onClick={() =>
         update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
-      <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'} />
-      {!complete && loading && !pool && <Spinner label="작품을 불러오는 중…" />}
-      {!complete && error && <p role="alert">{error}</p>}
-      {!complete && !loading && !error && !pool?.ready && <p>취향 조사 작품을 불러올 수 없어요.</p>}
-      {!complete && !loading && missingContext && <p role="alert">취향 조사 근거를 다시 불러와 주세요.</p>}
-      {!complete && (loading ? !!pool : needsReload) && (
+      {!loadIssue && <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'} />}
+      {!complete && loading && !pool && !loadIssue && <Spinner label="작품을 불러오는 중…" />}
+      {/* 불러오기 실패·준비 안 됨·근거 다시 필요: 카드 안의 [다시 시도하기]가 조사 근거를 다시 불러온다(reload, 기존 버튼과 같은 동작). */}
+      {loadIssue === 'error' && (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">취향 조사 작품을 불러오지 못했어요.{errorDetail(error)}</p>
+          {retryButton}
+          {backToVisit}
+        </div>
+      )}
+      {loadIssue === 'notReady' && (
+        <div className="notice-card notice-center screen-center">
+          <p className="notice-body">취향 조사 작품을 불러올 수 없어요.</p>
+          {retryButton}
+          {backToVisit}
+        </div>
+      )}
+      {loadIssue === 'noContext' && (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">취향 조사 근거를 다시 불러와 주세요.</p>
+          {retryButton}
+          {backToVisit}
+        </div>
+      )}
+      {/* 조사 근거가 바뀐 안내와 다시 불러오는 중에는 기존 버튼을 그대로 둔다. */}
+      {!complete && !loadIssue && (loading ? !!pool : needsReload && !error && !!pool?.ready && !missingContext) && (
         <button type="button" className="btn outline" disabled={loading} aria-busy={loading} onClick={reload}>
           {loading ? '조사 근거 확인 중…' : '조사 근거 다시 불러오기'}
         </button>
@@ -147,7 +187,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
           {selected.length > 0 && (version === 2 || pool?.ready) && (
             <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile} blocked={blocked} />
           )}
-          {error && <p role="alert">{error} 고른 작품과 태그는 남아 있어요.</p>}
+          {error && <div className="notice-card is-err" role="alert"><p className="notice-body">취향 조사 근거를 불러오지 못했어요.{errorDetail(error)} 고른 작품과 태그는 남아 있어요.</p></div>}
           {!loading && !error && (!pool?.ready || missingContext) && <p role="status">취향 조사 근거를 다시 확인해 주세요.</p>}
           <button type="button" className="text-btn" disabled={loading} aria-busy={loading} onClick={reload}>
             {loading ? '조사 근거 확인 중…' : '조사 근거 다시 불러오기'}
@@ -189,7 +229,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
           </details>
         </>
       )}
-      {state.duration && <Link to={to('/recommend')}>현재 관람으로 돌아가기</Link>}
+      {/* 오류 카드가 있을 때는 카드 안에, 그 밖에는 화면 아래쪽에 둔다. */}
+      {!loadIssue && backToVisit && <div className="mt-12">{backToVisit}</div>}
     </MobileShell>
   );
 }

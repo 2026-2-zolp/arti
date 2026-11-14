@@ -5,7 +5,7 @@ const { randomUUID } = require('node:crypto');
 
 const base = process.env.ARTI_REVIEW_BASE || 'http://127.0.0.1:5218';
 const path = '/exhibitions/visit-test';
-const user = { id: 'test-member', tastes: [] };
+const user = { id: 'test-member', email: 'visitor@example.test', tastes: ['warm'] };
 const works = ['a', 'b', 'c'].map((id, i) => ({
   id, title: `합성 작품 ${i + 1}`, artist: '시험', year: '', description: '합성 해설',
   tags: ['warm'], palette: ['#a65631', '#e1ad62'], position: { x: 20 + i * 25, y: 40 },
@@ -156,6 +156,109 @@ async function recoverErrors(browser, member) {
   } finally { await page.close(); }
 }
 
+async function recoverNewErrorCards(browser) {
+  const { page, button, failures, requests, errors } = await fixture(browser, 360, true, 1);
+  const generic = '요청을 처리하지 못했어요.';
+  const retry = button('다시 시도하기');
+  const issue = async text => {
+    const alert = page.getByRole('alert').filter({ hasText: text });
+    await alert.waitFor();
+    assert(!(await alert.textContent()).includes(generic));
+  };
+  const survey = Array.from({ length: 10 }, (_, i) => ({ ...works[i % 3], id: `survey-${i}`, title: `조사 작품 ${i}` }));
+  const pool = {
+    ready: true, poolVersion: 'synthetic-pool', artworks: survey,
+    pairs: Array.from({ length: 5 }, (_, i) => ({ leftId: survey[i * 2].id, rightId: survey[i * 2 + 1].id })),
+  };
+  const saved = {
+    id: 'test-history', exhibitionTitle: '지난 합성 관람', venue: '합성 장소', date: '2026-11-14T00:00:00Z',
+    viewedArtworkIds: ['a'], recommendedCount: 3, durationMin: 5, reactions: { a: 'like' },
+    keywords: ['따뜻한 색감'], artworkSnapshots: works.slice(0, 1),
+  };
+  const routes = {
+    '/api/taste-pool': pool,
+    '/api/auth/kakao/status': { enabled: false, linked: false },
+    '/api/users/test-member/visits': [saved],
+    '/api/visits/test-history': saved,
+  };
+  await page.route(base + '/api/**', route => {
+    const { pathname } = new URL(route.request().url());
+    if (!(pathname in routes) || failures.has(pathname)) return route.fallback();
+    return route.fulfill({ json: routes[pathname] });
+  });
+  try {
+    failures.set('/api/taste-pool', generic);
+    await page.goto(base + path + '/taste', { waitUntil: 'domcontentloaded' });
+    await issue('취향 조사 작품을 불러오지 못했어요.');
+    const visitId = await page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')).visitId);
+    failures.delete('/api/taste-pool');
+    await retry.click();
+    await button('조사 작품 0').click();
+    await button('조사 작품 2').waitFor();
+    failures.set('/api/taste-pool', generic);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await issue('취향 조사 작품을 불러오지 못했어요.');
+    failures.delete('/api/taste-pool');
+    await retry.click();
+    await button('조사 작품 2').waitFor();
+    await page.getByRole('link', { name: '현재 관람으로 돌아가기' }).click();
+    await button('2D 지도에서 경로 보기').click();
+    await button('2번 작품 감상하기').waitFor();
+
+    failures.set('/api/users/test-member/visits', generic);
+    await page.goto(base + '/mypage', { waitUntil: 'domcontentloaded' });
+    await issue('관람기록을 불러오지 못했어요.');
+    failures.delete('/api/users/test-member/visits');
+    await retry.click();
+    const history = page.getByRole('button', { name: /지난 합성 관람/ });
+    failures.set('/api/visits/test-history', generic);
+    await history.click();
+    await issue('영수증을 불러오지 못했어요.');
+    failures.delete('/api/visits/test-history');
+    await retry.click();
+    await page.getByText('ART RECEIPT', { exact: true }).waitFor();
+    await button('뒤로가기').click();
+    await history.waitFor();
+    failures.set('/api/artworks', generic);
+    await page.getByRole('tab', { name: '좋아요 목록' }).click();
+    await issue('좋아요한 작품을 불러오지 못했어요.');
+    failures.delete('/api/artworks');
+    await retry.click();
+    await page.getByText('합성 작품 1', { exact: true }).waitFor();
+    const progress = await page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
+    assert.equal(progress.visitId, visitId);
+    assert.equal(progress.current, 1);
+    assert.deepEqual(progress.viewed, ['a']);
+    assert.deepEqual(requests, []);
+
+    await page.goto(base + path + '/taste/saved', { waitUntil: 'domcontentloaded' });
+    await button('이 취향으로 관람 시작').waitFor();
+    failures.set('/api/auth/me', generic);
+    await button('이 취향으로 관람 시작').click();
+    await issue('저장된 취향을 적용하지 못했어요.');
+    failures.delete('/api/auth/me');
+    await button('이 취향으로 관람 시작').click();
+    await page.getByRole('button', { name: '취소', exact: true }).click();
+
+    await page.evaluate(() => {
+      const state = JSON.parse(sessionStorage.getItem('arti.visit'));
+      state.tasteProfile = { version: 2, source: 'manual', selectedTags: ['warm'], picks: [], counts: {}, poolVersion: null };
+      sessionStorage.setItem('arti.visit', JSON.stringify(state));
+    });
+    await page.goto(base + path + '/time', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('radio', { name: /1시간/ }).click();
+    failures.set('/api/taste-profiles/resolve', generic);
+    await button('추천 받기').click();
+    await button('확인하고 계속').click();
+    await issue('관람 시간을 적용하지 못했어요.');
+    const afterFailure = await page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
+    assert.equal(afterFailure.visitId, visitId);
+    assert.equal(afterFailure.duration, '30m');
+    assert.deepEqual(afterFailure.viewed, ['a']);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
 async function visitHistory(browser) {
   const { page, button, artwork, requests, errors } = await fixture(browser, 360, true);
   try {
@@ -297,6 +400,7 @@ async function completeVisit(browser, member) {
       ['지도와 다음 작품 안내의 뒤로가기·새로고침', visitHistory],
       ['회원 오류 복구와 관람 순서', browser => recoverErrors(browser, true)],
       ['비회원 오류 복구와 관람 순서', browser => recoverErrors(browser, false)],
+      ['취향 조사·확인, 관람 시간, 마이페이지·과거 영수증 오류 복구', recoverNewErrorCards],
       ['회원 3점 관람', browser => completeVisit(browser, true)],
       ['비회원 3점 관람', browser => completeVisit(browser, false)],
     ]) {

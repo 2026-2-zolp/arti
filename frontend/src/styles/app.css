@@ -675,6 +675,11 @@ a.history-card { text-decoration: none; }
 .interp-card .btn { margin-top: 12px; }
 .btn.outline.is-done { color: var(--ok); border-color: #b9dcc8; gap: 6px; }
 .notice-card { margin-top: 16px; padding: 18px 16px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+/* 문구만 있는 카드(U-05·U-07·취향 확인)는 아래 여백을 남기지 않고, 뒤따르는 기존 버튼과 간격을 둔다 */
+.notice-card .notice-body:last-child { margin-bottom: 0; }
+.notice-card + .btn { margin-top: 12px; }
+/* U-07: 오류 카드와 바로 아래 시간 선택지 사이 간격 */
+[data-screen='U-07'] .notice-card { margin-bottom: 12px; }
 .notice-card.is-err .notice-title { color: var(--danger); }
 .notice-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .notice-body { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }
