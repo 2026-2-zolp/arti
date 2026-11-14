@@ -51,14 +51,22 @@ test('repeated or stale artwork completion cannot skip the next artwork', () => 
       artworkId, order: index + 1, score: 1, matchedTags: [], reason: '',
     })),
   });
-  const action = { type: 'completeCurrent' as const, visitId: state.visitId, artworkId: 'a' };
+  const action = { type: 'completeCurrent' as const, visitId: state.visitId, generation: state.requestGeneration, artworkId: 'a', seconds: 8 };
   assert.equal(reducer(state, { ...action, visitId: 'previous-visit' }), state);
-  const next = reducer(state, action);
+  assert.equal(reducer(state, { ...action, generation: state.requestGeneration - 1 }), state);
+  const addDwell = { ...action, type: 'addDwell' as const, seconds: 3 };
+  const resumed = reducer(state, addDwell);
+  const next = reducer(resumed, action);
   assert.equal(next.current, 1);
   assert.deepEqual(next.viewed, ['a']);
+  assert.deepEqual(next.dwell, { a: 11 });
   assert.equal(reducer(next, action), next);
+  assert.equal(reducer(next, addDwell), next);
+  const newVisit = reducer(next, { type: 'resetVisit' });
+  assert.equal(reducer(newVisit, addDwell), newVisit);
   const finished = reducer(next, { ...action, artworkId: 'b' });
   assert.deepEqual(finished.viewed, ['a', 'b']);
+  assert.deepEqual(finished.dwell, { a: 11, b: 8 });
   assert.equal(finished.current, 2);
   assert.equal(reducer(finished, { ...action, artworkId: 'b' }), finished);
 });

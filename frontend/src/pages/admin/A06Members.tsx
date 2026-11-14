@@ -10,11 +10,7 @@ export default function A06Members() {
   const [input, setInput] = useState('');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { data: members } = useAsync(() => api.listMembers(query), [query]);
-  const { data: visits } = useAsync(
-    () => (selectedId ? api.listVisits(selectedId) : Promise.resolve([])),
-    [selectedId],
-  );
+  const { data: members, loading, error, reload } = useAsync(() => api.listMembers(query), [query]);
   const selected = members?.find((m) => m.id === selectedId);
 
   return (
@@ -24,7 +20,9 @@ export default function A06Members() {
         className="a-filters"
         onSubmit={(e) => {
           e.preventDefault();
-          setQuery(input);
+          setSelectedId(null);
+          if (query === input) reload();
+          else setQuery(input);
         }}
       >
         <input
@@ -36,6 +34,8 @@ export default function A06Members() {
         />
         <button className="a-btn">검색</button>
       </form>
+      {loading && <p role="status">회원 목록을 불러오는 중…</p>}
+      {error && <p className="error-text" role="alert">{error} <button className="a-btn" onClick={reload}>회원 목록 다시 불러오기</button></p>}
 
       <div className="a-two-col wide-left">
         <div className="a-card">
@@ -53,7 +53,7 @@ export default function A06Members() {
             <tbody>
               {members?.map((m) => (
                 <tr key={m.id} className={`clickable ${m.id === selectedId ? 'selected' : ''}`} onClick={() => setSelectedId(m.id)}>
-                  <td>{m.email}</td>
+                  <td><button className="text-btn" onClick={() => setSelectedId(m.id)} aria-label={`${m.email} 관람 기록 보기`}>{m.email}</button></td>
                   <td>{m.nickname || '-'}</td>
                   <td>{m.createdAt}</td>
                   <td>{m.visitCount}</td>
@@ -90,22 +90,27 @@ export default function A06Members() {
                 <dt>저장 취향</dt>
                 <dd>{selected.tastes.length ? selected.tastes.map((t) => TASTE_LABEL[t]).join(', ') : '-'}</dd>
               </dl>
-              <h3 className="mt-12">관람 기록</h3>
-              <ul className="a-visit-list">
-                {visits?.map((v) => (
-                  <li key={v.id}>
-                    <span>{v.date.slice(0, 10)}</span>
-                    <span>
-                      작품 {v.viewedArtworkIds.length}점 · {v.durationMin}분
-                    </span>
-                  </li>
-                ))}
-                {visits?.length === 0 && <li className="muted">기록 없음</li>}
-              </ul>
+              <MemberVisits key={selected.id} userId={selected.id} />
             </>
           )}
         </aside>
       </div>
     </>
   );
+}
+
+function MemberVisits({userId}: {userId: string}) {
+  const {data: visits, loading, error, reload} = useAsync(() => api.listMemberVisits(userId), [userId]);
+  return <>
+    <h3 className="mt-12">관람 기록</h3>
+    {loading && <p role="status">관람 기록을 불러오는 중…</p>}
+    {error && <p className="error-text" role="alert">{error} <button className="a-btn" onClick={reload}>관람 기록 다시 불러오기</button></p>}
+    <ul className="a-visit-list">
+      {visits?.map(v => <li key={v.id}>
+        <span>{v.date.slice(0, 10)}</span>
+        <span>작품 {v.viewedArtworkIds.length}점 · {v.durationMin}분</span>
+      </li>)}
+      {visits?.length === 0 && <li className="muted">기록 없음</li>}
+    </ul>
+  </>;
 }

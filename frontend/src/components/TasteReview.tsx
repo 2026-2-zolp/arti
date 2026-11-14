@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import { TASTE_LABEL } from '../data/mock';
 import { load, remove, save } from '../lib/storage';
+import { errorDetail } from '../lib/errorText';
 import { authSession, sameTaste, saveConfirmedTaste, tasteScope, type TasteMutation, type TastePreview } from '../lib/tasteFlow';
 import { newVisitId } from '../lib/visitScope';
 import { useExhibitionPath } from '../store/ExhibitionRoute';
@@ -19,6 +20,15 @@ interface ReviewState {
   acknowledged?: boolean;
 }
 
+type FailedStep = 'preview' | 'save' | 'visit' | 'saved' | 'refresh';
+const FAILED_TEXT: Record<FailedStep, string> = {
+  preview: '취향을 확인하지 못했어요.',
+  save: '취향을 계정에 저장하지 못했어요.',
+  visit: '이번 관람에 취향을 적용하지 못했어요.',
+  saved: '저장된 취향을 적용하지 못했어요.',
+  refresh: '계정의 최신 취향을 불러오지 못했어요.',
+};
+
 export default function TasteReview({ profile, storageKey, saveAccount = true, blocked = false }: {
   profile: TasteProfile; storageKey: string; saveAccount?: boolean; blocked?: boolean;
 }) {
@@ -30,6 +40,8 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   const [review, setReview] = useState(() => load<ReviewState | null>(storageKey, null, 'session') ?? { visitId: newVisitId() });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // 어느 버튼에서 실패했는지에 따라 오류 카드 첫 문장을 고른다(문구만 다르고 동작은 같다).
+  const [failedStep, setFailedStep] = useState<FailedStep>('save');
   const active = useRef(false);
   const blockedNow = useRef(blocked);
   useLayoutEffect(() => { blockedNow.current = blocked; }, [blocked]);
@@ -44,8 +56,9 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
     setReview(next);
   }
 
-  async function run(action: (current: () => boolean) => Promise<void>) {
+  async function run(step: FailedStep, action: (current: () => boolean) => Promise<void>) {
     if (pending.current) return;
+    setFailedStep(step);
     const token = authSession();
     if (!!state.user !== !!token) {
       setError('로그인 상태를 확인한 뒤 같은 계정에서 다시 시도해 주세요.');
@@ -66,7 +79,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   }
 
   function preview() {
-    return run(async current => {
+    return run('preview', async current => {
       persist({ visitId: review.visitId });
       let expectedVersion = state.user?.tasteProfileVersion ?? 1;
       if (profile.version === 2 && state.user) {
@@ -88,7 +101,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   }
 
   function apply(visitOnly: boolean) {
-    return run(async current => {
+    return run(!visitOnly && saveAccount && state.user ? 'save' : 'visit', async current => {
       const confirmed = review.preview;
       if (!confirmed || (blockedNow.current && !review.mutation)) return;
       const resolved = confirmed.tasteProfile;
@@ -150,7 +163,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   }
 
   function applySaved() {
-    return run(async current => {
+    return run('saved', async current => {
       const account = state.user;
       if (!account || !state.exhibitionId) return;
       const latest = await api.me();
@@ -186,7 +199,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   }
 
   function refreshAccountTaste() {
-    return run(async current => {
+    return run('refresh', async current => {
       const user = await api.me();
       if (!current()) return;
       if (user.id !== state.user?.id) throw new Error('현재 로그인 계정을 확인해 주세요.');
@@ -198,7 +211,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   if (profile.source === 'saved') {
     return (
       <section className="stack gap-12" aria-label="저장 취향 사용" aria-busy={busy}>
-        {error && <p role="alert">{error}</p>}
+        {error && <div className="notice-card is-err" role="alert"><p className="notice-body">{FAILED_TEXT[failedStep]}{errorDetail(error)}</p></div>}
         <button type="button" className="btn primary block" disabled={busy} onClick={applySaved}>
           {busy ? '확인 중…' : '이 취향으로 관람 시작'}
         </button>
@@ -210,7 +223,7 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
   const result = review.preview;
   return (
     <section className="stack gap-12" aria-label="취향 확인" aria-busy={busy}>
-      {error && <p role="alert">{review.acknowledged ? '계정 저장 응답을 받았어요. ' : ''}{error}</p>}
+      {error && <div className="notice-card is-err" role="alert"><p className="notice-body">{review.acknowledged ? '계정 저장 응답을 받았어요. ' : ''}{FAILED_TEXT[failedStep]}{errorDetail(error)}</p></div>}
       {!result ? (
         <button type="button" className="btn primary block" disabled={busy || blocked || !profile.selectedTags.length} onClick={preview}>
           {busy ? '확인 중…' : '취향 미리 확인'}

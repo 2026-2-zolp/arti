@@ -9,6 +9,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
@@ -84,18 +85,22 @@ export default function U10Artwork() {
     return () => window.removeEventListener('resize', measure);
   }, [w?.description, tab, summaryOn, expanded]);
 
-  // 감상 시간 측정: 화면에 들어온 시점을 기억했다가, 화면을 떠날 때(언마운트) 누적
-  const enteredAt = useRef(Date.now());
   const recId = rec?.artworkId;
-  useEffect(() => {
-    if (!recId) return;
-    enteredAt.current = Date.now();
-    const id = recId;
+  const viewingId = !loading && !error && w?.id === recId ? recId : undefined;
+  const { visitId, requestGeneration } = state;
+  const enteredAt = useRef<number | null>(null);
+
+  // 작품을 표시한 구간만 측정합니다. 지도·도슨트에서 돌아오면 새 구간을 시작합니다.
+  useLayoutEffect(() => {
+    if (!viewingId) return;
+    enteredAt.current = performance.now();
     return () => {
-      const seconds = Math.round((Date.now() - enteredAt.current) / 1000);
-      dispatch({ type: 'addDwell', artworkId: id, seconds });
+      if (enteredAt.current === null) return;
+      const seconds = Math.round((performance.now() - enteredAt.current) / 1000);
+      enteredAt.current = null;
+      if (seconds > 0) dispatch({ type: 'addDwell', visitId, generation: requestGeneration, artworkId: viewingId, seconds });
     };
-  }, [recId, dispatch]);
+  }, [viewingId, visitId, requestGeneration, dispatch]);
 
   if (!rec) return <Navigate to={to(recommendations.length ? '/receipt' : '/recommend')} replace />;
 
@@ -136,14 +141,17 @@ export default function U10Artwork() {
   const goNext = () => {
     if (advancing.current || loading || error || w?.id !== rec.artworkId) return;
     advancing.current = true;
+    const seconds = enteredAt.current === null ? 0 : Math.round((performance.now() - enteredAt.current) / 1000);
+    enteredAt.current = null;
     tts.stop();
-    dispatch({ type: 'completeCurrent', visitId: state.visitId, artworkId: rec.artworkId });
+    dispatch({ type: 'completeCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId, seconds });
     navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
   };
 
   const openMap = () => {
     tts.stop();
-    navigate(to('/route'), { state: { fromArtwork: true } });
+    // 지도와 현재 작품은 같은 기록을 사용해 이동 후 이전 작품의 지도가 앞으로가기에 남지 않게 합니다.
+    navigate(to('/route'), { replace: true, state: { returnToArtwork: true, fromRecommend: entry?.fromRecommend === true } });
   };
 
   // 원문을 먼저 보여 주고, 관리자가 확정한 AI 요약이 있을 때만 「AI 요약 보기」로 바꿔 볼 수 있다
@@ -204,7 +212,8 @@ export default function U10Artwork() {
           <Icon name="map" size={18} /> 지도 보기
         </button>
       }
-      footer={
+      footer={error ? undefined : (
+        // 작품 정보를 못 불러온 동안에는 누를 수 없는 [다음 작품 안내]를 남기지 않는다(카드의 버튼으로 빠져나간다).
         <div className="footer-stack">
           {ask && (
             <ReasonPicker
@@ -221,9 +230,15 @@ export default function U10Artwork() {
             {isLast ? '관람 마치기' : '다음 작품 안내'} <Icon name="arrow" size={20} />
           </button>
         </div>
-      }
+      )}
     >
-      {error ? <p className="error-text" role="alert">{error}<button onClick={reload}>다시 불러오기</button><button onClick={openMap}>지도 보기</button></p> : loading || !w ? (
+      {error ? (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">작품 정보를 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          <button className="btn ghost block" onClick={openMap}>지도 보기</button>
+        </div>
+      ) : loading || !w ? (
         <Spinner />
       ) : (
         <>

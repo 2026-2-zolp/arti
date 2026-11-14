@@ -12,6 +12,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork } from '../../types';
@@ -30,12 +31,14 @@ export default function U09Route() {
     () => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]),
     [exhibitionId],
   );
-  const fromArtwork = entry?.fromArtwork === true;
+  const returnToArtwork = entry?.returnToArtwork === true;
   const fromRecommend = entry?.fromRecommend === true;
-  const isNextGuide = current > 0 && !fromArtwork && entry?.showMap !== true;
+  const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
   const [mapOpen, setMapOpen] = useState(!isNextGuide);
+  const openArtwork = () => navigate(to('/artwork'), { replace: true, state: { fromRecommend } });
   const back = () => {
-    if (fromArtwork || fromRecommend) navigate(-1);
+    if (returnToArtwork) openArtwork();
+    else if (fromRecommend) navigate(-1);
     else navigate(to('/recommend'), { replace: true });
   };
 
@@ -46,9 +49,10 @@ export default function U09Route() {
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
         {error ? (
-          <p className="error-text" role="alert">
-            {error} <button onClick={reload}>다시 불러오기</button>
-          </p>
+          <div className="notice-card is-err notice-center screen-center" role="alert">
+            <p className="notice-body">지도 정보를 불러오지 못했어요.{errorDetail(error)}</p>
+            <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          </div>
         ) : <Spinner />}
       </MobileShell>
     );
@@ -62,9 +66,10 @@ export default function U09Route() {
   if (!target) {
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
-        <p className="error-text" role="alert">
-          추천 작품 정보를 불러올 수 없어요. <button onClick={reload}>다시 불러오기</button>
-        </p>
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
       </MobileShell>
     );
   }
@@ -102,12 +107,12 @@ export default function U09Route() {
   else if (!isMapFixture && route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
 
   const go = () => {
-    if (fromArtwork) {
-      navigate(-1);
+    if (returnToArtwork) {
+      openArtwork();
       return;
     }
     dispatch({ type: 'startVisit' });
-    navigate(to('/artwork'), { replace: true, state: { fromRecommend } });
+    openArtwork();
   };
 
   return (
@@ -117,7 +122,7 @@ export default function U09Route() {
       back={back}
       footer={
         <button className="btn primary block" onClick={go}>
-          {fromArtwork ? '감상으로 돌아가기' : isFirst ? '관람 시작하기' : `${current + 1}번 작품 감상하기`}
+          {returnToArtwork ? '감상으로 돌아가기' : isFirst ? '관람 시작하기' : `${current + 1}번 작품 감상하기`}
         </button>
       }
     >

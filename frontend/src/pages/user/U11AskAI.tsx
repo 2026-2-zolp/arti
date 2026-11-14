@@ -6,6 +6,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { load, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
@@ -185,7 +186,7 @@ export default function U11AskAI() {
 
       {error && (
         <div className="notice-card is-err notice-center" role="alert">
-          <p className="notice-body">작품 정보를 불러오지 못했어요. {error}</p>
+          <p className="notice-body">작품 정보를 불러오지 못했어요.{errorDetail(error)}</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
         </div>
       )}

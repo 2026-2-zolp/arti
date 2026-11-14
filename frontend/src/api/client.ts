@@ -22,6 +22,7 @@ import type {
 } from '../types';
 import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
+import { GENERIC_ERROR } from '../lib/errorText';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -106,7 +107,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const wait=Number(res.headers.get('Retry-After'));
-    throw new ApiError(data?.error ?? '요청을 처리하지 못했어요.', res.status, data?.code,
+    throw new ApiError(data?.error ?? GENERIC_ERROR, res.status, data?.code,
       Number.isInteger(wait) && wait>0 && wait<=300 ? wait : undefined);
   }
   const remember = (item: { id?: string; version?: number; exhibitionId?: string }) => {
@@ -294,6 +295,8 @@ export const api = {
     request<{ confirmed: number }>('POST', `/admin/exhibitions/${enc(exhibitionId)}/confirm-ai`, { items }),
 
   listReactions: () => request<{total: number; items: {artworkId: string; reaction: Reaction; reason: string; date: string; visitId: string}[]}>('GET', '/admin/reactions'),
+  listMemberVisits: (userId: string) => request<VisitRecord[]>('GET',
+    ADMIN_READ === '/admin' ? `/admin/members/${enc(userId)}/visits` : `/users/${enc(userId)}/visits`),
   listMembers: (query = '') =>
     request<(User & { visitCount: number; lastVisit: string | null })[]>(
       'GET',

@@ -24,7 +24,7 @@
 | U10 기존 미노출 개인화 | POST /artworks/:id/explanation | 호환 경로 유지, 승인자료+provider 사용, {text,mode,sourceRefs}; 새 탭 추가 없음 |
 | U11 | POST /artworks/:id/ask | {question} 유지, visitId/entryContext/history 추가, {answer,mode,sourceRefs} 응답. history 자동 DB 저장 없음 |
 | U12 | POST /visits, /visits/interpret; GET /visits/:id; GET /users/:id/visits | visitId 필수, persisted 명시. 저장/AI 분리, 소유자 검사 |
-| A01/06 | POST /admin/login, /admin/logout; GET /admin/members?q= | 관리자 인증·회원 조회 유지 |
+| A01/06 | POST /admin/login, /admin/logout; GET /admin/members?q=, /admin/members/:id/visits | 관리자 인증·회원 조회 유지 |
 | A03~05 | POST/PUT /admin/exhibitions(/:id), /admin/artworks(/:id) | 별도 version 충돌검사, 서버필드 조작 금지, 검수/stale 규칙 |
 | A04/05 | POST/DELETE /admin/artworks/:id/image, /admin/exhibitions/:id/floor-plan | raw PNG/JPEG/WEBP≤10MiB 유지, 권한/파일 공개 조건 추가 |
 | A04 | POST /admin/artworks/:id/analyze | 산출물별 확정 보호, 부분실패 보고. 새 결과는 suggested |
@@ -110,6 +110,8 @@ POST /visits는 기존 VisitRecord 입력에 visitId,tasteProfile,reactionReason
 - 회원 저장은 AI 해석 전에 수행한다. persisted:true 확인 전 saved 표시 금지. 실패/401에는 actor+visit별 고정 payload 보존+재시도; 종료 버튼은 미저장 안내 후 명시적으로 나가기 가능, 저장완료라고 표시하지 않는다.
 - 만료/저장실패 시 **pendingReceipt**를 활성방문과 별도의 sessionStorage namespace에 원래 userId+visitId로 보존한다. 같은회원 재인증을 확인한 뒤 사용자에게 명시적 복구/저장 재시도를 제공하며 새관람으로 자동편입하지 않는다. 다른 계정 로그인이나 명시 logout에는 해당 pendingReceipt도 제거/복구금지, 일반 로그인 시 진행초기화 원칙과 구분한다. 이탈 전 미저장 안내를 주며 영구/교차기기 복구를 보장하지 않는다. 새로고침으로 토큰이 이미 제거돼도 pendingReceipt를 guest로 POST하지 않는다.
 - /visits/interpret는 {exhibitionId,visitId,viewedArtworkIds,reactions,dwell}. 공개 승인/확정 감정만으로 text/emotionProfile/source(mode호환)를 계산, 실패가 방문저장에 영향 없음. 회원은 저장된 자기visit의 canonical본문과 일치해야 하고 성공 시 interpretation만 별도 갱신; 최초관람본문 idempotency는 변하지 않는다. guest 결과는 DB에 쓰지 않는다. UI 새로고침/재시도에 cached해석과 저장상태를 구분한다.
+- 재해석 중·실패 후에는 마지막 성공 해석과 해당 PNG를 유지한다. 성공 응답을 받으면 해석 캐시·화면을 갱신하고 PNG를 다시 준비한다. 준비 중에는 이전 PNG를 새 내용으로 표시해 저장하지 않는다. 해석 재시도는 관람기록 POST를 반복하지 않는다.
+- 관리자 회원 선택은 `GET /admin/members/:id/visits`와 `X-Admin-Token`으로 저장된 관람기록을 읽는다. 일반 회원용 `/users/:id/visits`의 본인 제한은 그대로 유지한다. 관리자 목록은 최근 가입순 최대 100명이며 이메일·닉네임 검색을 지원한다. 미존재 회원·관리자 계정의 회원 기록 조회는 404, 관람이 없는 회원은 빈 목록, 조회 실패는 오류로 구분한다.
 - GET 과거영수증은 소유자 또는 admin만. closed전시도 저장된 최소snapshot으로 표시. /admin/reactions는 VisitReaction의 회원 관람 데이터만 paging(기본50,최대100); 다른 기기의 저장결과가 보이는지 AC30에서 검증한다. 전체 guest행동추적 기능으로 확대하지 않는다.
 
 ## 9. Provider·시간·trace 경계

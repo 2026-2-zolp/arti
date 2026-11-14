@@ -1,5 +1,6 @@
 # 관람 기록 저장·중복 방지와 회원·관리자 조회를 처리합니다.
 import uuid
+from django.db.models import Count, Max, Q
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -8,7 +9,7 @@ from .authentication import IsAdmin
 from .http import ContractError
 from .constants import LABELS
 from .member import member, user_dto
-from .models import Visit, VisitReaction
+from .models import Account, Visit, VisitReaction
 from .recommendations import profile_snapshot
 from .serializers import TasteProfileInput, artwork_dto
 from .taste_evidence import read_visit_evidence, receipt_hash, uuid_value
@@ -189,11 +190,19 @@ def reactions(request):
 @api_view(['GET'])
 @permission_classes([IsAdmin])
 def members(request):
-    from django.db.models import Q
     qs=Account.objects.filter(role='user');q=request.query_params.get('q','')[:100]
     if q:qs=qs.filter(Q(email__icontains=q)|Q(nickname__icontains=q))
-    return Response([{**user_dto(a),'visitCount':a.visit_set.count(),
-                     'lastVisit':a.visit_set.order_by('-created_at').first().created_at.isoformat() if a.visit_set.exists() else None} for a in qs[:100]])
+    qs=qs.annotate(visit_count=Count('visit'),last_visit=Max('visit__created_at')).order_by('-created_at','id')
+    return Response([{**user_dto(a),'visitCount':a.visit_count,
+                     'lastVisit':a.last_visit.isoformat() if a.last_visit else None} for a in qs[:100]])
+
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def admin_member_visits(request,user_id):
+    if not Account.objects.filter(pk=user_id,role='user').exists():
+        raise ContractError(404,'NOT_FOUND','회원을 찾을 수 없어요.')
+    return Response([dto(v) for v in Visit.objects.filter(user_id=user_id).order_by('-created_at','id')])
 
 
 @api_view(['GET'])

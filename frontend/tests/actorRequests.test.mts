@@ -108,3 +108,13 @@ test('survey lookup uses a global endpoint without an exhibition parameter', asy
  const pool=await api.tastePool();
  assert.deepEqual(urls,['/api/taste-pool']);assert.equal(pool.ready,false);
 });
+
+test('admin member history uses the protected admin endpoint', async () => {
+ const {storage}=setup();
+ storage.setItem('arti.adminToken',JSON.stringify('synthetic-admin-token'));
+ const requests: {url:string; headers:unknown}[]=[];
+ globalThis.fetch=(async (url,options)=>{requests.push({url:String(url),headers:options?.headers});return Response.json([]);}) as typeof fetch;
+ assert.deepEqual(await api.listMemberVisits('member/id'),[]);
+ assert.equal(requests[0].url,'/api/admin/members/member%2Fid/visits');
+ assert.equal((requests[0].headers as Record<string,string>)['X-Admin-Token'],'synthetic-admin-token');
+});

@@ -2,6 +2,7 @@
    ARTI 스타일 — 목업 톤(따뜻한 오프화이트 + 먹색 + 포인트 핑크)
    ========================================================== */
 :root {
+  --m-body-pad-top: 12px; /* 본문 위 여백 — 오류 카드 세로 가운데 계산에도 씀 */
   --bg: #fdfcf9;
   --surface: #ffffff;
   --surface-2: #f3f0eb;
@@ -86,7 +87,7 @@ h1, h2, h3, p { margin: 0; }
 .m-header-side.right { justify-content: flex-end; }
 .m-title { font-size: 18px; font-weight: 700; text-align: center; }
 .brand { font-weight: 600; letter-spacing: 0.02em; }
-.m-body { flex: 1; padding: 12px 24px 24px; }
+.m-body { flex: 1; padding: var(--m-body-pad-top) 24px 24px; }
 .m-footer {
   position: sticky;
   bottom: 0;
@@ -301,8 +302,11 @@ a.history-card { text-decoration: none; }
 .rec-retry { margin-top: 16px; }
 .notice-card .notice-body:has(+ .notice-body) { margin-bottom: 4px; }
 /* 화면에 오류 카드만 있을 때 본문 세로 가운데에 둔다 */
-.m-body:has(> .notice-center) { display: flex; flex-direction: column; }
-.notice-card.notice-center { margin-top: auto; margin-bottom: auto; }
+.m-body:has(> .notice-center) { display: flex; flex-direction: column; padding-bottom: var(--m-body-pad-top); }
+.notice-card.notice-center, .notice-group.notice-center { margin-top: auto; margin-bottom: auto; }
+.notice-group > .lead:first-child { margin-top: 0; }
+/* U-08·U-09·U-10: 헤더까지 포함한 화면 전체의 가운데에 둔다 — 아래 여백 = 본문 위 여백 + 실제 헤더 높이(MobileShell이 잼) */
+.m-body:has(> .notice-center.screen-center) { padding-bottom: calc(var(--m-body-pad-top) + var(--m-header-h, 60px)); }
 .missing-note { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: #fff7e6; color: #8a5a00; font-size: 14px; line-height: 1.5; }
 .rec-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .rec-card { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
@@ -671,6 +675,11 @@ a.history-card { text-decoration: none; }
 .interp-card .btn { margin-top: 12px; }
 .btn.outline.is-done { color: var(--ok); border-color: #b9dcc8; gap: 6px; }
 .notice-card { margin-top: 16px; padding: 18px 16px; border-radius: 12px; background: var(--surface-2); text-align: center; }
+/* 문구만 있는 카드(U-05·U-07·취향 확인)는 아래 여백을 남기지 않고, 뒤따르는 기존 버튼과 간격을 둔다 */
+.notice-card .notice-body:last-child { margin-bottom: 0; }
+.notice-card + .btn { margin-top: 12px; }
+/* U-07: 오류 카드와 바로 아래 시간 선택지 사이 간격 */
+[data-screen='U-07'] .notice-card { margin-bottom: 12px; }
 .notice-card.is-err .notice-title { color: var(--danger); }
 .notice-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .notice-body { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }

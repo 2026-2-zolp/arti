@@ -11,6 +11,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { PendingReceipts } from '../../components/PendingReceipts';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { TASTE_LABEL } from '../../data/mock';
 import { useLogout, useVisit } from '../../store/VisitContext';
 import { formatDate } from './U12Receipt';
@@ -64,7 +65,12 @@ export default function U13MyPage() {
 
       <div className="mypage-panel" role="tabpanel">
         {visits.loading && <Spinner />}
-        {visits.error && <p className="error-text">{visits.error}</p>}
+        {visits.error && (
+          <div className="notice-card is-err" role="alert">
+            <p className="notice-body">관람기록을 불러오지 못했어요.{errorDetail(visits.error)}</p>
+            <button className="btn primary block" onClick={visits.reload}>다시 시도하기</button>
+          </div>
+        )}
         {visits.data && (tab === 'history' ? <HistoryList visits={visits.data} /> : <LikeList visits={visits.data} />)}
       </div>
     </MobileShell>
@@ -141,10 +147,15 @@ function likedArtworks(visits: VisitRecord[], artworks: Artwork[]): Artwork[] {
 
 /** 좋아요 목록 탭: U-08 추천 카드 모양 (이미지·작품명·작가·연도·태그) */
 function LikeList({ visits }: { visits: VisitRecord[] }) {
-  const { data: artworks, loading, error } = useAsync(() => api.listArtworks(), []);
+  const { data: artworks, loading, error, reload } = useAsync(() => api.listArtworks(), []);
 
   if (loading) return <Spinner />;
-  if (error) return <p className="error-text">{error}</p>;
+  if (error) return (
+    <div className="notice-card is-err" role="alert">
+      <p className="notice-body">좋아요한 작품을 불러오지 못했어요.{errorDetail(error)}</p>
+      <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+    </div>
+  );
 
   const liked = likedArtworks(visits, artworks ?? []);
   if (liked.length === 0)

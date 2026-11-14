@@ -11,6 +11,7 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { api, ApiError } from '../../api/client';
 import { Icon } from '../../components/Icon';
 import { useAsync } from '../../lib/useAsync';
+import { errorDetail } from '../../lib/errorText';
 import { load, save, remove } from '../../lib/storage';
 import {buildRecord} from '../../lib/receiptPayload';
 import { useVisit } from '../../store/VisitContext';
@@ -33,6 +34,7 @@ function LiveReceipt() {
   const confirmAction = useConfirm();
   const navigate = useNavigate(); const {state, dispatch} = useVisit();
   const initial = useRef(state).current;
+  const finished = initial.current >= initial.recommendations.length;
   const actor = useRef(state.user?.id); actor.current = state.user?.id;
   const currentScope = `${state.user?.id ?? 'guest'}.${state.visitId}.${state.exhibitionId}`;
   const scope = useRef(currentScope); scope.current = currentScope;
@@ -45,10 +47,19 @@ function LiveReceipt() {
   const cacheKey = `arti.receipt.${initial.user?.id ?? 'guest'}.${initial.visitId}`;
   const pendingKey = `arti.pendingReceipt.${initial.user?.id}.${initial.visitId}`;
   const {data, error, reload} = useAsync(() => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]), [exhibitionId]);
-  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() =>
-    load(pendingKey, load(cacheKey, null, 'session'), 'session'));
+  const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() => {
+    if (!finished) return null;
+    const cached = load<Omit<VisitRecord, 'id'> | null>(pendingKey, load(cacheKey, null, 'session'), 'session');
+    // 이전 버전이 관람 도중 만든 영수증을 완료된 기록으로 재사용하지 않습니다.
+    if (cached?.viewedArtworkIds.length !== initial.viewed.length) return null;
+    return initial.viewed.every((id, i) => id === cached.viewedArtworkIds[i]) ? cached : null;
+  });
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
-  const [interp, setInterp] = useState<Interpretation | 'failed' | null>(() => load(cacheKey + '.interpretation', null, 'session'));
+  const [interp, setInterp] = useState<Interpretation | null>(() => {
+    const cached = load<Interpretation | 'failed' | null>(cacheKey + '.interpretation', null, 'session');
+    return cached === 'failed' ? null : cached;
+  });
+  const [interpretFailed, setInterpretFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   /** 로그인 만료로 저장하지 못함 → 다시 저장해도 같은 결과라 '로그인하고 복구하기'만 보여 준다 */
   const [expired, setExpired] = useState(false);
@@ -59,14 +70,14 @@ function LiveReceipt() {
     if (failure) saveStatusRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [failure]);
   useEffect(() => {
-    if (interp === 'failed') interpCardRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [interp]);
+    if (interpretFailed) interpCardRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [interpretFailed]);
   useEffect(() => {
-    if (!data || record) return;
+    if (!finished || !data || record) return;
     const value = buildRecord(initial, data[1], data[0]); save(cacheKey, value, 'session'); setRecord(value);
-  }, [data, record, initial, cacheKey]);
+  }, [finished, data, record, initial, cacheKey]);
   useEffect(() => {
-    if (!record || !initial.user || saved) return;
+    if (!finished || !record || !initial.user || saved) return;
     let active = true;
     save(pendingKey, record, 'session'); setBusy(true); setFailure(''); setExpired(false);
     // Never silently retry a pending member receipt as a guest after token expiry.
@@ -81,16 +92,17 @@ function LiveReceipt() {
       setFailure(e instanceof Error ? e.message : '기록 저장에 실패했어요.');
     }).finally(() => active && setBusy(false));
     return () => {active = false;};
-  }, [record, initial.user, saved, attempt, pendingKey]);
+  }, [finished, record, initial.user, saved, attempt, pendingKey]);
   const interpret = async () => {
     if (!record || interpreting.current || scope.current !== initialScope || (initial.user && (!saved || actor.current !== initial.user.id))) return;
     interpreting.current = true; setInterpretPending(true);
-    setInterp(null);
+    // 성공한 해석은 새 응답을 받기 전까지 화면·PNG·탭 저장소에 유지합니다.
+    setInterpretFailed(false);
     try {
       const r = await api.interpretVisit({exhibitionId: record.exhibitionId, visitId: initial.visitId, viewedArtworkIds: record.viewedArtworkIds, reactions: record.reactions, dwell: record.dwell ?? {}});
       if (!mounted.current || scope.current !== initialScope) return;
       const value = {text: r.text, emotionProfile: r.emotionProfile}; setInterp(value); save(cacheKey + '.interpretation', value, 'session');
-    } catch {if (mounted.current && scope.current === initialScope) setInterp('failed');}
+    } catch {if (mounted.current && scope.current === initialScope) setInterpretFailed(true);}
     finally {interpreting.current = false; if (mounted.current && scope.current === initialScope) setInterpretPending(false);}
   };
   const finish = async () => {
@@ -102,6 +114,7 @@ function LiveReceipt() {
     dispatch({type: 'resetVisit'}); navigate(to(), {replace: true});
   };
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
+  if (!finished) return <Navigate to={to('/route')} replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
   return <MobileShell screenId="U-12" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
     <div className="lead center"><h2>오늘의 관람이 완성됐어요</h2></div>
@@ -114,7 +127,7 @@ function LiveReceipt() {
       </div>
     )}
     {!record || !data ? (!error && <Spinner />) : <>
-      <div ref={captureRef}><Receipt record={record} artworks={data[1]} interpretation={interp && interp !== 'failed' ? interp.text : null} profile={interp && interp !== 'failed' ? interp.emotionProfile : null} /></div>
+      <div ref={captureRef}><Receipt record={record} artworks={data[1]} interpretation={interp?.text ?? null} profile={interp?.emotionProfile ?? null} /></div>
 
       {/* 관람기록 저장 상태: 회원은 저장 중 → 저장됨 / 실패(로그인 만료 구분), 비회원은 이 기기에서만 */}
       <div ref={saveStatusRef} className="above-footer">
@@ -144,20 +157,20 @@ function LiveReceipt() {
       </div>
 
       {/* AI 취향 해석: 관람기록 저장과 별개. 회원은 저장된 뒤에만 요청 가능(서버도 저장 전 요청을 거절) */}
-      <section ref={interpCardRef} className={`interp-card above-footer${interp === 'failed' ? ' is-err' : ''}`} aria-label="AI 취향 해석">
-        {interp === 'failed' ? <>
+      <section ref={interpCardRef} className={`interp-card above-footer${interpretFailed ? ' is-err' : ''}`} aria-label="AI 취향 해석">
+        {interpretFailed ? <>
           <p className="interp-title is-err"><Icon name="alert" size={18} />해석을 가져오지 못했어요</p>
-          <p className="interp-desc" role="alert">{initial.user ? '관람기록은 저장돼 있어요. 해석만 다시 시도할 수 있어요.' : '잠시 후 다시 시도할 수 있어요.'}</p>
+          <p className="interp-desc" role="alert">{interp ? '기존 해석은 그대로 남아 있어요. 새 해석만 다시 시도할 수 있어요.' : initial.user ? '관람기록은 저장돼 있어요. 해석만 다시 시도할 수 있어요.' : '잠시 후 다시 시도할 수 있어요.'}</p>
           <button className="btn outline block" disabled={interpretPending} onClick={interpret}>다시 시도</button>
         </> : <>
           <p className="interp-title"><Icon name="sparkle" size={18} />AI 취향 해석</p>
-          {interp ? <>
+          {interpretPending ? (
+            <p className="interp-desc" role="status"><span className="spinner-dot" aria-hidden="true" />해석하는 중…{interp && ' 기존 해석은 계속 저장할 수 있어요.'}</p>
+          ) : interp ? <>
             {/* 준억님 화면처럼 성공 후에도 다시 요청할 수 있다. 다시 하면 새 해석으로 바뀐다 */}
             <p className="interp-desc">영수증 안에 해석을 넣었어요. 다시 해석하면 새 내용으로 바뀌어요.</p>
             <button className="btn outline block" onClick={interpret}>다시 해석하기</button>
-          </> : interpretPending ? (
-            <p className="interp-desc"><span className="spinner-dot" aria-hidden="true" />해석하는 중…</p>
-          ) : initial.user && !saved ? (
+          </> : initial.user && !saved ? (
             <p className="interp-desc">관람기록이 저장되면 볼 수 있어요.</p>
           ) : <>
             <p className="interp-desc">오늘 본 작품으로 내 취향을 풀어 드려요.</p>
@@ -166,7 +179,8 @@ function LiveReceipt() {
         </>}
       </section>
 
-      <ReceiptImageSave targetRef={captureRef} ready fileName={receiptFileName(record.date)} />
+      {/* 내용이 바뀌면 이전 PNG를 폐기하고 현재 해석을 담아 다시 준비합니다. */}
+      <ReceiptImageSave key={JSON.stringify(interp)} targetRef={captureRef} ready fileName={receiptFileName(record.date)} />
     </>}
   </MobileShell>;
 }
@@ -177,7 +191,7 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
   const { state: entry } = useLocation();
   const { state } = useVisit();
   const captureRef = useRef<HTMLDivElement>(null);
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () => api.getVisit(visitId).then(record => [record, record.artworkSnapshots ?? []] as const),
     [visitId],
   );
@@ -200,7 +214,12 @@ function HistoryReceipt({ visitId }: { visitId: string }) {
       )}
     >
       {loading && <Spinner />}
-      {error && <p className="error-text">{error}</p>}
+      {error && (
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">영수증을 불러오지 못했어요.{errorDetail(error)}</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+        </div>
+      )}
       {data && (
         <div ref={captureRef}>
           <Receipt
