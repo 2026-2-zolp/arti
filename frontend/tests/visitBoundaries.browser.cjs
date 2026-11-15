@@ -21,11 +21,9 @@ async function body(response, status = 200) {
 // No browser-accessible expiry hook. The child process only updates the synthetic DB.
 function fixtureCommand(code, values = {}) {
   const preamble = [
-    'from django.conf import settings',
     'import os',
-    'db = settings.DATABASES["default"]',
-    'assert settings.ARTI_ENV == "test" and settings.ALLOW_TEST_FIXTURES',
-    'assert db["NAME"] == "arti_visit_boundaries" and db["HOST"] in ("127.0.0.1", "localhost")',
+    'from arti.tests.visit_browser_server import require_visit_fixture',
+    'require_visit_fixture()',
   ];
   const result = spawnSync(process.env.ARTI_TEST_PYTHON || 'python', [
     'backend-django/manage.py', 'shell', '-c', [...preamble, ...code].join('\n'),

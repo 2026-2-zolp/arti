@@ -82,24 +82,24 @@ jobs:
       - run: python manage.py test arti.tests --noinput -v 2
 
   docent-browser:
-    name: ${{ matrix.suite == 'receipt-visibility' && 'Receipt Chrome (visibility)' || format('Docent Chrome ({0})', matrix.suite) }}
+    name: ${{ matrix.suite == 'visit-boundaries' && 'Visit Chrome (boundaries)' || matrix.suite == 'receipt-visibility' && 'Receipt Chrome (visibility)' || format('Docent Chrome ({0})', matrix.suite) }}
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        suite: [retry, artwork-change, guide-summary, receipt-visibility]
+        suite: [retry, artwork-change, guide-summary, receipt-visibility, visit-boundaries]
     services:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: arti
+          POSTGRES_DB: ${{ matrix.suite == 'visit-boundaries' && 'arti_visit_boundaries' || 'arti' }}
           POSTGRES_USER: arti
           POSTGRES_PASSWORD: ci-only-disposable-password
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U arti -d arti"
+          --health-cmd "pg_isready -U arti -d postgres"
           --health-interval 5s --health-timeout 5s --health-retries 15
     env:
       DJANGO_SECRET_KEY: ci-only-not-a-production-secret-at-least-32-characters
@@ -110,7 +110,7 @@ jobs:
       ARTI_MODEL_SERVICE_URL: ''
       OPENAI_API_KEY: ''
       ARTI_BOOTSTRAP_PASSWORD: ci-only-synthetic-docent-admin-42
-      PGDATABASE: arti
+      PGDATABASE: ${{ matrix.suite == 'visit-boundaries' && 'arti_visit_boundaries' || 'arti' }}
       PGUSER: arti
       PGPASSWORD: ci-only-disposable-password
       PGHOST: 127.0.0.1
@@ -140,12 +140,18 @@ jobs:
       - name: Load synthetic exhibition and administrator
         working-directory: backend-django
         env:
-          ARTI_BROWSER_ADMIN: ${{ matrix.suite == 'receipt-visibility' && 'receipt-snapshot-admin' || 'docent-race-admin' }}
+          ARTI_BROWSER_ADMIN: ${{ matrix.suite == 'visit-boundaries' && 'visit-boundaries-admin' || matrix.suite == 'receipt-visibility' && 'receipt-snapshot-admin' || 'docent-race-admin' }}
         run: |
           python manage.py migrate --noinput
           python manage.py load_test_fixture
           python manage.py bootstrap_admin --login-id "$ARTI_BROWSER_ADMIN" --name 'Synthetic administrator'
+      - name: Run visit boundary Chrome twice
+        if: matrix.suite == 'visit-boundaries'
+        run: |
+          node frontend/tests/runVisitBoundaries.browser.mjs
+          node frontend/tests/runVisitBoundaries.browser.mjs
       - name: Run loopback Chrome regression
+        if: matrix.suite != 'visit-boundaries'
         shell: bash
         env:
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
