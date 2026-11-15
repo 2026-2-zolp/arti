@@ -20,3 +20,12 @@ test('equal dwell uses visit order even when the dwell keys arrive in another or
  const record = buildRecord(state, [], {id: 'ex', title: '시험 전시', venue: '가상'} as any);
  assert.equal(record.longestViewedArtworkId, 'second');
 });
+
+test('receipt duration stays inside the save contract after a long visit', () => {
+ const state = init();
+ const exhibition = {id: 'ex', title: '시험 전시', venue: '가상'} as any;
+ const now = Date.now();
+ for (const [startedAt, expected] of [[null, 0], [now + 10000, 1], [now - 30 * 60000, 30], [now - 48 * 60 * 60000, 1440]] as const) {
+   assert.equal(buildRecord({...state, startedAt}, [], exhibition).durationMin, expected);
+ }
+});

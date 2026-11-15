@@ -2,6 +2,16 @@
 import type {VisitState} from '../store/visitReducer';
 import type {Artwork, Exhibition, TasteTag, VisitRecord} from '../types';
 import {TASTE_LABEL} from '../data/mock';
+
+// Django와 Express가 허용하는 관람 시간의 최대값입니다.
+export const MAX_VISIT_DURATION_MIN = 24 * 60;
+
+/** 이전 버전이 탭에 남긴 영수증의 초과 시간만 저장 범위에 맞춥니다. */
+export function limitReceiptDuration(record: Omit<VisitRecord, 'id'>): Omit<VisitRecord, 'id'> {
+  if (record.durationMin > MAX_VISIT_DURATION_MIN) return { ...record, durationMin: MAX_VISIT_DURATION_MIN };
+  return record;
+}
+
 export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition): Omit<VisitRecord, 'id'> {
   const byId = new Map(artworks.map((w) => [w.id, w]));
   const dwell = Object.fromEntries(Object.entries(s.dwell).filter(([id]) => s.viewed.includes(id)));
@@ -28,7 +38,7 @@ export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition):
     exhibitionTitle: ex.title,
     venue: ex.venue,
     date: new Date().toISOString(),
-    durationMin: s.startedAt ? Math.max(1, Math.round((Date.now() - s.startedAt) / 60000)) : 0,
+    durationMin: s.startedAt ? Math.min(MAX_VISIT_DURATION_MIN, Math.max(1, Math.round((Date.now() - s.startedAt) / 60000))) : 0,
     viewedArtworkIds: s.viewed,
     recommendedCount: s.recommendations.length,
     reactions,

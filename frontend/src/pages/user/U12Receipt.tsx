@@ -13,7 +13,7 @@ import { Icon } from '../../components/Icon';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { load, save, remove } from '../../lib/storage';
-import {buildRecord} from '../../lib/receiptPayload';
+import {buildRecord, limitReceiptDuration} from '../../lib/receiptPayload';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import { EmotionBars } from '../../components/EmotionBars';
@@ -52,7 +52,7 @@ function LiveReceipt() {
     const cached = load<Omit<VisitRecord, 'id'> | null>(pendingKey, load(cacheKey, null, 'session'), 'session');
     // 이전 버전이 관람 도중 만든 영수증을 완료된 기록으로 재사용하지 않습니다.
     if (cached?.viewedArtworkIds.length !== initial.viewed.length) return null;
-    return initial.viewed.every((id, i) => id === cached.viewedArtworkIds[i]) ? cached : null;
+    return initial.viewed.every((id, i) => id === cached.viewedArtworkIds[i]) ? limitReceiptDuration(cached) : null;
   });
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
   const [interp, setInterp] = useState<Interpretation | null>(() => {

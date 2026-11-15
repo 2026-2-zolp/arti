@@ -199,6 +199,7 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
   summary: '',
   summaryKeywords: [],
   summaryStatus: 'none',
+  imageUrl: '',
   imageFile: null,
   showImage: true,
 });

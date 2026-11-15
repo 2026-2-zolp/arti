@@ -7,41 +7,69 @@ import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
-import { load, save } from '../../lib/storage';
+import { load, remove, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
 import type { ChatMessage } from '../../types';
 
 const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는 어떤 사람인가요?', '색은 어떤 의미가 있나요?', '왜 유명한 작품인가요?'];
+// 요청 제한은 작품에서 나가거나 새로고침해도 같은 탭의 도슨트에 적용합니다.
+const RETRY_WINDOW_KEY = 'arti.docent.retryWindow';
 
 type AskFailure = {
   message: string;
   retry?: { question: string; fromInput: boolean };
 };
+type RetryWindow = { expiresAt: number; seconds: number };
 
 // crypto.randomUUID는 https에서만 동작해 휴대폰 LAN 테스트(http)에서 실패하므로 간단한 id 생성기를 쓴다
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 /** 현재 작품과 해설·질문 맥락을 이어 도슨트와 대화하는 화면 */
 export default function U11AskAI() {
+  const { state } = useVisit();
+  const to = useExhibitionPath();
+  const rec = state.recommendations[state.current];
+  if (!rec) return <Navigate to={to('/route')} replace />;
+
+  // 보낸 대화는 자료 버전별로 나누고, 미전송 원문은 같은 관람·작품에서 다시 쓸 수 있게 둡니다.
+  const draftKey = `${scopeKey(state, rec.artworkId, 0)}.questionDraft`;
+  return <ArtworkChat key={draftKey} draftKey={draftKey} artworkId={rec.artworkId} />;
+}
+
+function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: string }) {
   const navigate = useNavigate();
   const { state: entryLocation } = useLocation();
   const { state } = useVisit();
   const to = useExhibitionPath();
-  const rec = state.recommendations[state.current];
-  const artworkId = rec?.artworkId ?? '';
 
   // 대화 내용은 작품별로 sessionStorage에 보관 → U-10에 갔다 와도 유지
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadedChatKey, setLoadedChatKey] = useState('');
   const [failure, setFailure] = useState<AskFailure | null>(null);
+  const [retryWindow, setRetryWindow] = useState<RetryWindow | null>(() => {
+    const saved = load<RetryWindow | null>(RETRY_WINDOW_KEY, null, 'session');
+    return saved && saved.expiresAt > Date.now() ? saved : null;
+  });
+  useEffect(() => {
+    if (!retryWindow) return;
+    const timer = window.setTimeout(() => {
+      remove(RETRY_WINDOW_KEY, 'session');
+      setRetryWindow(null);
+    }, Math.max(0, retryWindow.expiresAt - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [retryWindow]);
   const generation = useRef(0);
   const [contentChanged, setContentChanged] = useState(false);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(() => load(draftKey, '', 'session'));
+  useEffect(() => {
+    if (input) save(draftKey, input, 'session');
+    else remove(draftKey, 'session');
+  }, [draftKey, input]);
   const [pending, setPending] = useState(false);
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
-  const { data: w, error, reload } = useAsync(() => (artworkId ? api.getArtwork(artworkId) : Promise.resolve(null)), [artworkId]);
+  const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
 
   const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
@@ -51,8 +79,7 @@ export default function U11AskAI() {
     entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
   const chatReady = !!key && loadedChatKey === key;
-  const canAsk = chatReady && !pending && !contentChanged;
-  const hasArtwork = !!artworkId;
+  const canAsk = chatReady && !pending && !contentChanged && !retryWindow;
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -71,7 +98,7 @@ export default function U11AskAI() {
       viewport.removeEventListener('resize', syncViewport);
       viewport.removeEventListener('scroll', syncViewport);
     };
-  }, [hasArtwork]);
+  }, []);
 
   useEffect(() => {
     generation.current += 1; sending.current = false; setPending(false);
@@ -84,7 +111,6 @@ export default function U11AskAI() {
     const conversation = shellRef.current?.querySelector('main');
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
   }, [messages, pending]);
-  if (!rec) return <Navigate to={to('/route')} replace />;
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
@@ -106,8 +132,15 @@ export default function U11AskAI() {
         reload();
       } else {
         const retryable = !(e instanceof ApiError) || e.status === 0 || e.status === 429 || e.status >= 500;
+        if (e instanceof ApiError && e.status === 429 && e.retryAfterSeconds) {
+          const nextWindow = { expiresAt: Date.now() + e.retryAfterSeconds * 1000, seconds: e.retryAfterSeconds };
+          save(RETRY_WINDOW_KEY, nextWindow, 'session');
+          setRetryWindow(nextWindow);
+        }
         setFailure({
-          message: e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
+          message: e instanceof ApiError && e.status === 429 && e.retryAfterSeconds
+            ? 'AI 사용량이 많아 질문을 보내지 못했어요.'
+            : e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
           retry: retryable ? { question, fromInput } : undefined,
         });
       }
@@ -125,6 +158,9 @@ export default function U11AskAI() {
   };
   const guidedStart = !!selectedQuestion && !messages.length;
   const retry = failure?.retry;
+  const sendError = retryWindow
+    ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
+    : failure?.message;
   const backToArtwork = () => {
     if (entryLocation?.fromArtwork) navigate(-1);
     else navigate(to('/artwork'), { replace: true });
@@ -138,9 +174,9 @@ export default function U11AskAI() {
       back={backToArtwork}
       footer={
         <>
-          {failure && (
+          {sendError && (
             <div className="docent-send-error">
-              <p id="docent-send-error" className="error-text" role="alert">{failure.message}</p>
+              <p id="docent-send-error" className="error-text" role="alert">{sendError}</p>
               {retry && (
                 <button type="button" className="link-btn" disabled={!canAsk}
                   onClick={() => ask(retry.question, retry.fromInput)}>
@@ -162,7 +198,7 @@ export default function U11AskAI() {
               aria-label="질문 입력"
               aria-describedby={[
                 guidedStart ? 'docent-question-text' : '',
-                failure ? 'docent-send-error' : '',
+                sendError ? 'docent-send-error' : '',
               ].filter(Boolean).join(' ') || undefined}
             />
             <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">

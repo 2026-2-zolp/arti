@@ -8,7 +8,7 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { useSpeech } from '../../lib/useSpeech';
@@ -54,10 +54,20 @@ export default function U10Artwork() {
   const advancing = useRef(false);
   const tts = useSpeech();
 
-  const { data: w, loading, error, reload } = useAsync(
-    () => (rec ? api.getArtwork(rec.artworkId) : Promise.resolve(null)),
+  const { data, loading, error, reload } = useAsync(
+    async () => {
+      if (!rec) return null;
+      try {
+        return { artwork: await api.getArtwork(rec.artworkId), unavailableId: null };
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) return { artwork: null, unavailableId: rec.artworkId };
+        throw err;
+      }
+    },
     [rec?.artworkId],
   );
+  const w = data?.artwork;
+  const unavailable = !!rec && data?.unavailableId === rec.artworkId;
 
   const readingKey = w ? scopeKey(state, w.id, w.contentVersion ?? 1) + '.reading' : '';
   const restored = useRef('');
@@ -149,6 +159,13 @@ export default function U10Artwork() {
     navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
   };
 
+  const skip = () => {
+    if (advancing.current || loading || !unavailable) return;
+    advancing.current = true;
+    dispatch({ type: 'skipCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId });
+    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+  };
+
   const openMap = () => {
     tts.stop();
     // 지도와 현재 작품은 같은 기록을 사용해 이동 후 이전 작품의 지도가 앞으로가기에 남지 않게 합니다.
@@ -213,7 +230,7 @@ export default function U10Artwork() {
           <Icon name="map" size={18} /> 지도 보기
         </button>
       }
-      footer={error ? undefined : (
+      footer={error || unavailable ? undefined : (
         // 작품 정보를 못 불러온 동안에는 누를 수 없는 [다음 작품 안내]를 남기지 않는다(카드의 버튼으로 빠져나간다).
         <div className="footer-stack">
           {ask && (
@@ -233,10 +250,11 @@ export default function U10Artwork() {
         </div>
       )}
     >
-      {error ? (
+      {error || unavailable ? (
         <div className="notice-card is-err notice-center screen-center" role="alert">
           <p className="notice-body">작품 정보를 불러오지 못했어요.{errorDetail(error)}</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          {unavailable && <button className="btn ghost block" onClick={skip}>이 작품 건너뛰기</button>}
           <button className="btn ghost block" onClick={openMap}>지도 보기</button>
         </div>
       ) : loading || !w ? (
