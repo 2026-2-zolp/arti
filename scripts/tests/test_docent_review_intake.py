@@ -89,6 +89,55 @@ class DocentReviewIntakeTests(unittest.TestCase):
         self.assertEqual(row['decisionCounts'], {'통과': 1, '실패': 1})
         self.assertTrue(row['differentDecisions'] and row['differentRequiredBehavior'] and row['differentCriticalViolation'])
         self.assertEqual(row['differentScores'], ['근거'])
+        unexposed = result['unexposedCaseSummary']['D01-followup']
+        self.assertEqual(unexposed['decisionCounts'], {'통과': 1})
+        self.assertFalse(unexposed['differentDecisions'])
+        self.assertFalse(unexposed['differentRequiredBehavior'])
+        self.assertFalse(unexposed['differentCriticalViolation'])
+        self.assertEqual(unexposed['differentScores'], [])
+
+    def test_unexposed_disagreement_preserves_critical_and_score_differences(self):
+        first = fixture_reply(self.answers, '검수 A', '미열람')
+        second = fixture_reply(self.answers, '검수 B', '미열람', {'D01-followup': {
+            '근거': '1', '중대 위반': '있음', '판정': '실패',
+        }})
+        third = fixture_reply(self.answers, '검수 C', '열람', {'D01-followup': {
+            '요청 반영': '0', '필수 행동': '미충족', '판정': '수정',
+        }})
+        result = self.review(first, second, third)
+        overall = result['caseSummary']['D01-followup']
+        unexposed = result['unexposedCaseSummary']['D01-followup']
+        self.assertEqual(overall['decisionCounts'], {'통과': 1, '실패': 1, '수정': 1})
+        self.assertTrue(overall['differentRequiredBehavior'])
+        self.assertEqual(overall['differentScores'], ['근거', '요청 반영'])
+        self.assertEqual(unexposed['decisionCounts'], {'통과': 1, '실패': 1})
+        self.assertTrue(unexposed['differentDecisions'])
+        self.assertFalse(unexposed['differentRequiredBehavior'])
+        self.assertTrue(unexposed['differentCriticalViolation'])
+        self.assertEqual(unexposed['differentScores'], ['근거'])
+
+    def test_unexposed_summary_counts_valid_holds_and_omits_unusable_rows(self):
+        hold = fixture_reply(self.answers, '보류 검수', '미열람', {'B01': {
+            '근거': '', '명료성': '', '필수 행동': '', '중대 위반': '', '판정': '보류',
+            '판단 문장과 근거': '→ 출처 목록의 누락 여부 확인 필요',
+        }})
+        missing_case = fixture_reply(self.answers, '사례 누락', '미열람', omitted=('B01',))
+        duplicate = fixture_reply(self.answers, 'Duplicate', '미열람')
+        exposed_duplicate = fixture_reply(self.answers, 'duplicate', '열람')
+        unknown = fixture_reply(self.answers, '열람 모름', '모름')
+        missing = fixture_reply(self.answers, '열람 누락', '')
+        invalid = fixture_reply(self.answers, '열람 오기', '확인')
+        result = self.review(hold, missing_case, duplicate, exposed_duplicate, unknown, missing, invalid)
+        self.assertEqual(result['priorReviewExposureCounts'], {'미열람': 3, '열람': 1, '모름': 1, '미기록': 2})
+        overall = result['caseSummary']['B01']
+        self.assertEqual(overall['recordableReplies'], 2)
+        self.assertEqual(overall['decisionCounts'], {'통과': 1})
+        unexposed = result['unexposedCaseSummary']['B01']
+        self.assertEqual(unexposed['recordableReplies'], 1)
+        self.assertEqual(unexposed['held'], 1)
+        self.assertEqual(unexposed['decisionCounts'], {})
+        self.assertFalse(unexposed['differentDecisions'])
+        self.assertEqual(unexposed['differentScores'], [])
 
     def test_archive_binding_and_repeated_reviewers_are_not_counted(self):
         first = fixture_reply(self.answers, 'Reviewer A', '미열람')
@@ -114,6 +163,7 @@ class DocentReviewIntakeTests(unittest.TestCase):
         self.assertEqual(len(result['replies'][0]['cases']), 12)
         self.assertTrue(all('decision-required' in row['issues'] for row in result['replies'][0]['cases'].values()))
         self.assertTrue(all(row['recordableReplies'] == 0 for row in result['caseSummary'].values()))
+        self.assertTrue(all(row['recordableReplies'] == 0 for row in result['unexposedCaseSummary'].values()))
 
 
 if __name__ == '__main__':
