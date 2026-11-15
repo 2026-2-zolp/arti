@@ -265,6 +265,7 @@ async function recoverNewErrorCards(browser) {
     await button('조사 작품 0 선택').waitFor();
     await button('조사 작품 1 선택').click();
     await button('조사 작품 2 선택').waitFor();
+    assert.deepEqual(await page.evaluate(() => Object.keys(history.state.usr.tasteEntry).sort()), ['depth', 'key']);
     failures.set('/api/taste-pool', generic);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await issue('취향 조사 작품을 불러오지 못했어요.');

@@ -1,5 +1,5 @@
 /** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
@@ -11,6 +11,7 @@ import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { load, save } from '../../lib/storage';
 import { tasteScope } from '../../lib/tasteFlow';
+import { newVisitId } from '../../lib/visitScope';
 import { tastesFromPicks } from '../../lib/tasteFromPicks';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
@@ -34,18 +35,21 @@ export default function U05Taste() {
 
 type LoadIssue = 'error' | 'notReady' | 'noContext' | null;
 
-type TasteEntry = { owner: string; depth: number; draft: Draft };
+type TasteEntry = { key: string; depth: number };
 
 function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
   const navigate = useNavigate();
   const location = useLocation();
   const to = useExhibitionPath();
-  const owner = JSON.stringify([state.user?.id ?? null, state.exhibitionId]);
+  const historyPrefix = `arti.tasteDraft.history.${JSON.stringify([state.user?.id ?? null, state.exhibitionId])}.`;
   const storedEntry: TasteEntry | undefined = location.state?.tasteEntry;
-  const entry = storedEntry?.owner === owner ? storedEntry : undefined;
+  const entryStorageKey = storedEntry ? historyPrefix + storedEntry.key : null;
+  const entryDraft = useMemo(() => entryStorageKey ? load<Draft | null>(entryStorageKey, null, 'session') : null,
+    [entryStorageKey, location.key]);
+  const entry = entryDraft ? storedEntry : undefined;
   const [storedDraft, setStoredDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
-  const draft = entry?.draft ?? storedDraft;
+  const draft = entryDraft ?? storedDraft;
   const [picked, setPicked] = useState<string | null>(null);
   const [viewing, setViewing] = useState<string | null>(null); // 크게 보기로 연 작품 ID
   const pickTimer = useRef<number | null>(null);
@@ -110,26 +114,27 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     setStoredDraft(next);
   }, [draftKey]);
 
-  // React Router가 관리하는 이력에 비교 상태를 담는다. 브라우저 앞·뒤로가기와
-  // 새로고침은 해당 기록의 선택을 복원하며 계정·전시가 다르면 세션 초안을 쓴다.
+  // 라우터 이력에는 복원 키만 담는다. 선택 내용은 로그아웃 시 정리되는 세션 저장소에 둔다.
+  const writeEntry = useCallback((next: Draft, depth: number, replace: boolean) => {
+    const key = (replace && entry?.key) || newVisitId();
+    save(historyPrefix + key, next, 'session');
+    navigate(location.pathname, { replace, state: { tasteEntry: { key, depth } } });
+  }, [entry?.key, historyPrefix, location.pathname, navigate]);
   const restartPending = useRef(false);
   useEffect(() => {
     if (restartPending.current) {
       restartPending.current = false;
       const empty = { picks: [] };
       persist(empty);
-      navigate(location.pathname, { replace: true, state: { tasteEntry: { owner, depth: 0, draft: empty } } });
-    } else if (entry) {
-      persist(entry.draft);
+      writeEntry(empty, 0, true);
+    } else if (entryDraft) {
+      persist(entryDraft);
     }
-  }, [entry, location.key, location.pathname, owner, navigate, persist]);
+  }, [entryDraft, persist, writeEntry]);
 
-  const writeEntry = (next: TasteEntry, replace: boolean) => {
-    navigate(location.pathname, { replace, state: { tasteEntry: next } });
-  };
   function update(next: Draft) {
     persist(next);
-    if (entry) writeEntry({ ...entry, draft: next }, true);
+    if (entry) writeEntry(next, entry.depth, true);
   }
   const stepBack = () => {
     if (picked !== null || !draft.picks.length) return;
@@ -152,9 +157,9 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
       pickTimer.current = null;
       setPicked(null);
       const next = { picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options };
-      if (!entry) writeEntry({ owner, depth: 0, draft }, true);
+      if (!entry) writeEntry(draft, 0, true);
       persist(next);
-      writeEntry({ owner, depth: (entry?.depth ?? 0) + 1, draft: next }, false);
+      writeEntry(next, (entry?.depth ?? 0) + 1, false);
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420);
   }
 
