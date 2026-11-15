@@ -140,7 +140,9 @@ export const api = {
   listArtworks: (exhibitionId?: string) =>
     request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks'),
 
-  getArtwork: (id: string) => request<Artwork>('GET', `/artworks/${enc(id)}`),
+  getArtwork: (id: string, visit?: { visitId: string; exhibitionId: string }) => request<Artwork>(
+    'GET', `/artworks/${enc(id)}${visit ? `?${new URLSearchParams(visit)}` : ''}`,
+  ),
 
   saveArtwork: (w: Artwork) =>
     w.id

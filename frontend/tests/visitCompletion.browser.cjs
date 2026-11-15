@@ -457,7 +457,8 @@ async function recoverDocentDraft(browser) {
   const input = page.getByRole('textbox', { name: '질문 입력' });
   const sent = [];
   let version = 1;
-  await page.route(base + '/api/artworks/a', route => route.fulfill({ json: { ...works[0], contentVersion: version } }));
+  await page.route(url => url.origin === base && url.pathname === '/api/artworks/a',
+    route => route.fulfill({ json: { ...works[0], contentVersion: version } }));
   await page.route(base + '/api/artworks/a/ask', route => {
     sent.push(route.request().postDataJSON());
     if (sent.length === 1) return route.fulfill({ json: { answer: '이전 자료의 합성 답변', mode: 'llm', sourceRefs: [] } });

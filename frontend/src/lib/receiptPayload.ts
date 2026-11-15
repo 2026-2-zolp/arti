@@ -1,6 +1,6 @@
 /** 관람 상태를 서버에 저장할 영수증 요청으로 변환합니다. */
 import type {VisitState} from '../store/visitReducer';
-import type {Artwork, Exhibition, TasteTag, VisitRecord} from '../types';
+import type {ReceiptArtwork, ReceiptExhibition, TasteTag, VisitRecord} from '../types';
 import {TASTE_LABEL} from '../data/mock';
 
 // Django와 Express가 허용하는 관람 시간의 최대값입니다.
@@ -12,8 +12,17 @@ export function limitReceiptDuration(record: Omit<VisitRecord, 'id'>): Omit<Visi
   return record;
 }
 
-export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition): Omit<VisitRecord, 'id'> {
+export function buildRecord(s: VisitState, artworks: ReceiptArtwork[], ex: ReceiptExhibition): Omit<VisitRecord, 'id'> {
   const byId = new Map(artworks.map((w) => [w.id, w]));
+  const artworkReceiptEvidence: Record<string, string> = {};
+  const artworkSnapshots = s.viewed.flatMap(id => {
+    const captured = s.receiptArtworks[id];
+    if (captured?.evidence) artworkReceiptEvidence[id] = captured.evidence;
+    const work = captured?.snapshot ?? byId.get(id);
+    if (!work) return [];
+    byId.set(id, work);
+    return [{ id: work.id, title: work.title, tags: work.tags }];
+  });
   const dwell = Object.fromEntries(Object.entries(s.dwell).filter(([id]) => s.viewed.includes(id)));
   const reactions = Object.fromEntries(Object.entries(s.reactions).filter(([id]) => s.viewed.includes(id)));
   const reasons = Object.fromEntries(Object.entries(s.reactionReasons).filter(([id]) => s.viewed.includes(id) && reactions[id]));
@@ -33,6 +42,8 @@ export function buildRecord(s: VisitState, artworks: Artwork[], ex: Exhibition):
   return {
     visitId: s.visitId, tasteProfile: s.tasteProfile, tastes: s.tastes, selectedDuration: s.duration ?? '30m', requestGeneration: s.requestGeneration, reactionReasons: reasons, dwell,
     tasteEvidenceReceipt: s.tasteEvidenceReceipt,
+    artworkSnapshots,
+    artworkReceiptEvidence: Object.keys(artworkReceiptEvidence).length ? artworkReceiptEvidence : undefined,
     userId: s.user?.id ?? null,
     exhibitionId: ex.id,
     exhibitionTitle: ex.title,

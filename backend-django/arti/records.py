@@ -9,7 +9,8 @@ from .authentication import IsAdmin
 from .http import ContractError
 from .constants import LABELS
 from .member import member, user_dto
-from .models import Account, Visit, VisitReaction
+from .models import Account, Artwork, Exhibition, Visit, VisitReaction
+from .receipt_evidence import MAX_BYTES as ARTWORK_EVIDENCE_MAX_BYTES, read_artwork_evidence
 from .recommendations import profile_snapshot
 from .serializers import TasteProfileInput, artwork_dto
 from .taste_evidence import read_visit_evidence, receipt_hash, uuid_value
@@ -23,16 +24,47 @@ def bad(message='관람 기록 입력을 확인해 주세요.'):
     raise ContractError(400,'VALIDATION_ERROR',message)
 
 
+def receipt_sources(data, account, visit_id, ids):
+    ex_id = data.get('exhibitionId')
+    ex = Exhibition.objects.filter(pk=ex_id, status__in=('running', 'closed')).first()
+    proofs = data.get('artworkReceiptEvidence', {})
+    if (not isinstance(proofs, dict) or any(
+        key not in ids or not isinstance(value, str) or len(value) > ARTWORK_EVIDENCE_MAX_BYTES
+        for key, value in proofs.items()
+    )):
+        bad()
+    if not ex or (ex.status == 'closed' and (not account or not ids or not proofs)):
+        raise ContractError(404, 'NOT_FOUND', '전시 정보를 찾을 수 없어요.')
+
+    works = list(public_works(ex.id)) if ex.status == 'running' else []
+    by_id = {work.id: work for work in works}
+    private_ids = set(ids) - by_id.keys()
+    existing_private_ids = set(Artwork.objects.filter(exhibition_id=ex.id, pk__in=private_ids).values_list('id', flat=True))
+    snapshots = []
+    exhibition = {'id': ex.id, 'title': ex.title, 'venue': ex.venue}
+    for index, artwork_id in enumerate(ids):
+        if artwork_id in by_id:
+            artwork = artwork_dto(by_id[artwork_id])
+            snapshots.append({key: artwork[key] for key in ('id', 'title', 'artist', 'year', 'tags', 'analysis')})
+            continue
+        evidence = (read_artwork_evidence(proofs.get(artwork_id), account, visit_id, ex.id, artwork_id)
+                    if account and artwork_id in existing_private_ids else None)
+        if evidence is None:
+            bad('현재 공개된 작품이나 같은 관람에서 확인한 작품만 기록할 수 있어요.')
+        snapshots.append(evidence['artwork'])
+        if ex.status == 'closed' and index == 0:
+            exhibition = evidence['exhibition']
+    return exhibition, works, snapshots
+
+
 def canonical(data, account=None):
     try:visit_id=uuid.UUID(data.get('visitId',''))
     except (ValueError,TypeError,AttributeError):bad('관람 식별자가 필요해요.')
     if visit_id.version!=4:bad()
-    ex=public_exhibition(data.get('exhibitionId'))
     ids=data.get('viewedArtworkIds')
     if not isinstance(ids,list) or len(ids)>200 or any(not isinstance(i,str) for i in ids):bad()
     ids=list(dict.fromkeys(ids))
-    works=list(public_works(ex.id));by_id={w.id:w for w in works}
-    if any(i not in by_id for i in ids):bad('공개된 같은 전시의 작품만 기록할 수 있어요.')
+    ex, works, snapshots = receipt_sources(data, account, str(visit_id), ids)
     reactions=data.get('reactions',{});reasons=data.get('reactionReasons',{});dwell=data.get('dwell',{})
     for mapping in [reactions,reasons,dwell]:
         if not isinstance(mapping,dict) or any(k not in ids for k in mapping):bad()
@@ -62,18 +94,18 @@ def canonical(data, account=None):
     if validated and validated['version'] == 2:
         if not isinstance(tags, list) or any(not isinstance(tag, str) for tag in tags) or len(set(tags)) != len(tags):
             bad()
-        profile = read_visit_evidence(proof, account, str(visit_id), ex.id, validated, tags)
+        profile = read_visit_evidence(proof, account, str(visit_id), ex['id'], validated, tags)
     else:
         if proof is not None:
             bad('관람 취향 근거와 프로필 버전이 일치하지 않아요.')
-        profile = profile_snapshot(tags, incoming, works, account, ex.id)
+        profile = profile_snapshot(tags, incoming, works, account, ex['id'])
     value={k:data[k] for k in ['date','durationMin','recommendedCount','selectedDuration','requestGeneration']}
-    value.update(visitId=str(visit_id),exhibitionId=ex.id,viewedArtworkIds=ids,reactions=reactions,
+    value.update(visitId=str(visit_id),exhibitionId=ex['id'],viewedArtworkIds=ids,reactions=reactions,
                  reactionReasons=reasons,dwell=dwell,tastes=tags,tasteProfile=profile,
-                 exhibitionTitle=ex.title,venue=ex.venue,submittedTasteProfile=incoming)
+                 exhibitionTitle=ex['title'],venue=ex['venue'],submittedTasteProfile=incoming)
     if proof_hash is not None:
         value['tasteEvidenceReceiptHash'] = proof_hash
-    return value,[{k:artwork_dto(by_id[i])[k] for k in ['id','title','artist','year','tags','analysis']} for i in ids]
+    return value,snapshots
 
 
 def longest_viewed(payload):

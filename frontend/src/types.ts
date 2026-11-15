@@ -88,6 +88,8 @@ export interface Exhibition {
 }
 
 export interface Artwork {
+  receiptExhibition?: ReceiptExhibition;
+  artworkReceiptEvidence?: string;
   version?: number;
   sourceVersion?: number;
   contentVersion?: number;
@@ -152,6 +154,9 @@ export interface Recommendation {
 
 export type Reaction = 'like' | 'dislike';
 
+export type ReceiptExhibition = Pick<Exhibition, 'id' | 'title' | 'venue'>;
+export type ReceiptArtwork = Pick<Artwork, 'id' | 'title' | 'tags'>;
+
 export interface User {
   tasteProfile?: TasteProfile | null;
   tasteProfileVersion?: number;
@@ -169,12 +174,13 @@ export interface VisitRecord {
   persisted?: boolean;
   tasteProfile?: TasteProfile;
   tasteEvidenceReceipt?: string;
+  artworkReceiptEvidence?: Record<string, string>;
   tastes?: TasteTag[];
   selectedDuration?: VisitDuration;
   requestGeneration?: number;
   reactionReasons?: Record<string, string>;
   dwell?: Record<string, number>;
-  artworkSnapshots?: Artwork[];
+  artworkSnapshots?: ReceiptArtwork[];
   id: string;
   userId: string | null;
   exhibitionId: string;
