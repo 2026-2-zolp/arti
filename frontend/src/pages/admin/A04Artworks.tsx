@@ -10,7 +10,7 @@ import {useConfirm} from '../../components/Confirmation';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import {analysisFailure, analysisTime, mergeAnalysis} from '../../lib/adminAnalysis';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
@@ -362,7 +362,7 @@ export function ArtworkEdit() {
         </section>
       </div>
       {w.id ? (
-        <AiPanel w={w} setW={setW} />
+        <AiPanel w={w} setW={setW} reloadArtwork={reload} />
       ) : (
         <p className="muted small mt-24">작품을 먼저 저장하면 AI 감정 분석·해설 요약을 실행할 수 있어요.</p>
       )}
@@ -484,14 +484,19 @@ function ImageField({
  * - 관리자가 결과를 확인·수정한 뒤 「확정」해야 사용자 화면과 추천에 쓰인다
  * - 취향 태그 제안은 「기본 정보」의 태그 버튼(TagField)에 표시하고, 여기서는 감정(설명용)·요약을 다룬다
  */
-function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => Artwork | null) => void }) {
+function AiPanel({ w, setW, reloadArtwork }: {
+  w: Artwork;
+  setW: (f: (cur: Artwork | null) => Artwork | null) => void;
+  reloadArtwork: () => void;
+}) {
+  const confirmAction = useConfirm();
   const [useImage, setUseImage] = useState(true);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
 
   const run = async () => {
-    if (inFlight.current) return;
+    if (inFlight.current || msg?.type === 'conflict') return;
     inFlight.current=true;
     setBusy(true);
     setMsg(null);
@@ -518,10 +523,17 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
-      setMsg({ type: 'err', text: analysisFailure(e) });
+      const conflict = e instanceof ApiError && e.status === 409 && e.code === 'VERSION_CONFLICT';
+      setMsg({ type: conflict ? 'conflict' : 'err', text: analysisFailure(e) });
     } finally {
       inFlight.current=false;
       setBusy(false);
+    }
+  };
+
+  const reloadAfterConflict = async () => {
+    if (await confirmAction('최신 작품을 다시 불러오면 이 탭에서 저장하지 않은 수정이 사라져요.', { confirm: '다시 불러오기' })) {
+      reloadArtwork();
     }
   };
 
@@ -537,7 +549,9 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
           : { type: 'ok', text: '저장했습니다.' },
       );
     } catch (e) {
-      setMsg({ type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
+      setMsg((current) => current?.type === 'conflict'
+        ? current
+        : { type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
     }
   };
 
@@ -561,12 +575,18 @@ function AiPanel({ w, setW }: { w: Artwork; setW: (f: (cur: Artwork | null) => A
               이미지도 분석
             </label>
           )}
-          <button type="button" className="a-btn primary" disabled={busy} onClick={run}>
+          <button type="button" className="a-btn primary" disabled={busy || msg?.type === 'conflict'} onClick={run}>
             {busy ? 'AI 분석 중… 잠시 기다려 주세요' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
           </button>
         </div>
       </div>
-      {msg && <p role={msg.type === 'err' ? 'alert' : 'status'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{msg.text}{msg.type === 'err' && <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>}</p>}
+      {msg && (
+        <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
+          {msg.text}
+          {msg.type === 'conflict' && <button type="button" onClick={reloadAfterConflict}>최신 작품 다시 불러오기</button>}
+          {msg.type === 'err' && <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>}
+        </p>
+      )}
 
       <div className="ai-grid">
         <div className="ai-box">
