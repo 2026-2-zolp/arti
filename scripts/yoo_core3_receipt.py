@@ -81,6 +81,10 @@ def check_rows(rows, key, expected, binding_issues, evidence_fields):
     return results, unassigned
 
 
+def confirmed(row):
+    return row['status'] == 'recordable' and row.get('decision') == 'confirmed'
+
+
 def check_receipt(receipt, expected_hashes, expected_wording_hash):
     if not isinstance(receipt, dict):
         raise ValueError('receipt must be an object')
@@ -98,12 +102,21 @@ def check_receipt(receipt, expected_hashes, expected_wording_hash):
         receipt.get('usage', []), 'medium', MEDIA,
         [image_issue] if image_issue else [], ('evidence', 'scope'),
     )
+    pending_content_fields = [field for field, row in content.items() if not confirmed(row)]
+    media_handoff = {}
+    for medium, row in usage.items():
+        usage_confirmed = confirmed(row)
+        media_handoff[medium] = {
+            'usageConfirmed': usage_confirmed,
+            'status': 'ready-for-review' if usage_confirmed and not pending_content_fields else 'pending',
+        }
     return {
         'recordId': record_id,
         'content': content,
         'usage': usage,
         'unassignedContentEntries': unassigned_content,
         'unassignedUsageEntries': unassigned_usage,
+        'handoff': {'pendingContentFields': pending_content_fields, 'media': media_handoff},
         'scope': 'receipt precheck only',
     }
 

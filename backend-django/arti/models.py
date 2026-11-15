@@ -227,6 +227,8 @@ class Visit(models.Model):
     canonical_payload = models.JSONField(default=dict, blank=True)
     artwork_snapshots = models.JSONField(default=list, blank=True)
     interpretation = models.TextField(null=True, default=None)
+    interpretation_request_version = models.PositiveBigIntegerField(default=0, db_default=0)
+    interpretation_saved_version = models.PositiveBigIntegerField(default=0, db_default=0)
     emotion_profile = models.JSONField(null=True, default=None, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 

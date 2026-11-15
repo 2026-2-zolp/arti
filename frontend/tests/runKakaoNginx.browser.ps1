@@ -1,12 +1,20 @@
 param(
     [Parameter(Mandatory)] [string]$ApiImage,
     [string]$WebImage = 'nginx:1.28-alpine',
-    [ValidateRange(1024, 65535)] [int]$HttpsPort = 5623
+    [ValidateRange(1024, 65535)] [int]$HttpsPort = 5623,
+    [switch]$UseImageContents
 )
 
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $false
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-if (-not (Test-Path -LiteralPath "$repo/frontend/dist/index.html")) {
+$apiMount = @()
+$webMount = @()
+if (-not $UseImageContents) {
+    $apiMount = @('-v', "$repo/backend-django`:/app:ro")
+    $webMount = @('-v', "$repo/frontend/dist`:/usr/share/nginx/html:ro")
+}
+if (-not $UseImageContents -and -not (Test-Path -LiteralPath "$repo/frontend/dist/index.html")) {
     throw 'Build the Django-target frontend before running this regression.'
 }
 $prefix = 'arti-kakao-https-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
@@ -26,9 +34,13 @@ function Get-ArtiContainerLog([string]$Container) {
 Push-Location $repo
 try {
     New-Item -ItemType Directory -Path $scratch | Out-Null
-    Invoke-ArtiDocker run --rm --pull never --network none --user 0 --entrypoint python -v "$repo/backend-django`:/app:ro" -v "$scratch`:/run/kakao-https" $ApiImage -c "from pathlib import Path; from arti.tests.kakao_browser_server import write_certificate; write_certificate(Path('/run/kakao-https'))"
+    Invoke-ArtiDocker run --rm --pull never --network none --user 0 --entrypoint python @apiMount -v "$scratch`:/run/kakao-https" $ApiImage -c "from pathlib import Path; from arti.tests.kakao_browser_server import write_certificate; write_certificate(Path('/run/kakao-https'))"
 
-    $conf = Get-Content -Raw -Encoding utf8 -LiteralPath "$repo/frontend/nginx.static.conf"
+    $conf = if ($UseImageContents) {
+        (Invoke-ArtiDocker run --rm --pull never --network none --entrypoint cat $WebImage /etc/nginx/conf.d/default.conf) -join "`n"
+    } else {
+        Get-Content -Raw -Encoding utf8 -LiteralPath "$repo/frontend/nginx.static.conf"
+    }
     $tls = @'
     listen 443 ssl;
     ssl_certificate /run/kakao-https/cert.pem;
@@ -60,8 +72,8 @@ exec gunicorn 'arti.tests.kakao_browser_server:create_gunicorn_application()' --
         '-e','PGUSER=arti','-e','PGPASSWORD=only-nginx-kakao-fixture','-e','MEDIA_ROOT=/tmp/fixture-media'
     )
     # Django shares only this test DB's network namespace to keep PGHOST on loopback.
-    $api = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-api" --network "container:$db" @fixtureEnv -v "$repo/backend-django`:/app:ro" --entrypoint sh $ApiImage -ec $apiProgram
-    $web = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-web" --network $net -p "127.0.0.1:${HttpsPort}:443" --entrypoint nginx -v "$scratch/nginx.conf`:/etc/nginx/conf.d/default.conf:ro" -v "$scratch`:/run/kakao-https:ro" -v "$repo/frontend/dist`:/usr/share/nginx/html:ro" $WebImage -g 'daemon off;'
+    $api = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-api" --network "container:$db" @fixtureEnv @apiMount --entrypoint sh $ApiImage -ec $apiProgram
+    $web = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-web" --network $net -p "127.0.0.1:${HttpsPort}:443" --entrypoint nginx -v "$scratch/nginx.conf`:/etc/nginx/conf.d/default.conf:ro" -v "$scratch`:/run/kakao-https:ro" @webMount $WebImage -g 'daemon off;'
 
     $base = "https://127.0.0.1:$HttpsPort"
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
