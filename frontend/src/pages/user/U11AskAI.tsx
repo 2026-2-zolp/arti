@@ -78,8 +78,8 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const selectedQuestion = questionIndex === undefined ? undefined :
     entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
-  const chatReady = !!key && loadedChatKey === key;
-  const canAsk = chatReady && !pending && !contentChanged && !retryWindow;
+  const chatReady = !!key && loadedChatKey === key && !contentChanged;
+  const canAsk = chatReady && !pending && !retryWindow;
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -226,7 +226,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
         </div>
       )}
-      {selectedQuestion && (
+      {selectedQuestion && !contentChanged && (
         <section className="docent-question bubble ai" aria-labelledby="docent-question-heading">
           <h2 id="docent-question-heading">고른 관찰 질문</h2>
           <p id="docent-question-text">{selectedQuestion}</p>

@@ -221,3 +221,29 @@ class DocentHarnessTests(TestCase):
                         'elapsedMs': elapsed, 'retryElapsedMs': retry_elapsed,
                     })
         self.report('explicit-retry', report)
+
+    def test_response_is_rejected_when_artwork_changes_during_generation(self):
+        case = next(case for case in self.cases if case['id'] == 'D01-followup')
+        initial = Artwork.objects.get(pk=case['workId'])
+        for changes in (
+            {'content_version': initial.content_version + 1},
+            {'review_status': 'source_check'},
+        ):
+            with self.subTest(changes=changes):
+                def respond(*_args, **_kwargs):
+                    # Same DB connection as the request, immediately before the adapter returns.
+                    Artwork.objects.filter(pk=initial.pk).update(**changes)
+                    return {'answer': ANSWER}
+
+                try:
+                    with patch('arti.providers.generate', side_effect=respond) as provider:
+                        response, _ = self.ask(case, ip='192.0.2.5')
+                    self.assertEqual(provider.call_count, 1)
+                    self.assertEqual(response.status_code, 409, response.content)
+                    self.assertEqual(response.json()['code'], 'CONTENT_CHANGED')
+                    self.assertNotIn('answer', response.json())
+                    self.assertNotIn('sourceRefs', response.json())
+                finally:
+                    Artwork.objects.filter(pk=initial.pk).update(
+                        content_version=initial.content_version, review_status=initial.review_status,
+                    )
