@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useVisit } from '../store/VisitContext';
+import type { VisitState } from '../store/visitReducer';
 
 /**
  * 앱 ← 버튼과 휴대폰(브라우저) 뒤로가기를 같은 곳으로 보내기 위한 기록 도우미.
@@ -26,6 +29,31 @@ export function exhibitionHomeFrom(redirect: string | null | undefined): string 
   return match ? match[0] : '/';
 }
 
+type VisitEntry = { visitId: string; generation: number; index: number };
+
+export function visitEntry(state: VisitState, index = state.current): VisitEntry {
+  return { visitId: state.visitId, generation: state.requestGeneration, index };
+}
+
+/** 같은 관람이 남긴 위치만 복원한다. 이미 완료된 관람에서는 종료 여부를 먼저 묻는다. */
+export function useVisitHistory() {
+  const location = useLocation();
+  const { state, dispatch } = useVisit();
+  const entry: VisitEntry | undefined = location.state?.visitEntry;
+  const index = entry && entry.visitId === state.visitId && entry.generation === state.requestGeneration &&
+    Number.isInteger(entry.index) && entry.index >= 0 && entry.index < state.recommendations.length ? entry.index : undefined;
+  const finished = state.recommendations.length > 0 && state.current >= state.recommendations.length;
+  const checked = useRef<string | null>(null);
+  const pending = checked.current !== location.key && !finished && index !== undefined && index !== state.current;
+  useLayoutEffect(() => {
+    if (checked.current === location.key) return;
+    checked.current = location.key;
+    if (pending) dispatch({ type: 'restoreHistoryPosition', visitId: state.visitId, generation: state.requestGeneration, index });
+  }, [location.key, pending, index, state.visitId, state.requestGeneration, dispatch]);
+
+  return { pending, finished, askFinished: finished && index !== undefined, currentEntry: index === state.current };
+}
+
 interface CloseWatcherLike {
   onclose: (() => void) | null;
   destroy(): void;
@@ -39,7 +67,7 @@ type CloseWatcherConstructor = new () => CloseWatcherLike;
  */
 export function useCloseWatcher(active: boolean, onClose: () => void, rearm: unknown = 0) {
   const handler = useRef(onClose);
-  handler.current = onClose;
+  useLayoutEffect(() => { handler.current = onClose; }, [onClose]);
   useEffect(() => {
     const Watcher = (window as unknown as { CloseWatcher?: CloseWatcherConstructor }).CloseWatcher;
     if (!active || !Watcher) return;

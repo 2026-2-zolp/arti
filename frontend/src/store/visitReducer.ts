@@ -45,8 +45,7 @@ export type Action =
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | ({ type: 'completeCurrent' } & ArtworkDwell)
   | ({ type: 'skipCurrent' } & Omit<ArtworkDwell, 'seconds'>)
-  /** 관람 중 뒤로가기로 이미 지나온 작품(또는 그 작품으로 가는 경로)에 돌아왔을 때, 그 작품을 다시 현재 작품으로 둔다 */
-  | { type: 'rewindTo'; visitId: string; generation: number; index: number }
+  | { type: 'restoreHistoryPosition'; visitId: string; generation: number; index: number }
   | { type: 'resetVisit' }
   | { type: 'discardVisit'; visitId: string };
 
@@ -152,10 +151,11 @@ export function reducer(s: VisitState, a: Action): VisitState {
       const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
       return { ...s, dwell, viewed, current: s.current + 1 };
     }
-    case 'rewindTo':
-      // 완료 기록(viewed)·감상 시간(dwell)·반응은 그대로 두고 현재 위치만 되돌린다. 다시 [다음 작품 안내]를 누르면 시간은 같은 작품에 더해진다.
+    case 'restoreHistoryPosition':
+      // 이미 방문한 브라우저 이력의 위치로만 이동하며 완료 기록과 감상 시간은 유지한다.
       if (a.visitId !== s.visitId || a.generation !== s.requestGeneration) return s;
-      if (a.index < 0 || a.index >= s.current || a.index >= s.recommendations.length) return s;
+      if (s.current >= s.recommendations.length || !Number.isInteger(a.index) ||
+          a.index < 0 || a.index >= s.recommendations.length || a.index === s.current) return s;
       return { ...s, current: a.index };
     case 'discardVisit':
     case 'resetVisit':

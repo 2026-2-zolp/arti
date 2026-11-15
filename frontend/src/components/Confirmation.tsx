@@ -18,7 +18,7 @@ export function ConfirmationProvider({children}: {children: ReactNode}) {
   const cancel = useRef<HTMLButtonElement>(null);
   const proceed = useRef<HTMLButtonElement>(null);
   const titleId = useId(); const bodyId = useId();
-  const {pathname} = useLocation(); const {state} = useVisit();
+  const {key} = useLocation(); const {state} = useVisit();
   const settle = useCallback((value: boolean) => {
     const resolve = resolver.current; resolver.current = null; setMessage(null);
     if (previousFocus.current?.isConnected) previousFocus.current.focus();
@@ -29,7 +29,7 @@ export function ConfirmationProvider({children}: {children: ReactNode}) {
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     return new Promise(resolve => {resolver.current = resolve; setLabels(nextLabels); setMessage(text);});
   }, []);
-  useEffect(() => {settle(false);}, [pathname, state.user?.id, state.visitId, settle]);
+  useEffect(() => {settle(false);}, [key, state.user?.id, state.visitId, settle]);
   useEffect(() => {if (message) cancel.current?.focus();}, [message]);
   useEffect(() => () => {resolver.current?.(false); resolver.current = null;}, []);
   return <ConfirmationContext.Provider value={confirmAction}>

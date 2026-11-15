@@ -4,7 +4,7 @@
  * - 작품 감상 후 "다음 작품 안내"로 다시 들어오면 같은 화면을 재사용해 다음 작품 위치를 보여 준다.
  * 실시간 실내 내비게이션이 아니라 위치와 순서를 시각적으로 안내하는 수준.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
@@ -14,7 +14,7 @@ import { api } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
-import { hasAppHistory } from '../../lib/appHistory';
+import { hasAppHistory, useVisitHistory, visitEntry } from '../../lib/appHistory';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork } from '../../types';
@@ -23,6 +23,7 @@ import type { Artwork } from '../../types';
 export default function U09Route() {
   const navigate = useNavigate();
   const { state: entry, key: locationKey } = useLocation();
+  const { pending, finished, askFinished, currentEntry } = useVisitHistory();
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
@@ -34,16 +35,17 @@ export default function U09Route() {
     [exhibitionId],
   );
   const returnToArtwork = entry?.returnToArtwork === true;
-  const fromRecommend = entry?.fromRecommend === true;
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
-  const [mapOpen, setMapOpen] = useState(!isNextGuide);
-  // 경로 → 작품은 기록을 쌓는다(앱 ←·휴대폰 뒤로가기 모두 이 경로로 돌아옴).
-  // 작품에서 연 지도를 주소로 바로 열었을 때(돌아갈 기록 없음)만 작품으로 덮어쓴다.
-  const openArtwork = () => navigate(to('/artwork'), {
-    replace: returnToArtwork,
-    state: { fromRecommend, visitStep: current },
-  });
-  // 작품에서 연 지도는 작품 위에 쌓인 기록이라, 돌아갈 때는 꺼내서(휴대폰 뒤로가기와 같음) 작품으로 간다.
+  const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
+  const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
+  const openArtwork = () => {
+    const navigation = { visitEntry: visitEntry(state) };
+    // 직접 연 지도도 앞으로 오갈 수 있도록 이 기록이 가리키는 작품을 먼저 기록한다.
+    if (!currentEntry && !returnToArtwork) {
+      navigate(to('/route'), { replace: true, state: { ...entry, ...navigation } });
+    }
+    navigate(to('/artwork'), { replace: returnToArtwork, state: navigation });
+  };
   const backToArtwork = () => (hasAppHistory() ? navigate(-1) : openArtwork());
   const back = () => {
     if (returnToArtwork) backToArtwork();
@@ -51,29 +53,10 @@ export default function U09Route() {
     else navigate(to('/recommend'), { replace: true });
   };
 
-  // 뒤로가기로 지나온 구간(이 경로가 가리키던 작품)에 돌아오면 그 작품을 다시 현재 작품으로 둔다.
-  const visitStep: number | undefined = typeof entry?.visitStep === 'number' ? entry.visitStep : undefined;
-  const finished = recommendations.length > 0 && current >= recommendations.length;
-  // 도착한 순간에 한 번만 판단한다. 이 화면에서 [다음]·[건너뛰기]로 현재 작품이 바뀌는 동안에는 되돌리지 않는다.
-  const arrivalChecked = useRef<string | null>(null);
-  const pendingRewind = arrivalChecked.current !== locationKey && !finished && visitStep !== undefined && visitStep < current;
-  // 끝난 관람에 뒤로가기로 도착했다는 판단은 그 기록에 있는 동안 고정한다(데이터를 불러와 다시 그려져도 질문 화면 유지).
-  const finishedArrival = useRef<string | null>(null);
-  if (arrivalChecked.current !== locationKey && finished && visitStep !== undefined) finishedArrival.current = locationKey;
-  const askFinished = finishedArrival.current === locationKey;
-  useEffect(() => {
-    if (arrivalChecked.current === locationKey) return;
-    arrivalChecked.current = locationKey;
-    if (finished || visitStep === undefined || visitStep >= current) return;
-    dispatch({ type: 'rewindTo', visitId: state.visitId, generation: state.requestGeneration, index: visitStep });
-  }, [locationKey, finished, visitStep, current, state.visitId, state.requestGeneration, dispatch]);
-
-  // 끝난 관람 질문은 다른 이동보다 먼저 둔다([나가기]로 관람 상태가 지워지는 동안 추천·취향 화면으로 끌려가지 않게).
-  if (askFinished) return <FinishedVisitPrompt />;
+  if (askFinished) return <FinishedVisitPrompt key={locationKey} />;
   if (recommendations.length === 0) return <Navigate to={to('/recommend')} replace />;
-  // 영수증에서 휴대폰 뒤로가기로 돌아온 경우(영수증에서 미리 묻지 못하는 브라우저)는 끝난 관람을 다시 열지 않고 여기서 종료 여부를 묻는다.
   if (finished) return <Navigate to={to('/receipt')} replace />;
-  if (pendingRewind) return null;
+  if (pending) return null;
 
   if (error || loading || !data) {
     return (
@@ -96,7 +79,7 @@ export default function U09Route() {
   if (!target) {
     const skip = () => {
       dispatch({ type: 'skipCurrent', visitId: state.visitId, generation: state.requestGeneration, artworkId: recommendations[current].artworkId });
-      navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { fromRecommend } });
+      navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
     };
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
@@ -211,7 +194,8 @@ export default function U09Route() {
           </div>
         )}
       </div>
-      <details className="route-details" open={mapOpen} onToggle={(event) => setMapOpen(event.currentTarget.open)}>
+      <details className="route-details" open={mapOpen}
+        onToggle={(event) => setMapChoice({ key: locationKey, open: event.currentTarget.open })}>
         <summary>전체 지도와 관람 순서</summary>
         <ol className="route-list">
           {recommendations.map((r, i) => {
