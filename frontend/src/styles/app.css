@@ -323,7 +323,7 @@ a.history-card { text-decoration: none; }
 .rec-card { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .rec-thumb { width: 96px !important; flex: none; border-radius: 6px; overflow: hidden; }
 .rec-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0; padding-top: 2px; }
-.rec-info strong { font-size: 17px; }
+.rec-info strong { font-size: 17px; overflow-wrap: anywhere; }
 
 /* ---------- 평면도 ---------- */
 .floor-map { width: 100%; height: auto; display: block; }
@@ -369,7 +369,7 @@ a.history-card { text-decoration: none; }
 .next-artwork-info { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
 .next-artwork-info h2 { font-size: 16px; line-height: 1.35; }
 .next-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.next-row strong { font-size: 16px; }
+.next-row strong { min-width: 0; font-size: 16px; overflow-wrap: anywhere; }
 .route-details { margin-top: 12px; }
 .route-details > summary { padding: 10px 0; color: var(--ink); cursor: pointer; font-weight: 600; }
 .route-list { list-style: none; padding: 0; margin: 18px 0 0; display: flex; flex-direction: column; }
@@ -379,7 +379,7 @@ a.history-card { text-decoration: none; }
 .route-num { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; border: 1.5px solid var(--accent); color: var(--accent); flex: none; }
 .route-list li.cur .route-num { background: var(--accent); color: #fff; }
 .route-list li.done .route-num { border-color: #bdb7ae; color: #fff; background: #bdb7ae; }
-.route-title { flex: 1; }
+.route-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 /* ---------- U-10 ---------- */
 .progress-title { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; font-size: 16px; font-weight: 500; }
@@ -405,7 +405,7 @@ a.history-card { text-decoration: none; }
   width: 100% !important; height: 100% !important; aspect-ratio: auto !important;
   object-fit: contain !important; max-height: none !important; pointer-events: none; -webkit-user-drag: none;
 }
-.art-title { font-size: 26px; font-weight: 800; margin-top: 18px; }
+.art-title { font-size: 26px; font-weight: 800; margin-top: 18px; overflow-wrap: anywhere; }
 .art-meta { color: var(--muted); font-size: 16px; margin-top: 6px; }
 .art-meta .sep { margin: 0 10px; color: var(--line); }
 .reason-box { display: flex; gap: 12px; margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
@@ -495,6 +495,7 @@ a.history-card { text-decoration: none; }
 .receipt-section { padding: 16px 0 4px; display: flex; flex-direction: column; gap: 10px; }
 .receipt-works { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .receipt-works li { display: flex; justify-content: space-between; }
+.receipt-works li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .receipt-foot { text-align: center; color: var(--muted); font-size: 13px; margin-top: 18px; }
 
 /* ---------- U-13 ---------- */
