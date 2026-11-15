@@ -16,6 +16,7 @@ import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { hasAppHistory } from '../../lib/appHistory';
 import { useVisit } from '../../store/VisitContext';
+import { canReturnTo } from '../../store/visitReducer';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork } from '../../types';
 
@@ -56,7 +57,7 @@ export default function U09Route() {
   const finished = recommendations.length > 0 && current >= recommendations.length;
   // 도착한 순간에 한 번만 판단한다. 이 화면에서 [다음]·[건너뛰기]로 현재 작품이 바뀌는 동안에는 되돌리지 않는다.
   const arrivalChecked = useRef<string | null>(null);
-  const pendingRewind = arrivalChecked.current !== locationKey && !finished && visitStep !== undefined && visitStep < current;
+  const pendingRewind = arrivalChecked.current !== locationKey && visitStep !== undefined && canReturnTo(state, visitStep);
   // 끝난 관람에 뒤로가기로 도착했다는 판단은 그 기록에 있는 동안 고정한다(데이터를 불러와 다시 그려져도 질문 화면 유지).
   const finishedArrival = useRef<string | null>(null);
   if (arrivalChecked.current !== locationKey && finished && visitStep !== undefined) finishedArrival.current = locationKey;
@@ -64,8 +65,8 @@ export default function U09Route() {
   useEffect(() => {
     if (arrivalChecked.current === locationKey) return;
     arrivalChecked.current = locationKey;
-    if (finished || visitStep === undefined || visitStep >= current) return;
-    dispatch({ type: 'rewindTo', visitId: state.visitId, generation: state.requestGeneration, index: visitStep });
+    if (visitStep === undefined || !canReturnTo(state, visitStep)) return;
+    dispatch({ type: 'returnToStep', visitId: state.visitId, generation: state.requestGeneration, index: visitStep });
   }, [locationKey, finished, visitStep, current, state.visitId, state.requestGeneration, dispatch]);
 
   // 끝난 관람 질문은 다른 이동보다 먼저 둔다([나가기]로 관람 상태가 지워지는 동안 추천·취향 화면으로 끌려가지 않게).

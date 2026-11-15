@@ -17,6 +17,7 @@ import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
 import { useVisit } from '../../store/VisitContext';
+import { canReturnTo } from '../../store/visitReducer';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
 import { load, save } from '../../lib/storage';
 import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
@@ -131,7 +132,7 @@ export default function U10Artwork() {
   const finished = recommendations.length > 0 && current >= recommendations.length;
   // 도착한 순간에 한 번만 판단한다. 이 화면에서 [다음]·[건너뛰기]로 현재 작품이 바뀌는 동안에는 되돌리지 않는다.
   const arrivalChecked = useRef<string | null>(null);
-  const pendingRewind = arrivalChecked.current !== locationKey && !finished && visitStep !== undefined && visitStep < current;
+  const pendingRewind = arrivalChecked.current !== locationKey && visitStep !== undefined && canReturnTo(state, visitStep);
   // 끝난 관람에 뒤로가기로 도착했다는 판단은 그 기록에 있는 동안 고정한다(데이터를 불러와 다시 그려져도 질문 화면 유지).
   const finishedArrival = useRef<string | null>(null);
   if (arrivalChecked.current !== locationKey && finished && visitStep !== undefined) finishedArrival.current = locationKey;
@@ -139,8 +140,8 @@ export default function U10Artwork() {
   useEffect(() => {
     if (arrivalChecked.current === locationKey) return;
     arrivalChecked.current = locationKey;
-    if (finished || visitStep === undefined || visitStep >= current) return;
-    dispatch({ type: 'rewindTo', visitId, generation: requestGeneration, index: visitStep });
+    if (visitStep === undefined || !canReturnTo(state, visitStep)) return;
+    dispatch({ type: 'returnToStep', visitId, generation: requestGeneration, index: visitStep });
   }, [locationKey, finished, visitStep, current, visitId, requestGeneration, dispatch]);
 
   // 영수증에서 휴대폰 뒤로가기로 돌아온 경우(영수증에서 미리 묻지 못하는 브라우저)는 끝난 관람을 다시 열지 않고 여기서 종료 여부를 묻는다.

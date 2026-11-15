@@ -90,8 +90,11 @@ async function changedExhibition(browser, fromArtwork) {
       await page.getByText('작품 정보를 불러오지 못했어요.', {exact: false}).waitFor();
     } else {
       await page.getByText('추천 작품 정보를 불러올 수 없어요.', {exact: false}).waitFor();
+      // 다음 작품 안내의 ←는 직전 작품(1번)으로 돌아가고, 다시 다음 작품 안내로 나아간다.
       await button('뒤로가기').click();
-      await button('2D 지도에서 경로 보기').click();
+      await artwork(1).waitFor();
+      await button('다음 작품 안내').click();
+      await page.getByText('추천 작품 정보를 불러올 수 없어요.', {exact: false}).waitFor();
     }
     await button('다시 시도하기').click();
     await button('이 작품 건너뛰기').click();
@@ -160,14 +163,15 @@ async function recoverErrors(browser, member) {
     await button('다음 작품 안내').click();
     await errorCard('합성 지도 장애');
     await checkProgress(id, ['a']);
+    // 다음 작품 안내의 ←는 직전 작품(1번)으로 돌아가고, 브라우저 뒤로·앞으로도 같은 순서를 따른다.
     await back.click();
-    await page.waitForURL('**/recommend');
-    await button('2D 지도에서 경로 보기').click();
-    await errorCard('지도 정보를 불러오지 못했어요.');
+    await artwork(1).waitFor();
+    await button('다음 작품 안내').click();
+    await errorCard('합성 지도 장애');
     await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForURL('**/recommend');
+    await artwork(1).waitFor();
     await page.goForward({ waitUntil: 'domcontentloaded' });
-    await errorCard('지도 정보를 불러오지 못했어요.');
+    await errorCard('합성 지도 장애');
     failures.delete('/api/exhibitions/visit-test');
     await retry.click();
     await checkProgress(id, ['a']);
@@ -367,11 +371,12 @@ async function visitHistory(browser) {
     await button('관람 시작하기').click();
     await artwork(1).waitFor();
 
+    // 작품에서 연 지도는 작품 위에 쌓이므로 브라우저 뒤로가기도 작품으로 돌아간다.
     await button('지도 보기').click();
     await button('감상으로 돌아가기').waitFor();
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForURL('**/recommend');
+    await artwork(1).waitFor();
     await page.goForward({ waitUntil: 'domcontentloaded' });
     await button('감상으로 돌아가기').waitFor();
     await button('뒤로가기').click();
@@ -386,16 +391,18 @@ async function visitHistory(browser) {
     await button('2번 작품 감상하기').waitFor();
     assert.equal(await page.evaluate(() => history.state.key), guideKey, '닫은 지도가 앞으로가기에 남지 않음');
 
+    // 다음 작품 안내의 ←는 직전 작품(1번)으로, 앞으로가기는 이미 본 작품을 지나 다시 다음 작품 안내로 간다.
     await page.reload({ waitUntil: 'domcontentloaded' });
     await nextGuide.waitFor();
     await button('2번 작품 감상하기').waitFor();
     await button('뒤로가기').click();
-    await page.waitForURL('**/recommend');
-    await button('2D 지도에서 경로 보기').click();
+    await artwork(1).waitFor();
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await nextGuide.waitFor();
     await button('2번 작품 감상하기').click();
     await artwork(2).waitFor();
     await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForURL('**/recommend');
+    await nextGuide.waitFor();
     await page.goForward({ waitUntil: 'domcontentloaded' });
     await artwork(2).waitFor();
 
@@ -413,8 +420,17 @@ async function visitHistory(browser) {
     assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
     assert.equal(await button('뒤로가기').count(), 0);
     await button('관람 완료').waitFor();
+    // 영수증에서 뒤로가면(미리 붙잡지 못하는 경우) 끝난 관람을 다시 열지 않고 종료 여부를 묻는다.
     await page.goBack({ waitUntil: 'domcontentloaded' });
-    await page.waitForURL('**/recommend');
+    await page.getByText('관람을 종료할까요?', { exact: true }).waitFor();
+    await button('머무르기').click();
+    await page.waitForURL('**/visit-test/receipt');
+    await page.getByText('관람기록에 저장되었어요').waitFor();
+    assert.deepEqual(requests[1], requests[0], '영수증으로 돌아와도 같은 관람 ID와 저장 내용');
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.getByText('관람을 종료할까요?', { exact: true }).waitFor();
+    await button('나가기').click();
+    await page.waitForURL('**/exhibitions/visit-test');
     assert.deepEqual(errors, []);
   } finally { await page.close(); }
 }
@@ -561,8 +577,9 @@ async function completeVisit(browser, member) {
     await page.getByRole('heading', { name: '다음 작품 안내', exact: true }).waitFor();
     await button('2번 작품 감상하기').click();
     await artwork(2).waitFor();
+    // 작품의 ←는 들어오기 전에 본 다음 작품 안내 화면으로 돌아간다.
     await button('뒤로가기').click();
-    await page.getByRole('heading', { name: '추천 관람 경로', exact: true }).waitFor();
+    await page.getByRole('heading', { name: '다음 작품 안내', exact: true }).waitFor();
     await button('2번 작품 감상하기').click();
     await artwork(2).waitFor();
     await spend(2100);

@@ -45,10 +45,20 @@ export type Action =
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | ({ type: 'completeCurrent' } & ArtworkDwell)
   | ({ type: 'skipCurrent' } & Omit<ArtworkDwell, 'seconds'>)
-  /** 관람 중 뒤로가기로 이미 지나온 작품(또는 그 작품으로 가는 경로)에 돌아왔을 때, 그 작품을 다시 현재 작품으로 둔다 */
-  | { type: 'rewindTo'; visitId: string; generation: number; index: number }
+  /**
+   * 관람 중 뒤로가기·앞으로가기로 다른 순서의 기록(작품 또는 그 작품으로 가는 경로)에 도착했을 때 그 작품을 현재 작품으로 둔다.
+   * 앞으로는 이미 본 작품을 지나서만 갈 수 있다(canReturnTo).
+   */
+  | { type: 'returnToStep'; visitId: string; generation: number; index: number }
   | { type: 'resetVisit' }
   | { type: 'discardVisit'; visitId: string };
+
+/** 뒤로가기(지나온 순서)는 언제나, 앞으로가기는 그 사이 작품을 모두 본 경우에만 그 순서로 옮길 수 있다. 관람이 끝났으면 옮기지 않는다. */
+export function canReturnTo(s: Pick<VisitState, 'current' | 'recommendations' | 'viewed'>, index: number): boolean {
+  if (s.current >= s.recommendations.length || index < 0 || index >= s.recommendations.length || index === s.current) return false;
+  if (index < s.current) return true;
+  return s.recommendations.slice(s.current, index).every((r) => s.viewed.includes(r.artworkId));
+}
 
 const VISIT_KEY = 'arti.visit';
 const USER_KEY = 'arti.user';
@@ -152,10 +162,9 @@ export function reducer(s: VisitState, a: Action): VisitState {
       const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
       return { ...s, dwell, viewed, current: s.current + 1 };
     }
-    case 'rewindTo':
-      // 완료 기록(viewed)·감상 시간(dwell)·반응은 그대로 두고 현재 위치만 되돌린다. 다시 [다음 작품 안내]를 누르면 시간은 같은 작품에 더해진다.
-      if (a.visitId !== s.visitId || a.generation !== s.requestGeneration) return s;
-      if (a.index < 0 || a.index >= s.current || a.index >= s.recommendations.length) return s;
+    case 'returnToStep':
+      // 완료 기록(viewed)·감상 시간(dwell)·반응은 그대로 두고 현재 위치만 옮긴다. 다시 [다음 작품 안내]를 누르면 시간은 같은 작품에 더해진다.
+      if (a.visitId !== s.visitId || a.generation !== s.requestGeneration || !canReturnTo(s, a.index)) return s;
       return { ...s, current: a.index };
     case 'discardVisit':
     case 'resetVisit':
