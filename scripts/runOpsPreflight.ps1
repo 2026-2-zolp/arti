@@ -15,7 +15,9 @@ $scratch = Join-Path $reportDir 'scratch'
 $apiImage = "${trial}-api:local"
 $webImage = "${trial}-web:local"
 $builtImages = @()
-$activeProject = $null
+$pendingSource = $null
+$pendingCandidate = $null
+$faultNetwork = $null
 $report = [ordered]@{ run = $trial; revision = $null; status = 'failed'; failedStage = $null; stages = [ordered]@{} }
 $stage = 'prerequisites'
 $failure = $null
@@ -73,6 +75,17 @@ function Test-ProbeStartup([string[]]$project, $base) {
     if ($ready.database -ne 'postgresql' -or $ai.docent -ne 'disabled' -or $ai.analysis -ne 'disabled') {
         throw 'Expected PostgreSQL readiness with AI disabled.'
     }
+}
+
+function New-ProbeFaultNetwork($name) {
+    # Both projects run during the failure check. Use a small, internal subnet outside the default pool.
+    for ($attempt = 0; $attempt -lt 8; $attempt++) {
+        $subnet = "10.247.$(Get-Random -Maximum 256).$((Get-Random -Maximum 16) * 16)/28"
+        $id = docker network create --driver bridge --internal --subnet $subnet $name 2>&1
+        if ($LASTEXITCODE -eq 0) { return $id }
+        if (($id -join ' ') -notmatch 'Pool overlaps') { throw 'Could not create the isolated candidate fault network.' }
+    }
+    throw 'No unused subnet found for the isolated candidate fault network.'
 }
 
 New-Item -ItemType Directory -Path $scratch | Out-Null
@@ -152,7 +165,7 @@ services:
     $compose = @('--env-file', $envFile, '-f', "$checkout/compose.yaml", '-f', $overlay)
     $source = $compose + @('-p', "$trial-src")
     $restore = $compose + @('-p', "$trial-dst")
-    $activeProject = $source
+    $pendingSource = $source
     Invoke-ProbeDocker compose @source up -d --no-build --wait --wait-timeout 100 web | Out-Null
     $sourceUrl = Get-ProbeWeb $source
     Test-ProbeStartup $source $sourceUrl
@@ -163,8 +176,8 @@ services:
     }
     $report.stages[$stage] = @{ ready = 200; database = 'postgresql'; migrateExit = 0; initialAccounts = 0; fixtureGuard = 'passed' }
 
-    $stage = 'synthetic-backup'
-    Write-Host '[synthetic-backup] Save one synthetic receipt and back up PostgreSQL and media'
+    $stage = 'source-receipt'
+    Write-Host '[source-receipt] Save and read a synthetic receipt on the source stack'
     Invoke-ProbeDocker compose @source exec -T -e ARTI_ENV=test -e ALLOW_TEST_FIXTURES=true api python manage.py load_test_fixture | Out-Null
     Invoke-ProbeDocker compose @source exec -T -e "ARTI_BOOTSTRAP_PASSWORD=$password" api python manage.py bootstrap_admin --login-id demo-admin --name 'Synthetic preflight' | Out-Null
     $ownerLogin = @{ email = 'preflight-owner@example.test'; password = $password }
@@ -175,8 +188,61 @@ services:
         date = [DateTime]::UtcNow.ToString('o'); durationMin = 5; selectedDuration = '30m'; recommendedCount = 3; requestGeneration = 1
         reactions = @{ 'fixture-art01' = 'like' }; reactionReasons = @{ 'fixture-art01' = 'Synthetic preflight' }
     }
-    $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 @{ Authorization = "Bearer $($owner.token)" } $payload)
+    $sourceMemberHeaders = @{ Authorization = "Bearer $($owner.token)" }
+    $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 $sourceMemberHeaders $payload)
     if (!$original.id -or $original.visitId -ne $payload.visitId) { throw 'The saved synthetic visit did not match its input.' }
+    $path = "/api/visits/$($original.id)"
+    $sourceReceipt = Invoke-ProbeHttp $sourceUrl $path 200 $sourceMemberHeaders
+    $report.stages[$stage] = @{ created = 201; lookup = 200 }
+
+    $stage = 'candidate-migration-failure'
+    Write-Host '[candidate-migration-failure] Reject a bad migration credential while the source stays online'
+    $faultNetworkName = "$trial-fault"
+    $faultNetwork = New-ProbeFaultNetwork $faultNetworkName
+    $faultOverlay = Join-Path $scratch 'compose.fault.yaml'
+    @"
+services:
+  migrate:
+    environment:
+      PGPASSWORD: '${dbPassword}-invalid'
+networks:
+  default:
+    external: true
+    name: $faultNetworkName
+"@ | Set-Content -LiteralPath $faultOverlay -Encoding utf8
+    $faulted = $restore + @('-f', $faultOverlay)
+    $pendingCandidate = $faulted
+    docker compose @faulted up -d --no-build --pull never --wait --wait-timeout 100 web 2>&1 | Out-Null
+    $upExit = $LASTEXITCODE
+    $migration = Invoke-ProbeDocker compose @faulted ps -a -q migrate
+    $migrationState = Invoke-ProbeDocker inspect --format '{{.Image}} {{.State.Status}} {{.State.ExitCode}}' $migration
+    $migrationLog = Invoke-ProbeDocker compose @faulted logs --no-color migrate
+    if ($upExit -eq 0 -or $migrationState -ne "$apiId exited 1" -or
+        ($migrationLog -join ' ') -notmatch 'password authentication failed') {
+        throw 'The candidate migration did not fail specifically on database authentication.'
+    }
+    foreach ($service in 'api', 'web') {
+        $blocked = Invoke-ProbeDocker compose @faulted ps -a -q $service
+        if ($blocked -and (Invoke-ProbeDocker inspect --format '{{.State.Status}}' $blocked) -ne 'created') {
+            throw 'A candidate service started before migration succeeded.'
+        }
+    }
+    $tableCountSql = "select count(*) from pg_tables where schemaname='public'"
+    $systemIdSql = 'select system_identifier from pg_control_system()'
+    $faultTables = Invoke-ProbeDocker compose @faulted exec -T db psql -U arti -d arti -tAc $tableCountSql
+    $candidateSystemId = Invoke-ProbeDocker compose @faulted exec -T db psql -U arti -d arti -tAc $systemIdSql
+    if ($faultTables -ne '0' -or !$candidateSystemId) { throw 'The failed candidate must remain an initialized cluster with zero public tables.' }
+    Invoke-ProbeHttp $sourceUrl '/api/ready' 200 | Out-Null
+    $duringFailure = Invoke-ProbeHttp $sourceUrl $path 200 $sourceMemberHeaders
+    if ($sourceReceipt.Content -cne $duringFailure.Content) { throw 'The source receipt changed during the candidate failure.' }
+    $report.stages[$stage] = @{ composeUpExit = $upExit; migrateExit = 1; databaseAuthRejected = $true; candidateApiBlocked = $true; candidateWebBlocked = $true; publicTables = 0; sourceReady = 200; sourceReceipt = 200; sameSourceReceipt = $true }
+    Invoke-ProbeDocker compose @faulted down | Out-Null
+    $pendingCandidate = $restore
+    Invoke-ProbeDocker network rm $faultNetwork | Out-Null
+    $faultNetwork = $null
+
+    $stage = 'synthetic-backup'
+    Write-Host '[synthetic-backup] Back up the source PostgreSQL and media'
     Invoke-ProbeDocker compose @source stop web | Out-Null
     $hashCommand = 'cd /app/media && sha256sum fixture-public.png fixture-private.png'
     $before = Invoke-ProbeDocker compose @source exec -T api sh -ec $hashCommand
@@ -189,14 +255,14 @@ services:
         mediaSha256 = (Get-FileHash -LiteralPath "$scratch/media.tar").Hash
     }
     Invoke-ProbeDocker compose @source down --volumes | Out-Null
-    $activeProject = $null
+    $pendingSource = $null
 
     $stage = 'isolated-restore'
-    Write-Host '[isolated-restore] Recover into a fresh DB and media volume'
-    $activeProject = $restore
+    Write-Host '[isolated-restore] Correct the candidate configuration and restore its blank DB and media'
     Invoke-ProbeDocker compose @restore up -d --wait --wait-timeout 60 db | Out-Null
-    $tables = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc "select count(*) from pg_tables where schemaname='public'"
-    if ($tables -ne '0') { throw 'The restore target must start with zero tables.' }
+    $tables = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc $tableCountSql
+    $restoreSystemId = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc $systemIdSql
+    if ($tables -ne '0' -or $restoreSystemId -ne $candidateSystemId) { throw 'Recovery must start with the same blank candidate cluster.' }
     Invoke-ProbeDocker compose @restore cp "$scratch/arti.dump" db:/tmp/preflight.dump | Out-Null
     Invoke-ProbeDocker compose @restore exec -T db pg_restore -U arti -d arti --exit-on-error --single-transaction --no-owner --no-acl /tmp/preflight.dump | Out-Null
     Invoke-ProbeDocker compose @restore run --rm --pull never --no-deps -T --user 0 -v "${scratch}:/backup:ro" api sh -ec 'test -z "$(ls -A /app/media)" && tar -xf /backup/media.tar -C /app/media fixture-public.png fixture-private.png && chown 10001:10001 /app/media /app/media/fixture-public.png /app/media/fixture-private.png' | Out-Null
@@ -207,7 +273,7 @@ services:
     $counts = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc 'select (select count(*) from arti_account), (select count(*) from arti_visit), (select count(*) from arti_visitreaction)'
     if (Compare-Object $before $after) { throw 'Restored media did not match the source hashes.' }
     if ($counts -ne '2|1|1') { throw 'Restored account, receipt or reaction count did not match.' }
-    $report.stages[$stage] = @{ ready = 200; migrateExit = 0; initialTables = 0; matchingMediaFiles = 2; accounts = 2; receipts = 1; reactions = 1 }
+    $report.stages[$stage] = @{ ready = 200; migrateExit = 0; initialTables = 0; reusedCandidateDatabase = $true; matchingMediaFiles = 2; accounts = 2; receipts = 1; reactions = 1 }
 
     $stage = 'restored-web-access'
     Write-Host '[restored-web-access] Verify direct SPA entry, receipt ownership and media access'
@@ -226,11 +292,11 @@ services:
     foreach ($list in @((Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl $memberPath 200 $memberHeaders)), (Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl $adminPath 200 $adminHeaders)))) {
         if ($list.Count -ne 1 -or $list[0].id -ne $original.id) { throw 'The restored receipt was missing or duplicated.' }
     }
-    $path = "/api/visits/$($original.id)"
     $ownerDetail = Invoke-ProbeHttp $restoreUrl $path 200 $memberHeaders
     $adminDetail = Invoke-ProbeHttp $restoreUrl "/api/admin/visits/$($original.id)" 200 $adminHeaders
     $ownerRecord = Convert-ProbeJson $ownerDetail
-    if ($ownerDetail.Content -cne $adminDetail.Content -or $ownerRecord.visitId -ne $original.visitId -or ($ownerRecord.viewedArtworkIds -join ',') -ne ($order -join ',')) {
+    if ($ownerDetail.Content -cne $sourceReceipt.Content -or $ownerDetail.Content -cne $adminDetail.Content -or
+        $ownerRecord.visitId -ne $original.visitId -or ($ownerRecord.viewedArtworkIds -join ',') -ne ($order -join ',')) {
         throw 'Restored receipt details did not match the original visit.'
     }
     Invoke-ProbeHttp $restoreUrl $path 403 @{ Authorization = "Bearer $($other.token)" } | Out-Null
@@ -241,7 +307,7 @@ services:
     Invoke-ProbeHttp $restoreUrl '/api/admin/uploads/fixture-private.png' 200 $adminHeaders | Out-Null
     $report.stages[$stage] = @{ spa = 200; asset = 200; sameReceipt = $true; owner = 200; admin = 200; other = 403; guest = 401; memberAsAdmin = 401; media = @(200, 404, 200) }
     Invoke-ProbeDocker compose @restore down --volumes | Out-Null
-    $activeProject = $null
+    $pendingCandidate = $null
 
     $stage = 'https-callback-logs'
     Write-Host '[https-callback-logs] Run the signed mock Kakao Chrome and outage checks'
@@ -253,8 +319,13 @@ services:
     if (!$report.failedLine) { $report.failedLine = $_.InvocationInfo.ScriptLineNumber }
 } finally {
     $report.cleanup = 'passed'
-    if ($activeProject) {
-        try { Invoke-ProbeDocker compose @activeProject down --volumes | Out-Null } catch { $report.cleanup = 'failed' }
+    foreach ($project in @($pendingCandidate, $pendingSource)) {
+        if ($project) {
+            try { Invoke-ProbeDocker compose @project down --volumes | Out-Null } catch { $report.cleanup = 'failed' }
+        }
+    }
+    if ($faultNetwork) {
+        try { Invoke-ProbeDocker network rm $faultNetwork | Out-Null } catch { $report.cleanup = 'failed' }
     }
     if ($builtImages.Count) {
         try { Invoke-ProbeDocker image rm @builtImages | Out-Null } catch { $report.cleanup = 'failed' }
