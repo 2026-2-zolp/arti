@@ -12,3 +12,60 @@
 1. [시연·복구 체크리스트](../operations/2026-11-11_main_시연복구체크리스트.md#1115-운영형-로컬-시연-재현)의 원본·후보 구성에 서로 다른 Compose 프로젝트명과 포트를 준다. 후보 오버레이에서 `services.migrate.environment.PGPASSWORD`에만 틀린 값을 주고 `docker compose ... up -d --no-build --wait web`의 종료 코드, 후보의 마이그레이션·API·Nginx 상태, 원본의 `/api/ready`와 영수증을 확인한다.
 2. 후보 마이그레이션의 비밀번호를 복구한다. 빈 후보 DB에 `pg_restore --exit-on-error --single-transaction --no-owner --no-acl`로 복원하고 미디어 사본을 넣는다. 시작 후 `migrate --check`, `nginx -t`, 영수증의 회원·관리자 조회, 공개·비공개 미디어를 확인한다.
 3. 후보 Nginx ID를 기록하고 후보 API만 정지한다. 후보 네트워크의 IPAM에서 다른 정적 IPv4를 지정한 뒤 `docker compose ... up -d --no-deps --force-recreate --wait api`를 실행한다. API 직접 응답과 Nginx 컨테이너에서 조회한 `api` 주소를 확인하고, 같은 Nginx에서 `/api/ready` 및 회원·관리자 조회가 돌아오는지 확인한다.
+
+## `e2f8127` 복구 재현
+
+- `e2f8127` 소스에서 API와 정적 웹 이미지를 새로 빌드했다. 원본과 후보는 각자의 PostgreSQL·미디어 볼륨과 브리지 네트워크를 사용했다. 웹은 루프백 5541·5542에만 열고 도슨트와 분석은 비활성으로 실행했다.
+- 후보 마이그레이션에만 잘못된 DB 비밀번호를 주면 `migrate`와 기동 명령이 종료 코드 1을 반환했다. 후보는 DB만 실행됐고 테이블은 0개였다. 원본에서는 회원·관리자 영수증과 관리자 회원 검색이 계속 응답했다.
+- 올바른 설정으로 후보를 복원한 뒤 `migrate --check`와 `nginx -t`가 통과했다. API 정지 시 후보의 `/api/ready`는 504, 정적 `/mypage`는 200을 반환했다. 후보 API를 `10.247.93.10`에서 `10.247.93.11`로 재생성하자 Docker DNS와 API 직접 응답이 새 대상으로 바뀌었다. 같은 Nginx ID에서 API 준비 확인 후 약 2.3초 만에 `/api/ready` 200을 관찰했다.
+- API 재생성 후 원본과 후보의 회원·관리자 영수증 ID와 상세 본문, 관리자 회원 검색을 다시 대조했다. 계정·관람·반응은 각 `2|1|1`, 공개·익명 비공개·관리자 비공개 미디어는 `200/404/200`이었다. 두 미디어 파일의 SHA-256은 원본과 일치했다. 두 시험 프로젝트의 컨테이너와 네트워크를 종료했고 합성 볼륨을 보존했다.
+
+### 후보 API 주소 변경을 강제하는 방법
+
+[시연·복구 체크리스트](../operations/2026-11-11_main_시연복구체크리스트.md#1115-운영형-로컬-시연-재현)의 `$restore`와 `$restoreUrl`을 사용한다. 원본의 장애 중 응답도 보려면 원본 기동 상태를 유지하고 서로 다른 루프백 포트·네트워크를 사용한다. 후보를 처음 기동하기 전에 아래 오버레이를 `$restore`의 `-f` 목록에 추가한다. 예제 대역은 사용 중인 Docker 네트워크와 겹치면 바꾼다.
+
+```yaml
+services:
+  api:
+    networks:
+      default:
+        ipv4_address: 10.247.93.10
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.247.93.0/24
+```
+
+복원 확인 후 아래 명령으로 후보 API 주소만 `10.247.93.11`로 바꾼다. 중간 응답에 `-SkipHttpErrorCheck`를 써서 API가 내려간 동안의 상태 코드를 확인할 수 있다.
+
+```powershell
+$newApiIpOverlay = Join-Path $dir 'api-new-ip.yml'
+@'
+services:
+  api:
+    networks:
+      default:
+        ipv4_address: 10.247.93.11
+'@ | Set-Content -LiteralPath $newApiIpOverlay -Encoding utf8
+$moved = $restore + @('-f', $newApiIpOverlay)
+$webId = docker compose @restore ps -q web
+if (!$webId) { throw '복원된 후보 Nginx가 실행 중이어야 합니다.' }
+docker compose @restore stop api
+$outage = Invoke-WebRequest "$restoreUrl/api/ready" -SkipHttpErrorCheck -TimeoutSec 10
+if ($outage.StatusCode -lt 500 -or $outage.StatusCode -ge 600) { throw '후보 API 중단 응답을 확인하지 못했습니다.' }
+docker compose @moved up -d --no-deps --no-build --force-recreate --wait api
+docker compose @moved exec -T web nslookup api 127.0.0.11
+docker compose @moved exec -T api python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/ready', timeout=3).status)"
+$deadline = (Get-Date).AddSeconds(20)
+do {
+    $ready = Invoke-WebRequest "$restoreUrl/api/ready" -SkipHttpErrorCheck -TimeoutSec 7
+    if ($ready.StatusCode -eq 200) { break }
+    Start-Sleep -Milliseconds 500
+} while ((Get-Date) -lt $deadline)
+if ($ready.StatusCode -ne 200 -or (docker compose @moved ps -q web) -ne $webId) {
+    throw '같은 Nginx에서 API 준비 응답이 복구되지 않았습니다.'
+}
+```
+
+`nslookup`이 새 IP를 가리키고 API 직접 응답과 Nginx 경유 응답이 모두 200인지 확인한다. 복구 후 체크리스트에 따라 회원·관리자 영수증, 미디어 접근 코드와 해시를 원본과 대조한다.
