@@ -124,7 +124,8 @@ async function verify() {
       const callback = new URL(params.get('redirect_uri'));
       assert.equal(callback.href, base + callbackPath);
       const authorization = { state: params.get('state'), nonce: params.get('nonce'), challenge: params.get('code_challenge') };
-      for (const value of Object.values(authorization)) assert.match(value, /^[A-Za-z0-9_-]{43}$/);
+      assert(Object.values(authorization).every(value => /^[A-Za-z0-9_-]{43}$/.test(value)),
+        'Mock authorization fields have an unexpected format.');
       observedStates.push(authorization.state);
       callback.searchParams.set('state', authorization.state);
       const outcome = steps.shift();
@@ -158,7 +159,8 @@ async function verify() {
       const headers = await redirected.allHeaders();
       assert.equal(headers['cache-control'], 'no-store');
       assert.equal(headers['referrer-policy'], 'no-referrer');
-      await tab.waitForURL(base + completePath + '#state=' + observedStates[index]);
+      await tab.waitForURL(url => url.origin === base && url.pathname === completePath
+        && url.hash === '#state=' + observedStates[index]);
       await continueButton(tab).waitFor();
       const flow = (await context.cookies(base)).find(cookie => cookie.name === '__Host-arti-kakao-flow');
       assert(flow?.secure && flow.httpOnly);
@@ -173,23 +175,28 @@ async function verify() {
     }
 
     await link(0);
-    assert.deepEqual(await finish(page), { status: 'cancelled', returnTo: '/mypage' });
+    const cancelled = await finish(page);
+    assert(cancelled.status === 'cancelled' && cancelled.returnTo === '/mypage' && Object.keys(cancelled).length === 2,
+      'Cancellation must return to the member page without new credentials.');
     await page.getByText('카카오 인증을 취소했어요.').waitFor();
     await page.getByRole('link', { name: '마이페이지로 돌아가기' }).click();
     await page.waitForURL(base + '/mypage');
     await page.getByText('카카오 계정 연결', { exact: true }).waitFor();
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('arti.token'))), originalSession.token);
+    assert(await page.evaluate(() => JSON.parse(localStorage.getItem('arti.token'))) === originalSession.token,
+      'Cancellation must preserve the member session.');
     console.log('PASS Kakao link cancellation returns to the existing member session');
 
     await link(1);
-    assert.deepEqual(await finish(page), { status: 'linked', returnTo: '/mypage' });
+    const linked = await finish(page);
+    assert(linked.status === 'linked' && linked.returnTo === '/mypage' && Object.keys(linked).length === 2,
+      'Linking must return to the member page without new credentials.');
     await page.waitForURL(base + '/mypage');
     await page.getByText('카카오 계정 연결됨').waitFor();
     const logout = responseFor(page, 'POST', '/api/auth/logout');
     await page.getByRole('button', { name: '로그아웃', exact: true }).click();
     assert.equal((await logout).status(), 204);
     await page.waitForURL(base + '/');
-    assert.equal(await page.evaluate(() => localStorage.getItem('arti.token')), null);
+    assert(await page.evaluate(() => localStorage.getItem('arti.token')) === null, 'Logout must clear the member session.');
     assert.equal((await context.request.get('/api/auth/me', {
       headers: { Authorization: 'Bearer ' + originalSession.token },
     })).status(), 401);
@@ -199,14 +206,15 @@ async function verify() {
     const newer = await context.newPage();
     await newer.goto('/login?redirect=/mypage');
     await startAndWait(newer, kakaoLogin(newer), 3);
-    assert.notEqual(observedStates[2], observedStates[3]);
+    assert(observedStates[2] !== observedStates[3], 'Each browser authorization must have a different state.');
     assert.equal((await finish(page, 400)).code, 'KAKAO_INVALID_FLOW');
     await page.getByText('카카오 로그인 요청을 다시 시작해 주세요.').waitFor();
-    assert.equal(await page.evaluate(() => localStorage.getItem('arti.token')), null);
+    assert(await page.evaluate(() => localStorage.getItem('arti.token')) === null,
+      'The stale completion must not establish a session.');
     const loggedIn = await finish(newer);
     assert.equal(loggedIn.status, 'logged_in');
     assert.equal(loggedIn.returnTo, '/mypage');
-    assert.notEqual(loggedIn.token, originalSession.token);
+    assert(loggedIn.token !== originalSession.token, 'Re-login must establish a new session.');
     assert.deepEqual(loggedIn.user, account);
     assert.equal(steps.length, 0);
     assert.equal((await context.cookies(base)).some(cookie => cookie.name === '__Host-arti-kakao-flow'), false);
@@ -226,36 +234,41 @@ async function verify() {
   }
 }
 
-const certificateDirectory = await mkdtemp(path.join(os.tmpdir(), 'arti-kakao-browser-'));
-const keyFile = path.join(certificateDirectory, 'key.pem');
-const certFile = path.join(certificateDirectory, 'cert.pem');
-let api;
-let web;
-try {
-  api = startApi(certificateDirectory);
-  const apiPort = await Promise.race([
-    api.apiPort,
-    delay(15000, undefined, { ref: false }).then(() => { throw new Error('Kakao mock API startup timed out.'); }),
-  ]);
-  process.env.VITE_API_TARGET = 'django';
-  process.env.VITE_API_BASE = '/api';
-  process.env.VITE_API_PROXY = 'http://127.0.0.1:' + apiPort;
-  web = await preview({
-    configFile: path.join(root, 'frontend', 'vite.config.ts'),
-    build: { outDir: path.resolve(process.env.ARTI_BROWSER_DIST || path.join(root, 'frontend', 'dist')) },
-    preview: { host: '127.0.0.1', port, strictPort: true, https: { key: await readFile(keyFile), cert: await readFile(certFile) } },
-  });
-  await verify();
-} finally {
-  api?.child.stdin.end();
+async function runWithVite() {
+  const certificateDirectory = await mkdtemp(path.join(os.tmpdir(), 'arti-kakao-browser-'));
+  const keyFile = path.join(certificateDirectory, 'key.pem');
+  const certFile = path.join(certificateDirectory, 'cert.pem');
+  let api;
+  let web;
   try {
-    await web?.close();
+    api = startApi(certificateDirectory);
+    const apiPort = await Promise.race([
+      api.apiPort,
+      delay(15000, undefined, { ref: false }).then(() => { throw new Error('Kakao mock API startup timed out.'); }),
+    ]);
+    process.env.VITE_API_TARGET = 'django';
+    process.env.VITE_API_BASE = '/api';
+    process.env.VITE_API_PROXY = 'http://127.0.0.1:' + apiPort;
+    web = await preview({
+      configFile: path.join(root, 'frontend', 'vite.config.ts'),
+      build: { outDir: path.resolve(process.env.ARTI_BROWSER_DIST || path.join(root, 'frontend', 'dist')) },
+      preview: { host: '127.0.0.1', port, strictPort: true, https: { key: await readFile(keyFile), cert: await readFile(certFile) } },
+    });
+    await verify();
   } finally {
-    if (api) {
-      const stopped = await Promise.race([api.closed.then(() => true), delay(5000, false, { ref: false })]);
-      if (!stopped) api.child.kill();
+    api?.child.stdin.end();
+    try {
+      await web?.close();
+    } finally {
+      if (api) {
+        const stopped = await Promise.race([api.closed.then(() => true), delay(5000, false, { ref: false })]);
+        if (!stopped) api.child.kill();
+      }
+      await Promise.all([rm(keyFile, { force: true }), rm(certFile, { force: true })]);
+      await rmdir(certificateDirectory);
     }
-    await Promise.all([rm(keyFile, { force: true }), rm(certFile, { force: true })]);
-    await rmdir(certificateDirectory);
   }
 }
+
+if (process.argv.includes('--external-proxy')) await verify();
+else await runWithVite();
