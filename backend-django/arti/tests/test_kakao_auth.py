@@ -23,6 +23,20 @@ PASSWORD = 'demo-password1'
 BASE = '/api/auth/kakao'
 
 
+def signing_material():
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    jwk = jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key(), as_dict=True)
+    jwk.update(kid='test-signing-key', use='sig', alg='RS256')
+    return key, jwk
+
+
+def signed_identity(key, jwk, nonce, subject, /, **overrides):
+    now = timezone.now()
+    claims = {'iss': kakao.ISSUER, 'aud': CLIENT_ID, 'sub': subject, 'iat': now,
+              'exp': now + timedelta(minutes=5), 'nonce': nonce, **overrides}
+    return jwt.encode(claims, key, algorithm='RS256', headers={'kid': jwk['kid']})
+
+
 @override_settings(ARTI_KAKAO_CLIENT_ID=CLIENT_ID, ARTI_KAKAO_CLIENT_SECRET='test-secret',
                    ARTI_KAKAO_CALLBACK_URL=CALLBACK)
 class KakaoAuthTests(TestCase):
@@ -35,9 +49,7 @@ class KakaoAuthTests(TestCase):
                                              role='user', password=password, tastes=['abstract'])
         cls.other = Account.objects.create(login_id='other@example.test', email='other@example.test',
                                            role='user', password=password)
-        cls.key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        cls.jwk = jwt.algorithms.RSAAlgorithm.to_jwk(cls.key.public_key(), as_dict=True)
-        cls.jwk.update(kid='test-signing-key', use='sig', alg='RS256')
+        cls.key, cls.jwk = signing_material()
 
     def setUp(self):
         cache.clear()
@@ -65,11 +77,6 @@ class KakaoAuthTests(TestCase):
         return params
 
     def provider(self, params, subject='123456789', *, key=None, **overrides):
-        now = timezone.now()
-        claims = {'iss': kakao.ISSUER, 'aud': CLIENT_ID, 'sub': subject, 'iat': now,
-                  'exp': now + timedelta(minutes=5), 'nonce': params['nonce'], 'email': self.account.email,
-                  **overrides}
-
         def response(request):
             if request.full_url == kakao.ISSUER + '/.well-known/jwks.json':
                 return {'keys': [self.jwk]}
@@ -82,8 +89,8 @@ class KakaoAuthTests(TestCase):
             verifier = fields['code_verifier'][0]
             challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
             self.assertEqual(challenge, params['code_challenge'])
-            return {'id_token': jwt.encode(claims, key or self.key, algorithm='RS256',
-                                           headers={'kid': self.jwk['kid']}),
+            return {'id_token': signed_identity(key or self.key, self.jwk, params['nonce'], subject,
+                                                **({'email': self.account.email} | overrides)),
                     'access_token': 'unused-access-token', 'refresh_token': 'unused-refresh-token'}
 
         return patch('arti.kakao.request_json', side_effect=response)
