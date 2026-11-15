@@ -401,12 +401,135 @@ async function surveyAndMap(browser) {
   }
 }
 
+function createShortageExhibition(requested) {
+  const id = `fixture-shortage-${requested}`;
+  const eligible = Array.from({ length: requested - 1 }, (_, index) => ({
+    id: `${id}-${index + 1}`, title: `합성 추천 작품 ${index + 1}`,
+  }));
+  const noPosition = { id: `${id}-unplaced`, title: '좌표 없는 합성 작품' };
+  const hidden = { id: `${id}-hidden`, title: '비공개 합성 작품' };
+  fixtureCommand([
+    'import json',
+    'from django.db import transaction',
+    'from arti.management.commands.load_test_fixture import FIXTURE_SOURCE',
+    'from arti.models import Artwork, Exhibition',
+    'data = json.loads(os.environ["ARTI_BROWSER_SHORTAGE"])',
+    'template = Exhibition.objects.get(pk="fixture-ex01", subtitle=FIXTURE_SOURCE)',
+    'with transaction.atomic():',
+    '    ex, _ = Exhibition.objects.get_or_create(pk=data["id"], defaults=dict(',
+    '        title="Synthetic recommendation shortage", subtitle=FIXTURE_SOURCE, status="running",',
+    '        start_date=template.start_date, end_date=template.end_date))',
+    '    assert ex.subtitle == FIXTURE_SOURCE',
+    '    for index, work in enumerate(data["works"], start=1):',
+    '        unplaced = work["id"].endswith("-unplaced")',
+    '        Artwork.objects.update_or_create(pk=work["id"], exhibition=ex, defaults=dict(',
+    '            title=work["title"], artist="Synthetic artist", source=FIXTURE_SOURCE,',
+    '            position_x=None if unplaced else index * 10, position_y=None if unplaced else 10,',
+    '            review_status="source_check" if work["id"].endswith("-hidden") else "approved"))',
+  ], { ARTI_BROWSER_SHORTAGE: JSON.stringify({ id, works: [...eligible, noPosition, hidden] }) });
+  return { id, eligible, noPosition, hidden };
+}
+
+async function completeShortageVisit(browser, fixture, duration, requested, signedIn) {
+  const { id, eligible, noPosition, hidden } = fixture;
+  const page = await openPage(browser);
+  const expectedIds = eligible.map(work => work.id);
+  const expectedTitles = eligible.map(work => work.title);
+  const numberedTitles = expectedTitles.map((title, index) => `${index + 1}. ${title}`);
+  const saves = [];
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => {
+    if (new URL(request.url()).pathname === '/api/visits' && request.method() === 'POST') saves.push(request.postDataJSON());
+  });
+  try {
+    await checkEnvironment(page);
+    const publicWorks = await body(await page.request.get(`/api/artworks?exhibitionId=${id}`));
+    assert.deepEqual(publicWorks.map(work => work.id).sort(), [...expectedIds, noPosition.id].sort());
+    assert.equal(publicWorks.find(work => work.id === noPosition.id).position, null);
+    assert.equal((await page.request.get('/api/artworks/' + hidden.id)).status(), 404);
+
+    const member = signedIn ? await newMember(page) : null;
+    if (member) {
+      await page.goto('/login');
+      await login(page, member);
+      await page.waitForURL(base.href);
+    }
+    await page.goto(`/exhibitions/${id}/taste`);
+    await choosePairs(page);
+    await button(page, '취향 미리 확인').click();
+    await button(page, member ? '이번 관람만 적용' : '이 취향으로 계속').click();
+    const recs = await recommend(page, duration);
+    assert.deepEqual(recs.map(item => item.artworkId), expectedIds);
+    assert.deepEqual(recs.map(item => item.order), eligible.map((_, index) => index + 1));
+    await page.getByText(`선택한 시간의 기준은 ${requested}점이에요. 지금 추천할 수 있는 작품만 안내해요.`, { exact: true }).waitFor();
+    assert.deepEqual(await page.locator('.rec-list .rec-info strong').allTextContents(), numberedTitles);
+
+    await button(page, '2D 지도에서 경로 보기').click();
+    const visitStart = await visit(page);
+    assert.equal(visitStart.ownerId ?? null, member?.user.id ?? null);
+    await page.locator('.route-details[open]').waitFor();
+    assert.deepEqual(await page.locator('.route-list .route-title').allTextContents(), expectedTitles);
+    assert.deepEqual(await page.locator('.floor-map .fm-marker title').allTextContents(), expectedTitles);
+
+    for (const [index, work] of eligible.entries()) {
+      await button(page, index === 0 ? '관람 시작하기' : `${index + 1}번 작품 감상하기`).click();
+      await page.getByRole('heading', { name: work.title, exact: true }).waitFor();
+      if (index < eligible.length - 1) {
+        await button(page, '다음 작품 안내').click();
+        await page.locator('.next-artwork h2').getByText(eligible[index + 1].title, { exact: true }).waitFor();
+      }
+    }
+
+    const created = member ? page.waitForResponse(r => isResponse(r, '/api/visits', 'POST')) : null;
+    await button(page, '관람 마치기').click();
+    const record = created ? await body(await created, 201) : null;
+    const receiptWorks = page.locator('.receipt-works li > span:first-child');
+    const saveStatus = page.getByRole('status').getByText(member ? '관람기록에 저장되었어요' : /비회원 관람기록은 서버에 저장되지 않아요/);
+    await receiptWorks.last().getByText(numberedTitles.at(-1), { exact: true }).waitFor();
+    assert.deepEqual(await receiptWorks.allTextContents(), numberedTitles);
+    const finished = await visit(page);
+    assert.equal(finished.visitId, visitStart.visitId);
+    assert.deepEqual(finished.viewed, expectedIds);
+    await saveStatus.waitFor();
+    await page.reload();
+    await saveStatus.waitFor();
+    assert.deepEqual(await receiptWorks.allTextContents(), numberedTitles);
+    if (member) {
+      assert(saves.length >= 1);
+      for (const payload of saves) {
+        assert.equal(payload.visitId, visitStart.visitId);
+        assert.deepEqual(payload.viewedArtworkIds, expectedIds);
+      }
+      assert.equal(record.visitId, visitStart.visitId);
+      assert.deepEqual(record.viewedArtworkIds, expectedIds);
+      const headers = headersFor(await currentToken(page));
+      assert.deepEqual(await body(await page.request.get(`/api/users/${member.user.id}/visits`, { headers })), [record]);
+    } else {
+      assert.deepEqual(saves, []);
+    }
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+}
+
+async function recommendationShortage(browser) {
+  for (const [requested, duration] of [[3, /30분/], [5, /1시간/], [7, /여유롭게/]]) {
+    const fixture = createShortageExhibition(requested);
+    await completeShortageVisit(browser, fixture, duration, requested, true);
+    await completeShortageVisit(browser, fixture, duration, requested, false);
+    console.log(`PASS V2 ${requested} → ${requested - 1}: no-coordinate and hidden works excluded, same map/receipt order, member record 1, guest saves 0`);
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
+    if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
     if (suite !== 'survey-map') {
       await receiptSession(browser, false);
       await receiptSession(browser, true);

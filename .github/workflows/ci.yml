@@ -150,6 +150,9 @@ jobs:
         run: |
           node frontend/tests/runVisitBoundaries.browser.mjs
           node frontend/tests/runVisitBoundaries.browser.mjs
+      - name: Run V2 recommendation shortage Chrome
+        if: matrix.suite == 'visit-boundaries'
+        run: node frontend/tests/runVisitBoundaries.browser.mjs recommendation-shortage
       - name: Run loopback Chrome regression
         if: matrix.suite != 'visit-boundaries'
         shell: bash
