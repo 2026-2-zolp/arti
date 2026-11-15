@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from yoo_core3_receipt import check_receipt, read_references
+from yoo_core3_receipt import FIELDS, check_receipt, read_references
 
 
 class Core3ReceiptTests(unittest.TestCase):
@@ -93,3 +93,27 @@ class Core3ReceiptTests(unittest.TestCase):
         del receipt['content'][0]['reviewer']
         result = self.check(receipt)
         self.assertEqual(result['content']['question']['issues'], ['reviewer-missing'])
+
+    def test_handoff_connects_all_confirmed_fields_to_only_the_confirmed_medium(self):
+        receipt = self.receipt('001')
+        receipt['content'] = [dict(receipt['content'][0], field=name) for name in FIELDS]
+        result = self.check(receipt)['handoff']
+        self.assertEqual(result['pendingContentFields'], [])
+        self.assertEqual(result['media']['campus_demo'], {'usageConfirmed': True, 'status': 'ready-for-review'})
+        for medium in ('presentation', 'recording', 'external_url'):
+            self.assertEqual(result['media'][medium], {'usageConfirmed': False, 'status': 'pending'})
+
+    def test_handoff_waits_for_missing_revise_or_superseded_wording(self):
+        for issue in ('missing-hint', 'revise-hint', 'old-wording'):
+            with self.subTest(issue=issue):
+                receipt = self.receipt('004')
+                receipt['content'] = [dict(receipt['content'][0], field=name) for name in FIELDS]
+                if issue == 'missing-hint':
+                    receipt['content'].pop()
+                elif issue == 'revise-hint':
+                    receipt['content'][-1]['decision'] = 'revise'
+                else:
+                    receipt['wordingSha256'] = '0' * 64
+                result = self.check(receipt)['handoff']
+                self.assertEqual(result['pendingContentFields'], list(FIELDS) if issue == 'old-wording' else ['hint'])
+                self.assertEqual(result['media']['campus_demo'], {'usageConfirmed': True, 'status': 'pending'})
