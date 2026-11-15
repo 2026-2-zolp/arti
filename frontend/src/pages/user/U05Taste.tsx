@@ -34,10 +34,33 @@ export default function U05Taste() {
 
 type LoadIssue = 'error' | 'notReady' | 'noContext' | null;
 
+/** 지금 기록에 적힌 고른 개수(비교 쌍마다 쌓은 기록). 없으면 0. */
+function pickStep(): number {
+  const n = (window.history.state as { artiPick?: unknown } | null)?.artiPick;
+  return typeof n === 'number' ? n : 0;
+}
+
+/** 저장해 둔 비교 기록이 지금 적용된 취향(고른 작품·태그)과 같은지 */
+function matchesProfile(draft: Draft, profile: TasteProfile): boolean {
+  const sameTags = [...(draft.tags ?? [])].sort().join() === [...profile.selectedTags].sort().join();
+  if (!sameTags || !draft.picks.length) return false;
+  if (profile.source !== 'picks') return true;
+  const picks = [...profile.picks].sort((a, b) => a.pairIndex - b.pairIndex).map((p) => p.artworkId);
+  return picks.join() === draft.picks.join();
+}
+
 function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
   const to = useExhibitionPath();
-  const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
+  // 취향을 확정하면 관람 번호가 새로 생겨 이 화면의 기록 키(draftKey)가 바뀐다.
+  // 같은 전시에서 마지막으로 고른 기록이 지금 적용된 취향과 같으면 이어서 보여 준다(U-07 ← → 취향 결과).
+  const latestKey = `arti.tasteDraft.latest.${state.user?.id ?? 'guest'}.${state.exhibitionId}`;
+  const [draft, setDraft] = useState(() => {
+    const own = load<Draft>(draftKey, { picks: [] }, 'session');
+    if (own.picks.length || !state.tasteProfile) return own;
+    const latest = load<Draft | null>(latestKey, null, 'session');
+    return latest && matchesProfile(latest, state.tasteProfile) ? latest : own;
+  });
   const [picked, setPicked] = useState<string | null>(null);
   const [viewing, setViewing] = useState<string | null>(null); // 크게 보기로 연 작품 ID
   const pickTimer = useRef<number | null>(null);
@@ -99,8 +122,45 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
 
   function update(next: Draft) {
     save(draftKey, next, 'session');
+    save(latestKey, next, 'session');
     setDraft(next);
   }
+
+  // 비교 쌍 하나를 고를 때마다 같은 주소의 기록을 한 장 쌓는다(기록에 고른 개수 artiPick).
+  // 그래서 앱 ←와 휴대폰 뒤로가기 모두 기록을 꺼내면서 마지막 선택이 취소되고 이전 쌍으로 돌아간다.
+  const picksRef = useRef(draft.picks.length);
+  picksRef.current = draft.picks.length;
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  useEffect(() => {
+    const path = window.location.pathname;
+    const onPop = () => {
+      // 이 화면을 떠나는 뒤로가기(다른 주소)는 초안을 건드리지 않는다.
+      if (window.location.pathname !== path) return;
+      const n = pickStep();
+      const have = picksRef.current;
+      if (n < have) {
+        const d = draftRef.current;
+        update({ ...d, picks: d.picks.slice(0, n), options: undefined, tags: undefined });
+      } else if (n > have && n > 0) {
+        // 지금 초안보다 앞선 기록(이미 지운 선택)에 도착하면 맞는 개수까지 한 번에 더 돌아간다.
+        window.history.go(have - n);
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const stepBack = () => {
+    if (picked !== null || !draft.picks.length) return;
+    if (pickStep() === draft.picks.length) window.history.back();
+    else update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined });
+  };
+  const restart = () => {
+    const n = pickStep();
+    update({ picks: [] });
+    if (n > 0 && n === draft.picks.length) window.history.go(-n);
+  };
 
   function choose(id: string) {
     if (!pool?.ready || blocked || complete || pickTimer.current !== null) return;
@@ -111,6 +171,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
       pickTimer.current = null;
       setPicked(null);
       update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
+      window.history.pushState({ ...(window.history.state as object | null), artiPick: picks.length }, '');
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420);
   }
 
@@ -131,9 +192,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   if (!loading) lastLoadIssue.current = issueNow;
   const loadIssue: LoadIssue = loading && !complete ? lastLoadIssue.current : issueNow;
   return (
-    <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
-      right={draft.picks.length > 0 && <button type="button" className="text-btn" disabled={picked !== null} onClick={() =>
-        update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
+    // 고른 쌍이 있으면 ←는 마지막 선택 취소(이전 쌍), 없으면 들어오기 전 화면. [이전 선택] 버튼은 ←와 같아 뺐다.
+    <MobileShell screenId="U-05" back={draft.picks.length > 0 ? stepBack : to(state.user?.tastes.length ? '/taste/saved' : '/entry')}>
       {!loadIssue && <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'} />}
       {!complete && loading && !pool && !loadIssue && <Spinner label="작품을 불러오는 중…" />}
       {/* 불러오기 실패·준비 안 됨·근거 다시 필요: 카드 안의 [다시 시도하기]가 조사 근거를 다시 불러온다(reload, 기존 버튼과 같은 동작). */}
@@ -171,7 +231,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             ? <button type="button" className="btn outline" onClick={() => update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
                 tieContextVersion: v2 ? contextVersion : undefined,
                 options: complete ? tastesFromPicks(pool.artworks, draft.picks) : undefined })}>고른 작품을 최신 근거로 확인</button>
-            : <button type="button" className="btn outline" onClick={() => update({ picks: [] })}>작품을 처음부터 다시 고르기</button>}
+            : <button type="button" className="btn outline" onClick={restart}>작품을 처음부터 다시 고르기</button>}
         </div>
       )}
       {complete && (

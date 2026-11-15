@@ -7,6 +7,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect, withRedirect } from '../../store/ExhibitionRoute';
+import { exhibitionHomeFrom } from '../../lib/appHistory';
 
 /** 회원 로그인 화면 */
 export default function U03Login() {
@@ -53,7 +54,7 @@ export default function U03Login() {
   };
 
   return (
-    <MobileShell screenId="U-03">
+    <MobileShell screenId="U-03" back={exhibitionHomeFrom(safeRedirect(redirect))}>
       <Lead title="다시 오셨군요" desc="로그인은 선택사항이에요. 저장된 취향과 관람기록을 이어서 쓸 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>
