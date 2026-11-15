@@ -40,8 +40,10 @@ async function checkEnvironment(page) {
   });
 }
 
-async function openPage(browser) {
-  const page = await browser.newPage({ baseURL: base.href, viewport: { width: 390, height: 812 }, reducedMotion: 'reduce' });
+const pageOptions = { baseURL: base.href, viewport: { width: 390, height: 812 }, reducedMotion: 'reduce' };
+
+async function openPage(browser, sharedContext) {
+  const page = sharedContext ? await sharedContext.newPage() : await browser.newPage(pageOptions);
   page.setDefaultTimeout(10000);
   await page.route('**/*', route => new URL(route.request().url()).origin === base.origin ? route.continue() : route.abort());
   return page;
@@ -570,7 +572,8 @@ async function completeTasteVisit(page, taste, owner) {
 }
 
 async function savedV2(browser) {
-  const page = await openPage(browser);
+  const context = await browser.newContext(pageOptions);
+  const page = await openPage(browser, context);
   const resolvePath = '/api/taste-profiles/resolve';
   const errors = [];
   const writes = [];
@@ -625,14 +628,37 @@ async function savedV2(browser) {
       index < 3 ? pair.leftId : pair.rightId));
     assert.equal(preview.tasteProfile.counts.landscape, 3);
     assert.equal(preview.tasteProfile.counts.warm, 3);
+    const savePath = `/api/users/${member.user.id}/tastes`;
+    let committedStatus;
+    // Let Django commit the first PUT before dropping only its response to Chrome.
+    await page.route(new URL(savePath, base).href, async route => {
+      const response = await route.fetch({ maxRetries: 0 });
+      committedStatus = response.status();
+      if (committedStatus === 204) await route.abort('connectionreset');
+      else await route.fulfill({ response });
+    }, { times: 1 });
+    await button(page, '확인하고 계정에 저장').click();
+    await page.getByRole('alert').getByText(/취향을 계정에 저장하지 못했어요/).waitFor();
+    assert.equal(committedStatus, 204);
+    const committed = tasteState(await account());
+    assert.equal(committed.tasteProfileVersion, member.user.tasteProfileVersion + 1);
+    assert.equal(writes.length, 1);
+    assert.match(writes[0].clientMutationId, /^[0-9a-f-]{36}$/i);
+    assert.equal(writes[0].expectedSavedProfileVersion, member.user.tasteProfileVersion);
+    await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/taste-pool', 'GET') && r.ok()),
+      page.reload(),
+    ]);
     const [storedResponse] = await Promise.all([
-      page.waitForResponse(r => isResponse(r, `/api/users/${member.user.id}/tastes`, 'PUT')),
-      button(page, '확인하고 계정에 저장').click(),
+      page.waitForResponse(r => isResponse(r, savePath, 'PUT')),
+      button(page, '같은 요청으로 저장 재시도').click(),
     ]);
     assert.equal(storedResponse.status(), 204);
     await page.waitForURL('**' + exhibition + '/time');
     const stored = tasteState(await account());
-    assert.equal(stored.tasteProfileVersion, member.user.tasteProfileVersion + 1);
+    assert.equal(writes.length, 2);
+    assert.deepEqual(writes[1], writes[0]);
+    assert.deepEqual(stored, committed);
     assert.deepEqual(stored.tastes, preview.tasteProfile.selectedTags);
     assert.deepEqual(stored.tasteProfile.originalPicks, preview.tasteProfile.picks);
     assert.equal(stored.tasteProfile.originalPoolVersion, initial.poolVersion);
@@ -693,7 +719,7 @@ async function savedV2(browser) {
     assert.equal(fromManual.tasteProfile.source, 'manual');
     assert.notEqual(fromManual.id, fromSaved.id);
     assert.deepEqual(tasteState(await account()), stored);
-    assert.equal(writes.length, 1);
+    assert.equal(writes.length, 2);
 
     const rows = await body(await page.request.get(`/api/users/${member.user.id}/visits`, {
       headers: headersFor(await currentToken(page)),
@@ -703,8 +729,67 @@ async function savedV2(browser) {
     await page.locator('.history-card').nth(1).click();
     await page.waitForURL('**/receipt/' + fromSaved.id);
     await page.locator('.receipt-works li').nth(2).waitFor();
+
+    await page.goto(exhibition + '/taste/saved');
+    await page.getByText('저장된 취향 키워드', { exact: true }).waitFor();
+    const beforeConflict = await visit(page);
+    const oldTags = await page.getByLabel('저장된 취향').locator('.chip').allTextContents();
+    const writer = await openPage(browser, context);
+    writer.on('pageerror', error => errors.push(error.message));
+    let releaseResolve;
+    const resolveGate = new Promise(resolve => { releaseResolve = resolve; });
+    let latest;
+    try {
+      await writer.goto(exhibition + '/taste');
+      assert.equal(await currentToken(writer), await currentToken(page));
+      await choosePairs(writer, 1, [1, 1, 1, 1, 1]);
+      await button(writer, '취향 미리 확인').click();
+      // The first tab has checked /api/auth/me when it reaches this request.
+      await page.route(new URL(resolvePath, base).href, async route => {
+        await resolveGate;
+        await route.continue();
+      }, { times: 1 });
+      const staleRequest = page.waitForRequest(r => r.method() === 'POST' && new URL(r.url()).pathname === resolvePath);
+      const staleResponse = page.waitForResponse(r => isResponse(r, resolvePath, 'POST'));
+      await button(page, '이 취향으로 관람 시작').click();
+      const stale = (await staleRequest).postDataJSON();
+      assert.equal(stale.tasteProfile.savedProfileVersion, stored.tasteProfileVersion);
+      assert.deepEqual(stale.tasteProfile.selectedTags, stored.tastes);
+      const [writerSave] = await Promise.all([
+        writer.waitForResponse(r => isResponse(r, savePath, 'PUT')),
+        button(writer, '확인하고 계정에 저장').click(),
+      ]);
+      assert.equal(writerSave.status(), 204);
+      latest = tasteState(await account());
+      assert.equal(latest.tasteProfileVersion, stored.tasteProfileVersion + 1);
+      assert.notDeepEqual([...latest.tastes].sort(), [...stored.tastes].sort(), 'The second tab must save different tags');
+      releaseResolve();
+      assert.equal((await body(await staleResponse, 409)).code, 'VERSION_CONFLICT');
+      await page.getByRole('alert').getByText(/저장된 취향을 적용하지 못했어요/).waitFor();
+      assert.deepEqual(await visit(page), beforeConflict);
+    } finally {
+      releaseResolve();
+      await writer.close();
+    }
+    await button(page, '계정 최신 취향 확인').click();
+    await page.waitForFunction(tags => {
+      const labels = Array.from(document.querySelectorAll('[aria-label="저장된 취향"] .chip'), chip => chip.textContent);
+      return labels.length > 0 && JSON.stringify(labels) !== JSON.stringify(tags);
+    }, oldTags);
+    await page.getByRole('alert').getByText(/저장된 취향을 적용하지 못했어요/).waitFor({ state: 'hidden' });
+    assert.deepEqual(await visit(page), beforeConflict);
+    const recovered = await resolved('이 취향으로 관람 시작');
+    assert.equal(recovered.submitted.savedProfileVersion, latest.tasteProfileVersion);
+    assert.deepEqual(recovered.tasteProfile.selectedTags, latest.tastes);
+    await page.waitForURL('**' + exhibition + '/time');
+    assert.equal((await visit(page)).visitId, recovered.visitId);
+    assert.deepEqual(tasteState(await account()), latest);
+    assert.equal(writes.length, 2);
+    assert.deepEqual(await body(await page.request.get(`/api/users/${member.user.id}/visits`, {
+      headers: headersFor(await currentToken(page)),
+    })), rows);
     assert.deepEqual(errors, []);
-    console.log('PASS saved V2 after survey revision and re-login: frozen tie + saved receipt; visit-only tags + separate receipt; one account write');
+    console.log('PASS saved V2: response lost after 204, identical PUT after reload, version increased once; frozen tie + visit-only receipt; two-tab 409 → latest taste, original receipts intact');
   } finally {
     try {
       if (surveyChanged) reviseSurvey(originalOrder);
@@ -712,7 +797,7 @@ async function savedV2(browser) {
       try {
         if (tieWork) setFixtureTags(tieWork.id, tieWork.tags);
       } finally {
-        await page.close();
+        await context.close();
       }
     }
   }
