@@ -72,6 +72,22 @@ class MapManagementTests(Helpers, TestCase):
         self.assertEqual((work.position_x, work.position_y), (21, 34))
         self.assertEqual(self.admin.get(self.path).json()['floorPlan'], result.json()['floorPlan'])
 
+    def test_current_artwork_cannot_be_placed_using_an_older_map(self):
+        older = self.upload(self.ex.version).json()
+        current = self.upload(older['version']).json()
+        work = Artwork.objects.get(pk='fixture-art01')
+        point = {'x': 21, 'y': 34}
+        rejected = self.put(work, position=point, mapVersion=older['version'])
+        self.assertEqual(rejected.status_code, 409)
+        self.assertEqual(rejected.json()['code'], 'VERSION_CONFLICT')
+        self.assertIsNone(Artwork.objects.get(pk=work.pk).position_x)
+        self.assertEqual(self.public.post('/api/recommendations', {
+            'exhibitionId': self.ex.id, 'duration': '30m', 'tastes': [],
+        }, format='json').json(), [])
+        saved = self.put(work, position=point, mapVersion=current['version'])
+        self.assertEqual(saved.status_code, 200, saved.content)
+        self.assertEqual(self.public.get('/api/artworks/' + work.id).json()['position'], point)
+
     def test_rooms_entrance_and_position_roundtrip_and_room_removal_guard(self):
         body = exhibition_dto(self.ex)
         body['rooms'] = [*body['rooms'], {'id': 'review-room', 'name': '검토용 전시실'}]

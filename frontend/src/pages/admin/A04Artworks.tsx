@@ -20,6 +20,7 @@ import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 
 const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
+const isVersionConflict = (error: unknown) => error instanceof ApiError && error.status === 409 && error.code === 'VERSION_CONFLICT';
 
 /** 작품 목록과 검수 상태를 조회합니다. */
 export function ArtworkList() {
@@ -206,6 +207,7 @@ const emptyArtwork = (exhibitionId: string): Artwork => ({
 
 /** 단일 작품의 정보와 검수 상태를 편집합니다. */
 export function ArtworkEdit() {
+  const confirmAction = useConfirm();
   const { id } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -215,13 +217,19 @@ export function ArtworkEdit() {
     [id],
   );
   const [w, setW] = useState<Artwork | null>(null);
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
 
   useEffect(() => {
     if (!data) return;
     const initial = data[1] ?? emptyArtwork(params.get('exhibition') ?? data[0][0]?.id ?? '');
     setW(initial);
   }, [data, params]);
+
+  const reloadAfterConflict = async () => {
+    if (!(await confirmAction('최신 작품을 다시 불러오면 이 탭에서 저장하지 않은 수정이 사라져요.', { confirm: '다시 불러오기' }))) return;
+    setMsg(null);
+    reload();
+  };
 
   if (error) return <><PageHead title="작품 등록·수정" desc={error} /><button onClick={reload}>다시 조회</button><button onClick={() => navigate('/admin/artworks')}>목록으로</button></>;
   if (!data || !w) return <PageHead title="작품 등록·수정" desc="불러오는 중…" />;
@@ -247,7 +255,7 @@ export function ArtworkEdit() {
     try {
       saved = await api.saveArtwork(w);
     } catch (err) {
-      return setMsg({ type: 'err', text: err instanceof Error ? err.message : '저장하지 못했어요.' });
+      return setMsg({ type: isVersionConflict(err) ? 'conflict' : 'err', text: err instanceof Error ? err.message : '저장하지 못했어요.' });
     }
     setW(saved);
     setMsg({
@@ -357,12 +365,17 @@ export function ArtworkEdit() {
             </label>
             <button className="a-btn primary save">저장</button>
           </div>
-          {msg && <p className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>{msg.text}</p>}
+          {msg && (
+            <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>
+              {msg.text}
+              {msg.type === 'conflict' && <button type="button" onClick={reloadAfterConflict}>최신 작품 다시 불러오기</button>}
+            </p>
+          )}
           <p className="muted small">검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.</p>
         </section>
       </div>
       {w.id ? (
-        <AiPanel w={w} setW={setW} reloadArtwork={reload} />
+        <AiPanel w={w} setW={setW} reloadArtwork={reloadAfterConflict} />
       ) : (
         <p className="muted small mt-24">작품을 먼저 저장하면 AI 감정 분석·해설 요약을 실행할 수 있어요.</p>
       )}
@@ -487,9 +500,8 @@ function ImageField({
 function AiPanel({ w, setW, reloadArtwork }: {
   w: Artwork;
   setW: (f: (cur: Artwork | null) => Artwork | null) => void;
-  reloadArtwork: () => void;
+  reloadArtwork: () => Promise<void>;
 }) {
-  const confirmAction = useConfirm();
   const [useImage, setUseImage] = useState(true);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -523,17 +535,10 @@ function AiPanel({ w, setW, reloadArtwork }: {
       ];
       setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
     } catch (e) {
-      const conflict = e instanceof ApiError && e.status === 409 && e.code === 'VERSION_CONFLICT';
-      setMsg({ type: conflict ? 'conflict' : 'err', text: analysisFailure(e) });
+      setMsg({ type: isVersionConflict(e) ? 'conflict' : 'err', text: analysisFailure(e) });
     } finally {
       inFlight.current=false;
       setBusy(false);
-    }
-  };
-
-  const reloadAfterConflict = async () => {
-    if (await confirmAction('최신 작품을 다시 불러오면 이 탭에서 저장하지 않은 수정이 사라져요.', { confirm: '다시 불러오기' })) {
-      reloadArtwork();
     }
   };
 
@@ -551,7 +556,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
     } catch (e) {
       setMsg((current) => current?.type === 'conflict'
         ? current
-        : { type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
+        : { type: isVersionConflict(e) ? 'conflict' : 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
     }
   };
 
@@ -583,7 +588,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
       {msg && (
         <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
           {msg.text}
-          {msg.type === 'conflict' && <button type="button" onClick={reloadAfterConflict}>최신 작품 다시 불러오기</button>}
+          {msg.type === 'conflict' && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}
           {msg.type === 'err' && <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>}
         </p>
       )}

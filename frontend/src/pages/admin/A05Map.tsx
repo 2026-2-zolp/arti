@@ -10,7 +10,7 @@ import {useConfirm} from '../../components/Confirmation';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { createMapOperationGate } from '../../lib/mapOperationGate';
 import { Link, useSearchParams } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import type { Artwork, Exhibition, MapPoint, Room } from '../../types';
@@ -24,25 +24,32 @@ const roomAt = (ex: Exhibition, p: MapPoint) =>
 
 /** 전시 도면·입구·작품 배치와 전시실 소속을 관리하는 화면 */
 export default function A05Map() {
+  const confirmAction = useConfirm();
   const [params, setParams] = useSearchParams();
-  const { data: exhibitions, setData: setExhibitions, error: exError, reload: reloadEx } = useAsync(() => api.listAdminExhibitions(), []);
+  const { data: exhibitions, setData: setExhibitions, loading: loadingEx, error: exError, reload: reloadEx } = useAsync(() => api.listAdminExhibitions(), []);
   const exId = params.get('exhibition') ?? exhibitions?.[0]?.id ?? '';
-  const { data: artworks, setData: setArtworks, error: artError, reload: reloadArt } = useAsync(
+  const { data: artworks, setData: setArtworks, loading: loadingArt, error: artError, reload: reloadArt } = useAsync(
     () => (exId ? api.listAdminArtworks(exId) : Promise.resolve([] as Artwork[])),
     [exId],
   );
   const [selectedId, setSelectedId] = useState<string | null>(params.get('artwork'));
   const [draft, setDraft] = useState<MapPoint | null>(null);
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [reloading, setReloading] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
 
   useEffect(() => {
     setDraft(null);
     setMsg(null);
   }, [selectedId]);
+  useEffect(() => {
+    if (!loadingEx && !loadingArt) setReloading(false);
+  }, [loadingEx, loadingArt]);
 
   const ex = exhibitions?.find((e) => e.id === exId);
   if (exError || artError) return <><PageHead title="위치·지도 관리" desc={exError ?? artError ?? ''} /><button onClick={() => {reloadEx(); reloadArt();}}>다시 조회</button></>;
-  if (!ex || !artworks) return <PageHead title="위치·지도 관리" desc="불러오는 중…" />;
+  if (reloading || loadingEx || loadingArt || !ex || !artworks || artworks.some((w) => w.exhibitionId !== exId)) {
+    return <PageHead title="위치·지도 관리" desc="불러오는 중…" />;
+  }
 
   const selected = artworks.find((w) => w.id === selectedId) ?? null;
   const roomName = (w: Artwork) => ex.rooms.find((r) => r.id === w.roomId)?.name ?? '전시실 미지정';
@@ -58,15 +65,27 @@ export default function A05Map() {
       state: w.id === selectedId ? 'selected' : 'plain',
     }));
 
-  const fail = (e: unknown) => setMsg({ type: 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
-  const applyArtwork = (saved: Artwork) => setArtworks(artworks.map((w) => (w.id === saved.id ? saved : w)));
-  const applyExhibition = (saved: Exhibition) => setExhibitions(exhibitions!.map((e) => (e.id === saved.id ? saved : e)));
+  const fail = (e: unknown) => setMsg({
+    type: e instanceof ApiError && e.code === 'VERSION_CONFLICT' ? 'conflict' : 'err',
+    text: e instanceof Error ? e.message : '저장하지 못했어요.',
+  });
+  const applyArtwork = (saved: Artwork) => setArtworks((current) => current?.map((w) => (w.id === saved.id ? saved : w)) ?? null);
+  const applyExhibition = (saved: Exhibition) => setExhibitions((current) => current?.map((e) => (e.id === saved.id ? saved : e)) ?? null);
+
+  const reloadAfterConflict = async () => {
+    if (!(await confirmAction('최신 지도를 다시 불러오면 저장하지 않은 위치와 전시실 수정이 사라져요.', { confirm: '다시 불러오기' }))) return;
+    setDraft(null);
+    setMsg(null);
+    setReloading(true);
+    reloadEx();
+    reloadArt();
+  };
 
   /** 위치 저장. 기본 평면도에서는 놓인 전시실도 함께 갱신한다 */
   const savePosition = async (w: Artwork, p: MapPoint) => {
     const room = roomAt(ex, p);
     try {
-      applyArtwork(await api.saveArtwork({ ...w, position: p, roomId: room?.id ?? w.roomId }));
+      applyArtwork(await api.saveArtwork({ ...w, position: p, roomId: room?.id ?? w.roomId }, ex.version));
       setDraft(null);
       setMsg({ type: 'ok', text: `'${w.title}' 위치를 저장했어요${room ? ` (${room.name})` : ''}.` });
     } catch (e) {
@@ -77,7 +96,7 @@ export default function A05Map() {
   const clearPosition = async () => {
     if (!selected) return;
     try {
-      applyArtwork(await api.saveArtwork({ ...selected, position: null }));
+      applyArtwork(await api.saveArtwork({ ...selected, position: null }, ex.version));
       setMsg({ type: 'ok', text: `'${selected.title}' 위치를 해제했어요.` });
     } catch (e) {
       fail(e);
@@ -87,7 +106,7 @@ export default function A05Map() {
   const changeRoom = async (roomId: string) => {
     if (!selected) return;
     try {
-      applyArtwork(await api.saveArtwork({ ...selected, roomId }));
+      applyArtwork(await api.saveArtwork({ ...selected, roomId }, ex.version));
     } catch (e) {
       fail(e);
     }
@@ -199,7 +218,12 @@ export default function A05Map() {
                 </span>
               )}
             </div>
-            {msg && <p className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>{msg.text}</p>}
+            {msg && (
+              <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>
+                {msg.text}
+                {msg.type === 'conflict' && <button type="button" onClick={reloadAfterConflict}>최신 지도 다시 불러오기</button>}
+              </p>
+            )}
           </section>
         </div>
 
@@ -296,7 +320,7 @@ function FloorPlanField({
       )
         return;
       if (!operation.isCurrent(ticket)) return;
-      const saved = await api.uploadFloorPlan(ex.id, file, width, height);
+      const saved = await api.uploadFloorPlan(ex.id, file, width, height, ex.version);
       if (operation.isCurrent(ticket)) onSaved(saved, positioned > 0 ? '평면도를 올렸어요. 작품 마커와 입구가 실제 위치에 있는지 확인해 주세요.' : '평면도를 올렸어요. 이제 작품 위치를 지정해 주세요.');
     } catch (e) {
       if (operation.isCurrent(ticket)) onError(e);
@@ -312,7 +336,7 @@ function FloorPlanField({
     try {
       if (!(await confirmAction('평면도 이미지를 삭제할까요? 저장된 작품 좌표와 미저장 위치가 초기화돼요. 입구와 전시실 소속도 다시 확인해 주세요.'))) return;
       if (!operation.isCurrent(ticket)) return;
-      const saved = await api.deleteFloorPlan(ex.id);
+      const saved = await api.deleteFloorPlan(ex.id, ex.version);
       if (operation.isCurrent(ticket)) onSaved(saved, '평면도 이미지를 삭제했어요.');
     } catch (e) {
       if (operation.isCurrent(ticket)) onError(e);
