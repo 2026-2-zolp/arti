@@ -175,16 +175,27 @@ async function receiptSession(browser, switchAccount) {
     assert.deepEqual(await list(), []);
     assert.deepEqual(saves, []);
     const recovery = button(page, '기록 확인 후 복구');
+    const history = page.getByRole('tabpanel');
+    const emptyHistory = history.getByText('아직 저장된 관람기록이 없어요.', { exact: true });
+    const receiptCards = history.getByRole('button', { name: /아트 영수증 보기/ });
+    const reloadHistory = async () => {
+      const [response] = await Promise.all([
+        page.waitForResponse(r => isResponse(r, listPath, 'GET')),
+        page.reload(),
+      ]);
+      // Read the reload's HTTP status without relying on Chromium retaining the response body.
+      assert.equal(response.status(), 200);
+    };
     if (switchAccount) {
       await recovery.waitFor({ state: 'hidden' });
       assert.equal(await pending(page, pendingKey), null);
       const denied = await page.request.get(`/api/users/${original.user.id}/visits`, { headers: headersFor(activeToken) });
       assert.equal(denied.status(), 403);
-      const [reloaded] = await Promise.all([
-        page.waitForResponse(r => isResponse(r, listPath, 'GET')),
-        page.reload(),
-      ]);
-      assert.deepEqual(await body(reloaded), []);
+      await emptyHistory.waitFor();
+      await reloadHistory();
+      await emptyHistory.waitFor();
+      assert.equal(await receiptCards.count(), 0);
+      assert.deepEqual(await list(), []);
       await recovery.waitFor({ state: 'hidden' });
       assert.equal(await pending(page, pendingKey), null);
       assert.deepEqual(saves, []);
@@ -203,11 +214,15 @@ async function receiptSession(browser, switchAccount) {
       assert.deepEqual(record.viewedArtworkIds, recommended);
       assert.deepEqual(await list(), [record]);
       assert.equal(await pending(page, pendingKey), null);
-      const [reloaded] = await Promise.all([
-        page.waitForResponse(r => isResponse(r, listPath, 'GET')),
-        page.reload(),
-      ]);
-      assert.deepEqual(await body(reloaded), [record]);
+      await receiptCards.first().waitFor();
+      await reloadHistory();
+      await receiptCards.first().waitFor();
+      assert.equal(await receiptCards.count(), 1);
+      assert.deepEqual(await list(), [record]);
+      assert.equal(await pending(page, pendingKey), null);
+      await receiptCards.first().click();
+      await page.waitForURL(new URL(`/receipt/${record.id}`, base).href);
+      await page.getByRole('article', { name: '아트 영수증' }).waitFor();
       assert.deepEqual(saves, [savedDraft]);
       assert.deepEqual(await adminList(original), [record]);
     }

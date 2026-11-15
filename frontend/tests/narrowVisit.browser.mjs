@@ -130,7 +130,10 @@ async function verify(browser, width) {
     const focusedHeight = await mapHeight();
     await details.locator('summary').click();
     assert.equal(await details.evaluate(element => element.open), true);
-    assert.equal(await page.locator('.floor-map .fm-marker').count(), 3);
+    // The native details element opens before React handles its toggle event.
+    const markers = map.locator('.fm-marker');
+    await markers.nth(2).waitFor();
+    assert.equal(await markers.count(), 3);
     assert.ok(Math.abs(await mapHeight() - focusedHeight) < 1);
     await checkWidth(page, `${width}px U-09 expanded leg`);
     await map.locator('.fm-marker.done').click();

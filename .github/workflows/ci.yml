@@ -106,6 +106,9 @@ jobs:
             name: Visit Chrome (boundaries)
             database: arti_visit_boundaries
             admin: visit-boundaries-admin
+          - suite: narrow-visit
+            name: Visit Chrome (narrow layout)
+            database: arti_narrow_pc_ci
           - suite: receipt-interpretation
             name: Receipt Chrome (interpretation)
             database: arti_receipt_interpret
@@ -184,6 +187,9 @@ jobs:
         run: |
           python manage.py migrate --noinput
           python manage.py load_test_fixture
+          if [[ "$ARTI_BROWSER_SUITE" == narrow-visit ]]; then
+            python manage.py shell -c "from pathlib import Path; exec(Path('../frontend/tests/fixtures/narrowVisit.py').read_text(encoding='utf-8'))"
+          fi
           for admin in "$ARTI_BROWSER_ADMIN" "$ARTI_BROWSER_SECOND_ADMIN"; do
             if [[ -n "$admin" ]]; then
               python manage.py bootstrap_admin --login-id "$admin" --name 'Synthetic administrator'
@@ -207,7 +213,7 @@ jobs:
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs
       - name: Run loopback Chrome regression
-        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent"]'), matrix.suite)
+        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","narrow-visit"]'), matrix.suite)
         shell: bash
         env:
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
@@ -228,6 +234,10 @@ jobs:
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
               browser_test=frontend/tests/adminConcurrent.browser.mjs
               ;;
+            narrow-visit)
+              server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
+              browser_test=frontend/tests/narrowVisit.browser.mjs
+              ;;
             *)
               server=(python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')")
               browser_test=frontend/tests/docentRetry.browser.cjs
@@ -241,7 +251,7 @@ jobs:
 
           for ((attempt = 0; attempt < 30; attempt++)); do
             if mock_header=$(curl --silent --fail --max-time 2 --output /dev/null --write-out "%header{$ready_header}" "$ARTI_REVIEW_BASE/api/ready") &&
-                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent ]] || [[ "$mock_header" == 1 ]]; }; then
+                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent || "$ARTI_BROWSER_SUITE" == narrow-visit ]] || [[ "$mock_header" == 1 ]]; }; then
               node "$browser_test"
               exit
             fi
@@ -252,6 +262,8 @@ jobs:
             printf '%s\n' 'Receipt Chrome API readiness check failed.' >&2
           elif [[ "$ARTI_BROWSER_SUITE" == admin-concurrent ]]; then
             printf '%s\n' 'Admin Chrome (concurrent editing) API readiness check failed.' >&2
+          elif [[ "$ARTI_BROWSER_SUITE" == narrow-visit ]]; then
+            printf '%s\n' 'Visit Chrome (narrow layout) API readiness check failed.' >&2
           else
             printf '%s\n' '{"requestId":null,"status":null,"evidenceVersion":null}' >&2
           fi
