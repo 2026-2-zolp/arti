@@ -113,6 +113,15 @@ export default function U10Artwork() {
     };
   }, [viewingId, visitId, requestGeneration, dispatch]);
 
+  // 이유를 고르면 이유 창이 닫히고 본문 아래에 "고른 이유" 줄이 생긴다.
+  // 그 줄이 화면 밖이나 하단 버튼 뒤에 있으면 보이는 곳까지 스크롤한다(이미 보이면 그대로).
+  const reasonRowRef = useRef<HTMLDivElement>(null);
+  const [reasonSavedAt, setReasonSavedAt] = useState(0);
+  useEffect(() => {
+    if (!reasonSavedAt) return;
+    reasonRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [reasonSavedAt]);
+
   if (!rec) return <Navigate to={to(recommendations.length ? '/receipt' : '/recommend')} replace />;
 
   const total = recommendations.length;
@@ -147,6 +156,7 @@ export default function U10Artwork() {
     if (!ask || !text) return;
     dispatch({ type: 'react', artworkId: rec.artworkId, reaction: ask, reason: text });
     setAsk(null);
+    setReasonSavedAt(Date.now());
   };
 
   const goNext = () => {
@@ -402,7 +412,7 @@ export default function U10Artwork() {
               </button>
             </div>
             {reaction && savedReason && (
-              <div className="reaction-reason">
+              <div ref={reasonRowRef} className="reaction-reason above-footer">
                 <span className="muted small">고른 이유</span>
                 <button
                   type="button"

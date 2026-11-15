@@ -143,10 +143,8 @@ export default function U09Route() {
         </div>
       </div>
 
+      {/* 위쪽 박스는 다음 작품만 보여 준다(출발 작품 줄은 사용자 결정으로 뺌, 출발 위치는 지도 경로에 그대로 표시) */}
       <div className="next-card">
-        {current > 0 && (
-          <p className="muted small">출발 · {previous ? `${orderOf(previous.id)}번 ${previous.title} · ${locationLabel(previous)}` : previousId ? '직전 감상 작품' : '입구'}</p>
-        )}
         <div className="next-artwork">
           <ArtImage key={target.id} className="next-thumb" seed={target.id} palette={target.palette}
             imageUrl={artworkImageSrc(target)} alt="" ratio={1} fit="contain" />
