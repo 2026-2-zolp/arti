@@ -19,7 +19,7 @@ import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import { EmotionBars } from '../../components/EmotionBars';
 import { ReceiptImageSave } from '../../components/ReceiptImageSave';
-import type { Artwork, EmotionScores, VisitRecord } from '../../types';
+import type { EmotionScores, ReceiptArtwork, VisitRecord } from '../../types';
 
 type Interpretation = { text: string; emotionProfile: EmotionScores | null };
 
@@ -47,7 +47,6 @@ function LiveReceipt() {
   const captureRef = useRef<HTMLDivElement>(null);
   const cacheKey = `arti.receipt.${initial.user?.id ?? 'guest'}.${initial.visitId}`;
   const pendingKey = `arti.pendingReceipt.${initial.user?.id}.${initial.visitId}`;
-  const {data, error, reload} = useAsync(() => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]), [exhibitionId]);
   const [record, setRecord] = useState<Omit<VisitRecord, 'id'> | null>(() => {
     if (!finished) return null;
     const cached = load<Omit<VisitRecord, 'id'> | null>(pendingKey, load(cacheKey, null, 'session'), 'session');
@@ -55,6 +54,13 @@ function LiveReceipt() {
     if (cached?.viewedArtworkIds.length !== initial.viewed.length) return null;
     return initial.viewed.every((id, i) => id === cached.viewedArtworkIds[i]) ? limitReceiptDuration(cached) : null;
   });
+  const capturedExhibition = initial.viewed.every(id => initial.receiptArtworks[id]?.snapshot)
+    ? initial.receiptExhibition : undefined;
+  const needsCatalog = finished && !capturedExhibition && !record?.artworkSnapshots;
+  const {data, error, reload} = useAsync(
+    () => needsCatalog ? Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]) : Promise.resolve(null),
+    [exhibitionId, needsCatalog],
+  );
   const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState('');
   const [interp, setInterp] = useState<Interpretation | null>(() => {
     const cached = load<Interpretation | 'failed' | null>(cacheKey + '.interpretation', null, 'session');
@@ -74,9 +80,12 @@ function LiveReceipt() {
     if (interpretFailed) interpCardRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [interpretFailed]);
   useEffect(() => {
-    if (!finished || !data || record) return;
-    const value = buildRecord(initial, data[1], data[0]); save(cacheKey, value, 'session'); setRecord(value);
-  }, [finished, data, record, initial, cacheKey]);
+    const exhibition = capturedExhibition ?? data?.[0];
+    if (!finished || !exhibition || record) return;
+    const value = buildRecord(initial, data?.[1] ?? [], exhibition);
+    save(cacheKey, value, 'session');
+    setRecord(value);
+  }, [finished, capturedExhibition, data, record, initial, cacheKey]);
   useEffect(() => {
     if (!finished || !record || !initial.user || saved) return;
     let active = true;
@@ -132,7 +141,7 @@ function LiveReceipt() {
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
   return <MobileShell screenId="U-12" back={false} footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
     <div className="lead center"><h2>오늘의 관람이 완성됐어요</h2></div>
-    {error && (
+    {error && !record && (
       <div className="notice-card is-err" role="alert">
         <p className="notice-title"><Icon name="alert" size={18} />영수증을 불러오지 못했어요</p>
         <p className="notice-body">{error}</p>
@@ -140,8 +149,8 @@ function LiveReceipt() {
         <button className="btn ghost block" onClick={finish}>나가기</button>
       </div>
     )}
-    {!record || !data ? (!error && <Spinner />) : <>
-      <div ref={captureRef}><Receipt record={record} artworks={data[1]} interpretation={interp?.text ?? null} profile={interp?.emotionProfile ?? null} /></div>
+    {!record ? (!error && <Spinner />) : <>
+      <div ref={captureRef}><Receipt record={record} artworks={record.artworkSnapshots ?? data?.[1] ?? []} interpretation={interp?.text ?? null} profile={interp?.emotionProfile ?? null} /></div>
 
       {/* 관람기록 저장 상태: 회원은 저장 중 → 저장됨 / 실패(로그인 만료 구분), 비회원은 이 기기에서만 */}
       <div ref={saveStatusRef} className="above-footer">
@@ -258,7 +267,7 @@ function Receipt({
   profile,
 }: {
   record: Omit<VisitRecord, 'id'>;
-  artworks: Artwork[];
+  artworks: ReceiptArtwork[];
   interpretation: string | null | undefined;
   profile: EmotionScores | null;
 }) {

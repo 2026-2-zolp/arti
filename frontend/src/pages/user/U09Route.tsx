@@ -10,7 +10,7 @@ import { MobileShell, Spinner } from '../../components/MobileShell';
 import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
@@ -31,7 +31,14 @@ export default function U09Route() {
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsync(
-    () => Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]),
+    async () => {
+      try {
+        return await Promise.all([api.getExhibition(exhibitionId), api.listArtworks(exhibitionId)]);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) return 'unavailable' as const;
+        throw err;
+      }
+    },
     [exhibitionId],
   );
   const returnToArtwork = entry?.returnToArtwork === true;
@@ -57,6 +64,22 @@ export default function U09Route() {
   if (recommendations.length === 0) return <Navigate to={to('/recommend')} replace />;
   if (finished) return <Navigate to={to('/receipt')} replace />;
   if (pending) return null;
+
+  if (data === 'unavailable') {
+    const finish = () => {
+      dispatch({ type: 'finishVisit', visitId: state.visitId, generation: state.requestGeneration });
+      navigate(to('/receipt'), { replace: true });
+    };
+    return (
+      <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
+        <div className="notice-card is-err notice-center screen-center" role="alert">
+          <p className="notice-body">전시를 더 이상 관람할 수 없어요.</p>
+          <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+          {!!viewed.length && <button className="btn ghost block" onClick={finish}>지금까지 관람으로 마치기</button>}
+        </div>
+      </MobileShell>
+    );
+  }
 
   if (error || loading || !data) {
     return (
@@ -131,7 +154,7 @@ export default function U09Route() {
       backToArtwork();
       return;
     }
-    dispatch({ type: 'startVisit' });
+    dispatch({ type: 'startVisit', exhibition: { id: ex.id, title: ex.title, venue: ex.venue } });
     openArtwork();
   };
 

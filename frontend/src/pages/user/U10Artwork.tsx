@@ -41,7 +41,7 @@ export default function U10Artwork() {
   const { pending, askFinished, currentEntry } = useVisitHistory();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
-  const { recommendations, current, reactions, reactionReasons } = state;
+  const { recommendations, current, reactions, reactionReasons, exhibitionId, visitId, requestGeneration } = state;
   const [ask, setAsk] = useState<Reaction | null>(null);
   const [customOn, setCustomOn] = useState(false);
   const [customText, setCustomText] = useState('');
@@ -61,15 +61,17 @@ export default function U10Artwork() {
     async () => {
       if (!rec) return null;
       try {
-        return { artwork: await api.getArtwork(rec.artworkId), unavailableId: null };
+        const visit = exhibitionId ? { exhibitionId, visitId } : undefined;
+        const artwork = await api.getArtwork(rec.artworkId, visit);
+        return { artwork, unavailableId: null, visitId, generation: requestGeneration };
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return { artwork: null, unavailableId: rec.artworkId };
         throw err;
       }
     },
-    [rec?.artworkId],
+    [rec?.artworkId, exhibitionId, visitId, requestGeneration, state.user?.id],
   );
-  const w = data?.artwork;
+  const w = data?.visitId === visitId && data.generation === requestGeneration ? data.artwork : null;
   const unavailable = !!rec && data?.unavailableId === rec.artworkId;
 
   const readingKey = w ? scopeKey(state, w.id, w.contentVersion ?? 1) + '.reading' : '';
@@ -101,7 +103,6 @@ export default function U10Artwork() {
 
   const recId = rec?.artworkId;
   const viewingId = !loading && !error && w?.id === recId ? recId : undefined;
-  const { visitId, requestGeneration } = state;
   const enteredAt = useRef<number | null>(null);
 
   // 작품을 표시한 구간만 측정합니다. 지도·도슨트에서 돌아오면 새 구간을 시작합니다.
@@ -172,7 +173,11 @@ export default function U10Artwork() {
     const seconds = enteredAt.current === null ? 0 : Math.round((performance.now() - enteredAt.current) / 1000);
     enteredAt.current = null;
     tts.stop();
-    dispatch({ type: 'completeCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId, seconds });
+    dispatch({
+      type: 'completeCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId, seconds,
+      exhibition: w.receiptExhibition,
+      receiptArtwork: { snapshot: { id: w.id, title: w.title, tags: w.tags }, evidence: w.artworkReceiptEvidence },
+    });
     // 다음 작품 안내는 기록을 쌓아 뒤로가기로 이 작품에 돌아올 수 있게 한다. 영수증은 끝이라 덮어쓴다.
     navigate(to(isLast ? '/receipt' : '/route'), {
       replace: isLast,

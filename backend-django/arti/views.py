@@ -16,6 +16,7 @@ from .constants import TAGS
 from .http import ContractError
 from .models import Account, Artwork, Exhibition, Session
 from .providers import configuration_status
+from .receipt_evidence import issue_artwork_evidence
 from .recommendations import recommend, strength
 from .survey import current_pool
 from .serializers import AdminLoginInput, RecommendInput, artwork_dto, exhibition_dto
@@ -73,7 +74,17 @@ def artworks(request, artwork_id=None):
         work = public_works().filter(pk=artwork_id).first()
         if work is None:
             raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
-        return with_etag(artwork_dto(work))
+        data = artwork_dto(work)
+        visit_id = request.query_params.get('visitId')
+        if visit_id is not None and request.query_params.get('exhibitionId') == work.exhibition_id:
+            visit_id = uuid_value(visit_id, visit=True)
+            exhibition = {'id': work.exhibition_id, 'title': work.exhibition.title, 'venue': work.exhibition.venue}
+            data['receiptExhibition'] = exhibition
+            if request.user:
+                data['artworkReceiptEvidence'] = issue_artwork_evidence(request.user, visit_id, exhibition, data)
+            # 서명과 회원별 응답이 공유 캐시나 브라우저 디스크에 남지 않게 합니다.
+            return Response(data, headers={'Cache-Control': 'private, no-store'})
+        return with_etag(data)
     ex_id = request.query_params.get('exhibitionId')
     if ex_id is not None:
         public_exhibition(ex_id)

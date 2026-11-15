@@ -1,11 +1,12 @@
 """회원 목록과 영수증 해석의 실패·재시도 시 저장 기록을 검증합니다."""
 import copy
+import uuid
 from unittest.mock import patch
 
 from django.test import TestCase, override_settings
 
 from arti.http import ContractError
-from arti.models import Visit, VisitReaction
+from arti.models import Artwork, Exhibition, Visit, VisitReaction
 from arti.tests.test_integration import Helpers
 
 
@@ -53,7 +54,6 @@ class ReceiptOperationsTests(Helpers, TestCase):
             self.assertIsInstance(response.json(), dict)
 
     def test_admin_member_history_is_scoped_and_works_for_closed_exhibitions(self):
-        from arti.models import Exhibition
         visit_id, _ = self.saved_visit()
         expected = self.a.get('/api/visits/' + visit_id).json()
         Exhibition.objects.filter(pk='fixture-ex01').update(status='closed')
@@ -68,6 +68,71 @@ class ReceiptOperationsTests(Helpers, TestCase):
             self.assertIn(client.get(url).status_code, (401, 403))
         # 사용자 경로의 본인 제한은 넓히지 않습니다.
         self.assertEqual(self.b.get(f'/api/users/{self.actors[0].id}/visits').status_code, 403)
+
+    def capture_artwork(self, payload):
+        url = '/api/artworks/fixture-art01'
+        query = {name: payload[name] for name in ('exhibitionId', 'visitId')}
+        response = self.a.get(url, query)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('no-store', response.headers['Cache-Control'])
+        self.assertNotIn('artworkReceiptEvidence', self.public.get(url, query).json())
+        return response.json()
+
+    def test_first_save_and_replay_use_the_public_snapshot_after_visibility_changes(self):
+        for closed in (False, True):
+            with self.subTest(closed=closed):
+                payload = self.payload()
+                captured = self.capture_artwork(payload)
+                artwork = Artwork.objects.filter(pk='fixture-art01')
+                exhibition = Exhibition.objects.filter(pk='fixture-ex01')
+                if closed:
+                    exhibition.update(status='closed', title='운영자 전용 전시 이름')
+                    self.assertEqual(self.public.get('/api/exhibitions/fixture-ex01').status_code, 404)
+                else:
+                    artwork.update(review_status='source_check', title='운영자 전용 작품 이름')
+                self.assertEqual(self.public.get('/api/artworks/fixture-art01').status_code, 404)
+                self.assertEqual(self.a.post('/api/visits', payload, format='json').status_code, 404 if closed else 400)
+                payload['artworkReceiptEvidence'] = {'fixture-art01': captured['artworkReceiptEvidence']}
+                payload['artworkSnapshots'] = [{'id': 'fixture-art01', 'title': '위조 제목'}]
+                created = self.a.post('/api/visits', payload, format='json')
+                self.assertEqual(created.status_code, 201, created.content)
+                record = created.json()
+                self.assertEqual(record['exhibitionTitle'], captured['receiptExhibition']['title'])
+                self.assertEqual(record['artworkSnapshots'], [
+                    {key: captured[key] for key in ('id', 'title', 'artist', 'year', 'tags')}
+                ])
+                self.assertNotIn('artworkReceiptEvidence', record)
+                for key in ('viewedArtworkIds', 'dwell', 'reactions', 'reactionReasons'):
+                    self.assertEqual(record[key], payload[key])
+                with patch('arti.records.read_artwork_evidence', return_value=None):
+                    replay = self.a.post('/api/visits', payload, format='json')
+                    self.assertEqual(replay.status_code, 200, replay.content)
+                    self.assertEqual(replay.json(), record)
+                self.assertEqual(self.a.get('/api/visits/' + record['id']).json(), record)
+                self.assertEqual(self.b.get('/api/visits/' + record['id']).status_code, 403)
+                self.assertEqual(Visit.objects.filter(visit_id=payload['visitId']).count(), 1)
+                self.assertEqual(VisitReaction.objects.filter(visit_id=record['id']).count(), 1)
+                artwork.update(review_status='approved', title=captured['title'])
+                exhibition.update(status='running', title=captured['receiptExhibition']['title'])
+
+    def test_artwork_evidence_cannot_be_reused_outside_its_original_scope(self):
+        payload = self.payload()
+        token = self.capture_artwork(payload)['artworkReceiptEvidence']
+        Artwork.objects.filter(pk__in=('fixture-art01', 'fixture-art02')).update(review_status='source_check')
+        payload['artworkReceiptEvidence'] = {'fixture-art01': token}
+        for client, body in (
+            (self.public, payload), (self.b, payload),
+            (self.a, {**payload, 'visitId': str(uuid.uuid4())}),
+            (self.a, {**payload, 'artworkReceiptEvidence': {'fixture-art01': token + 'tampered'}}),
+            (self.a, {
+                **payload, 'viewedArtworkIds': ['fixture-art02'],
+                'reactions': {}, 'reactionReasons': {}, 'dwell': {},
+                'artworkReceiptEvidence': {'fixture-art02': token},
+            }),
+        ):
+            response = client.post('/api/visits', body, format='json')
+            self.assertEqual(response.status_code, 400, response.content)
+        self.assertFalse(Visit.objects.exists())
 
     def test_member_token_cannot_be_used_as_admin_token(self):
         from rest_framework.test import APIClient

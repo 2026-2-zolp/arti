@@ -1,5 +1,5 @@
 /** 관람 선택·진행·대화·기록 상태를 전이시키는 순수 로직입니다. */
-import type { Reaction, Recommendation, TasteTag, User, VisitDuration, TasteProfile } from '../types';
+import type { Reaction, ReceiptArtwork, ReceiptExhibition, Recommendation, TasteTag, User, VisitDuration, TasteProfile } from '../types';
 import {load} from '../lib/storage';
 import {newVisitId} from '../lib/visitScope';
 import {TASTE_LABEL} from '../data/mock';
@@ -26,6 +26,8 @@ export interface VisitState {
   /** 작품별 감상 시간(초) — 아트 영수증의 "가장 오래 본 작품" 계산용 */
   dwell: Record<string, number>;
   startedAt: number | null;
+  receiptExhibition?: ReceiptExhibition;
+  receiptArtworks: Record<string, { snapshot: ReceiptArtwork; evidence?: string }>;
 }
 
 type ArtworkDwell = { visitId: string; generation: number; artworkId: string; seconds: number };
@@ -40,10 +42,11 @@ export type Action =
   | { type: 'applyTaste'; scope: string; visitId: string; profile: TasteProfile; receipt?: string; user?: User }
   | { type: 'setDuration'; duration: VisitDuration; newVisit?: boolean; scope?: string; proof?: {visitId: string; receipt: string} }
   | { type: 'setRecommendations'; recs: Recommendation[]; generation?: number }
-  | { type: 'startVisit' }
+  | { type: 'startVisit'; exhibition?: ReceiptExhibition }
+  | { type: 'finishVisit'; visitId: string; generation: number }
   | ({ type: 'addDwell' } & ArtworkDwell)
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
-  | ({ type: 'completeCurrent' } & ArtworkDwell)
+  | ({ type: 'completeCurrent'; receiptArtwork?: VisitState['receiptArtworks'][string]; exhibition?: ReceiptExhibition } & ArtworkDwell)
   | ({ type: 'skipCurrent' } & Omit<ArtworkDwell, 'seconds'>)
   | { type: 'restoreHistoryPosition'; visitId: string; generation: number; index: number }
   | { type: 'resetVisit' }
@@ -65,6 +68,8 @@ const emptyVisit = {
   tasteDone: false,
   dwell: {} as Record<string, number>,
   startedAt: null,
+  receiptExhibition: undefined as ReceiptExhibition | undefined,
+  receiptArtworks: {} as VisitState['receiptArtworks'],
 };
 
 /** 예전 버전의 취향 태그(고요한 풍경·감정 표현 …)가 브라우저에 남아 있으면 새 8개로 바꾼다 (calm→풍경, 나머지 없는 키는 버림) */
@@ -120,13 +125,19 @@ export function reducer(s: VisitState, a: Action): VisitState {
       if ((a.scope && tasteScope(s) !== a.scope) || (a.duration === s.duration && !a.newVisit)) return s;
       if (s.tasteProfile?.version === 2 && s.startedAt && !a.proof) return s;
       return { ...s, duration: a.duration, recommendations: [], current: 0, viewed: [], reactions: {}, reactionReasons: {},
-        dwell: {}, startedAt: null, visitId: a.proof?.visitId ?? (s.tasteEvidenceReceipt ? s.visitId : newVisitId()),
+        dwell: {}, startedAt: null, receiptArtworks: {}, receiptExhibition: undefined,
+        visitId: a.proof?.visitId ?? (s.tasteEvidenceReceipt ? s.visitId : newVisitId()),
         tasteEvidenceReceipt: a.proof?.receipt ?? s.tasteEvidenceReceipt, requestGeneration: s.requestGeneration + 1 };
     case 'setRecommendations':
       if (a.generation !== undefined && a.generation !== s.requestGeneration) return s;
-      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, reactionReasons: {}, dwell: {}, startedAt: null };
+      return { ...s, recommendations: a.recs, current: 0, viewed: [], reactions: {}, reactionReasons: {},
+        dwell: {}, startedAt: null, receiptExhibition: undefined, receiptArtworks: {} };
     case 'startVisit':
-      return s.startedAt ? s : { ...s, startedAt: Date.now() };
+      if (s.startedAt && (s.receiptExhibition || !a.exhibition)) return s;
+      return { ...s, startedAt: s.startedAt ?? Date.now(), receiptExhibition: a.exhibition };
+    case 'finishVisit':
+      if (a.visitId !== s.visitId || a.generation !== s.requestGeneration || !s.viewed.length) return s;
+      return { ...s, current: s.recommendations.length };
     case 'react': {
       const reactions = { ...s.reactions };
       const reactionReasons = { ...s.reactionReasons };
@@ -149,7 +160,8 @@ export function reducer(s: VisitState, a: Action): VisitState {
       const dwell = { ...s.dwell, [a.artworkId]: seconds };
       if (a.type === 'addDwell') return { ...s, dwell };
       const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
-      return { ...s, dwell, viewed, current: s.current + 1 };
+      const receiptArtworks = a.receiptArtwork ? { ...s.receiptArtworks, [a.artworkId]: a.receiptArtwork } : s.receiptArtworks;
+      return { ...s, dwell, viewed, receiptArtworks, receiptExhibition: s.receiptExhibition ?? a.exhibition, current: s.current + 1 };
     }
     case 'restoreHistoryPosition':
       // 이미 방문한 브라우저 이력의 위치로만 이동하며 완료 기록과 감상 시간은 유지한다.
