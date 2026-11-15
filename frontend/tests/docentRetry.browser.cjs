@@ -442,10 +442,15 @@ async function inspectArtworkChange(browser) {
     await button('뒤로가기').click();
     await artwork(titles[1]).waitFor();
 
-    // 제품의 관람 순서는 전진형이므로 같은 관람의 첫 작품 체크포인트로 복귀해 초안 범위를 확인합니다.
-    await page.evaluate(snapshot => sessionStorage.setItem('arti.visit', JSON.stringify(snapshot)), before);
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    // 실제 브라우저 뒤로가기로 두 번째 안내에, 앱 화살표로 첫 작품에 돌아갑니다.
+    await page.goBack();
+    await button('2번 작품 감상하기').waitFor();
+    await button('뒤로가기').click();
     await artwork(titles[0]).waitFor();
+    const resumed = await visit();
+    assert.equal(resumed.visitId, before.visitId);
+    assert.equal(resumed.current, 0);
+    assert.deepEqual(resumed.viewed, recommendations.slice(0, 1));
     await button('이 부분 더 알아보기').click();
     await page.locator('.chat-artwork').getByText(titles[0], { exact: true }).waitFor();
     assert.equal(await input.inputValue(), draft);
