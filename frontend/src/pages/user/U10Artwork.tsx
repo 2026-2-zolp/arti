@@ -5,12 +5,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
+import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
+import { hasAppHistory, useCloseWatcher } from '../../lib/appHistory';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
@@ -35,7 +37,7 @@ const BASIC_TIPS = BASIC_LOOKING_TIPS;
 /** 작품해설·관람가이드와 감상 반응을 제공하는 화면 */
 export default function U10Artwork() {
   const navigate = useNavigate();
-  const { state: entry } = useLocation();
+  const { state: entry, key: locationKey } = useLocation();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
   const { recommendations, current, reactions, reactionReasons } = state;
@@ -121,7 +123,29 @@ export default function U10Artwork() {
     if (!reasonSavedAt) return;
     reasonRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [reasonSavedAt]);
+  // 이유 고르기 창이 열려 있으면 안드로이드 휴대폰 뒤로가기는 화면을 떠나지 않고 창만 닫는다(반응은 그대로).
+  useCloseWatcher(ask !== null, () => setAsk(null));
 
+  // 뒤로가기로 이미 지나온 작품 기록에 돌아오면 그 작품을 다시 현재 작품으로 둔다(감상 시간·반응은 그 작품에 이어서 쌓임).
+  const visitStep: number | undefined = typeof entry?.visitStep === 'number' ? entry.visitStep : undefined;
+  const finished = recommendations.length > 0 && current >= recommendations.length;
+  // 도착한 순간에 한 번만 판단한다. 이 화면에서 [다음]·[건너뛰기]로 현재 작품이 바뀌는 동안에는 되돌리지 않는다.
+  const arrivalChecked = useRef<string | null>(null);
+  const pendingRewind = arrivalChecked.current !== locationKey && !finished && visitStep !== undefined && visitStep < current;
+  // 끝난 관람에 뒤로가기로 도착했다는 판단은 그 기록에 있는 동안 고정한다(데이터를 불러와 다시 그려져도 질문 화면 유지).
+  const finishedArrival = useRef<string | null>(null);
+  if (arrivalChecked.current !== locationKey && finished && visitStep !== undefined) finishedArrival.current = locationKey;
+  const askFinished = finishedArrival.current === locationKey;
+  useEffect(() => {
+    if (arrivalChecked.current === locationKey) return;
+    arrivalChecked.current = locationKey;
+    if (finished || visitStep === undefined || visitStep >= current) return;
+    dispatch({ type: 'rewindTo', visitId, generation: requestGeneration, index: visitStep });
+  }, [locationKey, finished, visitStep, current, visitId, requestGeneration, dispatch]);
+
+  // 영수증에서 휴대폰 뒤로가기로 돌아온 경우(영수증에서 미리 묻지 못하는 브라우저)는 끝난 관람을 다시 열지 않고 여기서 종료 여부를 묻는다.
+  if (askFinished) return <FinishedVisitPrompt />;
+  if (pendingRewind) return null;
   if (!rec) return <Navigate to={to(recommendations.length ? '/receipt' : '/recommend')} replace />;
 
   const total = recommendations.length;
@@ -166,7 +190,9 @@ export default function U10Artwork() {
     enteredAt.current = null;
     tts.stop();
     dispatch({ type: 'completeCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId, seconds });
-    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+    // 다음 작품 안내는 기록을 쌓아 뒤로가기로 이 작품에 돌아올 수 있게 한다. 영수증은 끝이라 덮어쓴다.
+    if (isLast) navigate(to('/receipt'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+    else navigate(to('/route'), { state: { fromRecommend: entry?.fromRecommend === true, visitStep: current + 1 } });
   };
 
   const skip = () => {
@@ -179,7 +205,8 @@ export default function U10Artwork() {
   const openMap = () => {
     tts.stop();
     // 지도와 현재 작품은 같은 기록을 사용해 이동 후 이전 작품의 지도가 앞으로가기에 남지 않게 합니다.
-    navigate(to('/route'), { replace: true, state: { returnToArtwork: true, fromRecommend: entry?.fromRecommend === true } });
+    // 지도는 기록을 쌓아서 앱 ←·휴대폰 뒤로가기 모두 이 작품으로 돌아오게 한다.
+    navigate(to('/route'), { state: { returnToArtwork: true, fromRecommend: entry?.fromRecommend === true, visitStep: current } });
   };
 
   // 원문을 먼저 보여 주고, 관리자가 확정한 AI 요약이 있을 때만 「AI 요약 보기」로 바꿔 볼 수 있다
@@ -223,7 +250,9 @@ export default function U10Artwork() {
       screenId="U-10"
       back={() => {
         tts.stop();
-        navigate(to('/route'), { replace: true, state: { showMap: true, fromRecommend: entry?.fromRecommend === true } });
+        // 경로에서 들어왔으면 그 경로 기록으로 돌아간다(휴대폰 뒤로가기와 같음). 바로 들어왔으면 경로로 덮어쓴다.
+        if (hasAppHistory()) navigate(-1);
+        else navigate(to('/route'), { replace: true, state: { showMap: true, fromRecommend: entry?.fromRecommend === true } });
       }}
       title={
         <span className="progress-title">
