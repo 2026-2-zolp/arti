@@ -116,7 +116,7 @@ function LiveReceipt() {
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
   if (!finished) return <Navigate to={to('/route')} replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;
-  return <MobileShell screenId="U-12" footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
+  return <MobileShell screenId="U-12" back={false} footer={<button className="btn primary block" onClick={finish}>관람 완료</button>}>
     <div className="lead center"><h2>오늘의 관람이 완성됐어요</h2></div>
     {error && (
       <div className="notice-card is-err" role="alert">
