@@ -12,6 +12,7 @@ import { api, ApiError } from '../../api/client';
 import { Icon } from '../../components/Icon';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
+import { useCloseWatcher } from '../../lib/appHistory';
 import { load, save, remove } from '../../lib/storage';
 import {buildRecord, limitReceiptDuration} from '../../lib/receiptPayload';
 import { useVisit } from '../../store/VisitContext';
@@ -113,6 +114,19 @@ function LiveReceipt() {
     if (initial.user && !saved && !(await confirmAction(message))) return;
     dispatch({type: 'resetVisit'}); navigate(to(), {replace: true});
   };
+  // 안드로이드 휴대폰 뒤로가기: 화면을 떠나지 않고 먼저 묻는다. [나가기]는 [관람 완료]와 같고, [머무르기]는 영수증에 그대로 남는다.
+  // 회원 기록이 아직 저장되지 않았으면(저장 중·실패) [관람 완료]와 같은 미저장 안내를 보여 준다.
+  const [backAsks, setBackAsks] = useState(0);
+  const askLeave = async () => {
+    const unsaved = !!initial.user && !saved;
+    const message = !unsaved ? '관람을 종료할까요?' : record
+      ? '아직 저장되지 않았어요. 현재 탭의 미저장 기록을 남기고 나갈까요? 같은 계정으로 로그인 후 마이페이지에서 재시도할 수 있어요.'
+      : '이번 관람기록은 저장되지 않아요. 나갈까요?';
+    if (await confirmAction(message, {cancel: '머무르기', confirm: '나가기'})) {
+      dispatch({type: 'resetVisit'}); navigate(to(), {replace: true});
+    } else setBackAsks(n => n + 1);
+  };
+  useCloseWatcher(finished && !(state.user && initial.user?.id !== state.user.id), () => void askLeave(), backAsks);
   if (state.user && initial.user?.id !== state.user.id) return <Navigate to="/mypage" replace />;
   if (!finished) return <Navigate to={to('/route')} replace />;
   if (!initial.recommendations.length && !record) return <Navigate to={to()} replace />;

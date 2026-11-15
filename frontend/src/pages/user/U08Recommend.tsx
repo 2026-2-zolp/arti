@@ -6,6 +6,7 @@ import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { countForDuration } from '../../lib/recommend';
 import { useAsync } from '../../lib/useAsync';
+import { visitEntry } from '../../lib/appHistory';
 import { errorDetail } from '../../lib/errorText';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
@@ -89,7 +90,7 @@ export default function U08Recommend() {
       footer={
         // 추천이 없거나 실패한 동안에는 누를 수 없는 버튼을 남기지 않는다.
         issue || (artworkError && !ready) ? undefined : (
-          <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'), { state: { fromRecommend: true } })}>
+          <button className="btn primary block" disabled={!ready} onClick={() => navigate(to('/route'), { state: { visitEntry: visitEntry(state) } })}>
             2D 지도에서 경로 보기
           </button>
         )

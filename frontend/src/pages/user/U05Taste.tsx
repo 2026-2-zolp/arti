@@ -1,6 +1,6 @@
 /** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { ArtworkViewer } from '../../components/ArtworkViewer';
@@ -11,6 +11,7 @@ import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { load, save } from '../../lib/storage';
 import { tasteScope } from '../../lib/tasteFlow';
+import { newVisitId } from '../../lib/visitScope';
 import { tastesFromPicks } from '../../lib/tasteFromPicks';
 import { TASTE_LABEL } from '../../data/mock';
 import { useVisit } from '../../store/VisitContext';
@@ -34,10 +35,21 @@ export default function U05Taste() {
 
 type LoadIssue = 'error' | 'notReady' | 'noContext' | null;
 
+type TasteEntry = { key: string; depth: number };
+
 function TasteDraft({ draftKey }: { draftKey: string }) {
   const { state } = useVisit();
+  const navigate = useNavigate();
+  const location = useLocation();
   const to = useExhibitionPath();
-  const [draft, setDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
+  const historyPrefix = `arti.tasteDraft.history.${JSON.stringify([state.user?.id ?? null, state.exhibitionId])}.`;
+  const storedEntry: TasteEntry | undefined = location.state?.tasteEntry;
+  const entryStorageKey = storedEntry ? historyPrefix + storedEntry.key : null;
+  const entryDraft = useMemo(() => entryStorageKey ? load<Draft | null>(entryStorageKey, null, 'session') : null,
+    [entryStorageKey, location.key]);
+  const entry = entryDraft ? storedEntry : undefined;
+  const [storedDraft, setStoredDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
+  const draft = entryDraft ?? storedDraft;
   const [picked, setPicked] = useState<string | null>(null);
   const [viewing, setViewing] = useState<string | null>(null); // 크게 보기로 연 작품 ID
   const pickTimer = useRef<number | null>(null);
@@ -65,7 +77,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
       if (pickTimer.current !== null) window.clearTimeout(pickTimer.current);
       pickTimer.current = null;
     };
-  }, [blocked, poolVersion, contextVersion]);
+  }, [blocked, poolVersion, contextVersion, location.key]);
   const needsReload = !!error || missingContext || changed || !pool?.ready;
   const currentPair = pairs[draft.picks.length];
   const works = currentPair ? [currentPair.leftId, currentPair.rightId].flatMap(id => pool?.artworks.find(w => w.id === id) ?? []) : [];
@@ -97,10 +109,44 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     picks: manual ? [] : draft.picks.map((artworkId, pairIndex) => ({ pairIndex, artworkId })),
   };
 
-  function update(next: Draft) {
+  const persist = useCallback((next: Draft) => {
     save(draftKey, next, 'session');
-    setDraft(next);
+    setStoredDraft(next);
+  }, [draftKey]);
+
+  // 라우터 이력에는 복원 키만 담는다. 선택 내용은 로그아웃 시 정리되는 세션 저장소에 둔다.
+  const writeEntry = useCallback((next: Draft, depth: number, replace: boolean) => {
+    const key = (replace && entry?.key) || newVisitId();
+    save(historyPrefix + key, next, 'session');
+    navigate(location.pathname, { replace, state: { tasteEntry: { key, depth } } });
+  }, [entry?.key, historyPrefix, location.pathname, navigate]);
+  const restartPending = useRef(false);
+  useEffect(() => {
+    if (restartPending.current) {
+      restartPending.current = false;
+      const empty = { picks: [] };
+      persist(empty);
+      writeEntry(empty, 0, true);
+    } else if (entryDraft) {
+      persist(entryDraft);
+    }
+  }, [entryDraft, persist, writeEntry]);
+
+  function update(next: Draft) {
+    persist(next);
+    if (entry) writeEntry(next, entry.depth, true);
   }
+  const stepBack = () => {
+    if (picked !== null || !draft.picks.length) return;
+    if (entry && entry.depth > 0) navigate(-1);
+    else update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined });
+  };
+  const restart = () => {
+    if (entry && entry.depth > 0) {
+      restartPending.current = true;
+      navigate(-entry.depth);
+    } else update({ picks: [] });
+  };
 
   function choose(id: string) {
     if (!pool?.ready || blocked || complete || pickTimer.current !== null) return;
@@ -110,7 +156,10 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     pickTimer.current = window.setTimeout(() => {
       pickTimer.current = null;
       setPicked(null);
-      update({ picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options });
+      const next = { picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options };
+      if (!entry) writeEntry(draft, 0, true);
+      persist(next);
+      writeEntry(next, (entry?.depth ?? 0) + 1, false);
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420);
   }
 
@@ -131,9 +180,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   if (!loading) lastLoadIssue.current = issueNow;
   const loadIssue: LoadIssue = loading && !complete ? lastLoadIssue.current : issueNow;
   return (
-    <MobileShell screenId="U-05" back={to(state.user?.tastes.length ? '/taste/saved' : '/entry')}
-      right={draft.picks.length > 0 && <button type="button" className="text-btn" disabled={picked !== null} onClick={() =>
-        update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined })}>이전 선택</button>}>
+    // 고른 쌍이 있으면 ←는 마지막 선택 취소(이전 쌍), 없으면 들어오기 전 화면. [이전 선택] 버튼은 ←와 같아 뺐다.
+    <MobileShell screenId="U-05" back={draft.picks.length > 0 ? stepBack : to(state.user?.tastes.length ? '/taste/saved' : '/entry')}>
       {!loadIssue && <Lead title={complete ? '추천에 쓸 취향을 골라 주세요' : '둘 중 더 끌리는 작품을 골라주세요'} />}
       {!complete && loading && !pool && !loadIssue && <Spinner label="작품을 불러오는 중…" />}
       {/* 불러오기 실패·준비 안 됨·근거 다시 필요: 카드 안의 [다시 시도하기]가 조사 근거를 다시 불러온다(reload, 기존 버튼과 같은 동작). */}
@@ -171,7 +219,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             ? <button type="button" className="btn outline" onClick={() => update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
                 tieContextVersion: v2 ? contextVersion : undefined,
                 options: complete ? tastesFromPicks(pool.artworks, draft.picks) : undefined })}>고른 작품을 최신 근거로 확인</button>
-            : <button type="button" className="btn outline" onClick={() => update({ picks: [] })}>작품을 처음부터 다시 고르기</button>}
+            : <button type="button" className="btn outline" onClick={restart}>작품을 처음부터 다시 고르기</button>}
         </div>
       )}
       {complete && (

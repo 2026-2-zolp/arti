@@ -7,12 +7,14 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
+import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
+import { hasAppHistory, useVisitHistory, visitEntry } from '../../lib/appHistory';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionId, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Artwork } from '../../types';
@@ -20,7 +22,8 @@ import type { Artwork } from '../../types';
 /** 추천 작품의 위치·방문 순서를 안내하는 화면 */
 export default function U09Route() {
   const navigate = useNavigate();
-  const { state: entry } = useLocation();
+  const { state: entry, key: locationKey } = useLocation();
+  const { pending, finished, askFinished, currentEntry } = useVisitHistory();
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
@@ -32,18 +35,28 @@ export default function U09Route() {
     [exhibitionId],
   );
   const returnToArtwork = entry?.returnToArtwork === true;
-  const fromRecommend = entry?.fromRecommend === true;
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
-  const [mapOpen, setMapOpen] = useState(!isNextGuide);
-  const openArtwork = () => navigate(to('/artwork'), { replace: true, state: { fromRecommend } });
+  const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
+  const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
+  const openArtwork = () => {
+    const navigation = { visitEntry: visitEntry(state) };
+    // 직접 연 지도도 앞으로 오갈 수 있도록 이 기록이 가리키는 작품을 먼저 기록한다.
+    if (!currentEntry && !returnToArtwork) {
+      navigate(to('/route'), { replace: true, state: { ...entry, ...navigation } });
+    }
+    navigate(to('/artwork'), { replace: returnToArtwork, state: navigation });
+  };
+  const backToArtwork = () => (hasAppHistory() ? navigate(-1) : openArtwork());
   const back = () => {
-    if (returnToArtwork) openArtwork();
-    else if (fromRecommend) navigate(-1);
+    if (returnToArtwork) backToArtwork();
+    else if (hasAppHistory()) navigate(-1);
     else navigate(to('/recommend'), { replace: true });
   };
 
+  if (askFinished) return <FinishedVisitPrompt key={locationKey} />;
   if (recommendations.length === 0) return <Navigate to={to('/recommend')} replace />;
-  if (current >= recommendations.length) return <Navigate to={to('/receipt')} replace />;
+  if (finished) return <Navigate to={to('/receipt')} replace />;
+  if (pending) return null;
 
   if (error || loading || !data) {
     return (
@@ -66,7 +79,7 @@ export default function U09Route() {
   if (!target) {
     const skip = () => {
       dispatch({ type: 'skipCurrent', visitId: state.visitId, generation: state.requestGeneration, artworkId: recommendations[current].artworkId });
-      navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { fromRecommend } });
+      navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
     };
     return (
       <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
@@ -79,7 +92,8 @@ export default function U09Route() {
     );
   }
 
-  const previousId = viewed.at(-1);
+  // 출발점: 현재 작품보다 앞 순서 중 실제로 본 마지막 작품(건너뛴 작품 제외). 되돌아와도 처음 본 경로와 같다.
+  const previousId = recommendations.slice(0, current).reverse().find((r) => viewed.includes(r.artworkId))?.artworkId;
   const previous = previousId ? byId.get(previousId) : undefined;
   const from = previousId ? previous?.position : ex.entrance;
   const roomName = (w: Artwork) => ex.rooms.find((r) => r.id === w.roomId)?.name ?? '';
@@ -114,7 +128,7 @@ export default function U09Route() {
 
   const go = () => {
     if (returnToArtwork) {
-      openArtwork();
+      backToArtwork();
       return;
     }
     dispatch({ type: 'startVisit' });
@@ -138,7 +152,7 @@ export default function U09Route() {
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (
-            <span key={r.artworkId} className={viewed.includes(r.artworkId) ? 'done' : i === current ? 'cur' : ''} />
+            <span key={r.artworkId} className={i === current ? 'cur' : viewed.includes(r.artworkId) ? 'done' : ''} />
           ))}
         </div>
       </div>
@@ -180,12 +194,14 @@ export default function U09Route() {
           </div>
         )}
       </div>
-      <details className="route-details" open={mapOpen} onToggle={(event) => setMapOpen(event.currentTarget.open)}>
+      <details className="route-details" open={mapOpen}
+        onToggle={(event) => setMapChoice({ key: locationKey, open: event.currentTarget.open })}>
         <summary>전체 지도와 관람 순서</summary>
         <ol className="route-list">
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);
-            const completed = viewed.includes(r.artworkId);
+            // 되돌아온 작품은 이미 본 작품이어도 '현재 작품'으로 먼저 표시한다.
+            const completed = i !== current && viewed.includes(r.artworkId);
             return (
               <li key={r.artworkId} aria-current={i === current ? 'step' : undefined} className={completed ? 'done' : i === current ? 'cur' : ''}>
                 <span className="route-num" aria-hidden="true">{completed ? '✓' : i + 1}</span>

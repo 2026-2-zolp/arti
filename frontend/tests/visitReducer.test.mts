@@ -52,6 +52,24 @@ test('discarding a pending receipt only clears its own active visit', () => {
   assert.deepEqual(cleared.viewed, []);
 });
 
+test('history restores a position within the same active visit and preserves completed work', () => {
+  const recommendations = ['a', 'b'].map((artworkId, index) => ({
+    artworkId, order: index + 1, score: 1, matchedTags: [], reason: '',
+  }));
+  const state = { ...init(), recommendations, current: 1, viewed: ['a'], dwell: { a: 4 },
+    reactions: { a: 'like' as const }, reactionReasons: { a: '색감' } };
+  const back = { type: 'restoreHistoryPosition' as const, visitId: state.visitId, generation: state.requestGeneration, index: 0 };
+  const rewound = reducer(state, back);
+  assert.deepEqual(rewound, { ...state, current: 0 });
+  assert.deepEqual(reducer(rewound, { ...back, index: 1 }), state);
+  assert.equal(reducer(state, { ...back, index: 0.5 }), state);
+  assert.equal(reducer(state, { ...back, generation: state.requestGeneration + 1 }), state);
+  const newVisit = { ...state, visitId: 'new-visit' };
+  assert.equal(reducer(newVisit, back), newVisit);
+  const finished = { ...state, current: recommendations.length };
+  assert.equal(reducer(finished, back), finished);
+});
+
 test('repeated or stale artwork completion cannot skip the next artwork', () => {
   const initial = init();
   const state = reducer(initial, {

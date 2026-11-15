@@ -5,12 +5,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
+import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
+import { hasAppHistory, useCloseWatcher, useVisitHistory, visitEntry } from '../../lib/appHistory';
 import { useSpeech } from '../../lib/useSpeech';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
@@ -35,14 +37,15 @@ const BASIC_TIPS = BASIC_LOOKING_TIPS;
 /** 작품해설·관람가이드와 감상 반응을 제공하는 화면 */
 export default function U10Artwork() {
   const navigate = useNavigate();
-  const { state: entry } = useLocation();
+  const { key: locationKey } = useLocation();
+  const { pending, askFinished, currentEntry } = useVisitHistory();
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
   const { recommendations, current, reactions, reactionReasons } = state;
   const [ask, setAsk] = useState<Reaction | null>(null);
   const [customOn, setCustomOn] = useState(false);
   const [customText, setCustomText] = useState('');
-  const rec = recommendations[current];
+  const rec = pending ? undefined : recommendations[current];
 
   const [tab, setTab] = useState<Tab>('desc');
   const [expanded, setExpanded] = useState(false);
@@ -121,7 +124,11 @@ export default function U10Artwork() {
     if (!reasonSavedAt) return;
     reasonRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [reasonSavedAt]);
+  // 이유 고르기 창이 열려 있으면 안드로이드 휴대폰 뒤로가기는 화면을 떠나지 않고 창만 닫는다(반응은 그대로).
+  useCloseWatcher(ask !== null, () => setAsk(null));
 
+  if (askFinished) return <FinishedVisitPrompt key={locationKey} />;
+  if (pending) return null;
   if (!rec) return <Navigate to={to(recommendations.length ? '/receipt' : '/recommend')} replace />;
 
   const total = recommendations.length;
@@ -166,20 +173,25 @@ export default function U10Artwork() {
     enteredAt.current = null;
     tts.stop();
     dispatch({ type: 'completeCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId, seconds });
-    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+    // 다음 작품 안내는 기록을 쌓아 뒤로가기로 이 작품에 돌아올 수 있게 한다. 영수증은 끝이라 덮어쓴다.
+    navigate(to(isLast ? '/receipt' : '/route'), {
+      replace: isLast,
+      state: { visitEntry: visitEntry(state, current + 1) },
+    });
   };
 
   const skip = () => {
     if (advancing.current || loading || !unavailable) return;
     advancing.current = true;
     dispatch({ type: 'skipCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId });
-    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { fromRecommend: entry?.fromRecommend === true } });
+    navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
   };
 
   const openMap = () => {
     tts.stop();
-    // 지도와 현재 작품은 같은 기록을 사용해 이동 후 이전 작품의 지도가 앞으로가기에 남지 않게 합니다.
-    navigate(to('/route'), { replace: true, state: { returnToArtwork: true, fromRecommend: entry?.fromRecommend === true } });
+    const navigation = { visitEntry: visitEntry(state) };
+    if (!currentEntry) navigate(to('/artwork'), { replace: true, state: navigation });
+    navigate(to('/route'), { state: { ...navigation, returnToArtwork: true } });
   };
 
   // 원문을 먼저 보여 주고, 관리자가 확정한 AI 요약이 있을 때만 「AI 요약 보기」로 바꿔 볼 수 있다
@@ -214,7 +226,7 @@ export default function U10Artwork() {
       : questionIndex === undefined ? undefined
         : {tab, kind: hasGuide && w.guidedLooking.length ? 'guide' : 'generic_tip', contentVersion: w.contentVersion ?? 1, questionIndex, ...(!(hasGuide && w.guidedLooking.length) ? {tipVersion: 'basic-v1' as const} : {})};
     save(readingKey, {tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0, entry}, 'session');
-    navigate(to('/artwork/ask'), { state: { fromArtwork: true } });
+    navigate(to('/artwork/ask'), { state: { fromArtwork: true, visitEntry: visitEntry(state) } });
   };
   const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`));
 
@@ -223,7 +235,9 @@ export default function U10Artwork() {
       screenId="U-10"
       back={() => {
         tts.stop();
-        navigate(to('/route'), { replace: true, state: { showMap: true, fromRecommend: entry?.fromRecommend === true } });
+        // 경로에서 들어왔으면 그 경로 기록으로 돌아간다(휴대폰 뒤로가기와 같음). 바로 들어왔으면 경로로 덮어쓴다.
+        if (hasAppHistory()) navigate(-1);
+        else navigate(to('/route'), { replace: true, state: { showMap: true, visitEntry: visitEntry(state) } });
       }}
       title={
         <span className="progress-title">

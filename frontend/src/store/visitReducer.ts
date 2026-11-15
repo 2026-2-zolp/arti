@@ -45,6 +45,7 @@ export type Action =
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
   | ({ type: 'completeCurrent' } & ArtworkDwell)
   | ({ type: 'skipCurrent' } & Omit<ArtworkDwell, 'seconds'>)
+  | { type: 'restoreHistoryPosition'; visitId: string; generation: number; index: number }
   | { type: 'resetVisit' }
   | { type: 'discardVisit'; visitId: string };
 
@@ -150,6 +151,12 @@ export function reducer(s: VisitState, a: Action): VisitState {
       const viewed = s.viewed.includes(a.artworkId) ? s.viewed : [...s.viewed, a.artworkId];
       return { ...s, dwell, viewed, current: s.current + 1 };
     }
+    case 'restoreHistoryPosition':
+      // 이미 방문한 브라우저 이력의 위치로만 이동하며 완료 기록과 감상 시간은 유지한다.
+      if (a.visitId !== s.visitId || a.generation !== s.requestGeneration) return s;
+      if (s.current >= s.recommendations.length || !Number.isInteger(a.index) ||
+          a.index < 0 || a.index >= s.recommendations.length || a.index === s.current) return s;
+      return { ...s, current: a.index };
     case 'discardVisit':
     case 'resetVisit':
       if (a.type === 'discardVisit' && a.visitId !== s.visitId) return s;

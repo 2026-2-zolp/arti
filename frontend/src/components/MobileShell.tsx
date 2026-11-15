@@ -4,10 +4,15 @@
 import { useLayoutEffect, useRef, type ReactNode, type Ref } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from './Icon';
+import { hasAppHistory } from '../lib/appHistory';
 
 interface Props {
   title?: ReactNode;
-  /** 뒤로가기 동작. 문자열이면 해당 경로로 이동, 생략하면 브라우저 이전 페이지, false면 버튼 숨김 */
+  /**
+   * 뒤로가기 동작. false면 버튼 숨김, 함수면 그 동작.
+   * 문자열·생략: 앱 안에서 왔으면 이전 기록을 꺼내고(휴대폰 뒤로가기와 같음),
+   * 주소로 바로 들어왔으면 문자열 경로(생략 시 전시 목록)로 덮어쓴다.
+   */
   back?: string | (() => void) | false;
   right?: ReactNode;
   footer?: ReactNode;
@@ -37,8 +42,8 @@ export function MobileShell({ title, back, right, footer, children, screenId, re
 
   const onBack = () => {
     if (typeof back === 'function') back();
-    else if (typeof back === 'string') navigate(back);
-    else navigate(-1);
+    else if (hasAppHistory()) navigate(-1);
+    else navigate(typeof back === 'string' ? back : '/', { replace: true });
   };
 
   return (

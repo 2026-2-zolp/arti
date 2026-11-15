@@ -2,10 +2,12 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell } from '../../components/MobileShell';
+import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { Icon } from '../../components/Icon';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { useVisitHistory } from '../../lib/appHistory';
 import { errorDetail } from '../../lib/errorText';
 import { load, remove, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
@@ -29,7 +31,11 @@ const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2
 export default function U11AskAI() {
   const { state } = useVisit();
   const to = useExhibitionPath();
+  const { key } = useLocation();
+  const { pending, askFinished } = useVisitHistory();
   const rec = state.recommendations[state.current];
+  if (pending) return null;
+  if (askFinished) return <FinishedVisitPrompt key={key} />;
   if (!rec) return <Navigate to={to('/route')} replace />;
 
   // 보낸 대화는 자료 버전별로 나누고, 미전송 원문은 같은 관람·작품에서 다시 쓸 수 있게 둡니다.

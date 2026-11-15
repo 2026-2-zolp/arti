@@ -8,6 +8,7 @@ import { ApiError, api } from '../../api/client';
 import { SIGNUP_TERMS_VERSION, signupPrivacy, signupTerms } from '../../data/signupDocuments';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect } from '../../store/ExhibitionRoute';
+import { exhibitionHomeFrom } from '../../lib/appHistory';
 
 type Errors = Partial<Record<'email' | 'password' | 'confirm' | 'terms' | 'form', string>>;
 
@@ -63,7 +64,7 @@ export default function U04Signup() {
   };
 
   return (
-    <MobileShell screenId="U-04">
+    <MobileShell screenId="U-04" back={exhibitionHomeFrom(safeRedirect(params.get('redirect')))}>
       <Lead title="취향과 기록을 저장해요" desc="다음 관람에서도 내 취향으로 바로 추천받을 수 있어요." />
 
       <form className="stack gap-16" onSubmit={onSubmit} noValidate>
