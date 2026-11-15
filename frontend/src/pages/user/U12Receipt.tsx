@@ -93,8 +93,15 @@ function LiveReceipt() {
     // Never silently retry a pending member receipt as a guest after token expiry.
     if (!load('arti.token', null)) { setBusy(false); setExpired(true); setFailure('로그인이 만료됐어요. 같은 계정으로 로그인한 뒤 마이페이지에서 미저장 기록을 복구해 주세요.'); return; }
     api.saveMemberVisit(record, initial.user.id, () => active && mounted.current && scope.current === initialScope).then(r => {
-      if (!active || actor.current !== initial.user?.id) return;
+      if (!active || !mounted.current || scope.current !== initialScope) return;
       if (!r.persisted) throw new Error('회원 기록이 저장되지 않았어요.');
+      // 다른 탭에서 갱신했을 수 있으므로 회원 영수증은 저장 응답의 최신 해석을 표시합니다.
+      if (r.interpretation !== undefined) {
+        const interpretation = r.interpretation ? { text: r.interpretation, emotionProfile: r.emotionProfile ?? null } : null;
+        setInterp(interpretation);
+        if (interpretation) save(cacheKey + '.interpretation', interpretation, 'session');
+        else remove(cacheKey + '.interpretation', 'session');
+      }
       setSaved(true); remove(pendingKey, 'session');
     }).catch(e => {
       if (!active) return;
@@ -102,7 +109,7 @@ function LiveReceipt() {
       setFailure(e instanceof Error ? e.message : '기록 저장에 실패했어요.');
     }).finally(() => active && setBusy(false));
     return () => {active = false;};
-  }, [finished, record, initial.user, saved, attempt, pendingKey]);
+  }, [finished, record, initial.user, saved, attempt, pendingKey, initialScope, cacheKey]);
   const interpret = async () => {
     if (!record || interpreting.current || scope.current !== initialScope || (initial.user && (!saved || actor.current !== initial.user.id))) return;
     interpreting.current = true; setInterpretPending(true);

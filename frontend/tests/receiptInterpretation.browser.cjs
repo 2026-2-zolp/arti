@@ -9,6 +9,9 @@ const interpretPath = '/api/visits/interpret';
 const password = 'Receipt-interpret-fixture-2026!';
 const oldText = '기존 모의 감상 해석';
 const newText = '재시도에 성공한 모의 감상 해석';
+const raceBaseline = '두 탭 검수 기준 해석';
+const raceNew = '나중에 요청하고 먼저 도착한 모의 해석';
+const raceAfterFailure = '다른 탭 요청이 실패한 뒤 도착한 모의 해석';
 
 async function body(response, status = 200) {
   assert.equal(response.status(), status, await response.text());
@@ -23,6 +26,37 @@ async function signup(page) {
     email: 'receipt-interpret-' + randomUUID() + '@example.test', password,
     termsAccepted: true, termsVersion: '2026-11-14-draft.1',
   } }));
+}
+
+async function seedReceipt(page, auth, visitId, dwell) {
+  await page.addInitScript(({ auth, visitId, dwell }) => {
+    if (sessionStorage.getItem('receipt-browser-fixture')) return;
+    sessionStorage.setItem('receipt-browser-fixture', '1');
+    if (auth) {
+      localStorage.setItem('arti.user', JSON.stringify(auth.user));
+      localStorage.setItem('arti.token', JSON.stringify(auth.token));
+    }
+    sessionStorage.setItem('arti.visit', JSON.stringify({
+      visitId, exhibitionId: 'fixture-ex01', ownerId: auth?.user.id ?? null, requestGeneration: 1,
+      duration: '30m', tastes: ['warm'], tasteDone: true, current: 1,
+      recommendations: [{ artworkId: 'fixture-art01' }], viewed: ['fixture-art01'],
+      reactions: { 'fixture-art01': 'like' }, reactionReasons: { 'fixture-art01': '색감' }, dwell,
+      startedAt: Date.now() - 60000,
+    }));
+  }, { auth, visitId, dwell });
+}
+
+async function requestInterpretation(page, label) {
+  const [response] = await Promise.all([
+    page.waitForResponse(reply => isPost(reply.request(), interpretPath)),
+    button(page, label).click(),
+  ]);
+  return response;
+}
+
+async function storedReceipts(page, auth) {
+  const headers = { Authorization: 'Bearer ' + auth.token };
+  return body(await page.request.get('/api/users/' + auth.user.id + '/visits', { headers }));
 }
 
 async function switchMemberBeforeReply(page, record, visitId) {
@@ -93,29 +127,9 @@ async function verify(browser, member) {
     const visitId = randomUUID();
     const dwell = { 'fixture-art01': member ? 21 : 29 };
     await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
-    await page.addInitScript(({ auth, visitId, dwell }) => {
-      if (sessionStorage.getItem('receipt-browser-fixture')) return;
-      sessionStorage.setItem('receipt-browser-fixture', '1');
-      if (auth) {
-        localStorage.setItem('arti.user', JSON.stringify(auth.user));
-        localStorage.setItem('arti.token', JSON.stringify(auth.token));
-      }
-      sessionStorage.setItem('arti.visit', JSON.stringify({
-        visitId, exhibitionId: 'fixture-ex01', ownerId: auth?.user.id ?? null, requestGeneration: 1,
-        duration: '30m', tastes: ['warm'], tasteDone: true, current: 1,
-        recommendations: [{ artworkId: 'fixture-art01' }], viewed: ['fixture-art01'],
-        reactions: { 'fixture-art01': 'like' }, reactionReasons: { 'fixture-art01': '색감' }, dwell,
-        startedAt: Date.now() - 60000,
-      }));
-    }, { auth, visitId, dwell });
-
-    const records = async () => body(await page.request.get('/api/users/' + auth.user.id + '/visits', {
-      headers: { Authorization: 'Bearer ' + auth.token },
-    }));
-    const requestInterpret = name => Promise.all([
-      page.waitForResponse(response => isPost(response.request(), interpretPath)),
-      button(page, name).click(),
-    ]).then(([response]) => response);
+    await seedReceipt(page, auth, visitId, dwell);
+    const records = () => storedReceipts(page, auth);
+    const requestInterpret = name => requestInterpretation(page, name);
     const interpretation = page.locator('.receipt-ai');
     const works = page.locator('.receipt-works');
     await page.goto(exhibition + '/receipt');
@@ -167,11 +181,104 @@ async function verify(browser, member) {
   }
 }
 
+async function verifySameReceiptTabs(browser) {
+  const context = await browser.newContext({ baseURL: origin, viewport: { width: 360, height: 812 }, reducedMotion: 'reduce' });
+  const a = await context.newPage();
+  const b = await context.newPage();
+  const gate = round => '/api/__receipt_interpret_test__/gate/' + round;
+  const waitForProvider = async round => {
+    for (let i = 0; i < 60; i++) {
+      const response = await a.request.get(gate(round));
+      assert.equal(response.headers()['x-arti-receipt-mock'], '1');
+      if ((await body(response)).started) return;
+      await new Promise(resolve => setTimeout(resolve, 70));
+    }
+    assert.fail('The first request did not reach the synthetic provider.');
+  };
+  const stored = '관람기록에 저장되었어요';
+  const showText = (page, text) => page.locator('.receipt-ai').getByText(text, { exact: true }).waitFor();
+  let pendingReply;
+  try {
+    const auth = await signup(a);
+    const visitId = randomUUID();
+    const dwell = { 'fixture-art01': 37 };
+    const key = `arti.receipt.${auth.user.id}.${visitId}.interpretation`;
+    await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+    await seedReceipt(a, auth, visitId, dwell);
+    await a.goto(exhibition + '/receipt');
+    await a.getByText(stored, { exact: true }).waitFor();
+    assert.equal((await body(await requestInterpretation(a, '취향 해석 보기'))).text, raceBaseline);
+    await showText(a, raceBaseline);
+    const before = await storedReceipts(a, auth);
+    assert.equal(before.length, 1);
+    assert.equal(before[0].visitId, visitId);
+    assert.equal(before[0].interpretation, raceBaseline);
+
+    const session = await a.evaluate(() => Object.entries(sessionStorage));
+    await b.addInitScript(entries => {
+      if (sessionStorage.getItem('receipt-browser-fixture')) return;
+      for (const [key, value] of entries) sessionStorage.setItem(key, value);
+    }, session);
+    await b.goto(exhibition + '/receipt');
+    await b.getByText(stored, { exact: true }).waitFor();
+    await showText(b, raceBaseline);
+
+    pendingReply = requestInterpretation(a, '다시 해석하기');
+    await waitForProvider(1);
+    const newest = await requestInterpretation(b, '다시 해석하기');
+    assert.equal((await body(newest)).text, raceNew);
+    await showText(b, raceNew);
+    const expected = [{ ...before[0], interpretation: raceNew }];
+    assert.deepEqual(await storedReceipts(a, auth), expected);
+    await body(await a.request.post(gate(1)));
+    const delayed = await pendingReply;
+    pendingReply = null;
+    assert.deepEqual(delayed.request().postDataJSON(), newest.request().postDataJSON());
+    assert.deepEqual(await storedReceipts(a, auth), expected, 'The late provider response must not overwrite the newer interpretation.');
+    assert.equal((await body(delayed)).text, raceNew, 'The first tab receives the currently saved interpretation.');
+    await showText(a, raceNew);
+
+    const oldCache = session.find(([name]) => name === key)[1];
+    await a.evaluate(([name, value]) => sessionStorage.setItem(name, value), [key, oldCache]);
+    await a.reload();
+    await a.getByText(stored, { exact: true }).waitFor();
+    await showText(a, raceNew);
+    await b.reload();
+    await b.getByText(stored, { exact: true }).waitFor();
+    await showText(b, raceNew);
+    assert.deepEqual(await storedReceipts(a, auth), expected);
+    console.log('PASS same member and receipt: the late older provider response preserved the newer text across both tabs and reload');
+
+    pendingReply = requestInterpretation(a, '다시 해석하기');
+    await waitForProvider(2);
+    assert.equal((await body(await requestInterpretation(b, '다시 해석하기'), 502)).code, 'PROVIDER_ERROR');
+    await b.getByRole('alert').getByText(/기존 해석은 그대로 남아 있어요/).waitFor();
+    await showText(b, raceNew);
+    assert.deepEqual(await storedReceipts(a, auth), expected);
+    await body(await a.request.post(gate(2)));
+    assert.equal((await body(await pendingReply)).text, raceAfterFailure);
+    pendingReply = null;
+    await showText(a, raceAfterFailure);
+    assert.deepEqual(await storedReceipts(a, auth), [{ ...before[0], interpretation: raceAfterFailure }]);
+    await b.reload();
+    await b.getByText(stored, { exact: true }).waitFor();
+    await showText(b, raceAfterFailure);
+    console.log('PASS later request failure: the older successful provider result became canonical and the receipt count stayed one');
+  } finally {
+    if (pendingReply) {
+      await Promise.allSettled([a.request.post(gate(1)), a.request.post(gate(2))]);
+      await pendingReply.catch(() => undefined);
+    }
+    await context.close();
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(new URL(origin).hostname), 'Use a loopback synthetic environment.');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     await verify(browser, false);
     await verify(browser, true);
+    await verifySameReceiptTabs(browser);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

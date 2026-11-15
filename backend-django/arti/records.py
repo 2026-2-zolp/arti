@@ -1,5 +1,6 @@
 # 관람 기록 저장·중복 방지와 회원·관리자 조회를 처리합니다.
 import uuid
+from django.db import transaction
 from django.db.models import Count, Max, Q
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
@@ -179,33 +180,58 @@ def visits(request,visit_id=None,user_id=None):
 @api_view(['POST'])
 @throttle_classes([AIThrottle])
 def interpret(request):
-    a=member(request) if getattr(request,'provided_token',False) else None
-    ex=public_exhibition(request.data.get('exhibitionId'))
-    ids=request.data.get('viewedArtworkIds')
-    if not isinstance(ids,list) or len(ids)>200 or any(not isinstance(i,str) for i in ids):bad()
+    account = member(request) if getattr(request, 'provided_token', False) else None
+    exhibition = public_exhibition(request.data.get('exhibitionId'))
+    artwork_ids = request.data.get('viewedArtworkIds')
+    if not isinstance(artwork_ids, list) or len(artwork_ids) > 200 or any(not isinstance(i, str) for i in artwork_ids):
+        bad()
     try:
-        if uuid.UUID(request.data.get('visitId','')).version!=4:bad()
-    except (ValueError,TypeError,AttributeError):bad()
-    for name in ('reactions','dwell'):
-        mapping=request.data.get(name)
-        if not isinstance(mapping,dict) or any(k not in ids for k in mapping):bad()
-        if name=='reactions' and any(v not in ('like','dislike') for v in mapping.values()):bad()
-        if name=='dwell' and any(type(v) is not int or not 0<=v<=86400 for v in mapping.values()):bad()
-    works=list(public_works(ex.id).filter(pk__in=ids))
-    if len(set(ids))!=len(works):bad()
-    v=None
-    if a:
-        try:v=Visit.objects.filter(user=a,visit_id=request.data.get('visitId')).first()
-        except Exception:bad()
-        if not v:bad('관람 기록을 먼저 저장해 주세요.')
-        for key in ['exhibitionId','viewedArtworkIds','reactions','dwell']:
-            if request.data.get(key)!=v.canonical_payload[key]:bad('저장된 관람과 요청이 달라요.')
-    result=providers.generate('interpret',{'artworks':[artwork_dto(w) for w in works],
-                                          'reactions':request.data.get('reactions',{}),'dwell':request.data.get('dwell',{})})
-    providers.validate('interpret',result)
-    if v:
-        v.interpretation=result['text'];v.save(update_fields=['interpretation'])
-    return Response({'text':result['text'],'mode':'llm','source':'llm','emotionProfile':None})
+        visit_id = uuid.UUID(request.data.get('visitId', ''))
+    except (ValueError, TypeError, AttributeError):
+        bad()
+    if visit_id.version != 4:
+        bad()
+    for name in ('reactions', 'dwell'):
+        mapping = request.data.get(name)
+        if not isinstance(mapping, dict) or any(key not in artwork_ids for key in mapping):
+            bad()
+        if name == 'reactions' and any(value not in ('like', 'dislike') for value in mapping.values()):
+            bad()
+        if name == 'dwell' and any(type(value) is not int or not 0 <= value <= 86400 for value in mapping.values()):
+            bad()
+    works = list(public_works(exhibition.id).filter(pk__in=artwork_ids))
+    if len(set(artwork_ids)) != len(works):
+        bad()
+    visit = None
+    if account:
+        # 제공자를 기다리는 동안 행을 잠그지 않고, 관람별 요청 순서만 먼저 확보합니다.
+        with transaction.atomic():
+            visit = Visit.objects.select_for_update().filter(user=account, visit_id=visit_id).first()
+            if visit is None:
+                bad('관람 기록을 먼저 저장해 주세요.')
+            for key in ('exhibitionId', 'viewedArtworkIds', 'reactions', 'dwell'):
+                if request.data.get(key) != visit.canonical_payload[key]:
+                    bad('저장된 관람과 요청이 달라요.')
+            visit.interpretation_request_version += 1
+            visit.save(update_fields=['interpretation_request_version'])
+    result = providers.generate('interpret', {
+        'artworks': [artwork_dto(work) for work in works],
+        'reactions': request.data.get('reactions', {}),
+        'dwell': request.data.get('dwell', {}),
+    })
+    providers.validate('interpret', result)
+    text = result['text']
+    if visit is not None:
+        version = visit.interpretation_request_version
+        saved = Visit.objects.filter(pk=visit.pk)
+        if not saved.filter(interpretation_saved_version__lt=version).update(
+            interpretation=text, interpretation_saved_version=version,
+        ):
+            # 늦은 응답을 받은 탭에도 이미 저장된 최신 성공 결과를 돌려줍니다.
+            text = saved.values_list('interpretation', flat=True).first()
+            if text is None:
+                bad('관람 기록을 먼저 저장해 주세요.')
+    return Response({'text': text, 'mode': 'llm', 'source': 'llm', 'emotionProfile': None})
 
 
 @api_view(['GET'])
