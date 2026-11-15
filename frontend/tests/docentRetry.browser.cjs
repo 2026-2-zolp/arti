@@ -498,7 +498,7 @@ async function inspectEntryContexts(browser) {
       },
     });
     assert.equal(updated.status(), 200);
-    const work = await updated.json();
+    let work = await updated.json();
     restoreArtwork = async () => {
       const restored = await page.request.put(path, { headers, data: { ...original, version: work.version } });
       assert.equal(restored.status(), 200);
@@ -584,11 +584,98 @@ async function inspectEntryContexts(browser) {
     });
     await button('뒤로가기').click();
     await page.getByText(summary, { exact: true }).waitFor();
+    console.log('PASS 쉬운 요약 · 동일 질문과 요약 리비전');
+
+    const verifyRetryAfterEdit = async kind => {
+      const guide = kind === 'guide';
+      const tab = guide ? 'guided' : 'desc';
+      const revisionKey = guide ? 'guideRevision' : 'summaryRevision';
+      const evidence = item => guide ? item.guidedLooking[1] : item.summary;
+      const enter = async item => {
+        await page.getByRole('tab', { name: guide ? '관람가이드' : '작품 해설' }).click();
+        if (guide) {
+          const question = page.locator('.guided-list li').filter({ hasText: evidence(item) });
+          await question.getByRole('button', { name: '2번 질문으로 대화하기' }).click();
+        } else {
+          if (await button('AI 요약 보기').isVisible()) await button('AI 요약 보기').click();
+          await page.getByText(evidence(item), { exact: true }).waitFor();
+          await button('이 부분 더 알아보기').click();
+        }
+      };
+      const previous = work;
+      const oldAnswer = '합성 근거 · ' + evidence(previous);
+      await enter(previous);
+      await input.fill('이 자료에서 어떤 요소를 살펴볼까요?');
+      assert.equal((await respondTo(() => send.click())).status(), 200);
+      await chat.getByText(oldAnswer, { exact: false }).first().waitFor();
+
+      const question = `[합성 갱신 ${randomUUID()} 시험] 방금 본 내용을 더 설명해 주세요.`;
+      const draft = '  ' + question + '  ';
+      await input.fill(draft);
+      const failed = await respondTo(() => send.click());
+      assert.equal(failed.status(), 502);
+      assert.equal((await failed.json()).code, 'PROVIDER_ERROR');
+      const initial = failed.request().postDataJSON();
+      const entry = { tab, kind, contentVersion: previous.contentVersion, ...(guide ? { questionIndex: 1 } : {}) };
+      assert.deepEqual(initial.entryContext, entry);
+      assert.equal(initial.question, question);
+      assert.ok(initial.history.some(message => message.role === 'assistant' && message.text === oldAnswer));
+      assert.equal(await input.inputValue(), draft);
+
+      const newEvidence = `갱신된 합성 자료 ${randomUUID()}`;
+      const fields = guide ? { guidedLooking: [previous.guidedLooking[0], newEvidence] } : { summary: newEvidence };
+      const edited = await page.request.put(path, { headers, data: { ...previous, ...fields } });
+      assert.equal(edited.status(), 200);
+      work = await edited.json();
+      assert.ok(work.contentVersion > previous.contentVersion);
+      assert.ok(work[revisionKey] > previous[revisionKey]);
+      assert.equal(work.sourceVersion, previous.sourceVersion);
+      assert.equal(evidence(work), newEvidence);
+
+      const stale = await respondTo(() => button('다시 시도').click());
+      assert.equal(stale.status(), 409);
+      assert.deepEqual(stale.request().postDataJSON(), initial);
+      const rejected = await stale.json();
+      assert.equal(rejected.code, 'CONTENT_CHANGED');
+      assert.equal(rejected.answer, undefined);
+      assert.equal(rejected.sourceRefs, undefined);
+      await button('작품으로 돌아가기').waitFor();
+      await chat.getByText(oldAnswer, { exact: false }).first().waitFor({ state: 'hidden' });
+      assert.equal(await chat.getByText(oldAnswer, { exact: false }).count(), 0);
+      assert.equal(await input.inputValue(), draft);
+      await button('다시 시도').waitFor({ state: 'hidden' });
+
+      await button('작품으로 돌아가기').click();
+      await artwork(titles[0]).waitFor();
+      await enter(work);
+      assert.equal(await input.inputValue(), draft);
+      assert.equal(await chat.locator('.bubble.user').count(), 0);
+      const fresh = await respondTo(() => send.click());
+      assert.equal(fresh.status(), 200);
+      assert.deepEqual(fresh.request().postDataJSON(), {
+        question, entryContext: { ...entry, contentVersion: work.contentVersion },
+        visitId: before.visitId, history: [],
+      });
+      const reply = await fresh.json();
+      assert.equal(reply.answer, '합성 근거 · ' + newEvidence);
+      assert.deepEqual(reply.sourceRefs, [{
+        artworkId, kind, revision: work[revisionKey], sourceVersion: work.sourceVersion,
+      }]);
+      await chat.getByText(reply.answer, { exact: false }).waitFor();
+      assert.equal(await chat.getByText(oldAnswer, { exact: false }).count(), 0);
+      assert.equal(await input.inputValue(), '');
+      await button('뒤로가기').click();
+      await artwork(titles[0]).waitFor();
+      console.log(`PASS ${guide ? '관람가이드' : '쉬운 요약'} · 502 뒤 자료 갱신 · 409 · 초안과 최신 근거 복구`);
+    };
+
+    await verifyRetryAfterEdit('guide');
+    await verifyRetryAfterEdit('summary');
     await button('다음 작품 안내').click();
     await button('2번 작품 감상하기').click();
     await artwork(titles[1]).waitFor();
     assert.deepEqual(pageErrors, []);
-    console.log('PASS 쉬운 요약 · 동일 질문과 요약 리비전 · 관람 이어가기');
+    console.log('PASS 자료 변경 복구 뒤 관람 이어가기');
   } finally {
     try { await restoreArtwork?.(); }
     finally { await page.close(); }

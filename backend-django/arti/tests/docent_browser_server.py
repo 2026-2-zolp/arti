@@ -20,7 +20,7 @@ GUIDE_HINT_REQUEST = '이 관찰 질문에 답할 수 있도록 작품에서 볼
 EVIDENCE_QUESTION = '[합성 근거 부족] 이 작품을 그리던 날 작가에게 어떤 사건이 있었나요?'
 
 
-def serve(host='0.0.0.0'):
+def serve(host='0.0.0.0', port=8000):
     if settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES:
         raise RuntimeError('Use an isolated ARTI test database with synthetic fixtures.')
 
@@ -28,6 +28,9 @@ def serve(host='0.0.0.0'):
     faults = {'502': 500, '429': 429, '504': 200}
     races = os.environ.get('ARTI_DOCENT_RACE_TESTS') == '1'
     entries = os.environ.get('ARTI_DOCENT_ENTRY_TESTS') == '1'
+    if entries:
+        # The first request fails, then the same question can be sent with the newly confirmed evidence.
+        faults['갱신'] = 500
     gates = {}
     gates_lock = Lock()
 
@@ -55,7 +58,7 @@ def serve(host='0.0.0.0'):
                     sleep(1.5)  # The real HTTP read exceeds the shortened adapter timeout.
                 else:
                     return faults[fault], b'upstream-private-debug'
-            elif previous != wire['raw']:
+            elif fault != '갱신' and previous != wire['raw']:
                 return 400, b'the provider retry did not preserve the original prompt'
 
         unsupported = question == EVIDENCE_QUESTION
@@ -110,6 +113,6 @@ def serve(host='0.0.0.0'):
         ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-browser-only',
         OPENAI_MODEL='synthetic-browser-only', ARTI_LLM_MODELS={}, ARTI_MODEL_SERVICE_URL='',
     ), endpoint(respond=respond) as requests, patch('arti.llm.TIMEOUT_SECONDS', 22 if races else 1), make_server(
-        host, 8000, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
+        host, port, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         server.serve_forever()
