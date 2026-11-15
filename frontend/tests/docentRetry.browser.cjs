@@ -281,6 +281,45 @@ async function delayedQuestion(page, input, send, question = `[합성 대기 ${r
   }
 }
 
+async function inspectEvidenceLimits(browser) {
+  const page = await newPage(browser);
+  try {
+    const { button, input, send, chat, pageErrors, respondTo, recommendations, titles, artwork } = await journey(page);
+    await input.fill('[합성 근거 부족] 이 작품을 그리던 날 작가에게 어떤 사건이 있었나요?');
+    const refused = await respondTo(() => send.click());
+    assert.equal(refused.status(), 200);
+    const refusal = await refused.json();
+    assert.equal(refusal.mode, 'refusal');
+    assert.deepEqual(refusal.sourceRefs, []);
+    assert.match(refusal.answer, /등록된 작품 자료에서 확인할 수 없어요/);
+    const notice = chat.locator('.bubble.ai').filter({ hasText: refusal.answer });
+    await notice.getByText('안내', { exact: true }).waitFor();
+    assert.equal(await chat.getByText(/다른 합성 작품/).count(), 0);
+    assert.equal(await button('다시 시도').count(), 0);
+    assert.equal(await input.inputValue(), '');
+
+    await input.fill('이 작품은 어디부터 보면 좋을까요?');
+    const recovered = await respondTo(() => send.click());
+    assert.equal(recovered.status(), 200);
+    assert.deepEqual(recovered.request().postDataJSON().history, []);
+    const reply = await recovered.json();
+    assert.equal(reply.mode, 'llm');
+    const [reference] = reply.sourceRefs;
+    assert.equal(reply.sourceRefs.length, 1);
+    assert.equal(reference.artworkId, recommendations[0]);
+    assert.equal(reference.kind, 'original');
+    assert.ok(reference.sourceVersion > 0 && reference.sourceVersion < 99);
+    assert.equal(reference.revision, reference.sourceVersion);
+    await chat.locator('.bubble.ai').filter({ hasText: reply.answer }).getByText('AI 도슨트', { exact: true }).waitFor();
+    await button('뒤로가기').click();
+    await artwork(titles[0]).waitFor();
+    assert.deepEqual(pageErrors, []);
+    console.log('PASS 근거 부족 안내와 다른 작품 출처 배제');
+  } finally {
+    await page.close();
+  }
+}
+
 async function inspectContentUpdate(browser) {
   const page = await newPage(browser);
   let restoreArtwork;
@@ -560,8 +599,11 @@ async function inspectEntryContexts(browser) {
       ? [['작품 자료 갱신', inspectContentUpdate], ['다음 작품 이동', inspectArtworkChange]]
       : process.env.ARTI_DOCENT_ENTRY_TESTS === '1'
         ? [['관람가이드·힌트·쉬운 요약', inspectEntryContexts]]
-        : [[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
-          .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]);
+        : [
+          ...[[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
+            .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]),
+          ['근거 부족과 혼합 출처', inspectEvidenceLimits],
+        ];
     for (const [, check] of checks) {
       failureDetails = [];
       evidenceReads = [];

@@ -24,13 +24,21 @@ BASELINE = (
 )
 ANSWER = '합성 응답입니다. 작품에서 가까운 두 색을 비교해 보세요.'
 SUMMARY = '파란 바탕과 노란 원을 비교할 수 있어요.'
-SUCCESS = json.dumps({'choices': [{
-    'finish_reason': 'stop',
-    'message': {'content': json.dumps({
-        'answer': ANSWER,
-        'sourceRefs': [{'artworkId': 'forged-work', 'kind': 'summary'}],
-    })},
-}]}).encode()
+MIXED_REFS = [
+    {'artworkId': 'fixture-art01', 'sourceVersion': 99, 'kind': 'summary', 'revision': 99},
+    {'artworkId': 'fixture-art02', 'sourceVersion': 2, 'kind': 'guide', 'revision': 4},
+    {'artworkId': 'forged-work', 'kind': 'summary'},
+]
+
+
+def provider_reply(answer, **fields):
+    return json.dumps({'choices': [{
+        'finish_reason': 'stop',
+        'message': {'content': json.dumps({'answer': answer, **fields})},
+    }]}).encode()
+
+
+SUCCESS = provider_reply(ANSWER, sourceRefs=MIXED_REFS)
 
 
 def digest(value):
@@ -180,6 +188,60 @@ class DocentHarnessTests(TestCase):
             self.assertEqual(len(calls), 2)
             report.append({'id': 'stale', 'status': response.status_code, 'providerCalls': 0, 'elapsedMs': elapsed})
         self.report('source-refs', report)
+
+    def test_insufficient_evidence_discards_provider_claim_and_mixed_refs(self):
+        case = next(case for case in self.cases if case['id'] == 'B01')
+        body = provider_reply('다른 합성 작품에 기록된 사건 때문에 제작했습니다.',
+                              insufficientEvidence=True, sourceRefs=MIXED_REFS)
+        with endpoint(body=body) as calls:
+            response, _ = self.ask(case, ip='192.0.2.6')
+            self.assertEqual(len(calls), 1)
+        self.assertEqual(response.status_code, 200, response.content)
+        reply = response.json()
+        self.assertEqual(reply['mode'], 'refusal')
+        self.assertIn('등록된 작품 자료에서 확인할 수 없어요', reply['answer'])
+        self.assertNotIn('다른 합성 작품', reply['answer'])
+        self.assertEqual(reply['sourceRefs'], [])
+
+    def test_missing_work_evidence_skips_provider(self):
+        case = next(case for case in self.cases if case['id'] == 'B01')
+        w = Artwork.objects.get(pk=case['workId'])
+        Artwork.objects.filter(pk=w.pk).update(description='   ')
+        self.addCleanup(lambda: Artwork.objects.filter(pk=w.pk).update(description=w.description))
+        contexts = [
+            None,
+            {'kind': 'original', 'tab': 'desc', 'contentVersion': w.content_version},
+            {'kind': 'generic_tip', 'tab': 'guided', 'contentVersion': w.content_version,
+             'questionIndex': 0, 'tipVersion': 'basic-v1'},
+        ]
+        with endpoint(body=SUCCESS) as calls:
+            for context in contexts:
+                with self.subTest(context=context):
+                    response, _ = self.ask({**case, 'entryContext': context}, ip='192.0.2.7')
+                    self.assertEqual(response.status_code, 200, response.content)
+                    self.assertEqual(response.json()['mode'], 'refusal')
+                    self.assertEqual(response.json()['sourceRefs'], [])
+            self.assertEqual(len(calls), 0)
+
+            # A visitor who selected a confirmed guide question still has a source for that entry.
+            guide = {'kind': 'guide', 'tab': 'guided', 'contentVersion': w.content_version,
+                     'questionIndex': 0}
+            response, _ = self.ask({**case, 'entryContext': guide, 'question': '어디부터 보면 좋을까요?'}, ip='192.0.2.7')
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(response.json()['sourceRefs'], [{
+                'artworkId': w.id, 'sourceVersion': w.source_version, 'kind': 'guide',
+                'revision': w.guide_revision,
+            }])
+
+    def test_invalid_evidence_discriminator_is_provider_error(self):
+        case = next(case for case in self.cases if case['id'] == 'B01')
+        with endpoint(body=provider_reply(ANSWER, insufficientEvidence='false')) as calls:
+            response, _ = self.ask(case, ip='192.0.2.8')
+            self.assertEqual(len(calls), 1)
+        self.assertEqual(response.status_code, 502, response.content)
+        self.assertEqual(response.json()['code'], 'PROVIDER_ERROR')
+        self.assertNotIn('answer', response.json())
 
     def test_provider_errors_allow_same_request_retry(self):
         case = next(case for case in self.cases if case['id'] == 'D01-followup')

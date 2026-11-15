@@ -29,6 +29,15 @@ def content_changed():
     return ContractError(409, 'CONTENT_CHANGED', '작품 자료가 변경됐어요. 새 내용을 확인해 주세요.')
 
 
+def insufficient_evidence(request):
+    return Response({
+        'answer': '등록된 작품 자료에서 확인할 수 없어요. 작품에서 보이는 색이나 모양을 바탕으로 질문해 보세요.',
+        'mode': 'refusal',
+        'sourceRefs': [],
+        'requestId': request.request_id,
+    })
+
+
 @api_view(['POST'])
 @throttle_classes([AIThrottle])
 def ask(request,artwork_id):
@@ -49,14 +58,16 @@ def ask(request,artwork_id):
         if kind in ('original','summary'):
             if entry['tab']!='desc' or 'questionIndex' in entry:bad()
             text=data['description'] if kind=='original' else data['summary']
-            if not text:bad()
+            if kind == 'summary' and not text.strip():bad()
             excerpt=entry.get('excerpt')
             if excerpt is not None:
                 if not isinstance(excerpt,dict) or type(excerpt.get('start')) is not int or type(excerpt.get('end')) is not int:bad()
                 if not 0<=excerpt['start']<excerpt['end']<=len(text) or excerpt['end']-excerpt['start']>500:bad()
                 text=text[excerpt['start']:excerpt['end']]
-            context={'kind':kind,'text':text}
-            refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':kind,'revision':w.summary_revision if kind=='summary' else w.source_version}]
+                if not text.strip():bad()
+            if text.strip():
+                context={'kind':kind,'text':text}
+                refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':kind,'revision':w.summary_revision if kind=='summary' else w.source_version}]
         elif kind in ('guide','generic_tip'):
             if entry['tab']!='guided' or 'excerpt' in entry:bad()
             index=entry.get('questionIndex')
@@ -71,6 +82,11 @@ def ask(request,artwork_id):
     for i,m in enumerate(history):
         if not isinstance(m,dict) or m.get('role')!=('user' if i%2==0 else 'assistant') or not isinstance(m.get('text'),str) or not 1<=len(m['text'])<=1000:bad()
     if len(history)%2:bad()
+    # 참조는 제공자 응답을 받기 전에 현재 작품의 승인 자료에서 정합니다.
+    if not refs and data['description'].strip():
+        refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'original','revision':w.source_version}]
+    if not refs:
+        return insufficient_evidence(request)
     result=providers.generate('answer',data,entry=context,history=history,question=q.strip())
     if not isinstance(result,dict) or not isinstance(result.get('answer'),str) or not result['answer'].strip():
         raise ContractError(502,'PROVIDER_ERROR','답변 형식을 확인할 수 없어요.',retryable=True)
@@ -78,8 +94,8 @@ def ask(request,artwork_id):
     # 모델을 기다리는 사이에 편집되거나 공개가 중단된 작품의 답변은 내보내지 않습니다.
     if not public_works().filter(pk=w.pk, content_version=w.content_version).exists():
         raise content_changed()
-    # Source references are selected by the server, never accepted from provider/client.
-    if not refs and data['description']:refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'original','revision':w.source_version}]
+    if result.get('insufficientEvidence'):
+        return insufficient_evidence(request)
     return Response({'answer':result['answer'],'mode':'llm','sourceRefs':refs,'requestId':request.request_id})
 
 
