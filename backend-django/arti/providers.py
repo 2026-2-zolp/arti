@@ -72,5 +72,6 @@ def validate(kind,value):
                 validate_provider_evidence(value.get('tagEvidence'),value['scores'])
         elif kind=='emotion':valid=scores(value.get('emotions'),EMOTIONS)
         elif kind in ('interpret','explanation'):valid=text(value.get('text'))
-        elif kind=='answer':valid=text(value.get('answer'),1000)
+        elif kind=='answer':
+            valid=text(value.get('answer'),1000) and isinstance(value.get('insufficientEvidence', False), bool)
     if not valid:raise ContractError(502,'PROVIDER_ERROR','AI 응답 형식을 확인할 수 없어요.',retryable=True)
