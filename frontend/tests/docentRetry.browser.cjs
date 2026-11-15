@@ -19,7 +19,23 @@ async function reportFailure() {
   process.exitCode = 1;
 }
 
-async function journey(page, { useClock = false, enterDocent = true } = {}) {
+async function checkViewerKeyboard(page, trigger, closeKey) {
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const dialog = page.getByRole('dialog', { name: /크게 보기$/ });
+  const close = dialog.getByRole('button', { name: '전체 화면 닫기' });
+  await close.waitFor();
+  for (const key of ['Tab', 'Shift+Tab']) {
+    assert.equal(await close.evaluate(el => document.activeElement === el), true);
+    await page.keyboard.press(key);
+  }
+  assert.equal(await close.evaluate(el => document.activeElement === el), true);
+  await page.keyboard.press(closeKey);
+  await dialog.waitFor({ state: 'hidden' });
+  assert.equal(await trigger.evaluate(el => document.activeElement === el), true);
+}
+
+async function journey(page, { useClock = false, enterDocent = true, checkViewer = false } = {}) {
   page.setDefaultTimeout(10000);
   const button = name => page.getByRole('button', { name, exact: true });
   const input = page.getByRole('textbox', { name: '질문 입력' });
@@ -50,7 +66,11 @@ async function journey(page, { useClock = false, enterDocent = true } = {}) {
   await button('비회원으로 계속').click();
   for (let i = 1; i <= 5; i++) {
     await page.getByText(i + '/5', { exact: true }).waitFor();
-    await page.locator('button.duel-card').first().click();
+    if (checkViewer && i === 1) {
+      await checkViewerKeyboard(page, page.locator('.duel-card').getByRole('button', { name: / 크게 보기$/ }).first(), 'Enter');
+      assert.equal(await page.getByText('1/5', { exact: true }).isVisible(), true);
+    }
+    await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
   }
   await button('취향 미리 확인').click();
   await button('이 취향으로 계속').click();
@@ -70,6 +90,10 @@ async function journey(page, { useClock = false, enterDocent = true } = {}) {
   await page.locator('.fm-route.active').waitFor();
   await button('관람 시작하기').click();
   await artwork(titles[0]).waitFor();
+  if (checkViewer) {
+    await checkViewerKeyboard(page, button('전체 화면'), 'Escape');
+    assert.equal(await artwork(titles[0]).isVisible(), true);
+  }
   const before = await visit();
   if (enterDocent) {
     await button('이 부분 더 알아보기').click();
@@ -112,7 +136,7 @@ async function inspectJourney(browser, status, code) {
   const page = await newPage(browser);
   try {
     const { button, input, send, chat, askRequests, pageErrors, respondTo, visit, artwork, recommendations, titles, before } =
-      await journey(page, { useClock: status === 429 });
+      await journey(page, { useClock: status === 429, checkViewer: status === 502 });
     const first = '이 작품은 어디부터 보면 좋을까요?';
     await input.fill(first);
     const firstResponse = await respondTo(() => send.click());

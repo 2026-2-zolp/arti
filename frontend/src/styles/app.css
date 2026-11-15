@@ -389,7 +389,11 @@ a.history-card { text-decoration: none; }
 .progress-bars span.on { background: var(--ink); }
 .art-frame { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 /* 크게 보기 배경: 어두운 작품도 잘 보이게 U-05 카드 그림 배경과 같은 밝은 베이지 */
-.art-frame.fullscreen { position: fixed; inset: 0; z-index: 50; border-radius: 0; background: var(--surface-2); display: flex; align-items: center; }
+.art-frame.fullscreen[open] {
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; border-radius: 0; color: inherit;
+  display: flex; align-items: center;
+}
 .art-frame.fullscreen svg[role='img'] { max-height: 100dvh; }
 .frame-btn { position: absolute; right: 10px; bottom: 10px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(20, 20, 20, 0.8); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
 .art-frame.fullscreen .frame-btn { top: 16px; bottom: auto; right: 16px; z-index: 2; }
