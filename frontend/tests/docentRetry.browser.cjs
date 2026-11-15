@@ -4,6 +4,7 @@ const { randomUUID } = require('node:crypto');
 
 const baseURL = process.env.ARTI_REVIEW_BASE || 'http://127.0.0.1:5239';
 const exhibition = '/exhibitions/fixture-ex01';
+const pageOptions = { baseURL, viewport: { width: 360, height: 812 }, reducedMotion: 'reduce' };
 const answer = '합성 답변입니다. 밝은 부분을 살펴보세요. <img src=x>';
 const isAsk = url => /^\/api\/artworks\/[^/]+\/ask$/.test(new URL(url).pathname);
 const requestIdFormat = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
@@ -102,8 +103,8 @@ async function journey(page, { useClock = false, enterDocent = true, checkViewer
   return { button, input, send, chat, askRequests, pageErrors, respondTo, visit, artwork, recommendations, titles, before };
 }
 
-async function newPage(browser) {
-  const page = await browser.newPage({ baseURL, viewport: { width: 360, height: 812 }, reducedMotion: 'reduce' });
+async function newPage(browser, context) {
+  const page = context ? await context.newPage() : await browser.newPage(pageOptions);
   const recordAttempt = (request, response) => {
     if (!isAsk(request.url())) return;
     const id = response?.headers()['x-request-id'];
@@ -463,6 +464,81 @@ async function inspectArtworkChange(browser) {
   }
 }
 
+async function inspectTwoTabs(browser) {
+  const context = await browser.newContext(pageOptions);
+  try {
+    const tabA = await newPage(browser, context);
+    const tabB = await newPage(browser, context);
+    const a = await journey(tabA);
+    const b = await journey(tabB, { enterDocent: false });
+    assert.notEqual(a.before.visitId, b.before.visitId);
+    await b.button('다음 작품 안내').click();
+    await b.button('2번 작품 감상하기').click();
+    await b.artwork(b.titles[1]).waitFor();
+    await b.button('이 부분 더 알아보기').click();
+    assert.notEqual(a.recommendations[0], b.recommendations[1]);
+
+    const currentWork = (tab, title) => tab.locator('.chat-artwork').getByText(title, { exact: true }).waitFor();
+    await currentWork(tabB, b.titles[1]);
+    const questionB = '두 번째 작품의 색을 설명해 주세요.';
+    await b.input.fill(questionB);
+    const replyB = await b.respondTo(() => b.send.click());
+    assert.equal(replyB.status(), 200);
+    const bodyB = await replyB.json();
+    assert.equal(bodyB.sourceRefs[0].artworkId, b.recommendations[1]);
+    await b.chat.getByText(bodyB.answer, { exact: false }).waitFor();
+
+    const draftA = '  첫 번째 작품에서 이어 갈 질문  ';
+    const draftB = '  두 번째 작품에서 이어 갈 질문  ';
+    const delayed = await delayedQuestion(tabA, a.input, a.send,
+      `[합성 대기 ${randomUUID()} 시험] 첫 번째 작품의 색을 설명해 주세요.`);
+    let replyA;
+    try {
+      await a.input.fill(draftA);
+      await b.input.fill(draftB);
+      await tabB.reload({ waitUntil: 'domcontentloaded' });
+      await currentWork(tabB, b.titles[1]);
+      assert.equal(await b.input.inputValue(), draftB);
+      await b.chat.getByText(bodyB.answer, { exact: false }).waitFor();
+      assert.equal(await a.input.inputValue(), draftA);
+    } finally {
+      replyA = await delayed.finish();
+    }
+    assert.equal(replyA.status(), 200);
+    assert.equal(replyA.request().postDataJSON().visitId, a.before.visitId);
+    assert.deepEqual(replyA.request().postDataJSON().history, []);
+    const bodyA = await replyA.json();
+    assert.equal(bodyA.sourceRefs[0].artworkId, a.recommendations[0]);
+    assert.notEqual(bodyA.answer, bodyB.answer);
+    await a.chat.getByText(bodyA.answer, { exact: false }).waitFor();
+    assert.equal(await b.chat.getByText(bodyA.answer, { exact: false }).count(), 0);
+
+    await tabA.reload({ waitUntil: 'domcontentloaded' });
+    await currentWork(tabA, a.titles[0]);
+    await a.chat.getByText(bodyA.answer, { exact: false }).waitFor();
+    assert.equal(await a.input.inputValue(), draftA);
+    assert.equal(await b.input.inputValue(), draftB);
+    assert.deepEqual(await a.chat.locator('.bubble.user').allTextContents(), [delayed.question]);
+    assert.deepEqual(await b.chat.locator('.bubble.user').allTextContents(), [questionB]);
+    assert.equal(await a.chat.getByText(bodyB.answer, { exact: false }).count(), 0);
+
+    const continued = await b.respondTo(() => b.send.click());
+    assert.equal(continued.status(), 200);
+    assert.deepEqual(continued.request().postDataJSON(), {
+      question: draftB.trim(),
+      visitId: b.before.visitId,
+      entryContext: replyB.request().postDataJSON().entryContext,
+      history: [{ role: 'user', text: questionB }, { role: 'assistant', text: bodyB.answer }],
+    });
+    assert.equal((await continued.json()).sourceRefs[0].artworkId, b.recommendations[1]);
+    assert.equal(await a.input.inputValue(), draftA);
+    assert.deepEqual([...a.pageErrors, ...b.pageErrors], []);
+    console.log('PASS 같은 브라우저의 두 탭 · 다른 작품 · 지연 답변·초안·대화 이력 격리');
+  } finally {
+    await context.close();
+  }
+}
+
 async function inspectEntryContexts(browser) {
   const page = await newPage(browser);
   let restoreArtwork;
@@ -688,7 +764,7 @@ async function inspectEntryContexts(browser) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const checks = process.env.ARTI_DOCENT_RACE_TESTS === '1'
-      ? [['작품 자료 갱신', inspectContentUpdate], ['다음 작품 이동', inspectArtworkChange]]
+      ? [['작품 자료 갱신', inspectContentUpdate], ['다음 작품 이동', inspectArtworkChange], ['두 탭 격리', inspectTwoTabs]]
       : process.env.ARTI_DOCENT_ENTRY_TESTS === '1'
         ? [['관람가이드·힌트·쉬운 요약', inspectEntryContexts]]
         : [
