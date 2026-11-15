@@ -274,6 +274,14 @@ async function recoverNewErrorCards(browser) {
     await page.getByText('ART RECEIPT', { exact: true }).waitFor();
     await button('뒤로가기').click();
     await history.waitFor();
+    await history.click();
+    await page.waitForURL('**/receipt/test-history');
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await history.waitFor();
+    await page.goto(base + '/receipt/test-history', { waitUntil: 'domcontentloaded' });
+    await page.getByText('ART RECEIPT', { exact: true }).waitFor();
+    await button('뒤로가기').click();
+    await page.waitForURL('**/mypage');
     failures.set('/api/artworks', generic);
     await page.getByRole('tab', { name: '좋아요 목록' }).click();
     await issue('좋아요한 작품을 불러오지 못했어요.');
@@ -310,6 +318,42 @@ async function recoverNewErrorCards(browser) {
     assert.equal(afterFailure.visitId, visitId);
     assert.equal(afterFailure.duration, '30m');
     assert.deepEqual(afterFailure.viewed, ['a']);
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+}
+
+async function recommendationHistory(browser) {
+  const { page, button, errors } = await fixture(browser, 1280, false, 1);
+  const visit = () => page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
+  const time = page.getByRole('radio', { name: /30분/ });
+  try {
+    await page.goto(base + '/');
+    await page.goto(base + path + '/time');
+    const before = await visit();
+    await button('추천 받기').click();
+    await page.waitForURL('**/recommend');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await button('뒤로가기').click();
+    await page.waitForURL('**/time');
+    assert.equal(await time.isChecked(), true);
+    const after = await visit();
+    assert.equal(after.visitId, before.visitId);
+    assert.deepEqual(after.viewed, ['a']);
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL(base + '/');
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/time');
+    await page.goForward({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/recommend');
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/time');
+
+    await page.goto(base + '/');
+    await page.goto(base + path + '/recommend');
+    await button('뒤로가기').click();
+    await page.waitForURL('**/time');
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL(base + '/');
     assert.deepEqual(errors, []);
   } finally { await page.close(); }
 }
@@ -367,6 +411,10 @@ async function visitHistory(browser) {
     await page.getByText('관람기록에 저장되었어요').waitFor();
     assert.equal(requests.length, 1);
     assert.deepEqual(requests[0].viewedArtworkIds, ['a', 'b', 'c']);
+    assert.equal(await button('뒤로가기').count(), 0);
+    await button('관람 완료').waitFor();
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForURL('**/recommend');
     assert.deepEqual(errors, []);
   } finally { await page.close(); }
 }
@@ -532,6 +580,8 @@ async function completeVisit(browser, member) {
     }
     await button('관람 마치기').click();
     await page.waitForURL('**/visit-test/receipt');
+    await button('관람 완료').waitFor();
+    assert.equal(await button('뒤로가기').count(), 0);
     const longest = page.locator('.receipt dt').filter({ hasText: '가장 오래 본 작품' }).locator('..');
     assert.match(await longest.textContent(), /합성 작품 3/);
     if (member) await page.getByText('관람기록에 저장되었어요').waitFor();
@@ -561,6 +611,7 @@ async function completeVisit(browser, member) {
     for (const [name, check] of [
       ['관람 시작 전 영수증 직접 진입', browser => prematureReceipt(browser, 0)],
       ['관람 도중 영수증 직접 진입', browser => prematureReceipt(browser, 1)],
+      ['추천 결과와 관람 시간의 앱·브라우저 이력', recommendationHistory],
       ['지도와 다음 작품 안내의 뒤로가기·새로고침', visitHistory],
       ['회원 오류 복구와 관람 순서', browser => recoverErrors(browser, true)],
       ['비회원 오류 복구와 관람 순서', browser => recoverErrors(browser, false)],

@@ -36,9 +36,10 @@ export default function U07Time() {
 
   const next = async () => {
     if (!value || pending.current) return;
+    const openRecommendations = () => navigate(to('/recommend'), { state: { fromTime: true } });
     // 같은 시간으로 돌아가면 기존 추천·반응·관람 ID를 그대로 이어갑니다.
     if (value === state.duration) {
-      navigate(to('/recommend'));
+      openRecommendations();
       return;
     }
     const token = authSession();
@@ -58,7 +59,7 @@ export default function U07Time() {
       }
       if (!current()) return;
       dispatch({ type: 'setDuration', duration: value, newVisit: !!state.startedAt, scope, proof });
-      navigate(to('/recommend'));
+      openRecommendations();
     } catch (e) {
       if (current()) setError(e instanceof Error ? e.message : '관람 시간을 다시 확인해 주세요.');
     } finally {

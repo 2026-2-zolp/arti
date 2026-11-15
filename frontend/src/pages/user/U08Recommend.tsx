@@ -1,6 +1,6 @@
 /** U-08 개인화 작품 추천 — 취향+시간 기반 추천 목록과 추천 이유 */
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api } from '../../api/client';
@@ -17,6 +17,7 @@ type RecommendationIssue = { kind: 'empty' } | { kind: 'error'; message: string 
 /** 취향·시간에 따른 추천 작품을 확인하는 화면 */
 export default function U08Recommend() {
   const navigate = useNavigate();
+  const { state: entry } = useLocation();
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
@@ -49,6 +50,10 @@ export default function U08Recommend() {
 
   if (!duration) return <Navigate to={to('/time')} replace />;
 
+  const backToTime = () => {
+    if (entry?.fromTime === true) navigate(-1);
+    else navigate(to('/time'), { replace: true });
+  };
   const byId = new Map<string, Artwork>((artworks ?? []).map((w) => [w.id, w]));
   const ready = recommendations.length > 0 && artworks;
   const requestedCount = countForDuration(duration);
@@ -80,7 +85,7 @@ export default function U08Recommend() {
   return (
     <MobileShell
       screenId="U-08"
-      back={to('/time')}
+      back={backToTime}
       footer={
         // 추천이 없거나 실패한 동안에는 누를 수 없는 버튼을 남기지 않는다.
         issue || (artworkError && !ready) ? undefined : (
