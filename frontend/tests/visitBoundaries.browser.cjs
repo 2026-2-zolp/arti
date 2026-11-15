@@ -81,10 +81,10 @@ async function login(page, member) {
   assert.equal((await body(response)).user.id, member.user.id);
 }
 
-async function choosePairs(page, start = 1) {
+async function choosePairs(page, start = 1, sides = []) {
   for (let index = start; index <= 5; index++) {
     await page.getByText(index + '/5', { exact: true }).waitFor();
-    await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
+    await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).nth(sides[index - 1] ?? 0).click();
   }
 }
 
@@ -237,6 +237,16 @@ async function chooseNewSurveyProfile(page) {
   await choosePairs(page);
   await button(page, '취향 미리 확인').click();
   await button(page, '이 취향으로 계속').click();
+}
+
+function setFixtureTags(id, tags) {
+  fixtureCommand([
+    'import json',
+    'from arti.management.commands.load_test_fixture import FIXTURE_SOURCE',
+    'from arti.models import Artwork',
+    'count = Artwork.objects.filter(pk=os.environ["ARTI_BROWSER_ARTWORK_ID"], source=FIXTURE_SOURCE).update(tags=json.loads(os.environ["ARTI_BROWSER_ARTWORK_TAGS"]))',
+    'assert count == 1, "Update only one synthetic artwork"',
+  ], { ARTI_BROWSER_ARTWORK_ID: id, ARTI_BROWSER_ARTWORK_TAGS: JSON.stringify(tags) });
 }
 
 async function surveyAndMap(browser) {
@@ -523,13 +533,199 @@ async function recommendationShortage(browser) {
   }
 }
 
+async function completeTasteVisit(page, taste, owner) {
+  await page.getByRole('radio', { name: /30분/ }).click();
+  const [recommendation] = await Promise.all([
+    page.waitForResponse(r => isResponse(r, '/api/recommendations', 'POST')),
+    button(page, '추천 받기').click(),
+  ]);
+  assert.deepEqual(recommendation.request().postDataJSON().tasteProfile, taste.tasteProfile);
+  const recommended = (await body(recommendation)).map(item => item.artworkId);
+  assert.equal(new Set(recommended).size, 3);
+  await button(page, '2D 지도에서 경로 보기').click();
+  await button(page, '관람 시작하기').click();
+  for (const ordinal of [2, 3]) {
+    await button(page, '다음 작품 안내').click();
+    await button(page, `${ordinal}번 작품 감상하기`).click();
+  }
+
+  const [created] = await Promise.all([
+    page.waitForResponse(r => isResponse(r, '/api/visits', 'POST')),
+    button(page, '관람 마치기').click(),
+  ]);
+  const submitted = created.request().postDataJSON();
+  const record = await body(created, 201);
+  assert.equal(submitted.visitId, taste.visitId);
+  assert.equal(submitted.tasteEvidenceReceipt, taste.visitEvidenceReceipt);
+  assert.deepEqual(submitted.tasteProfile, taste.tasteProfile);
+  assert.equal(record.userId, owner);
+  assert.equal(record.visitId, taste.visitId);
+  assert.deepEqual(record.viewedArtworkIds, recommended);
+  assert.deepEqual(record.tastes, taste.tasteProfile.selectedTags);
+  await page.getByRole('status').getByText('관람기록에 저장되었어요').waitFor();
+  assert.equal(await page.locator('.receipt-works li').count(), recommended.length);
+  await button(page, '관람 완료').click();
+  await page.waitForURL(base.href + exhibition.slice(1));
+  return record;
+}
+
+async function savedV2(browser) {
+  const page = await openPage(browser);
+  const resolvePath = '/api/taste-profiles/resolve';
+  const errors = [];
+  const writes = [];
+  let originalOrder;
+  let surveyChanged = false;
+  let tieWork;
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => {
+    if (request.method() === 'PUT' && /^\/api\/users\/[^/]+\/tastes$/.test(new URL(request.url()).pathname)) {
+      writes.push(request.postDataJSON());
+    }
+  });
+  const account = async () => body(await page.request.get('/api/auth/me', { headers: headersFor(await currentToken(page)) }));
+  const tasteState = ({ tastes, tasteProfile, tasteProfileVersion }) => ({ tastes, tasteProfile, tasteProfileVersion });
+  const resolved = async label => {
+    const [response] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, resolvePath, 'POST')),
+      button(page, label).click(),
+    ]);
+    const submitted = response.request().postDataJSON();
+    const result = await body(response);
+    assert.equal(submitted.exhibitionId, exhibitionId);
+    assert(result.visitEvidenceReceipt, 'A V2 visit must have signed taste evidence');
+    return { ...result, visitId: submitted.visitId, submitted: submitted.tasteProfile };
+  };
+
+  try {
+    await checkEnvironment(page);
+    const member = await newMember(page);
+    const seed = await body(await page.request.get('/api/taste-pool'));
+    originalOrder = seed.pairs.flatMap(pair => [pair.leftId, pair.rightId]);
+    assert.equal(new Set(originalOrder).size, 10);
+    const first = seed.artworks.find(artwork => artwork.id === seed.pairs[0].leftId);
+    assert.deepEqual(first.tags, ['landscape']);
+    // Three lefts and two rights now produce a 3:3 tie in the stored snapshot.
+    setFixtureTags(first.id, [...first.tags, 'warm']);
+    tieWork = first;
+    const initial = await body(await page.request.get('/api/taste-pool'));
+    assert(initial.tieContext?.tieContextVersion);
+
+    await page.goto('/login');
+    await login(page, member);
+    await page.waitForURL(base.href);
+    await page.goto(exhibition + '/taste');
+    await choosePairs(page, 1, [0, 0, 0, 1, 1]);
+    const preview = await resolved('취향 미리 확인');
+    assert.equal(preview.tasteProfile.version, 2);
+    assert.equal(preview.tasteProfile.source, 'picks');
+    assert.equal(preview.tasteProfile.poolVersion, initial.poolVersion);
+    assert.equal(preview.tasteProfile.tieContextVersion, initial.tieContext.tieContextVersion);
+    assert.deepEqual(preview.tasteProfile.picks.map(pick => pick.artworkId), initial.pairs.map((pair, index) =>
+      index < 3 ? pair.leftId : pair.rightId));
+    assert.equal(preview.tasteProfile.counts.landscape, 3);
+    assert.equal(preview.tasteProfile.counts.warm, 3);
+    const [storedResponse] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, `/api/users/${member.user.id}/tastes`, 'PUT')),
+      button(page, '확인하고 계정에 저장').click(),
+    ]);
+    assert.equal(storedResponse.status(), 204);
+    await page.waitForURL('**' + exhibition + '/time');
+    const stored = tasteState(await account());
+    assert.equal(stored.tasteProfileVersion, member.user.tasteProfileVersion + 1);
+    assert.deepEqual(stored.tastes, preview.tasteProfile.selectedTags);
+    assert.deepEqual(stored.tasteProfile.originalPicks, preview.tasteProfile.picks);
+    assert.equal(stored.tasteProfile.originalPoolVersion, initial.poolVersion);
+    assert.equal(stored.tasteProfile.tieContextVersion, initial.tieContext.tieContextVersion);
+    assert.deepEqual(stored.tasteProfile.tieEvidence.orderedTags, preview.tagOrder);
+
+    reviseSurvey([...originalOrder.slice(2), ...originalOrder.slice(0, 2)]);
+    surveyChanged = true;
+    const revised = await body(await page.request.get('/api/taste-pool'));
+    assert.notEqual(revised.poolVersion, initial.poolVersion);
+    assert.notEqual(revised.tieContext.tieContextVersion, initial.tieContext.tieContextVersion);
+    assert.deepEqual(revised.pairs[0], initial.pairs[1]);
+
+    const tokenBefore = await currentToken(page);
+    await page.goto('/mypage');
+    const [logout] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/auth/logout', 'POST')),
+      button(page, '로그아웃').click(),
+    ]);
+    assert.equal(logout.status(), 204);
+    await page.waitForURL(base.href);
+    assert.equal((await page.request.get('/api/auth/me', { headers: headersFor(tokenBefore) })).status(), 401);
+    await page.goto(exhibition + '/entry');
+    await button(page, '로그인').click();
+    await login(page, member);
+    await page.waitForURL('**' + exhibition + '/taste/saved');
+    assert.notEqual(await currentToken(page), tokenBefore);
+    assert.deepEqual(tasteState(await account()), stored);
+    await page.getByText('저장된 취향 키워드', { exact: true }).waitFor();
+
+    const reused = await resolved('이 취향으로 관람 시작');
+    assert.equal(reused.submitted.savedProfileVersion, stored.tasteProfileVersion);
+    assert.equal(reused.tasteProfile.source, 'saved');
+    assert.equal(reused.tasteProfile.poolVersion, null);
+    assert.deepEqual(reused.tasteProfile.counts, stored.tasteProfile.counts);
+    assert.deepEqual(reused.tagOrder, stored.tasteProfile.tieEvidence.orderedTags);
+    assert(reused.groups.some(group => group.rule === 'frozen_snapshot'), 'The fixture must exercise a frozen tie');
+    const fromSaved = await completeTasteVisit(page, reused, member.user.id);
+    assert.deepEqual(fromSaved.tasteProfile, stored.tasteProfile);
+
+    await page.goto(exhibition + '/taste/saved');
+    await button(page, '태그 수정하기').click();
+    const tags = page.getByLabel('수정할 취향 태그');
+    await tags.getByRole('button', { pressed: false }).first().click();
+    assert.equal(await tags.getByRole('button', { pressed: true }).count(), stored.tastes.length + 1);
+    await resolved('취향 미리 확인');
+    const manual = await resolved('이 취향으로 계속');
+    assert.equal(manual.tasteProfile.version, 2);
+    assert.equal(manual.tasteProfile.source, 'manual');
+    assert.equal(manual.tasteProfile.poolVersion, null);
+    assert.deepEqual(manual.tasteProfile.picks, []);
+    assert.equal(manual.tasteProfile.selectedTags.length, stored.tastes.length + 1);
+    assert(stored.tastes.every(tag => manual.tasteProfile.selectedTags.includes(tag)));
+    assert.notEqual(manual.visitId, reused.visitId);
+    assert.notEqual(manual.visitEvidenceReceipt, reused.visitEvidenceReceipt);
+    const fromManual = await completeTasteVisit(page, manual, member.user.id);
+    assert.deepEqual(fromManual.tasteProfile.selectedTags, manual.tasteProfile.selectedTags);
+    assert.equal(fromManual.tasteProfile.source, 'manual');
+    assert.notEqual(fromManual.id, fromSaved.id);
+    assert.deepEqual(tasteState(await account()), stored);
+    assert.equal(writes.length, 1);
+
+    const rows = await body(await page.request.get(`/api/users/${member.user.id}/visits`, {
+      headers: headersFor(await currentToken(page)),
+    }));
+    assert.deepEqual(rows, [fromManual, fromSaved]);
+    await page.goto('/mypage');
+    await page.locator('.history-card').nth(1).click();
+    await page.waitForURL('**/receipt/' + fromSaved.id);
+    await page.locator('.receipt-works li').nth(2).waitFor();
+    assert.deepEqual(errors, []);
+    console.log('PASS saved V2 after survey revision and re-login: frozen tie + saved receipt; visit-only tags + separate receipt; one account write');
+  } finally {
+    try {
+      if (surveyChanged) reviseSurvey(originalOrder);
+    } finally {
+      try {
+        if (tieWork) setFixtureTags(tieWork.id, tieWork.tags);
+      } finally {
+        await page.close();
+      }
+    }
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
+    if (suite === 'saved-v2') return await savedV2(browser);
     if (suite !== 'survey-map') {
       await receiptSession(browser, false);
       await receiptSession(browser, true);
