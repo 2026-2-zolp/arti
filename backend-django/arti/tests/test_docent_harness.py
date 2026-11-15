@@ -243,6 +243,63 @@ class DocentHarnessTests(TestCase):
         self.assertEqual(response.json()['code'], 'PROVIDER_ERROR')
         self.assertNotIn('answer', response.json())
 
+    def test_excerpt_rebuilds_context_from_the_current_approved_text(self):
+        case = next(case for case in self.cases if case['id'] == 'D01-first')
+        work = Artwork.objects.get(pk=case['workId'])
+        prefix = '합성 안내 🟡 '
+        original = '파란 바탕의 경계'
+        summary = '노란 원의 위치'
+        Artwork.objects.filter(pk=work.pk).update(
+            description=prefix + original + '를 살펴보세요.',
+            summary=prefix + summary + '를 찾아보세요.',
+        )
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.pk).update(
+            description=work.description, summary=work.summary,
+        ))
+        forged = '다른 작품에 속한 문장'
+        with endpoint(body=SUCCESS) as calls:
+            for kind, excerpt, revision in (
+                ('original', original, work.source_version),
+                ('summary', summary, work.summary_revision),
+            ):
+                with self.subTest(kind=kind):
+                    context = {
+                        'tab': 'desc', 'kind': kind, 'contentVersion': work.content_version,
+                        'excerpt': {'start': len(prefix), 'end': len(prefix + excerpt), 'text': forged},
+                    }
+                    response, _ = self.ask({**case, 'entryContext': context}, ip='192.0.2.9')
+                    self.assertEqual(response.status_code, 200, response.content)
+                    self.assertEqual(response.json()['sourceRefs'], [{
+                        'artworkId': work.id, 'sourceVersion': work.source_version,
+                        'kind': kind, 'revision': revision,
+                    }])
+                    prompt = json.loads(calls[-1]['body']['messages'][1]['content'])
+                    self.assertEqual(prompt['entry'], {'kind': kind, 'text': excerpt})
+                    self.assertNotIn(forged, json.dumps(prompt, ensure_ascii=False))
+            self.assertEqual(len(calls), 2)
+
+    def test_invalid_entry_context_never_reaches_the_provider(self):
+        case = next(case for case in self.cases if case['id'] == 'D01-first')
+        work = Artwork.objects.get(pk=case['workId'])
+        original = {'tab': 'desc', 'kind': 'original', 'contentVersion': work.content_version}
+        guide = {'tab': 'guided', 'kind': 'guide', 'contentVersion': work.content_version}
+        entries = [
+            {**original, 'excerpt': {'start': True, 'end': 2}},
+            {**original, 'excerpt': {'start': 0, 'end': len(work.description) + 1}},
+            {**original, 'questionIndex': 0},
+            {**guide, 'questionIndex': 0, 'excerpt': {'start': 0, 'end': 1}},
+            {**guide, 'questionIndex': len(work.guided_looking)},
+            {**guide, 'kind': 'generic_tip', 'questionIndex': 0, 'tipVersion': 'unknown'},
+        ]
+        with endpoint(body=SUCCESS) as calls:
+            for entry in entries:
+                with self.subTest(entry=entry):
+                    response, _ = self.ask({**case, 'entryContext': entry}, ip='192.0.2.10')
+                    self.assertEqual(response.status_code, 400, response.content)
+                    self.assertEqual(response.json()['code'], 'VALIDATION_ERROR')
+                    self.assertNotIn('sourceRefs', response.json())
+            self.assertEqual(calls, [])
+
     def test_provider_errors_allow_same_request_retry(self):
         case = next(case for case in self.cases if case['id'] == 'D01-followup')
         report = []
