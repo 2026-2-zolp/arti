@@ -107,8 +107,14 @@ def artworks(request, artwork_id=None):
     for key in ['imageUrl','referenceUrl']:
         if data[key] and (not isinstance(data[key],str) or not re.match(r'^https?://[^\s]+$',data[key])): fail('이미지/출처 URL을 확인해 주세요.')
     with transaction.atomic():
+        if 'mapVersion' in data:
+            # Lock in the same order as a plan replacement. The work list may have arrived after the displayed map.
+            ex = get_locked(Exhibition, data['exhibitionId'])
+            version(ex, data['mapVersion'])
         w=get_locked(Artwork,artwork_id) if artwork_id else Artwork()
         if artwork_id: version(w,data.get('version'))
+        if 'mapVersion' in data and artwork_id and w.exhibition_id != data['exhibitionId']:
+            fail('현재 전시의 작품만 지도에 배치할 수 있어요.')
         old=before(w)
         for key,field in FIELDS.items(): setattr(w,field,data[key])
         point=data['position']

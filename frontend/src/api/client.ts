@@ -67,11 +67,12 @@ export async function fetchProtectedImage(url: string, signal: AbortSignal): Pro
 
 /** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
 const versions = new Map<string, number>();
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, expectedVersion?: number): Promise<T> {
   const headers: Record<string, string> = {};
   const isFile = body instanceof Blob;
   const entityPath = path.split('?')[0].replace(/\/(image|floor-plan)$/, '');
-  if ((isFile || method === 'DELETE') && versions.has(entityPath)) headers['If-Match'] = `"${versions.get(entityPath)}"`;
+  const version = expectedVersion ?? versions.get(entityPath);
+  if ((isFile || method === 'DELETE') && version !== undefined) headers['If-Match'] = `"${version}"`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), path.endsWith('/analyze') ? 90000 : 35000);
   if (body !== undefined) headers['Content-Type'] = isFile ? body.type : 'application/json';
@@ -144,9 +145,9 @@ export const api = {
     'GET', `/artworks/${enc(id)}${visit ? `?${new URLSearchParams(visit)}` : ''}`,
   ),
 
-  saveArtwork: (w: Artwork) =>
+  saveArtwork: (w: Artwork, mapVersion?: number) =>
     w.id
-      ? request<Artwork>('PUT', `/admin/artworks/${enc(w.id)}`, w)
+      ? request<Artwork>('PUT', `/admin/artworks/${enc(w.id)}`, { ...w, mapVersion })
       : request<Artwork>('POST', '/admin/artworks', w),
 
   // ───────────────────────── 회원 ─────────────────────────
@@ -280,10 +281,11 @@ export const api = {
   deleteArtworkImage: (id: string) => request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`),
 
   /** A-05 미술관 평면도 이미지 업로드 (width·height = 원본 픽셀 크기) */
-  uploadFloorPlan: (exhibitionId: string, file: File, width: number, height: number) =>
-    request<Exhibition>('POST', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan?width=${width}&height=${height}`, file),
+  uploadFloorPlan: (exhibitionId: string, file: File, width: number, height: number, version?: number) =>
+    request<Exhibition>('POST', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan?width=${width}&height=${height}`, file, version),
 
-  deleteFloorPlan: (exhibitionId: string) => request<Exhibition>('DELETE', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan`),
+  deleteFloorPlan: (exhibitionId: string, version?: number) =>
+    request<Exhibition>('DELETE', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan`, undefined, version),
 
   /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
   analyzeExhibition: (exhibitionId: string, useImage = true) =>

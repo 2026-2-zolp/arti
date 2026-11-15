@@ -113,6 +113,11 @@ jobs:
             name: Admin Chrome (analysis conflict)
             database: arti_admin_analysis
             admin: admin-analysis-admin
+          - suite: admin-concurrent
+            name: Admin Chrome (concurrent editing)
+            database: arti_admin_concurrent
+            admin: admin-edit-a
+            second_admin: admin-edit-b
           - suite: saved-v2
             name: Visit Chrome (saved V2)
             database: arti_visit_boundaries_saved_v2
@@ -171,16 +176,19 @@ jobs:
       - run: npm --prefix frontend ci --ignore-scripts --no-audit --no-fund
       - run: npm --prefix frontend run build
       - run: python -m pip install -r backend-django/requirements.lock
-      - name: Load synthetic exhibition and optional administrator
+      - name: Load synthetic exhibition and administrators
         working-directory: backend-django
         env:
           ARTI_BROWSER_ADMIN: ${{ matrix.admin || '' }}
+          ARTI_BROWSER_SECOND_ADMIN: ${{ matrix.second_admin || '' }}
         run: |
           python manage.py migrate --noinput
           python manage.py load_test_fixture
-          if [[ -n "$ARTI_BROWSER_ADMIN" ]]; then
-            python manage.py bootstrap_admin --login-id "$ARTI_BROWSER_ADMIN" --name 'Synthetic administrator'
-          fi
+          for admin in "$ARTI_BROWSER_ADMIN" "$ARTI_BROWSER_SECOND_ADMIN"; do
+            if [[ -n "$admin" ]]; then
+              python manage.py bootstrap_admin --login-id "$admin" --name 'Synthetic administrator'
+            fi
+          done
       - name: Run visit boundary Chrome twice
         if: matrix.suite == 'visit-boundaries'
         run: |
@@ -199,7 +207,7 @@ jobs:
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs
       - name: Run loopback Chrome regression
-        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation"]'), matrix.suite)
+        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent"]'), matrix.suite)
         shell: bash
         env:
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
@@ -216,6 +224,10 @@ jobs:
               browser_test=frontend/tests/receiptInterpretation.browser.cjs
               ready_header=x-arti-receipt-mock
               ;;
+            admin-concurrent)
+              server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
+              browser_test=frontend/tests/adminConcurrent.browser.mjs
+              ;;
             *)
               server=(python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')")
               browser_test=frontend/tests/docentRetry.browser.cjs
@@ -229,7 +241,7 @@ jobs:
 
           for ((attempt = 0; attempt < 30; attempt++)); do
             if mock_header=$(curl --silent --fail --max-time 2 --output /dev/null --write-out "%header{$ready_header}" "$ARTI_REVIEW_BASE/api/ready") &&
-                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility ]] || [[ "$mock_header" == 1 ]]; }; then
+                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent ]] || [[ "$mock_header" == 1 ]]; }; then
               node "$browser_test"
               exit
             fi
@@ -238,6 +250,8 @@ jobs:
           done
           if [[ "$ARTI_BROWSER_SUITE" == receipt-* ]]; then
             printf '%s\n' 'Receipt Chrome API readiness check failed.' >&2
+          elif [[ "$ARTI_BROWSER_SUITE" == admin-concurrent ]]; then
+            printf '%s\n' 'Admin Chrome (concurrent editing) API readiness check failed.' >&2
           else
             printf '%s\n' '{"requestId":null,"status":null,"evidenceVersion":null}' >&2
           fi
