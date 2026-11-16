@@ -101,8 +101,10 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     await see(live, confirmed.summary);
     await verifyOriginal();
 
+    const beforeInvalid = await json(await request.get(base + adminPath, { headers }));
     const { result: guide } = await start('관람가이드 다시 생성');
     assert.equal((await json(await guide, 502)).code, 'PROVIDER_ERROR');
+    assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
     await verifyOriginal();
     const { result: retry } = await start('분석 다시 시도');
     const recovered = await retry;
@@ -131,6 +133,36 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     await seeQuestion(live, '새 관찰 질문입니다.');
     await see(live, '힌트 · 새 힌트입니다.');
     console.log('PASS admin preview: live and draft stay separate; regeneration and 502 retry keep the published text until confirmation');
+
+    const beforeWithdrawal = await readPublic();
+    const { result: pending } = await start('관람가이드 다시 생성');
+    assert.equal((await json(await pending)).artwork.guideStatus, 'suggested');
+    await seeQuestion(live, beforeWithdrawal.guidedLooking[0]);
+    assert.deepEqual(publicText(await readPublic()), publicText(beforeWithdrawal));
+
+    const saveReview = async (value, expected) => {
+      await page.getByLabel('검수 상태').selectOption(value);
+      const saved = pendingResponse(page, 'PUT', adminPath);
+      await page.getByRole('button', { name: '저장', exact: true }).click();
+      assert.equal((await json(await saved)).reviewStatus, expected);
+    };
+    await saveReview('source_check', 'source_check');
+    await see(live, '현재 관람자에게 공개된 작품 내용이 없어요.');
+    assert.equal((await request.get(base + publicPath)).status(), 404);
+    assert.equal((await request.post(base + publicPath + '/ask', {
+      data: { question: '철회한 가이드 질문', entryContext: {
+        tab: 'guided', kind: 'guide', contentVersion: beforeWithdrawal.contentVersion, questionIndex: 0,
+      } },
+    })).status(), 404);
+
+    await saveReview('approved', 'approved');
+    await see(live, '기본 감상 팁');
+    const reopened = await readPublic();
+    assert.equal(reopened.guideStatus, 'none');
+    assert.deepEqual(reopened.guidedLooking, []);
+    assert.deepEqual(reopened.guidedHints, []);
+    assert.equal(reopened.summary, beforeWithdrawal.summary);
+    console.log('PASS admin withdrawal: retained guide and docent access removed; reapproving the work does not republish the guide');
   } finally {
     await mock('release').catch(() => {});
   }

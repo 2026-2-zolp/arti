@@ -66,7 +66,14 @@ def validate(kind,value):
     valid=isinstance(value,dict)
     if valid:
         if kind=='summary':valid=text(value.get('summary')) and texts(value.get('keywords'))
-        elif kind=='guide':valid=text(value.get('intro')) and texts(value.get('questions')) and texts(value.get('hints')) and len(value['questions'])==len(value['hints'])
+        elif kind=='guide':
+            questions, hints = value.get('questions'), value.get('hints')
+            valid = (
+                text(value.get('intro'))
+                and texts(questions, 3) and bool(questions)
+                and all(text(question) for question in questions)
+                and texts(hints, 3) and len(questions) == len(hints)
+            )
         elif kind=='tag':
             valid=scores(value.get('scores'),TAGS)
             if valid:
