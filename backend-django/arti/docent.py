@@ -73,7 +73,7 @@ def ask(request,artwork_id):
                 if not text.strip():bad()
             if text.strip():
                 context={'kind':kind,'text':text}
-                refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':kind,'revision':w.summary_revision if kind=='summary' else w.source_version}]
+                refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':kind,'revision':data['summaryRevision'] if kind=='summary' else w.source_version}]
         elif kind in ('guide','generic_tip'):
             if entry['tab']!='guided' or 'excerpt' in entry:bad()
             index=entry.get('questionIndex')
@@ -81,7 +81,7 @@ def ask(request,artwork_id):
             if type(index) is not int or not 0<=index<len(questions):bad()
             if kind=='generic_tip' and entry.get('tipVersion')!='basic-v1':bad()
             context={'kind':kind,'question':questions[index]}
-            if kind=='guide':refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'guide','revision':w.guide_revision}]
+            if kind=='guide':refs=[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'guide','revision':data['guideRevision']}]
         else:bad()
     history=body.get('history',[])
     if not isinstance(history,list) or len(history)>8:bad()

@@ -70,6 +70,12 @@ def exhibition_dto(ex):
             'floorPlan': ex.floor_plan, 'version': ex.version}
 
 
+RETAINED_TEXT_FIELDS = {
+    'summary': ('summary', 'summaryKeywords', 'summaryRevision'),
+    'guide': ('guideIntro', 'guidedLooking', 'guidedHints', 'guideRevision'),
+}
+
+
 def artwork_dto(w, admin=False):
     data = {
         'id': w.id, 'exhibitionId': w.exhibition_id, 'title': w.title, 'artist': w.artist,
@@ -89,10 +95,21 @@ def artwork_dto(w, admin=False):
         return data
     if not w.show_image:
         data.update(imageUrl='', imageFile=None)
-    if w.summary_status != 'confirmed':
-        data.update(summary='', summaryKeywords=[], summaryStatus='none')
-    if w.guide_status != 'confirmed':
-        data.update(guideIntro='', guidedLooking=[], guidedHints=[], guideStatus='none')
+    for kind, empty_text in (
+        ('summary', {'summary': '', 'summaryKeywords': []}),
+        ('guide', {'guideIntro': '', 'guidedLooking': [], 'guidedHints': []}),
+    ):
+        status = kind + 'Status'
+        if data[status] == 'confirmed':
+            continue
+        retained = w.retained_text.get(kind)
+        if (data[status] == 'suggested' and w.review_status == 'approved'
+                and retained and retained['sourceVersion'] == w.source_version):
+            data.update(retained['fields'])
+            data[status] = 'confirmed'
+        else:
+            data.update(empty_text)
+            data[status] = 'none'
     if w.tag_status != 'confirmed':
         data.update(tagScores=None, tagStatus='none')
     if w.emotion_status == 'confirmed' and isinstance(w.analysis, dict) and w.analysis.get('emotions'):

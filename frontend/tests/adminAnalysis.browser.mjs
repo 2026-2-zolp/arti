@@ -46,6 +46,96 @@ async function json(response, status = 200) {
   return response.json();
 }
 
+async function verifyRegeneration(page, request, base, gate, headers) {
+  const id = 'fixture-art01';
+  const adminPath = `/api/admin/artworks/${id}`;
+  const publicPath = `/api/artworks/${id}`;
+  const baseline = await json(await request.get(base + adminPath, { headers }));
+  const confirmed = await json(await request.put(base + adminPath, {
+    headers,
+    data: {
+      ...baseline, summaryStatus: 'confirmed', summary: '공개 중인 쉬운 요약입니다.',
+      guideStatus: 'confirmed', guideIntro: '공개 중인 안내입니다.',
+      guidedLooking: ['공개 중인 관찰 질문입니다.'], guidedHints: ['공개 중인 힌트입니다.'],
+    },
+  }));
+  const readPublic = async () => json(await request.get(base + publicPath));
+  const original = await readPublic();
+  const publicText = ({ summary, guideIntro, guidedLooking, guidedHints, contentVersion, summaryRevision, guideRevision }) =>
+    ({ summary, guideIntro, guidedLooking, guidedHints, contentVersion, summaryRevision, guideRevision });
+  const verifyOriginal = async () => assert.deepEqual(publicText(await readPublic()), publicText(original));
+  await page.goto(`${base}/admin/artworks/${id}`);
+  await page.getByText('관람자 미리보기', { exact: true }).click();
+  const live = page.getByRole('region', { name: '현재 공개본' });
+  const draft = page.getByRole('region', { name: '편집 중인 내용' });
+  const see = async (region, text) => region.getByText(text, { exact: true }).waitFor();
+  const seeQuestion = async (region, text) => region.getByRole('listitem').filter({ hasText: text }).waitFor();
+  await see(live, confirmed.summary);
+  await see(live, confirmed.description);
+  await see(live, '힌트 · ' + confirmed.guidedHints[0]);
+  await summary(page).fill('아직 저장하지 않은 미리보기 요약입니다.');
+  await see(draft, '아직 저장하지 않은 미리보기 요약입니다.');
+  await see(live, confirmed.summary);
+  await summary(page).fill(confirmed.summary);
+
+  const mock = phase => request.post(gate + '?regeneration=' + phase);
+  await mock('start');
+  async function start(label) {
+    const result = pendingResponse(page, 'POST', adminPath + '/analyze');
+    await page.getByRole('button', { name: label, exact: true }).click();
+    return { result };
+  }
+  try {
+    const { result } = await start('쉬운 요약 다시 생성');
+    for (let i = 0; i < 100; i++) {
+      if ((await json(await request.get(gate))).textRequests.length) break;
+      await delay(40);
+    }
+    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary']);
+    await verifyOriginal();
+    await mock('release');
+    const saved = await result;
+    assert.deepEqual(saved.request().postDataJSON().regenerateFields, ['summary']);
+    assert.equal((await json(saved)).artwork.summaryStatus, 'suggested');
+    await see(draft, '새 요약 제안입니다.');
+    await see(live, confirmed.summary);
+    await verifyOriginal();
+
+    const { result: guide } = await start('관람가이드 다시 생성');
+    assert.equal((await json(await guide, 502)).code, 'PROVIDER_ERROR');
+    await verifyOriginal();
+    const { result: retry } = await start('분석 다시 시도');
+    const recovered = await retry;
+    assert.deepEqual(recovered.request().postDataJSON().regenerateFields, ['guide']);
+    assert.equal((await json(recovered)).artwork.guideStatus, 'suggested');
+    await seeQuestion(draft, '새 관찰 질문입니다.');
+    await see(draft, '힌트 · 새 힌트입니다.');
+    await seeQuestion(live, confirmed.guidedLooking[0]);
+    await verifyOriginal();
+    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide']);
+
+    const asked = await json(await request.post(base + publicPath + '/ask', {
+      data: { question: '합성 질문', entryContext: { tab: 'guided', kind: 'guide', contentVersion: original.contentVersion, questionIndex: 0 } },
+    }));
+    assert.equal(asked.answer, confirmed.guidedLooking[0]);
+    assert.equal(asked.sourceRefs[0].revision, original.guideRevision);
+
+    const summarySave = pendingResponse(page, 'PUT', adminPath);
+    await page.getByRole('button', { name: '요약 확정 (수정 내용 포함 저장)', exact: true }).click();
+    await json(await summarySave);
+    await see(live, '새 요약 제안입니다.');
+    await seeQuestion(live, confirmed.guidedLooking[0]);
+    const guideSave = pendingResponse(page, 'PUT', adminPath);
+    await page.getByRole('button', { name: '가이드 확정 (수정 내용 포함 저장)', exact: true }).click();
+    await json(await guideSave);
+    await seeQuestion(live, '새 관찰 질문입니다.');
+    await see(live, '힌트 · 새 힌트입니다.');
+    console.log('PASS admin preview: live and draft stay separate; regeneration and 502 retry keep the published text until confirmation');
+  } finally {
+    await mock('release').catch(() => {});
+  }
+}
+
 async function verify(base) {
   const gate = `${base}/api/__admin_analysis_test__/gate`;
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -205,8 +295,9 @@ async function verify(base) {
       assert.deepEqual((await json(await context.request.get(gate))).inputs, expectedInputs);
       await a.getByText(useImage ? /분석 재료: 이미지 \+ 해설/ : /분석 재료: 해설 ·/).waitFor();
     }
-    assert.deepEqual(errors, []);
     console.log('PASS admin image option: image bytes → text only → same image bytes; source and confirmed summary preserved');
+    await verifyRegeneration(a, context.request, base, gate, headers);
+    assert.deepEqual(errors, []);
   } finally {
     await context.request.post(gate).catch(() => {});
     await browser.close();
