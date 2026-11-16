@@ -1,10 +1,14 @@
+import io
+import json
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from yoo_core3_receipt import FIELDS, check_receipt, read_references
+from yoo_core3_receipt import FIELDS, MEDIA, check_receipt, main, read_references
 
 
 class Core3ReceiptTests(unittest.TestCase):
@@ -25,6 +29,21 @@ class Core3ReceiptTests(unittest.TestCase):
 
     def check(self, receipt):
         return check_receipt(receipt, self.hashes, self.wording_hash)
+
+    def test_blank_template_keeps_every_field_and_medium_pending(self):
+        for record_id in self.hashes:
+            with self.subTest(record_id=record_id):
+                output = io.StringIO()
+                with patch.object(sys, 'argv', ['yoo_core3_receipt.py', '--template', record_id]), redirect_stdout(output):
+                    main()
+                receipt = json.loads(output.getvalue())
+                self.assertEqual(receipt['recordId'], record_id)
+                self.assertEqual((receipt['imageSha256'], receipt['wordingSha256']), ('', ''))
+                self.assertEqual([row['field'] for row in receipt['content']], list(FIELDS))
+                self.assertEqual([row['medium'] for row in receipt['usage']], list(MEDIA))
+                handoff = self.check(receipt)['handoff']
+                self.assertEqual(handoff['pendingContentFields'], list(FIELDS))
+                self.assertTrue(all(row['status'] == 'pending' for row in handoff['media'].values()))
 
     def test_matching_receipt_records_only_explicit_field_and_medium(self):
         for number in ('001', '004', '010'):
