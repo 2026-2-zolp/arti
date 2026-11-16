@@ -101,6 +101,8 @@ def artworks(request, artwork_id=None):
     if not required.issubset(data): fail('편집 필수 필드가 누락됐어요. 새로 조회해 주세요.')
     for key in required - {'position','palette','showImage','tags','guidedLooking','guidedHints','summaryKeywords'}:
         if not isinstance(data[key],str):fail()
+    if data['reviewStatus'] == 'approved' and (not data['source'].strip() or not data['description'].strip()):
+        fail('검수 완료로 저장하려면 작품 해설과 출처가 있어야 해요.')
     if not isinstance(data['showImage'],bool): fail()
     for key in ['palette','tags','guidedLooking','guidedHints','summaryKeywords']:
         if not isinstance(data[key],list) or any(not isinstance(v,str) for v in data[key]) or len(data[key])>50: fail()

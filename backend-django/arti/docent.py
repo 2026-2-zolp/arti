@@ -29,6 +29,12 @@ def content_changed():
     return ContractError(409, 'CONTENT_CHANGED', '작품 자료가 변경됐어요. 새 내용을 확인해 주세요.')
 
 
+def require_current_public_work(work):
+    # 모델을 기다리는 사이에 편집되거나 공개가 중단된 작품의 답변은 내보내지 않습니다.
+    if not public_works().filter(pk=work.pk, content_version=work.content_version).exists():
+        raise content_changed()
+
+
 def insufficient_evidence(request):
     return Response({
         'answer': '등록된 작품 자료에서 확인할 수 없어요. 작품에서 보이는 색이나 모양을 바탕으로 질문해 보세요.',
@@ -91,9 +97,7 @@ def ask(request,artwork_id):
     if not isinstance(result,dict) or not isinstance(result.get('answer'),str) or not result['answer'].strip():
         raise ContractError(502,'PROVIDER_ERROR','답변 형식을 확인할 수 없어요.',retryable=True)
     providers.validate('answer',result)
-    # 모델을 기다리는 사이에 편집되거나 공개가 중단된 작품의 답변은 내보내지 않습니다.
-    if not public_works().filter(pk=w.pk, content_version=w.content_version).exists():
-        raise content_changed()
+    require_current_public_work(w)
     if result.get('insufficientEvidence'):
         return insufficient_evidence(request)
     return Response({'answer':result['answer'],'mode':'llm','sourceRefs':refs,'requestId':request.request_id})
@@ -106,4 +110,5 @@ def explanation(request,artwork_id):
     if not w:raise ContractError(404,'NOT_FOUND','작품 정보를 찾을 수 없어요.')
     result=providers.generate('explanation',artwork_dto(w))
     if not isinstance(result,dict) or not isinstance(result.get('text'),str):raise ContractError(502,'PROVIDER_ERROR','해설 형식을 확인할 수 없어요.')
+    require_current_public_work(w)
     return Response({'text':result['text'],'mode':'llm','sourceRefs':[{'artworkId':w.id,'sourceVersion':w.source_version,'kind':'original','revision':w.source_version}]})
