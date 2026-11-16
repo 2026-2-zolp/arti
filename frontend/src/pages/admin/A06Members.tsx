@@ -4,6 +4,7 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { TASTE_LABEL } from '../../data/mock';
 import { PageHead } from './AdminLayout';
+import { formatDateTime } from '../../lib/adminDate';
 
 /** 관리자용 회원 조회 화면 */
 export default function A06Members() {
@@ -42,23 +43,23 @@ export default function A06Members() {
           <table className="a-table">
             <thead>
               <tr>
-                <th>회원 ID(이메일)</th>
-                <th>닉네임</th>
-                <th>가입일</th>
-                <th>관람 횟수</th>
-                <th>최근 관람일</th>
-                <th>계정 상태</th>
+                <th className="a-center">회원 ID(이메일)</th>
+                <th className="a-center">닉네임</th>
+                <th className="a-center">가입일시</th>
+                <th className="a-center">관람 횟수</th>
+                <th className="a-center">최근 관람일</th>
+                <th className="a-center">계정 상태</th>
               </tr>
             </thead>
             <tbody>
               {members?.map((m) => (
                 <tr key={m.id} className={`clickable ${m.id === selectedId ? 'selected' : ''}`} onClick={() => setSelectedId(m.id)}>
-                  <td><button className="text-btn" onClick={() => setSelectedId(m.id)} aria-label={`${m.email} 관람 기록 보기`}>{m.email}</button></td>
-                  <td>{m.nickname || '-'}</td>
-                  <td>{m.createdAt}</td>
-                  <td>{m.visitCount}</td>
-                  <td>{m.lastVisit ? m.lastVisit.slice(0, 10) : '-'}</td>
-                  <td>
+                  <td className="a-center"><button className="text-btn" onClick={() => setSelectedId(m.id)} aria-label={`${m.email} 관람 기록 보기`}>{m.email}</button></td>
+                  <td className="a-center">{m.nickname || '-'}</td>
+                  <td className="nowrap a-center">{formatDateTime(m.createdAt)}</td>
+                  <td className="a-center">{m.visitCount}</td>
+                  <td className="nowrap a-center">{m.lastVisit ? m.lastVisit.slice(0, 10) : '-'}</td>
+                  <td className="a-center">
                     <span className={`badge ${m.status === 'active' ? 'running' : 'closed'}`}>
                       {m.status === 'active' ? '정상' : '휴면'}
                     </span>
@@ -85,8 +86,8 @@ export default function A06Members() {
               <dl className="a-dl">
                 <dt>이메일</dt>
                 <dd>{selected.email}</dd>
-                <dt>가입일</dt>
-                <dd>{selected.createdAt}</dd>
+                <dt>가입일시</dt>
+                <dd>{formatDateTime(selected.createdAt)}</dd>
                 <dt>저장 취향</dt>
                 <dd>{selected.tastes.length ? selected.tastes.map((t) => TASTE_LABEL[t]).join(', ') : '-'}</dd>
               </dl>

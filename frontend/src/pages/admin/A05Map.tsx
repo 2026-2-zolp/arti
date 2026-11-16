@@ -421,7 +421,7 @@ function RoomsEditor({ ex, artworks, onSave }: { ex: Exhibition; artworks: Artwo
 
   return (
     <div className="a-card pad">
-      <h2>전시실</h2><p className="muted small">작품이 배정된 전시실은 작품을 먼저 옮긴 뒤 삭제할 수 있어요.</p>
+      <h2>전시실</h2><p className="muted small a-room-note">작품이 배정된 전시실은 작품을 먼저 옮긴 뒤 삭제할 수 있어요.</p>
       <ul className="a-room-list">
         {rooms.map((r) => (
           <li key={r.id}>

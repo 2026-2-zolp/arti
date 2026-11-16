@@ -18,6 +18,7 @@ import { useProtectedImage } from '../../lib/useProtectedImage';
 import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
+import { formatDateTime } from '../../lib/adminDate';
 
 const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
 const isVersionConflict = (error: unknown) => error instanceof ApiError && error.status === 409 && error.code === 'VERSION_CONFLICT';
@@ -94,12 +95,6 @@ export function ArtworkList() {
         desc="작품 정보와 설명, 출처·참고자료, 검수 상태를 함께 관리합니다."
         actions={
           <>
-            <button className="a-btn" disabled title="전시 일괄 분석은 비활성입니다. 작품별 분석을 이용해 주세요." onClick={analyzeAll}>
-              전시 일괄 분석 준비 중 (개별 작품 이용)
-            </button>
-            <button className="a-btn" disabled={!targetEx || !(data?.[1] ?? []).some(w => w.exhibitionId === targetEx.id && reviewed.includes(w.id) && hasSuggestions(w)) || busy !== null} onClick={confirmAll}>
-              체크한 검토 항목 확정
-            </button>
             <button className="a-btn primary" onClick={() => navigate(`/admin/artworks/new${exFilter ? `?exhibition=${exFilter}` : ''}`)}>
               + 작품 등록
             </button>
@@ -127,44 +122,72 @@ export function ArtworkList() {
           ))}
         </select>
         <span className="muted small">{rows.length}건</span>
+        {/* 목록 전체에 적용하는 버튼은 표 바로 위(필터 줄 오른쪽)에 둔다. 제목 옆에는 [+ 작품 등록]만. */}
+        <div className="a-filters-actions">
+          <button className="a-btn" disabled title="전시 일괄 분석은 비활성입니다. 작품별 분석을 이용해 주세요." onClick={analyzeAll}>
+            전시 일괄 분석 준비 중 (개별 작품 이용)
+          </button>
+          <button className="a-btn" disabled={!targetEx || !(data?.[1] ?? []).some(w => w.exhibitionId === targetEx.id && reviewed.includes(w.id) && hasSuggestions(w)) || busy !== null} onClick={confirmAll}>
+            체크한 검토 항목 확정
+          </button>
+        </div>
       </div>
       <div className="a-card">
         <table className="a-table">
           <thead>
             <tr>
-              <th style={{ width: 64 }} />
-              <th>검토 완료 / 작품명</th>
+              {/* 체크박스는 맨 앞 좁은 칸: AI 제안이 있는 작품에만 보이고, 체크한 작품을 [체크한 검토 항목 확정]으로 한꺼번에 확정한다 */}
+              <th className="a-check-col a-center" title="AI 제안 검토 완료 표시">
+                <span className="sr-only">AI 제안 검토 완료</span>
+              </th>
+              <th className="a-thumb-col" style={{ width: 64 }} />
+              <th>작품명</th>
               <th>작가</th>
-              <th>연도</th>
+              <th className="a-center">연도</th>
               <th>전시실</th>
-              <th>위치</th>
-              <th>검수 상태</th>
+              <th className="a-center">위치</th>
+              <th className="a-center">검수 상태</th>
               <th>AI 감정·요약</th>
-              <th>수정일</th>
+              <th>수정일시</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((w) => (
               <tr key={w.id} className="clickable" onClick={() => navigate(`/admin/artworks/${w.id}`)}>
-                <td>
+                {/* 확정할 AI 제안이 없는 작품(모두 확정·분석 전)은 흐린 체크박스로 두어 누를 수 없게 한다. 확정 여부는 AI 배지 색으로 보인다.
+                    확정 전 제안 내용은 작품을 눌러 상세 화면에서 확인한다(원본 데이터 미리보기는 뺌). */}
+                <td className="a-check-col a-center" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    disabled={!hasSuggestions(w)}
+                    title={hasSuggestions(w) ? 'AI 제안 검토 완료 표시' : '확정할 AI 제안이 없어요'}
+                    checked={reviewed.includes(w.id)}
+                    onChange={e => setReviewed(old => e.target.checked ? [...old, w.id] : old.filter(id => id !== w.id))}
+                    aria-label={`${w.title} 제안 내용 검토 완료`}
+                  />
+                </td>
+                <td className="a-thumb-col">
                   <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w, true)} alt="" ratio={1} />
                 </td>
                 <td>
-                  <label onClick={e => e.stopPropagation()}><input type="checkbox" disabled={!hasSuggestions(w)} checked={reviewed.includes(w.id)} onChange={e => setReviewed(old => e.target.checked ? [...old, w.id] : old.filter(id => id !== w.id))} aria-label={`${w.title} 제안 내용 검토 완료`} /> 검토 완료</label><strong>{w.title}</strong><details onClick={e => e.stopPropagation()}><summary>확정 대상 내용 보기</summary><p>{w.summaryStatus === 'suggested' ? w.summary : '요약 제안 없음'}</p><p>{w.guideIntro}</p><p>{w.guidedLooking.join(' / ')}</p><p>{JSON.stringify(w.analysis)} · {JSON.stringify(w.tagScores)}</p></details>
+                  <strong>{w.title}</strong>
                 </td>
                 <td>{w.artist}</td>
-                <td>{w.year}</td>
+                <td className="a-center">{w.year}</td>
                 <td>{roomName(w)}</td>
-                <td>{w.position ? '등록' : <span className="text-warn">미등록</span>}</td>
-                <td>
+                <td className="a-center">{w.position ? '등록' : <span className="text-warn">미등록</span>}</td>
+                <td className="a-center">
                   <span className={`badge ${w.reviewStatus}`}>{REVIEW_LABEL[w.reviewStatus]}</span>
                 </td>
                 <td>
-                  <span className={`badge ai-${w.tagStatus}`}>태그 {AI_STATUS_LABEL[w.tagStatus]}</span>{' '}
-                  <span className={`badge ai-${w.emotionStatus}`}>감정 {AI_STATUS_LABEL[w.emotionStatus]}</span>{' '}
-                  <span className={`badge ai-${w.summaryStatus}`}>요약 {AI_STATUS_LABEL[w.summaryStatus]}</span>
+                  {/* 칸이 좁아 배지가 여러 줄로 쌓여도 줄 사이에 간격이 생기게 묶는다 */}
+                  <div className="a-badges">
+                    <span className={`badge ai-${w.tagStatus}`}>태그 {AI_STATUS_LABEL[w.tagStatus]}</span>
+                    <span className={`badge ai-${w.emotionStatus}`}>감정 {AI_STATUS_LABEL[w.emotionStatus]}</span>
+                    <span className={`badge ai-${w.summaryStatus}`}>요약 {AI_STATUS_LABEL[w.summaryStatus]}</span>
+                  </div>
                 </td>
-                <td>{w.updatedAt}</td>
+                <td className="nowrap">{formatDateTime(w.updatedAt)}</td>
               </tr>
             ))}
           </tbody>
