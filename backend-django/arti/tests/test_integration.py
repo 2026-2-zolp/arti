@@ -195,7 +195,7 @@ class IntegrationTests(Helpers,TestCase):
         self.assertEqual(r.status_code,200,r.content);data=r.json()['artwork'];self.assertEqual(data['summaryStatus'],'confirmed');self.assertEqual(data['summary'],w.summary);self.assertEqual(data['guideStatus'],'suggested')
         def changed(kind,*args,**kw):
             Artwork.objects.filter(pk=w.id).update(version=99)
-            return {'intro':'late','questions':[],'hints':[]}
+            return {'intro':'late','questions':['질문'],'hints':['']}
         with patch('arti.providers.generate',side_effect=changed):
             self.assertEqual(self.admin.post('/api/admin/artworks/'+w.id+'/analyze',{'version':data['version']},format='json').status_code,409)
 
@@ -266,6 +266,47 @@ class IntegrationTests(Helpers,TestCase):
         self.assertEqual(batch.status_code, 200, batch.content)
         published = self.public.get(public_path).json()
         self.assertEqual((published['guidedLooking'], published['guidedHints']), (['새 질문'], ['새 힌트']))
+
+    def test_invalid_generated_guide_returns_502_without_changing_published_guide(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        public_path = '/api/artworks/' + work.id
+        admin_path = '/api/admin/artworks/' + work.id
+        setup = self.put(work, guideStatus='confirmed', guideIntro='공개 가이드',
+                         guidedLooking=['공개 질문'], guidedHints=['공개 힌트'])
+        self.assertEqual(setup.status_code, 200, setup.content)
+        original_public = self.public.get(public_path).json()
+        original_admin = setup.json()
+
+        def generate(questions, hints, version):
+            result = {'intro': '합성 가이드', 'questions': questions, 'hints': hints}
+            with patch('arti.providers.generate', return_value=result) as provider:
+                response = self.admin.post(admin_path + '/analyze', {
+                    'version': version, 'regenerateFields': ['guide'],
+                }, format='json')
+            self.assertEqual([call.args[0] for call in provider.call_args_list], ['guide'])
+            return response
+
+        for questions, hints in (
+            ([], []),
+            (['질문'] * 4, ['힌트'] * 4),
+            ([' \t\n'], ['힌트']),
+            (['질문'], []),
+            (['질문'], ['힌트', '남는 힌트']),
+        ):
+            with self.subTest(questions=questions, hints=hints):
+                response = generate(questions, hints, original_admin['version'])
+                self.assertEqual(response.status_code, 502, response.content)
+                self.assertEqual(response.json()['code'], 'PROVIDER_ERROR')
+                self.assertEqual(self.public.get(public_path).json(), original_public)
+                self.assertEqual(self.admin.get(admin_path).json(), original_admin)
+
+        newest = generate(['첫 질문', '두 번째 질문', '세 번째 질문'], ['', '힌트', ''], original_admin['version'])
+        self.assertEqual(newest.status_code, 200, newest.content)
+        saved = newest.json()['artwork']
+        self.assertEqual(saved['guideStatus'], 'suggested')
+        self.assertEqual(saved['guidedHints'], ['', '힌트', ''])
+        self.assertEqual(saved['contentVersion'], original_public['contentVersion'])
+        self.assertEqual(self.public.get(public_path).json()['guidedLooking'], ['공개 질문'])
 
     def test_retained_summary_is_not_restored_after_source_change(self):
         work = Artwork.objects.get(pk='fixture-art01')

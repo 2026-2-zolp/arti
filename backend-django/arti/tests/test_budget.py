@@ -11,6 +11,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from arti.tests.test_model_service import result
 
+TEST_GUIDE = {'intro': '합성 도입', 'questions': ['무슨 색이 보이나요?'], 'hints': ['가운데를 보세요.']}
+
 
 class BudgetTests(SimpleTestCase):
     def test_remaining_caps_socket_timeout_and_rejects_expired(self):
@@ -33,7 +35,7 @@ class AnalysisBudgetTests(Helpers, TransactionTestCase):
         def generate(kind, snapshot, **context):
             self.assertEqual(context['deadline'], 60)
             clock[0] += 31
-            return {'summary':'합성 새 요약','keywords':[]} if kind=='summary' else {'intro':'합성 도입','questions':[],'hints':[]}
+            return {'summary':'합성 새 요약','keywords':[]} if kind=='summary' else TEST_GUIDE
         with patch('arti.budget.monotonic', side_effect=lambda:clock[0]), patch('arti.providers.generate', side_effect=generate) as provider:
             response=self.admin.post('/api/admin/artworks/'+work.id+'/analyze', {'version':work.version}, format='json')
         self.assertEqual(response.status_code, 504, response.content)
@@ -56,7 +58,7 @@ class AnalysisBudgetTests(Helpers, TransactionTestCase):
                 if self.path=='/analyze': value=result()
                 else:
                     task=body['messages'][0]['content']
-                    content={'intro':'합성 도입','questions':[],'hints':[]} if 'JSON {"intro"' in task else {'summary':'합성 요약','keywords':[]}
+                    content=TEST_GUIDE if 'JSON {"intro"' in task else {'summary':'합성 요약','keywords':[]}
                     value={'choices':[{'finish_reason':'stop','message':{'content':json.dumps(content)}}]}
                 try:
                     self.send_response(200);self.end_headers();self.wfile.write(json.dumps(value).encode())

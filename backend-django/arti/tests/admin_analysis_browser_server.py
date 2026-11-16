@@ -46,7 +46,7 @@ def serve():
                 raise ContractError(504, 'AI_TIMEOUT', '시험 재생성 대기 시간 초과')
             return {'summary': '새 요약 제안입니다.', 'keywords': ['합성']}
         if text_requests.count('guide') == 1:
-            raise ContractError(502, 'PROVIDER_ERROR', '시험 가이드 생성 실패')
+            return {'intro': '힌트 개수 검수용 도입', 'questions': ['관찰 질문'], 'hints': []}
         return {'intro': '새 가이드 도입입니다.', 'questions': ['새 관찰 질문입니다.'], 'hints': ['새 힌트입니다.']}
 
     def respond(attempt):
