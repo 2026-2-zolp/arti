@@ -199,6 +199,76 @@ async function verifyVisitor(browser, { saved, floorPlan }) {
   }
 }
 
+async function verifyBulkConfirmation(a, b) {
+  const ids = ['fixture-art02', 'fixture-art03'];
+  const artworkPath = id => `/api/admin/artworks/${id}`;
+  const read = async id => json(await b.request.get(artworkPath(id), { headers: b.headers }));
+  const proposed = [];
+  for (const id of ids) {
+    const work = await read(id);
+    proposed.push(await json(await b.request.put(artworkPath(id), {
+      headers: b.headers,
+      data: {
+        ...work, summary: `일괄 확정 검수용 요약 ${id}`, summaryStatus: 'suggested',
+        guideStatus: 'none', tagStatus: 'none', emotionStatus: 'none',
+      },
+    })));
+  }
+
+  await a.page.goto('/admin/artworks?exhibition=fixture-ex01');
+  const checks = proposed.map(work => a.page.getByRole('checkbox', {
+    name: `${work.title} 제안 내용 검토 완료`, exact: true,
+  }));
+  const openConfirmation = async () => {
+    for (const check of checks) await check.check();
+    await button(a.page, '체크한 검토 항목 확정').click();
+    await a.page.getByRole('alertdialog').waitFor();
+  };
+  const confirm = async (works, status) => {
+    const pending = expectedResponse(a.page, 'POST', `${exhibitPath}/confirm-ai`);
+    await button(a.page.getByRole('alertdialog'), '확인하고 계속').click();
+    const response = await pending;
+    const items = response.request().postDataJSON().items;
+    assert.equal(items.length, works.length);
+    assert.deepEqual(
+      new Map(items.map(item => [item.id, item])),
+      new Map(works.map(({ id, version }) => [id, { id, version, fields: ['summary'] }])),
+    );
+    return json(response, status);
+  };
+
+  await openConfirmation();
+  await b.page.goto(`/admin/artworks/${ids[1]}`);
+  const newestSummary = '두 번째 관리자가 저장한 최신 요약';
+  await b.page.getByPlaceholder('「AI 분석 실행」으로 공식 해설을 요약하거나 직접 입력하세요.').fill(newestSummary);
+  const saved = expectedResponse(b.page, 'PUT', artworkPath(ids[1]));
+  await button(b.page, '저장').click();
+  const latest = await json(await saved);
+  assert.equal(latest.version, proposed[1].version + 1);
+  assert.equal(latest.summary, newestSummary);
+  assert.equal(latest.summaryStatus, 'suggested');
+
+  assert.equal((await confirm(proposed, 409)).code, 'VERSION_CONFLICT');
+  await a.page.getByText(/최신 자료를 다시 조회하고 내용을 재검토해 주세요/).waitFor();
+  for (const check of checks) assert.equal(await check.isChecked(), false);
+  assert.deepEqual(await Promise.all(ids.map(read)), [proposed[0], latest]);
+
+  const reloaded = expectedResponse(a.page, 'GET', '/api/admin/artworks');
+  await button(a.page, '최신 자료 다시 조회').click();
+  const refreshed = await json(await reloaded);
+  assert.equal(refreshed.find(work => work.id === latest.id).summary, newestSummary);
+  await openConfirmation();
+  const current = [proposed[0], latest];
+  assert.equal((await confirm(current, 200)).confirmed, ids.length);
+  for (const work of current) {
+    const confirmed = await read(work.id);
+    assert.equal(confirmed.version, work.version + 1);
+    assert.equal(confirmed.summaryStatus, 'confirmed');
+    assert.equal(confirmed.summary, work.summary);
+  }
+  console.log('PASS admin bulk confirmation: 409, 0 partial writes; reload and retry confirm both latest summaries');
+}
+
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 try {
   const a = await signIn(browser, 'admin-edit-a');
@@ -215,6 +285,7 @@ try {
   await verifyEditorial(a, b, baseline);
   const map = await verifyPlacement(a, b, { name: 'synthetic-floor-plan.png', mimeType: 'image/png', buffer: await image.body() });
   await verifyVisitor(browser, map);
+  await verifyBulkConfirmation(a, b);
 } finally {
   await browser.close();
 }
