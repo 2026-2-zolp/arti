@@ -123,11 +123,26 @@ def check_receipt(receipt, expected_hashes, expected_wording_hash):
 
 def main():
     parser = argparse.ArgumentParser(description='핵심 3점 회신의 도판·문안 연결을 사전 확인합니다.')
-    parser.add_argument('receipt', type=Path)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('receipt', type=Path, nargs='?')
+    mode.add_argument('--template', metavar='RECORD_ID', help='작품별 빈 회신 양식을 출력합니다.')
     args = parser.parse_args()
     try:
-        receipt = json.loads(args.receipt.read_text(encoding='utf-8-sig'))
-        result = check_receipt(receipt, *read_references())
+        hashes, wording_hash = read_references()
+        if args.template is not None:
+            if args.template not in hashes:
+                raise ValueError('unknown core3 recordId')
+            review = {'reviewer': '', 'reviewedOn': '', 'decision': '', 'evidence': ''}
+            result = {
+                'recordId': args.template,
+                'imageSha256': '',
+                'wordingSha256': '',
+                'content': [dict(review, field=field, judgedText='') for field in FIELDS],
+                'usage': [dict(review, medium=medium, scope='') for medium in MEDIA],
+            }
+        else:
+            receipt = json.loads(args.receipt.read_text(encoding='utf-8-sig'))
+            result = check_receipt(receipt, hashes, wording_hash)
     except (OSError, ValueError) as error:
         parser.exit(2, f'{error}\n')
     print(json.dumps(result, ensure_ascii=False, indent=2))

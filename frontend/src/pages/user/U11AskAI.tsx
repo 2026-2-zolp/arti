@@ -21,6 +21,7 @@ const RETRY_WINDOW_KEY = 'arti.docent.retryWindow';
 
 type AskFailure = {
   message: string;
+  question?: string;
   retry?: { question: string; fromInput: boolean };
 };
 type RetryWindow = { expiresAt: number; seconds: number };
@@ -72,7 +73,8 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     if (input) save(draftKey, input, 'session');
     else remove(draftKey, 'session');
   }, [draftKey, input]);
-  const [pending, setPending] = useState(false);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
+  const pending = pendingQuestion !== null;
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
@@ -86,6 +88,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
   const chatReady = !!key && loadedChatKey === key && !artworkIssue;
   const canAsk = chatReady && !pending && !retryWindow;
+  const retry = failure?.retry;
+  const sendError = retryWindow
+    ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
+    : failure?.message;
+  const attemptedQuestion = !artworkIssue && (pendingQuestion ?? failure?.question);
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -94,8 +101,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     // Android Chrome에서 키보드가 열린 동안 보이는 영역에 입력부를 맞춥니다.
     const syncViewport = () => {
       if (viewport.scale !== 1) return;
+      const conversation = shell.querySelector('main');
+      const following = conversation && conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < 24;
       shell.style.setProperty('--docent-height', `${viewport.height}px`);
       shell.style.setProperty('--docent-top', `${viewport.offsetTop}px`);
+      if (following) conversation.scrollTop = conversation.scrollHeight;
     };
     syncViewport();
     viewport.addEventListener('resize', syncViewport);
@@ -107,21 +117,21 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   }, []);
 
   useEffect(() => {
-    generation.current += 1; sending.current = false; setPending(false);
+    generation.current += 1; sending.current = false; setPendingQuestion(null);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
     setLoadedChatKey(key);
     return () => { generation.current += 1; };
   }, [key]);
   useLayoutEffect(() => {
-    if (!messages.length && !pending) return;
+    if (!messages.length && !pending && !sendError) return;
     const conversation = shellRef.current?.querySelector('main');
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
-  }, [messages, pending]);
+  }, [messages, pending, sendError]);
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
     sending.current = true;
-    const active = generation.current; setPending(true); setFailure(null);
+    const active = generation.current; setPendingQuestion(q); setFailure(null);
     const eligible = messages.flatMap((m, i) => m.role === 'user' && messages[i+1]?.role === 'ai' && messages[i+1].mode === 'llm' ? [m, messages[i+1]] : []);
     const history = eligible.slice(-8).map(m => ({role: m.role === 'ai' ? 'assistant' as const : 'user' as const, text: m.text.slice(0,1000)}));
     try {
@@ -147,6 +157,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
           setRetryWindow(nextWindow);
         }
         setFailure({
+          question: q,
           message: e instanceof ApiError && e.status === 429 && e.retryAfterSeconds
             ? 'AI 사용량이 많아 질문을 보내지 못했어요.'
             : e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
@@ -156,7 +167,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     } finally {
       if (generation.current === active) {
         sending.current = false;
-        setPending(false);
+        setPendingQuestion(null);
       }
     }
   };
@@ -166,10 +177,6 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     ask(input, true);
   };
   const guidedStart = !!selectedQuestion && !messages.length;
-  const retry = failure?.retry;
-  const sendError = retryWindow
-    ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
-    : failure?.message;
   const backToArtwork = () => {
     if (entryLocation?.fromArtwork) navigate(-1);
     else navigate(to('/artwork'), { replace: true });
@@ -183,11 +190,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       back={backToArtwork}
       footer={
         <>
-          {sendError && (
-            <div className="docent-send-error">
-              <p id="docent-send-error" className="error-text" role="alert">{sendError}</p>
+          {(retry || artworkIssue) && (
+            <div className="docent-chat-actions">
               {retry && (
                 <button type="button" className="link-btn" disabled={!canAsk}
+                  aria-describedby="docent-send-error"
                   onClick={() => ask(retry.question, retry.fromInput)}>
                   {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
                 </button>
@@ -246,7 +253,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         </section>
       )}
       <div className="chat-log" role="log" aria-label="도슨트 대화">
-        {chatReady && messages.length === 0 && !selectedQuestion && (
+        {chatReady && messages.length === 0 && !selectedQuestion && !attemptedQuestion && !sendError && (
           <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
         )}
         {chatReady && messages.map((m) => (
@@ -254,10 +261,16 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
             {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
           </div>
         ))}
+        {attemptedQuestion && <div className="bubble docent-attempt">{attemptedQuestion}</div>}
+        {pending && <p className="bubble ai muted small" role="status">답변을 작성하고 있어요…</p>}
+        {sendError && (
+          <div className="bubble docent-error-card">
+            <p id="docent-send-error" className="error-text" role="alert">{sendError}</p>
+          </div>
+        )}
       </div>
-      {pending && <p className="muted small" role="status">답변을 작성하고 있어요…</p>}
 
-      {chatReady && !selectedQuestion && messages.length === 0 && <div className="suggested">
+      {chatReady && !selectedQuestion && messages.length === 0 && !pending && !sendError && <div className="suggested">
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
           {SUGGESTED.map((q) => (
