@@ -31,7 +31,7 @@ export function mergeAnalysis(current:Artwork, started:Artwork, result:ArtworkAn
   return next;
 }
 
-type AnalysisOutcome = {status: 'created' | 'kept' | 'unavailable' | 'failed' | 'empty' | 'fallback'; text: string};
+type AnalysisOutcome = {status: 'created' | 'kept' | 'skipped' | 'unavailable' | 'failed' | 'empty' | 'fallback'; text: string};
 
 function outcome(part: AnalysisPart | undefined, saved: AiStatus): AnalysisOutcome {
   if (part?.ok === false) {
@@ -42,6 +42,7 @@ function outcome(part: AnalysisPart | undefined, saved: AiStatus): AnalysisOutco
   if (part?.source === 'kept' || (!part?.made && !part?.ok && saved === 'confirmed')) {
     return {status: 'kept', text: '기존 확정 유지'};
   }
+  if (part?.source === 'skipped') return {status: 'skipped', text: '이번 요청에서 제외'};
   if (part?.source === 'fallback') return {status: 'fallback', text: '원문으로 제안 작성'};
   if (part?.made ?? part?.ok) return {status: 'created', text: '제안 생성 완료'};
   return {status: 'empty', text: '제안 없음'};

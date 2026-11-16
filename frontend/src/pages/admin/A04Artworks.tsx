@@ -12,6 +12,7 @@ import {analysisFailure, analysisOutcomes, analysisTime, mergeAnalysis} from '..
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
+import { BASIC_LOOKING_TIPS } from '../../lib/visitScope';
 import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { useProtectedImage } from '../../lib/useProtectedImage';
@@ -405,12 +406,77 @@ export function ArtworkEdit() {
           <p className="muted small">검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.</p>
         </section>
       </div>
+      <ArtworkContentPreview work={w} />
       {w.id ? (
         <AiPanel w={w} setW={setW} reloadArtwork={reloadAfterConflict} />
       ) : (
         <p className="muted small mt-24">작품을 먼저 저장하면 AI 감정 분석·해설 요약을 실행할 수 있어요.</p>
       )}
     </form>
+  );
+}
+
+function ArtworkContentPreview({ work }: { work: Artwork }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="a-card pad ai-panel" onToggle={event => setOpen(event.currentTarget.open)}>
+      <summary>관람자 미리보기</summary>
+      {open && (
+        <div className="ai-grid">
+          <PublishedArtworkPreview key={`${work.id}:${work.version}`} id={work.id} />
+          <section className="ai-box" aria-label="편집 중인 내용">
+            <h3>편집 중인 내용</h3>
+            <ArtworkTextPreview work={work} />
+          </section>
+        </div>
+      )}
+    </details>
+  );
+}
+
+function PublishedArtworkPreview({ id }: { id: string }) {
+  const { data, error, loading, reload } = useAsync(async () => {
+    if (!id) return null;
+    try {
+      return await api.getArtwork(id);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) return null;
+      throw err;
+    }
+  }, [id]);
+  return (
+    <section className="ai-box" aria-label="현재 공개본">
+      <h3>현재 공개본</h3>
+      {id && <button className="a-btn sm" type="button" onClick={reload} disabled={loading}>공개본 새로고침</button>}
+      {loading ? <p role="status">공개본을 불러오는 중이에요.</p> : error ? (
+        <p role="alert">공개본을 불러오지 못했어요.</p>
+      ) : data ? (
+        <ArtworkTextPreview work={data} />
+      ) : <p>현재 관람자에게 공개된 작품 내용이 없어요.</p>}
+    </section>
+  );
+}
+
+function ArtworkTextPreview({ work }: { work: Artwork }) {
+  const questions = work.guidedLooking.length ? work.guidedLooking : BASIC_LOOKING_TIPS;
+  return (
+    <>
+      <h4>작품 해설</h4>
+      <p className="artwork-prose">{work.description || '작품 해설이 비어 있어요.'}</p>
+      <h4>쉬운 요약</h4>
+      <p className="artwork-prose">{work.summary || '쉬운 요약이 비어 있어요.'}</p>
+      <h4>관람가이드</h4>
+      {work.guideIntro && <p className="guide-intro">{work.guideIntro}</p>}
+      {!work.guidedLooking.length && <p className="muted small">기본 감상 팁</p>}
+      <ol className="guided-list">
+        {questions.map((question, index) => (
+          <li key={`${index}-${question}`}>
+            {question}
+            {work.guidedHints[index] && <p className="hint-text">힌트 · {work.guidedHints[index]}</p>}
+          </li>
+        ))}
+      </ol>
+    </>
   );
 }
 
@@ -536,17 +602,19 @@ function AiPanel({ w, setW, reloadArtwork }: {
   const [useImage, setUseImage] = useState(true);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
+  const retryFields = useRef<('summary' | 'guide')[]>([]);
   const [msg, setMsg] = useState<
     {type: 'ok' | 'err' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
   >(null);
 
-  const run = async () => {
+  const run = async (regenerateFields: ('summary' | 'guide')[] = []) => {
     if (inFlight.current || msg?.type === 'conflict') return;
     inFlight.current=true;
+    retryFields.current = regenerateFields;
     setBusy(true);
     setMsg(null);
     try {
-      const r = await api.analyzeArtwork(w.id, useImage);
+      const r = await api.analyzeArtwork(w.id, useImage, regenerateFields);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
       setW((cur) => cur && mergeAnalysis(cur,w,r));
       setMsg({type: 'result', items: analysisOutcomes(r)});
@@ -596,11 +664,16 @@ function AiPanel({ w, setW, reloadArtwork }: {
               이미지도 분석
             </label>
           )}
-          <button type="button" className="a-btn primary" disabled={busy || msg?.type === 'conflict'} onClick={run}>
+          <button type="button" className="a-btn primary" disabled={busy || msg?.type === 'conflict'} onClick={() => run()}>
             {busy ? 'AI 분석 중… 잠시 기다려 주세요' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
           </button>
         </div>
       </div>
+      <div className="a-inline">
+        <button className="a-btn sm" type="button" disabled={busy || msg?.type === 'conflict'} onClick={() => run(['summary'])}>쉬운 요약 다시 생성</button>
+        <button className="a-btn sm" type="button" disabled={busy || msg?.type === 'conflict'} onClick={() => run(['guide'])}>관람가이드 다시 생성</button>
+      </div>
+      <p className="muted small">새 제안을 확정할 때까지 현재 공개된 요약과 관람가이드가 표시돼요.</p>
       {msg?.type === 'result' && (
         <div role="status" aria-label="AI 항목별 처리 결과" style={{ marginBottom: 14 }}>
           <ul className="small">
@@ -611,7 +684,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
             ))}
           </ul>
           {msg.items.some(({status}) => status === 'failed') && (
-            <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>
+            <button type="button" disabled={busy} onClick={() => run(retryFields.current)}>분석 다시 시도</button>
           )}
         </div>
       )}
@@ -619,7 +692,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
         <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
           {msg.text}
           {msg.type === 'conflict' && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}
-          {msg.type === 'err' && <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>}
+          {msg.type === 'err' && <button type="button" disabled={busy} onClick={() => run(retryFields.current)}>분석 다시 시도</button>}
         </p>
       )}
 

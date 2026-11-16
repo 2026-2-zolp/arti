@@ -265,8 +265,10 @@ export const api = {
   },
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
-  analyzeArtwork: (id: string, useImage = true) =>
-    request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage, version: versions.get(`/admin/artworks/${enc(id)}`) }),
+  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = []) =>
+    request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, {
+      useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
+    }),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),

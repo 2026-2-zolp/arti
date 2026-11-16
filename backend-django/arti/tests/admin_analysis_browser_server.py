@@ -6,6 +6,7 @@ import json
 import re
 import sys
 from threading import Event, Thread
+from unittest.mock import patch
 from wsgiref.simple_server import make_server
 
 from django.conf import settings
@@ -13,6 +14,8 @@ from django.core.servers.basehttp import ThreadedWSGIServer, WSGIRequestHandler
 from django.core.wsgi import get_wsgi_application
 from django.test import override_settings
 
+from arti import providers
+from arti.http import ContractError
 from arti.tests.test_model_service import result
 from arti.tests.test_provider import endpoint
 
@@ -27,6 +30,24 @@ def serve():
 
     release = Event()
     inputs = []
+    regeneration = Event()
+    release_regeneration = Event()
+    text_requests = []
+    original_generate = providers.generate
+
+    def generate(kind, snapshot, **context):
+        if not regeneration.is_set() or kind not in ('summary', 'guide', 'answer'):
+            return original_generate(kind, snapshot, **context)
+        if kind == 'answer':
+            return {'answer': (context['entry'].get('text') or context['entry']['question'])}
+        text_requests.append(kind)
+        if kind == 'summary':
+            if not release_regeneration.wait(20):
+                raise ContractError(504, 'AI_TIMEOUT', '시험 재생성 대기 시간 초과')
+            return {'summary': '새 요약 제안입니다.', 'keywords': ['합성']}
+        if text_requests.count('guide') == 1:
+            raise ContractError(502, 'PROVIDER_ERROR', '시험 가이드 생성 실패')
+        return {'intro': '새 가이드 도입입니다.', 'questions': ['새 관찰 질문입니다.'], 'hints': ['새 힌트입니다.']}
 
     def respond(attempt):
         request = requests[attempt - 1]
@@ -60,15 +81,23 @@ def serve():
 
         if environ['PATH_INFO'] == '/api/__admin_analysis_test__/gate':
             if environ['REQUEST_METHOD'] == 'POST':
-                release.set()
-            body = json.dumps({'inputs': inputs}).encode()
+                phase = environ['QUERY_STRING']
+                if phase == 'regeneration=start':
+                    regeneration.set()
+                elif phase == 'regeneration=release':
+                    release_regeneration.set()
+                else:
+                    release.set()
+            body = json.dumps({'inputs': inputs, 'textRequests': text_requests}).encode()
             mark('200 OK', [('Content-Type', 'application/json'), ('Content-Length', str(len(body)))])
             return [body]
         return application(environ, mark)
 
     with endpoint(respond=respond) as requests, override_settings(
         ARTI_MODEL_SERVICE_URL=settings.OPENAI_BASE_URL.removesuffix('/v1'),
-    ), make_server('127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler) as server:
+    ), patch('arti.providers.generate', side_effect=generate), make_server(
+        '127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
+    ) as server:
         worker = Thread(target=server.serve_forever, daemon=True)
         worker.start()
         try:
@@ -76,5 +105,6 @@ def serve():
             sys.stdin.buffer.read()
         finally:
             release.set()
+            release_regeneration.set()
             server.shutdown()
             worker.join()

@@ -79,6 +79,7 @@ class Artwork(models.Model):
     analysis = models.JSONField(null=True, default=None, blank=True)
     summary = models.TextField(blank=True)
     summary_keywords = models.JSONField(default=list, blank=True)
+    retained_text = models.JSONField(default=dict, blank=True)
     tag_status = models.CharField(max_length=10, default='none')
     emotion_status = models.CharField(max_length=10, default='none')
     summary_status = models.CharField(max_length=10, default='none')

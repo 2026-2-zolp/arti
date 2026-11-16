@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
 from .models import Artwork, Exhibition
-from .serializers import artwork_dto, exhibition_dto
+from .serializers import RETAINED_TEXT_FIELDS, artwork_dto, exhibition_dto
 from .taste_resolution import taste_transaction
 from .views import with_etag
 from . import providers
@@ -67,12 +67,22 @@ def stale(w):
 def finish(w, old):
     if any(getattr(w, f) != old[f] for f in SOURCE):
         stale(w)
+    w.retained_text = {
+        kind: snapshot for kind, snapshot in w.retained_text.items()
+        if w.review_status == 'approved' and getattr(w, STATES[kind]) == 'suggested'
+    }
     if w.summary != old['summary'] or w.summary_status != old['summary_status']:
         w.summary_revision += 1
     if any(getattr(w, f) != old[f] for f in ('guide_intro','guided_looking','guided_hints','guide_status')):
         w.guide_revision += 1
     w.version += 1
-    w.content_version += 1
+    public_before = old.get('public_dto')
+    if public_before is None or any(
+        value != public_before[key]
+        for key, value in artwork_dto(w).items()
+        if key not in ('version', 'updatedAt')
+    ):
+        w.content_version += 1
     validate_save(w)
 
 
@@ -253,8 +263,10 @@ def analyze(request,artwork_id):
     results={};updates={};model_cache={};retry_waits=[]
     with analysis_slot():
         for kind,field in STATES.items():
-            if getattr(w,field)=='confirmed' and kind not in regenerate:
-                results[kind]={'ok':True,'source':'kept','made':False};continue
+            confirmed = getattr(w, field) == 'confirmed'
+            if kind not in regenerate and (regenerate or confirmed):
+                results[kind] = {'ok': True, 'source': 'kept' if confirmed else 'skipped', 'made': False}
+                continue
             try:
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 context = {'deadline': deadline}
@@ -280,9 +292,16 @@ def analyze(request,artwork_id):
         return Response({'artwork':artwork_dto(w,True),**results})
     with analysis_write():
         current=get_locked(Artwork,w.id);version(current,w.version);old=before(current)
+        public_before = artwork_dto(current)
+        old['public_dto'] = public_before
         budget.remaining(deadline, budget.ANALYSIS_SECONDS)
         for kind,value in updates.items():
             if not isinstance(value,dict):raise ContractError(502,'PROVIDER_ERROR','분석 결과 형식을 확인할 수 없어요.',retryable=True)
+            if kind in RETAINED_TEXT_FIELDS and getattr(current, STATES[kind]) == 'confirmed':
+                current.retained_text[kind] = {
+                    'sourceVersion': current.source_version,
+                    'fields': {key: public_before[key] for key in RETAINED_TEXT_FIELDS[kind]},
+                }
             if kind=='summary':current.summary=value.get('summary','');current.summary_keywords=value.get('keywords',[])
             elif kind=='guide':current.guide_intro=value.get('intro','');current.guided_looking=value.get('questions',[]);current.guided_hints=value.get('hints',[])
             elif kind=='tag':

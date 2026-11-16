@@ -199,11 +199,93 @@ class IntegrationTests(Helpers,TestCase):
         with patch('arti.providers.generate',side_effect=changed):
             self.assertEqual(self.admin.post('/api/admin/artworks/'+w.id+'/analyze',{'version':data['version']},format='json').status_code,409)
 
-    def test_explicit_regeneration_only_selected(self):
-        w=Artwork.objects.get(pk='fixture-art01');w.summary='확정 요약';w.summary_status='confirmed';w.guide_status='confirmed';w.guide_intro='확정 도입';w.tag_status='confirmed';w.emotion_status='confirmed';w.analysis={'emotions':{'calm':1}};w.save()
-        with patch('arti.providers.generate',return_value={'summary':'새 시험 요약','keywords':[]}):
-            r=self.admin.post('/api/admin/artworks/'+w.id+'/analyze',{'version':1,'regenerateFields':['summary']},format='json')
-        self.assertEqual(r.status_code,200,r.content);self.assertEqual(r.json()['artwork']['summaryStatus'],'suggested');self.assertEqual(r.json()['artwork']['guideStatus'],'confirmed')
+    def test_explicit_regeneration_keeps_confirmed_text_until_each_review(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        work.analysis = {'emotions': {'calm': 1}}
+        work.save(update_fields=['analysis'])
+        setup = self.put(work, summary='확정 요약', summaryKeywords=['기존 키워드'],
+                         summaryStatus='confirmed', guideStatus='confirmed', guideIntro='확정 도입',
+                         guidedLooking=['확정 질문'], guidedHints=['확정 힌트'],
+                         tagStatus='confirmed', emotionStatus='confirmed')
+        self.assertEqual(setup.status_code, 200, setup.content)
+        public_path = '/api/artworks/' + work.id
+        analyze_path = '/api/admin/artworks/' + work.id + '/analyze'
+        previous = self.public.get(public_path).json()
+        public_fields = ('summary', 'summaryKeywords', 'summaryStatus', 'summaryRevision', 'guideIntro',
+                         'guidedLooking', 'guidedHints', 'guideStatus', 'guideRevision', 'contentVersion')
+
+        def verify_published():
+            published = self.public.get(public_path).json()
+            self.assertEqual({key: published[key] for key in public_fields},
+                             {key: previous[key] for key in public_fields})
+
+        draft = setup.json()
+        for kind, result in (
+            ('summary', {'summary': '새 요약 제안', 'keywords': ['새 키워드']}),
+            ('guide', {'intro': '새 도입', 'questions': ['새 질문'], 'hints': ['새 힌트']}),
+        ):
+            with patch('arti.providers.generate', return_value=result) as provider:
+                response = self.admin.post(analyze_path, {'version': draft['version'], 'regenerateFields': [kind]}, format='json')
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual([call.args[0] for call in provider.call_args_list], [kind])
+            draft = response.json()['artwork']
+            self.assertEqual(draft[kind + 'Status'], 'suggested')
+            verify_published()
+
+        with patch('arti.providers.generate', side_effect=ContractError(502, 'PROVIDER_ERROR', '시험 실패')):
+            failed = self.admin.post(analyze_path, {'version': draft['version'], 'regenerateFields': ['guide']}, format='json')
+        self.assertEqual(failed.status_code, 502, failed.content)
+        verify_published()
+        self.assertEqual(self.admin.get('/api/admin/artworks/' + work.id).json(), draft)
+
+        with patch('arti.providers.generate', return_value={'answer': '모의 답변'}) as provider:
+            for kind, context in (
+                ('summary', {'tab': 'desc', 'kind': 'summary'}),
+                ('guide', {'tab': 'guided', 'kind': 'guide', 'questionIndex': 0}),
+            ):
+                answer = self.public.post(public_path + '/ask', {
+                    'question': '같은 작품을 어떻게 볼까요?',
+                    'entryContext': {**context, 'contentVersion': previous['contentVersion']},
+                }, format='json')
+                self.assertEqual(answer.status_code, 200, answer.content)
+                self.assertEqual(answer.json()['sourceRefs'][0]['revision'], previous[kind + 'Revision'])
+                self.assertEqual(provider.call_args.kwargs['entry'],
+                                 {'kind': 'summary', 'text': previous['summary']} if kind == 'summary'
+                                 else {'kind': 'guide', 'question': previous['guidedLooking'][0]})
+
+        work.refresh_from_db()
+        approved = self.put(work, summaryStatus='confirmed')
+        self.assertEqual(approved.status_code, 200, approved.content)
+        published = self.public.get(public_path).json()
+        self.assertEqual((published['summary'], published['summaryKeywords']), ('새 요약 제안', ['새 키워드']))
+        self.assertEqual(published['guidedHints'], previous['guidedHints'])
+        self.assertGreater(published['contentVersion'], previous['contentVersion'])
+        batch = self.admin.post('/api/admin/exhibitions/fixture-ex01/confirm-ai', {
+            'items': [{'id': work.id, 'version': approved.json()['version'], 'fields': ['guide']}],
+        }, format='json')
+        self.assertEqual(batch.status_code, 200, batch.content)
+        published = self.public.get(public_path).json()
+        self.assertEqual((published['guidedLooking'], published['guidedHints']), (['새 질문'], ['새 힌트']))
+
+    def test_retained_summary_is_not_restored_after_source_change(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        work.summary_status = 'confirmed'
+        work.save(update_fields=['summary_status'])
+        analyze_path = '/api/admin/artworks/' + work.id + '/analyze'
+        public_path = '/api/artworks/' + work.id
+        previous = self.public.get(public_path).json()
+        with patch('arti.providers.generate', return_value={'summary': '공개 전 새 요약', 'keywords': []}):
+            generated = self.admin.post(analyze_path, {'version': work.version, 'regenerateFields': ['summary']}, format='json')
+        self.assertEqual(generated.status_code, 200, generated.content)
+        self.assertEqual(self.public.get(public_path).json()['summary'], previous['summary'])
+
+        work.refresh_from_db()
+        revised = self.put(work, description='출처 재검수용 새 원문')
+        self.assertEqual(revised.json()['reviewStatus'], 'source_check')
+        self.assertEqual(self.public.get(public_path).status_code, 404)
+        work.refresh_from_db()
+        self.assertEqual(self.put(work, reviewStatus='approved').status_code, 200)
+        self.assertEqual(self.public.get(public_path).json()['summary'], '')
 
     def test_guest_member_and_invalid_token_are_distinct(self):
         p=self.payload();r=self.public.post('/api/visits',p,format='json');self.assertEqual(r.status_code,200,r.content);self.assertFalse(r.json()['persisted']);self.assertEqual(Visit.objects.count(),0)
