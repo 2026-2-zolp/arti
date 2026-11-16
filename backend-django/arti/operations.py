@@ -1,0 +1,79 @@
+import logging
+from zoneinfo import ZoneInfo
+
+from django.db import DatabaseError, transaction
+from django.db.models import Count, Q
+from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+from .authentication import IsAdmin
+from .models import OperationEvent
+from .providers import configuration_status
+
+logger = logging.getLogger(__name__)
+
+ADMIN_ACTIONS = {
+    'api/admin/exhibitions': 'exhibition_save',
+    'api/admin/exhibitions/<str:ex_id>': 'exhibition_save',
+    'api/admin/artworks': 'artwork_save',
+    'api/admin/artworks/<str:artwork_id>': 'artwork_save',
+    'api/admin/artworks/<str:artwork_id>/image': 'artwork_image',
+    'api/admin/exhibitions/<str:ex_id>/floor-plan': 'floor_plan',
+    'api/admin/artworks/<str:artwork_id>/analyze': 'artwork_analysis',
+    'api/admin/artworks/<str:artwork_id>/discard-ai': 'discard_proposal',
+    'api/admin/exhibitions/<str:ex_id>/confirm-ai': 'confirm_proposals',
+}
+VISITOR_ACTIONS = {
+    'api/artworks/<str:artwork_id>/ask': 'docent_question',
+    'api/artworks/<str:artwork_id>/explanation': 'docent_explanation',
+    'api/visits/interpret': 'receipt_interpretation',
+}
+AI_ACTIONS = (*VISITOR_ACTIONS.values(), 'artwork_analysis')
+
+
+class OperationEventMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if request.method not in ('POST', 'PUT', 'DELETE'):
+            return response
+
+        route = getattr(request.resolver_match, 'route', None)
+        action = ADMIN_ACTIONS.get(route)
+        if action and getattr(getattr(request, 'user', None), 'role', None) != 'admin':
+            return response
+        if request.method == 'POST' and response.status_code in (200, 429, 500, 502, 503, 504):
+            action = action or VISITOR_ACTIONS.get(route)
+        if action and response.status_code != 405:
+            try:
+                with transaction.atomic():
+                    OperationEvent.objects.create(action=action, status=response.status_code, request_id=request.request_id)
+            except DatabaseError:
+                # 원래 요청은 완료됐습니다. 기록 장애를 쓰기 실패로 돌려보내지 않습니다.
+                logger.warning('Operation log unavailable requestId=%s', request.request_id)
+        return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def dashboard(request):
+    midnight = timezone.localtime(timezone.now(), ZoneInfo('Asia/Seoul')).replace(hour=0, minute=0, second=0, microsecond=0)
+    events = OperationEvent.objects.filter(occurred_at__gte=midnight)
+    counts = events.aggregate(
+        docentRequests=Count('id', filter=Q(action='docent_question')),
+        analysisRequests=Count('id', filter=Q(action='artwork_analysis')),
+        aiErrors=Count('id', filter=Q(action__in=AI_ACTIONS, status__gte=400)),
+    )
+    recent = [] if request.query_params.get('summary') == '1' else OperationEvent.objects.order_by('-occurred_at', '-pk')[:50]
+    return Response({
+        'configuration': configuration_status(),
+        'today': counts,
+        'recent': [
+            {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
+             'action': event.action, 'status': event.status}
+            for event in recent
+        ],
+    }, headers={'Cache-Control': 'private, no-store'})

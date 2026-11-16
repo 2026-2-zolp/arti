@@ -60,6 +60,7 @@ import { ArtworkEdit, ArtworkList } from './pages/admin/A04Artworks';
 import A05Map from './pages/admin/A05Map';
 import A06Members from './pages/admin/A06Members';
 import A07Reactions from './pages/admin/A07Reactions';
+import Operations from './pages/admin/Operations';
 
 /** 공개·관리자 화면의 라우팅과 공통 상태 제공자를 구성합니다. */
 export default function App() {
@@ -93,6 +94,7 @@ export default function App() {
         <Route path="/admin/login" element={<A01Login />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<A02Dashboard />} />
+          <Route path="operations" element={<Operations />} />
           <Route path="exhibitions" element={<A03Exhibitions />} />
           <Route path="artworks" element={<ArtworkList />} />
           <Route path="artworks/:id" element={<ArtworkEdit />} />

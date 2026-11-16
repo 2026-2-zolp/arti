@@ -125,7 +125,7 @@ export default function A05Map() {
     <>
       <PageHead
         title="위치·지도 관리"
-        desc="미술관 평면도 위에 작품 위치와 입구를 지정합니다. 이 위치로 사용자의 추천 관람 순서와 경로를 계산해요."
+        desc="도면에 작품 위치와 입구를 지정합니다. 이 위치는 관람 순서와 지도에 사용돼요. 출입문과 실제 통로는 도면에서 확인해 주세요."
         actions={
           <select
             value={exId}

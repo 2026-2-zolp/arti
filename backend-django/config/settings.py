@@ -15,6 +15,7 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,api'
 CORS_ALLOWED_ORIGINS = tuple(v.strip() for v in os.environ.get('ARTI_ALLOWED_ORIGINS','').split(',') if v.strip())
 INSTALLED_APPS = ['django.contrib.contenttypes', 'rest_framework', 'arti']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'arti.http.RequestIdMiddleware',
+              'arti.operations.OperationEventMiddleware',
               'django.middleware.common.CommonMiddleware']
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'

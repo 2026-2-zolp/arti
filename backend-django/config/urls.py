@@ -1,7 +1,7 @@
 # API URL을 Django 처리 함수에 연결합니다.
 from django.urls import path, re_path
 from arti import views
-from arti import member, editing, records, docent, kakao_auth
+from arti import member, editing, records, docent, kakao_auth, operations
 
 handler404 = 'arti.http.not_found'
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/artworks', views.artworks), path('api/artworks/<str:artwork_id>', views.artworks),
     path('api/recommendations', views.recommendations),
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
+    path('api/admin/operations', operations.dashboard),
     path('api/admin/exhibitions', editing.exhibitions),
     path('api/admin/exhibitions/<str:ex_id>', editing.exhibitions),
     path('api/admin/artworks', editing.artworks),

@@ -4,6 +4,8 @@ import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
+import { apiTarget } from '../../lib/apiTarget';
+import { OperationsOverview } from './Operations';
 
 /** 전시·작품 운영 현황을 요약하는 화면 */
 export default function A02Dashboard() {
@@ -32,6 +34,8 @@ export default function A02Dashboard() {
         <Stat label="위치 등록" value={positioned} sub={`미등록 ${works.length - positioned}`} to="/admin/map" />
         <Stat label="검수 대기" value={waiting} sub="출처 확인 필요" to="/admin/artworks?review=todo" warn={waiting > 0} />
       </div>
+
+      {apiTarget(import.meta.env.VITE_API_TARGET) === 'django' && <OperationsOverview />}
 
       <h2 className="a-section-title">최근 데이터 상태</h2>
       <div className="a-card">

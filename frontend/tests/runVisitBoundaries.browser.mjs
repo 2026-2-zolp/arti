@@ -10,7 +10,7 @@ import { preview } from 'vite';
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const python = process.env.ARTI_TEST_PYTHON || 'python';
 const suite = process.argv[2] || 'all';
-assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order'].includes(suite), 'Unknown Chrome suite');
+assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations'].includes(suite), 'Unknown Chrome suite');
 assert(process.env.ARTI_BOOTSTRAP_PASSWORD, 'Set ARTI_BOOTSTRAP_PASSWORD for visit-boundaries-admin.');
 
 function startApi() {

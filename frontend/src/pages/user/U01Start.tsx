@@ -24,7 +24,9 @@ export default function U01Start() {
 }
 
 /** 두 모드가 같이 쓰는 틀: 헤더(마이페이지) + 소개 문구 + 일러스트 */
-function StartShell({ back = false, footer, children }: { back?: false | (() => void); footer?: ReactNode; children: ReactNode }) {
+function StartShell({ back = false, footer, exhibitionOrder = false, children }: {
+  back?: false | (() => void); footer?: ReactNode; exhibitionOrder?: boolean; children: ReactNode;
+}) {
   const { state } = useVisit();
   return (
     <MobileShell
@@ -42,7 +44,7 @@ function StartShell({ back = false, footer, children }: { back?: false | (() => 
     >
       <div className="lead center">
         <h2>나만의 시선으로 만나는 미술관</h2>
-        <p>AI가 추천하고, 작품을 보는 방법까지 안내합니다.</p>
+        <p>{exhibitionOrder ? '작품을 보고, 궁금한 점은 해설과 도슨트로 살펴보세요.' : 'AI가 추천하고, 작품을 보는 방법까지 안내합니다.'}</p>
       </div>
 
       <GalleryIllustration />
@@ -85,6 +87,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
 
   return (
     <StartShell
+      exhibitionOrder={canStartInOrder || state.visitMode === 'exhibition_order'}
       back={() => {
         if (entry?.from === '/') navigate(-1);
         else navigate('/', { replace: true });

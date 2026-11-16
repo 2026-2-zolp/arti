@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react';
 import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import { apiTarget } from '../../lib/apiTarget';
 import { load, remove } from '../../lib/storage';
 
 export const ADMIN_KEY = 'arti.admin';
@@ -14,6 +15,7 @@ const MENU = [
   { to: '/admin/map', label: '위치·지도 관리' },
   { to: '/admin/members', label: '회원 조회' },
   { to: '/admin/reactions', label: '평가' },
+  ...(apiTarget(import.meta.env.VITE_API_TARGET) === 'django' ? [{ to: '/admin/operations', label: '운영 로그' }] : []),
 ];
 
 /** 관리자 내비게이션과 공통 화면 틀을 제공합니다. */

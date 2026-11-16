@@ -49,6 +49,12 @@ type KakaoResult =
 type KakaoFinish = Exclude<KakaoResult, { status: 'logged_in' }>
   | { status: 'logged_in'; user: User; token: string; returnTo: string };
 
+export type OperationsReport = {
+  configuration: { docent: 'configured' | 'disabled' | 'invalid'; analysis: 'configured' | 'disabled' | 'invalid' };
+  today: { docentRequests: number; analysisRequests: number; aiErrors: number };
+  recent: { action: string; requestId: string; occurredAt: string; status: number }[];
+};
+
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
 export const uploadedImageUrl = (file: string, forAdmin = false) =>
   `${BASE}${forAdmin ? ADMIN_READ : ''}/uploads/${encodeURIComponent(file)}`;
@@ -123,6 +129,7 @@ async function request<T>(method: string, path: string, body?: unknown, expected
 const enc = encodeURIComponent;
 
 export const api = {
+  adminOperations: (summary = false) => request<OperationsReport>('GET', '/admin/operations' + (summary ? '?summary=1' : '')),
   // Admin preview must not consume filtered public catalog data on the Django target.
   listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
   listAdminArtworks: (exhibitionId?: string) =>

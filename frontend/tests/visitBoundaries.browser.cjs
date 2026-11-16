@@ -846,6 +846,7 @@ async function exhibitionOrder(browser, memberVisit) {
     const next = button(page, '다음 작품 안내');
     await next.click();
     await button(page, '2번 작품 감상하기').waitFor();
+    assert.equal(await page.locator('.floor-map').count(), 0, 'next artwork does not require opening the map');
     await page.reload();
     await button(page, '2번 작품 감상하기').waitFor();
     assert.deepEqual((await readState()).viewed, [ids[0]]);
@@ -936,14 +937,158 @@ async function exhibitionOrderV2(browser) {
   }
 }
 
+async function openAdmin(browser) {
+  const page = await openPage(browser);
+  await page.goto('/admin/login');
+  await page.getByLabel('관리자 ID', { exact: true }).fill('visit-boundaries-admin');
+  await page.getByLabel('비밀번호', { exact: true }).fill(process.env.ARTI_BOOTSTRAP_PASSWORD);
+  await button(page, '로그인').click();
+  await page.waitForURL('**/admin');
+  return page;
+}
+
+async function mapVariants(browser) {
+  const admin = await openAdmin(browser);
+  const setup = variant => fixtureCommand([
+    'from pathlib import Path',
+    'exec(Path("frontend/tests/fixtures/mapVariants.py").read_text(encoding="utf-8"))',
+  ], { ARTI_BROWSER_MAP_VARIANT: variant });
+  try {
+    for (const variant of ['native', 'pillar', 'two-rooms']) {
+      setup(variant);
+      await admin.goto('/admin/map?exhibition=' + exhibitionId);
+      const adminMap = admin.locator('.floor-map');
+      await adminMap.locator('.fm-marker').last().waitFor();
+      assert.equal(await adminMap.locator('.fm-marker').count(), 3);
+      if (variant === 'native') {
+        assert.equal(await adminMap.locator('.fm-room').count(), 1);
+      } else {
+        await admin.waitForFunction(() => document.querySelector('.floor-map image')?.getAttribute('href')?.startsWith('blob:'));
+      }
+
+      const visitor = await openPage(browser);
+      try {
+        await visitor.setViewportSize({ width: 360, height: 760 });
+        await visitor.goto(exhibition);
+        await button(visitor, '전시 순서로 바로 보기').click();
+        await button(visitor, '다음 작품 안내').click();
+        await button(visitor, '2번 작품 감상하기').waitFor();
+        assert.equal(await visitor.locator('.floor-map').count(), 0);
+        await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+        const map = visitor.locator('.floor-map');
+        await map.locator('.fm-marker.current').waitFor();
+        assert.equal(await map.locator('.fm-marker').count(), 3);
+        assert.equal(await map.locator('.fm-route').count(), 0);
+        assert.ok(await button(visitor, '2번 작품 감상하기').isVisible());
+        assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth), 360);
+        const planRatio = await map.evaluate(svg => 100 / svg.viewBox.baseVal.height);
+        if (variant !== 'native') {
+          const expectedRatio = variant === 'pillar' ? 360 / 640 : 640 / 360;
+          assert.ok(Math.abs(planRatio - expectedRatio) < 0.001);
+        } else {
+          await visitor.route('**/api/artworks?exhibitionId=fixture-ex01', route => route.fulfill({
+            status: 502, json: { error: '합성 지도 요청 실패' },
+          }), { times: 1 });
+          await visitor.reload();
+          await button(visitor, '작품 열기').click();
+          await visitor.waitForURL('**' + exhibition + '/artwork');
+          assert.equal((await visit(visitor)).current, 1);
+          await visitor.locator('.art-title').waitFor();
+        }
+      } finally {
+        await visitor.close();
+      }
+
+      if (variant !== 'native') {
+        const legacy = await openPage(browser);
+        try {
+          const recs = await body(await legacy.request.post('/api/recommendations', {
+            data: { exhibitionId, tastes: [], duration: '30m' },
+          }));
+          assert.deepEqual(recs.map(rec => rec.artworkId), ['fixture-art03', 'fixture-art05', 'fixture-art01']);
+          await legacy.addInitScript(({ exhibitionId, recs }) => sessionStorage.setItem('arti.visit', JSON.stringify({
+            exhibitionId, recommendations: recs, current: 2, viewed: recs.slice(0, 2).map(rec => rec.artworkId),
+          })), { exhibitionId, recs });
+          await legacy.goto(exhibition + '/route');
+          const leg = legacy.locator('.fm-route.active');
+          await leg.waitFor();
+          const crossing = await leg.evaluate(line => {
+            const [from, to] = Array.from(line.points);
+            const yAt50 = from.y + (50 - from.x) * (to.y - from.y) / (to.x - from.x);
+            return { y: 100 * yAt50 / line.ownerSVGElement.viewBox.baseVal.height, crossesX50: from.x < 50 && to.x > 50 };
+          });
+          assert.ok(crossing.crossesX50);
+          assert.ok(variant === 'pillar' ? crossing.y >= 35 && crossing.y <= 65 : crossing.y <= 72);
+        } finally {
+          await legacy.close();
+        }
+      }
+      console.log('PASS map variant:', variant, 'admin pins and visitor map checked');
+    }
+  } finally {
+    try { setup('restore'); } finally { await admin.close(); }
+  }
+}
+
+async function operationsLog(browser) {
+  const page = await openAdmin(browser);
+  try {
+    const opsPath = '/api/admin/operations';
+    const forbidden = await page.request.get(opsPath);
+    assert.equal(forbidden.status(), 401);
+    const adminToken = await page.evaluate(() => JSON.parse(localStorage.getItem('arti.adminToken')));
+    const headers = { 'X-Admin-Token': adminToken };
+    const workPath = '/api/admin/artworks/fixture-art03';
+    const work = await body(await page.request.get(workPath, { headers }));
+    const saved = await page.request.put(workPath, { headers, data: work });
+    assert.equal(saved.status(), 200);
+    const requestId = saved.headers()['x-request-id'];
+    const question = '합성 작품의 모양을 알려 주세요.';
+    const failed = await page.request.post('/api/artworks/fixture-art03/ask', { data: { question } });
+    assert.equal(failed.status(), 503);
+    const failedId = failed.headers()['x-request-id'];
+    const report = await body(await page.request.get(opsPath, { headers }));
+    assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
+    assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
+    const storedEvent = report.recent.find(event => event.requestId === failedId);
+    assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
+    assert.equal(storedEvent.status, 503);
+    assert.equal(JSON.stringify(report).includes(question), false);
+
+    await page.reload();
+    await page.getByText(/오늘 도슨트 요청/).waitFor();
+    await page.getByRole('link', { name: '운영 로그', exact: true }).click();
+    await page.getByText(requestId, { exact: true }).waitFor();
+    await page.getByText(failedId, { exact: true }).waitFor();
+    await page.getByRole('checkbox', { name: '오류만 보기' }).check();
+    assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
+    assert.equal(await page.getByText(failedId, { exact: true }).count(), 1);
+    console.log('PASS admin operations: authorization, event IDs, dashboard counts, error filter and request-data exclusion');
+
+    const returnTo = exhibition + '/taste/saved';
+    await page.goto('/login?redirect=' + encodeURIComponent(returnTo));
+    await button(page, '로그인 도움').click();
+    await page.getByText('현재는 비밀번호 재설정 메일을 보낼 수 없어요.').waitFor();
+    await page.getByRole('link', { name: '로그인으로 돌아가기' }).click();
+    await page.waitForURL(url => url.pathname === '/login' && url.searchParams.get('redirect') === returnTo);
+    const disabled = await page.request.post('/api/auth/password-reset/request', { data: { email: 'reset@example.test' } });
+    assert.equal(disabled.status(), 501);
+    console.log('PASS login help: explicit disabled reset and original exhibition continuation');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
     if (suite === 'saved-v2') return await savedV2(browser);
+    if (suite === 'map-variants') return await mapVariants(browser);
+    if (suite === 'operations') return await operationsLog(browser);
     if (suite === 'exhibition-order') {
       await exhibitionOrder(browser, false);
       await exhibitionOrder(browser, true);

@@ -237,6 +237,13 @@ class Visit(models.Model):
         constraints = [models.UniqueConstraint(fields=['user', 'visit_id'], name='visit_actor_id_unique')]
 
 
+class OperationEvent(models.Model):
+    occurred_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    action = models.CharField(max_length=32)
+    status = models.PositiveSmallIntegerField()
+    request_id = models.UUIDField()
+
+
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.
 class VisitReaction(models.Model):
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='reactions')
