@@ -15,7 +15,8 @@ def require_visit_fixture():
     if (settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES
             or not re.fullmatch(r'arti_visit_boundaries(?:_[a-z0-9_]{1,40})?', database['NAME'])
             or database['HOST'] not in ('127.0.0.1', 'localhost')
-            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_MODEL_SERVICE_URL):
+            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_DRAFT_PROVIDER != 'default'
+            or settings.ARTI_MODEL_SERVICE_URL):
         raise RuntimeError('Use a dedicated loopback visit fixture DB with both model providers disabled.')
 
 

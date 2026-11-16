@@ -16,14 +16,14 @@ const actionLabel: Record<string, string> = {
 function OperationsSummary({ report }: { report: OperationsReport }) {
   return (
     <>
-      <p>텍스트 AI {configurationLabel[report.configuration.docent]} · 태그·감정 분석 {configurationLabel[report.configuration.analysis]}</p>
+      <p>도슨트 {configurationLabel[report.configuration.docent]} · 요약·가이드 {configurationLabel[report.draftConfiguration]} · 태그·감정 분석 {configurationLabel[report.configuration.analysis]}</p>
       <p>오늘 도슨트 요청 {report.today.docentRequests}건 · 관리자 AI 분석 {report.today.analysisRequests}건 · AI 요청 오류 {report.today.aiErrors}건</p>
     </>
   );
 }
 
 export function OperationsOverview() {
-  const { data, loading, error } = useAsync(() => api.adminOperations(true), []);
+  const { data, loading, error } = useAsync(() => api.adminOperations('summary'), []);
   return (
     <>
       <h2 className="a-section-title">AI 운영 현황</h2>
@@ -37,21 +37,22 @@ export function OperationsOverview() {
 }
 
 export default function Operations() {
-  const { data, loading, error, reload } = useAsync(() => api.adminOperations(), []);
   const [errorsOnly, setErrorsOnly] = useState(false);
-  const rows = data?.recent.filter(row => !errorsOnly || row.status >= 400) ?? [];
+  const { data, loading, error, reload } = useAsync(() => api.adminOperations(errorsOnly ? 'errors' : undefined), [errorsOnly]);
+  const rows = data?.recent ?? [];
   return (
     <>
       <PageHead title="운영 로그" desc="오늘 집계는 한국 시각 기준입니다. 아래 표에는 최근 운영 이벤트 50건을 표시합니다."
         actions={<button className="a-btn" type="button" onClick={reload} disabled={loading}>다시 조회</button>} />
+      <section className="a-card pad stack gap-10" aria-label="AI 운영 현황">
+        {data && <OperationsSummary report={data} />}
+        <p className="muted small">설정 상태는 서버 구성 기준입니다. 실제 요청 결과는 아래 로그에서 확인할 수 있어요.</p>
+        <label><input type="checkbox" checked={errorsOnly} onChange={event => setErrorsOnly(event.target.checked)} /> 오류만 보기</label>
+      </section>
       {error && <p role="alert">{error}</p>}
       {loading && <p role="status">불러오는 중…</p>}
       {data && (
         <>
-          <section className="a-card pad stack gap-10" aria-label="AI 운영 현황">
-            <OperationsSummary report={data} />
-            <label><input type="checkbox" checked={errorsOnly} onChange={event => setErrorsOnly(event.target.checked)} /> 오류만 보기</label>
-          </section>
           <div className="a-card">
             <table className="a-table">
               <thead><tr><th>시각</th><th>작업</th><th>응답 코드</th><th>요청 ID</th></tr></thead>

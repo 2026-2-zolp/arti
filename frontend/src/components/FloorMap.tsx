@@ -10,6 +10,7 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { uploadedImageUrl } from '../api/client';
 import { useProtectedImage } from '../lib/useProtectedImage';
+import { indoorMapFixture } from '../lib/indoorMapFixture';
 import type { Exhibition, MapPoint } from '../types';
 
 export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
@@ -60,7 +61,8 @@ export function FloorMap({
   forAdmin = false,
 }: Props) {
   const plan = exhibition.floorPlan;
-  const { src: planSrc } = useProtectedImage(plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
+  const indoor = indoorMapFixture(exhibition);
+  const { src: planSrc } = useProtectedImage(plan && !indoor ? uploadedImageUrl(plan.file, forAdmin) : undefined);
   const ratio = plan ? plan.width / plan.height : aspect;
   const H = 100 / ratio;
   const sy = (y: number) => (y * H) / 100;
@@ -129,7 +131,7 @@ export function FloorMap({
       role="img"
       aria-label={`${exhibition.title} 평면도`}
     >
-      {plan ? (
+      {plan && !indoor ? (
         <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
       ) : (
         exhibition.rooms.map(
@@ -144,6 +146,17 @@ export function FloorMap({
             ),
         )
       )}
+
+      {indoor && ([
+        ['fm-corridor', indoor.corridors], ['fm-wall', indoor.barriers], ['fm-door', indoor.doors],
+      ] as const).map(([className, rectangles]) => (
+        <g key={className} aria-hidden="true">
+          {rectangles.map(rect => (
+            <rect key={`${rect.x}-${rect.y}`} className={className}
+              x={rect.x} y={sy(rect.y)} width={rect.w} height={sy(rect.h)} />
+          ))}
+        </g>
+      ))}
 
       {showEntrance && (
         <g

@@ -51,6 +51,7 @@ type KakaoFinish = Exclude<KakaoResult, { status: 'logged_in' }>
 
 export type OperationsReport = {
   configuration: { docent: 'configured' | 'disabled' | 'invalid'; analysis: 'configured' | 'disabled' | 'invalid' };
+  draftConfiguration: 'configured' | 'disabled' | 'invalid';
   today: { docentRequests: number; analysisRequests: number; aiErrors: number };
   recent: { action: string; requestId: string; occurredAt: string; status: number }[];
 };
@@ -129,7 +130,7 @@ async function request<T>(method: string, path: string, body?: unknown, expected
 const enc = encodeURIComponent;
 
 export const api = {
-  adminOperations: (summary = false) => request<OperationsReport>('GET', '/admin/operations' + (summary ? '?summary=1' : '')),
+  adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
   // Admin preview must not consume filtered public catalog data on the Django target.
   listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
   listAdminArtworks: (exhibitionId?: string) =>

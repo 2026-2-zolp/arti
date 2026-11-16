@@ -60,6 +60,12 @@ ARTI_LLM_MODELS = {kind: os.environ.get('ARTI_LLM_MODEL_' + kind.upper(), '')
                    for kind in ('answer', 'explanation', 'summary', 'guide', 'interpret')}
 ARTI_LLM_JSON_MODE = os.environ.get('ARTI_LLM_JSON_MODE', 'true').lower() == 'true'
 ARTI_LLM_TOKEN_PARAMETER = os.environ.get('ARTI_LLM_TOKEN_PARAMETER', 'max_completion_tokens')
+ARTI_DRAFT_PROVIDER = os.environ.get('ARTI_DRAFT_PROVIDER', 'default')
+ARTI_DRAFT_BASE_URL = os.environ.get('ARTI_DRAFT_BASE_URL', '')
+ARTI_DRAFT_API_KEY = os.environ.get('ARTI_DRAFT_API_KEY', '')
+ARTI_DRAFT_MODEL = os.environ.get('ARTI_DRAFT_MODEL', '')
+ARTI_DRAFT_TOKEN_PARAMETER = os.environ.get('ARTI_DRAFT_TOKEN_PARAMETER', 'max_tokens')
+ARTI_DRAFT_JSON_MODE = os.environ.get('ARTI_DRAFT_JSON_MODE', 'true').lower() == 'true'
 
 # 내부 CLIP·mDeBERTa 서비스 주소. 빈 값이면 비활성, GPT와 독립입니다.
 ARTI_MODEL_SERVICE_URL = os.environ.get('ARTI_MODEL_SERVICE_URL', '')

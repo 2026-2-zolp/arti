@@ -36,6 +36,7 @@ SYSTEM = ('당신은 ARTI 미술 감상을 돕는 도슨트입니다. 아래 JSO
           '제공되지 않은 규격 단위나 정밀 정보를 덧붙이지 마세요. 자료에 없는 정보와 세상에 알려지지 않은 정보를 구분하세요. '
           '기록된 사실과 일반적인 조형 설명·가능한 감상 해석을 분리하세요. 근거 항목에는 제공 자료의 사실만 두세요. '
           '일반 감상 팁과 작품 사실을 구분하고 쉬운 한국어로 작성하세요. 반드시 요청한 JSON 객체 하나만 반환하세요.')
+DRAFT_TASKS = ('summary', 'guide')
 
 
 # 외부 리다이렉트로 인증 정보가 전달되지 않게 막습니다.
@@ -59,10 +60,22 @@ def safe_artwork(value):
 
 def text_connection_settings(kind):
     """요청과 상태 점검에서 같은 텍스트 연결 설정을 검사합니다."""
-    key = settings.OPENAI_API_KEY.strip()
-    model = (settings.ARTI_LLM_MODELS.get(kind) or settings.OPENAI_MODEL).strip()
-    base = settings.OPENAI_BASE_URL.rstrip('/')
-    parameter = settings.ARTI_LLM_TOKEN_PARAMETER
+    if kind in DRAFT_TASKS and settings.ARTI_DRAFT_PROVIDER != 'default':
+        if settings.ARTI_DRAFT_PROVIDER != 'openai_compatible':
+            unavailable()
+        key = settings.ARTI_DRAFT_API_KEY.strip()
+        model = settings.ARTI_DRAFT_MODEL.strip()
+        base = settings.ARTI_DRAFT_BASE_URL.strip().rstrip('/')
+        parameter = settings.ARTI_DRAFT_TOKEN_PARAMETER
+        json_mode = settings.ARTI_DRAFT_JSON_MODE
+    else:
+        if settings.ARTI_LLM_PROVIDER != 'openai_compatible':
+            unavailable()
+        key = settings.OPENAI_API_KEY.strip()
+        model = (settings.ARTI_LLM_MODELS.get(kind) or settings.OPENAI_MODEL).strip()
+        base = settings.OPENAI_BASE_URL.rstrip('/')
+        parameter = settings.ARTI_LLM_TOKEN_PARAMETER
+        json_mode = settings.ARTI_LLM_JSON_MODE
     try:
         url = urlsplit(base)
     except ValueError:
@@ -74,7 +87,7 @@ def text_connection_settings(kind):
         unavailable()
     if parameter not in ('max_completion_tokens', 'max_tokens'):
         unavailable()
-    return base, key, model, parameter
+    return base, key, model, parameter, json_mode
 
 
 def generate_text(kind, snapshot, **context):
@@ -82,7 +95,7 @@ def generate_text(kind, snapshot, **context):
     if kind not in TASKS:
         raise ContractError(503, 'AI_UNAVAILABLE', '이 분석 모델은 아직 연결되지 않았어요.', retryable=True)
     try:
-        base, key, model, parameter = text_connection_settings(kind)
+        base, key, model, parameter, json_mode = text_connection_settings(kind)
         if kind == 'interpret':
             data = {'artworks': [safe_artwork(w) for w in snapshot.get('artworks', [])],
                     'reactions': snapshot.get('reactions', {}), 'dwell': snapshot.get('dwell', {})}
@@ -95,7 +108,7 @@ def generate_text(kind, snapshot, **context):
             {'role': 'system', 'content': SYSTEM + '\n' + TASKS[kind]},
             {'role': 'user', 'content': json.dumps(data, ensure_ascii=False)}],
             parameter: 2000, 'stream': False}
-        if settings.ARTI_LLM_JSON_MODE:
+        if json_mode:
             payload['response_format'] = {'type': 'json_object'}
         encoded = json.dumps(payload, ensure_ascii=False).encode('utf-8')
         if len(encoded) > 64 * 1024:

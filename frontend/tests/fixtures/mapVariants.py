@@ -22,8 +22,8 @@ else:
     third_y = 72
     if variant == 'two-rooms':
         rooms = [
-            {'id': 'room-1', 'name': '첫 전시실', 'rect': {'x': 4, 'y': 4, 'w': 42, 'h': 92}},
-            {'id': 'room-2', 'name': '둘째 전시실', 'rect': {'x': 54, 'y': 4, 'w': 42, 'h': 92}},
+            {'id': 'room-1', 'name': '첫 전시실', 'rect': {'x': 4, 'y': 4, 'w': 42, 'h': 68}},
+            {'id': 'room-2', 'name': '둘째 전시실', 'rect': {'x': 54, 'y': 4, 'w': 42, 'h': 68}},
         ]
         entrance_y = 25
         third_y = 65

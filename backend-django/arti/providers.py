@@ -3,11 +3,11 @@
 from django.conf import settings
 from django.utils import timezone
 from .http import ContractError
+from .llm import DRAFT_TASKS, generate_text, text_connection_settings
 
 
 def configuration_status():
     """외부 호출 없이 도슨트와 작품 분석의 설정 상태만 반환합니다."""
-    from .llm import text_connection_settings
     from .model_service import model_service_base
 
     docent = 'disabled'
@@ -28,6 +28,17 @@ def configuration_status():
         except ContractError:
             analysis = 'invalid'
     return {'docent': docent, 'analysis': analysis}
+
+
+def draft_configuration_status():
+    if settings.ARTI_DRAFT_PROVIDER == 'default' and settings.ARTI_LLM_PROVIDER == 'disabled':
+        return 'disabled'
+    try:
+        for kind in DRAFT_TASKS:
+            text_connection_settings(kind)
+        return 'configured'
+    except ContractError:
+        return 'invalid'
 
 
 def generate(kind, snapshot, **context):
@@ -51,8 +62,7 @@ def generate(kind, snapshot, **context):
         if kind == 'tag':
             return {'scores': result['tags']} | ({'tagEvidence': result['tagEvidence']} if result.get('tagEvidence') is not None else {})
         return {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
-    if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
-        from .llm import generate_text
+    if settings.ARTI_LLM_PROVIDER == 'openai_compatible' or (kind in DRAFT_TASKS and settings.ARTI_DRAFT_PROVIDER != 'default'):
         return generate_text(kind, snapshot, **context)
     raise ContractError(503, 'AI_UNAVAILABLE', 'AI 연결을 준비 중이에요. 잠시 후 다시 시도해 주세요.', retryable=True)
 

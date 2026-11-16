@@ -53,7 +53,7 @@ def mock_wsgi(https_port):
     if (settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES
             or not re.fullmatch(r'arti_kakao_browser(?:_[a-z0-9_]{1,40})?', database['NAME'])
             or database['HOST'] not in ('127.0.0.1', 'localhost')
-            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_MODEL_SERVICE_URL
+            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_DRAFT_PROVIDER != 'default' or settings.ARTI_MODEL_SERVICE_URL
             or any((settings.ARTI_KAKAO_CLIENT_ID, settings.ARTI_KAKAO_CLIENT_SECRET,
                     settings.ARTI_KAKAO_CALLBACK_URL))):
         raise RuntimeError('Use an isolated loopback test DB with real Kakao and model settings disabled.')

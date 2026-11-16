@@ -334,6 +334,9 @@ a.history-card { text-decoration: none; }
 .fm-entrance text { font-size: 2.8px; fill: var(--ink-2); }
 .fm-route { fill: none; stroke: #e9b4bf; stroke-width: 0.9; stroke-dasharray: 1.6 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .fm-route.active { stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: none; }
+.fm-corridor { fill: #e6e2d7; }
+.fm-wall { fill: #9d978c; }
+.fm-door { fill: #faf8f2; }
 .fm-marker circle { fill: var(--accent); }
 .fm-marker text { font-size: 3.4px; fill: #fff; font-weight: 600; pointer-events: none; }
 .fm-marker.upcoming circle, .fm-marker.plain circle { fill: #fff; stroke: var(--accent); stroke-width: 0.6; }

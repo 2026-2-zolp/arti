@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from .authentication import IsAdmin
 from .models import OperationEvent
-from .providers import configuration_status
+from .providers import configuration_status, draft_configuration_status
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +67,17 @@ def dashboard(request):
         analysisRequests=Count('id', filter=Q(action='artwork_analysis')),
         aiErrors=Count('id', filter=Q(action__in=AI_ACTIONS, status__gte=400)),
     )
-    recent = [] if request.query_params.get('summary') == '1' else OperationEvent.objects.order_by('-occurred_at', '-pk')[:50]
+    recent = OperationEvent.objects.order_by('-occurred_at', '-pk')
+    if request.query_params.get('errors') == '1':
+        recent = recent.filter(status__gte=400)
+    rows = [] if request.query_params.get('summary') == '1' else recent[:50]
     return Response({
         'configuration': configuration_status(),
+        'draftConfiguration': draft_configuration_status(),
         'today': counts,
         'recent': [
             {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
              'action': event.action, 'status': event.status}
-            for event in recent
+            for event in rows
         ],
     }, headers={'Cache-Control': 'private, no-store'})

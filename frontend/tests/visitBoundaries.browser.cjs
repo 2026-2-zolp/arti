@@ -947,6 +947,30 @@ async function openAdmin(browser) {
   return page;
 }
 
+async function checkWalkableSvg(map, variant) {
+  await map.locator('polyline.fm-route.active').waitFor();
+  const geometry = await map.evaluate(svg => {
+    const walls = [...svg.querySelectorAll('rect.fm-wall')].map(rect => rect.getBBox());
+    const lines = [...svg.querySelectorAll('.fm-route')];
+    const blocked = lines.some(line => {
+      const length = line.getTotalLength();
+      const samples = Math.ceil(length * 5);
+      return Array.from({ length: samples + 1 }, (_, index) => line.getPointAtLength(Math.min(length, index / 5)))
+        .some(point => walls.some(rect => point.x >= rect.x && point.x <= rect.x + rect.width &&
+          point.y >= rect.y && point.y <= rect.y + rect.height));
+    });
+    const active = [...svg.querySelector('polyline.fm-route.active').points].map(point =>
+      ({ x: point.x, y: point.y * 100 / svg.viewBox.baseVal.height }));
+    return { blocked, active };
+  });
+  assert.equal(geometry.blocked, false);
+  assert.ok(geometry.active.length >= 3);
+  if (variant === 'two-rooms') {
+    assert.ok(geometry.active.some(point => point.x < 46 && point.y > 74));
+    assert.ok(geometry.active.some(point => point.x > 54 && point.y > 74));
+  }
+}
+
 async function mapVariants(browser) {
   const admin = await openAdmin(browser);
   const setup = variant => fixtureCommand([
@@ -963,7 +987,9 @@ async function mapVariants(browser) {
       if (variant === 'native') {
         assert.equal(await adminMap.locator('.fm-room').count(), 1);
       } else {
-        await admin.waitForFunction(() => document.querySelector('.floor-map image')?.getAttribute('href')?.startsWith('blob:'));
+        assert.equal(await adminMap.locator('image').count(), 0);
+        assert.equal(await adminMap.locator('.fm-wall').count(), variant === 'pillar' ? 1 : 5);
+        assert.equal(await adminMap.locator('.fm-door').count(), variant === 'pillar' ? 0 : 2);
       }
 
       const visitor = await openPage(browser);
@@ -978,14 +1004,28 @@ async function mapVariants(browser) {
         const map = visitor.locator('.floor-map');
         await map.locator('.fm-marker.current').waitFor();
         assert.equal(await map.locator('.fm-marker').count(), 3);
-        assert.equal(await map.locator('.fm-route').count(), 0);
         assert.ok(await button(visitor, '2번 작품 감상하기').isVisible());
         assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth), 360);
         const planRatio = await map.evaluate(svg => 100 / svg.viewBox.baseVal.height);
         if (variant !== 'native') {
           const expectedRatio = variant === 'pillar' ? 360 / 640 : 640 / 360;
           assert.ok(Math.abs(planRatio - expectedRatio) < 0.001);
+          await checkWalkableSvg(map, variant);
+          if (variant === 'pillar') {
+            await visitor.route('**/api/artworks?exhibitionId=fixture-ex01', async route => {
+              const result = await route.fetch();
+              const works = await result.json();
+              works.find(work => work.id === 'fixture-art01').position = { x: 50, y: 50 };
+              await route.fulfill({ response: result, json: works });
+            }, { times: 1 });
+            await visitor.reload();
+            await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+            await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+            assert.equal(await visitor.locator('.fm-route.active').count(), 0);
+            assert.ok(await button(visitor, '2번 작품 감상하기').isVisible());
+          }
         } else {
+          assert.equal(await map.locator('.fm-route').count(), 0);
           await visitor.route('**/api/artworks?exhibitionId=fixture-ex01', route => route.fulfill({
             status: 502, json: { error: '합성 지도 요청 실패' },
           }), { times: 1 });
@@ -1010,20 +1050,12 @@ async function mapVariants(browser) {
             exhibitionId, recommendations: recs, current: 2, viewed: recs.slice(0, 2).map(rec => rec.artworkId),
           })), { exhibitionId, recs });
           await legacy.goto(exhibition + '/route');
-          const leg = legacy.locator('.fm-route.active');
-          await leg.waitFor();
-          const crossing = await leg.evaluate(line => {
-            const [from, to] = Array.from(line.points);
-            const yAt50 = from.y + (50 - from.x) * (to.y - from.y) / (to.x - from.x);
-            return { y: 100 * yAt50 / line.ownerSVGElement.viewBox.baseVal.height, crossesX50: from.x < 50 && to.x > 50 };
-          });
-          assert.ok(crossing.crossesX50);
-          assert.ok(variant === 'pillar' ? crossing.y >= 35 && crossing.y <= 65 : crossing.y <= 72);
+          await checkWalkableSvg(legacy.locator('.floor-map'), variant);
         } finally {
           await legacy.close();
         }
       }
-      console.log('PASS map variant:', variant, 'admin pins and visitor map checked');
+      console.log('PASS map variant:', variant, 'native geometry, visitor routes and fallback checked');
     }
   } finally {
     try { setup('restore'); } finally { await admin.close(); }
@@ -1049,6 +1081,7 @@ async function operationsLog(browser) {
     const failedId = failed.headers()['x-request-id'];
     const report = await body(await page.request.get(opsPath, { headers }));
     assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
+    assert.equal(report.draftConfiguration, 'disabled');
     assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
     const storedEvent = report.recent.find(event => event.requestId === failedId);
     assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
@@ -1060,7 +1093,15 @@ async function operationsLog(browser) {
     await page.getByRole('link', { name: '운영 로그', exact: true }).click();
     await page.getByText(requestId, { exact: true }).waitFor();
     await page.getByText(failedId, { exact: true }).waitFor();
+    fixtureCommand([
+      'from uuid import uuid4',
+      'from arti.models import OperationEvent',
+      'OperationEvent.objects.bulk_create([OperationEvent(action="artwork_save", status=200, request_id=uuid4()) for _ in range(51)])',
+    ]);
+    await button(page, '다시 조회').click();
+    await page.getByText(failedId, { exact: true }).waitFor({ state: 'hidden' });
     await page.getByRole('checkbox', { name: '오류만 보기' }).check();
+    await page.getByText(failedId, { exact: true }).waitFor();
     assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
     assert.equal(await page.getByText(failedId, { exact: true }).count(), 1);
     console.log('PASS admin operations: authorization, event IDs, dashboard counts, error filter and request-data exclusion');
