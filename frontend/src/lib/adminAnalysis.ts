@@ -26,7 +26,7 @@ export function mergeAnalysis(current:Artwork, started:Artwork, result:ArtworkAn
   }
   // 더 늦게 저장된 편집 버전은 오래된 분석 응답으로 되돌리지 않습니다.
   if ((current.version ?? 0) <= (result.artwork.version ?? 0)) {
-    for (const key of ['updatedAt','version','contentVersion','sourceVersion'] as const) Object.assign(next,{[key]:result.artwork[key]});
+    for (const key of ['updatedAt','version','contentVersion','sourceVersion','savedTextProposals'] as const) Object.assign(next,{[key]:result.artwork[key]});
   }
   return next;
 }

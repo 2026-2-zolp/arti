@@ -270,6 +270,9 @@ export const api = {
       useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
     }),
 
+  discardArtworkProposal: (w: Artwork, kind: 'summary' | 'guide') =>
+    request<Artwork>('POST', `/admin/artworks/${enc(w.id)}/discard-ai`, { kind, version: w.version }),
+
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
 

@@ -599,19 +599,21 @@ function AiPanel({ w, setW, reloadArtwork }: {
   setW: (f: (cur: Artwork | null) => Artwork | null) => void;
   reloadArtwork: () => Promise<void>;
 }) {
+  const confirmAction = useConfirm();
   const [useImage, setUseImage] = useState(true);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<'analysis' | 'save' | null>(null);
   const inFlight = useRef(false);
   const retryFields = useRef<('summary' | 'guide')[]>([]);
   const [msg, setMsg] = useState<
-    {type: 'ok' | 'err' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
+    {type: 'ok' | 'err' | 'save-error' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
   >(null);
+  const blocked = busy !== null || msg?.type === 'conflict';
 
   const run = async (regenerateFields: ('summary' | 'guide')[] = []) => {
     if (inFlight.current || msg?.type === 'conflict') return;
     inFlight.current=true;
     retryFields.current = regenerateFields;
-    setBusy(true);
+    setBusy('analysis');
     setMsg(null);
     try {
       const r = await api.analyzeArtwork(w.id, useImage, regenerateFields);
@@ -622,12 +624,15 @@ function AiPanel({ w, setW, reloadArtwork }: {
       setMsg({ type: isVersionConflict(e) ? 'conflict' : 'err', text: analysisFailure(e) });
     } finally {
       inFlight.current=false;
-      setBusy(false);
+      setBusy(null);
     }
   };
 
   /** 확정/해제는 바로 서버에 저장 */
   const setStatus = async (patch: Partial<Pick<Artwork, 'emotionStatus' | 'summaryStatus' | 'guideStatus'>>) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setBusy('save');
     try {
       const saved = await api.saveArtwork({ ...w, ...patch });
       setW(() => saved);
@@ -641,6 +646,34 @@ function AiPanel({ w, setW, reloadArtwork }: {
       setMsg((current) => current?.type === 'conflict'
         ? current
         : { type: isVersionConflict(e) ? 'conflict' : 'err', text: e instanceof Error ? e.message : '저장하지 못했어요.' });
+    } finally {
+      inFlight.current = false;
+      setBusy(null);
+    }
+  };
+
+  const discard = async (kind: 'summary' | 'guide') => {
+    if (inFlight.current || msg?.type === 'conflict') return;
+    const label = kind === 'summary' ? '쉬운 요약' : '관람가이드';
+    if (!await confirmAction(`${label} 제안을 폐기할까요? 현재 공개된 내용은 유지돼요.`, { confirm: '제안 폐기' })) return;
+    inFlight.current = true;
+    setBusy('save');
+    setMsg(null);
+    try {
+      const saved = await api.discardArtworkProposal(w, kind);
+      setW((current) => {
+        if (!current || current.id !== saved.id || (current.version ?? 0) > (saved.version ?? 0)) return current;
+        const text = kind === 'summary'
+          ? { summary: saved.summary, summaryKeywords: saved.summaryKeywords, summaryStatus: saved.summaryStatus, summaryRevision: saved.summaryRevision }
+          : { guideIntro: saved.guideIntro, guidedLooking: saved.guidedLooking, guidedHints: saved.guidedHints, guideStatus: saved.guideStatus, guideRevision: saved.guideRevision };
+        return { ...current, ...text, version: saved.version, updatedAt: saved.updatedAt, savedTextProposals: saved.savedTextProposals };
+      });
+      setMsg({ type: 'ok', text: `${label} 제안을 폐기했어요.` });
+    } catch (e) {
+      setMsg({ type: isVersionConflict(e) ? 'conflict' : 'save-error', text: e instanceof Error ? e.message : '제안을 폐기하지 못했어요.' });
+    } finally {
+      inFlight.current = false;
+      setBusy(null);
     }
   };
 
@@ -664,14 +697,14 @@ function AiPanel({ w, setW, reloadArtwork }: {
               이미지도 분석
             </label>
           )}
-          <button type="button" className="a-btn primary" disabled={busy || msg?.type === 'conflict'} onClick={() => run()}>
-            {busy ? 'AI 분석 중… 잠시 기다려 주세요' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
+          <button type="button" className="a-btn primary" disabled={blocked} onClick={() => run()}>
+            {busy === 'analysis' ? 'AI 분석 중… 잠시 기다려 주세요' : a || w.summary ? 'AI 다시 분석' : 'AI 분석 실행'}
           </button>
         </div>
       </div>
       <div className="a-inline">
-        <button className="a-btn sm" type="button" disabled={busy || msg?.type === 'conflict'} onClick={() => run(['summary'])}>쉬운 요약 다시 생성</button>
-        <button className="a-btn sm" type="button" disabled={busy || msg?.type === 'conflict'} onClick={() => run(['guide'])}>관람가이드 다시 생성</button>
+        <button className="a-btn sm" type="button" disabled={blocked} onClick={() => run(['summary'])}>쉬운 요약 다시 생성</button>
+        <button className="a-btn sm" type="button" disabled={blocked} onClick={() => run(['guide'])}>관람가이드 다시 생성</button>
       </div>
       <p className="muted small">새 제안을 확정할 때까지 현재 공개된 요약과 관람가이드가 표시돼요.</p>
       {msg?.type === 'result' && (
@@ -684,7 +717,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
             ))}
           </ul>
           {msg.items.some(({status}) => status === 'failed') && (
-            <button type="button" disabled={busy} onClick={() => run(retryFields.current)}>분석 다시 시도</button>
+            <button type="button" disabled={blocked} onClick={() => run(retryFields.current)}>분석 다시 시도</button>
           )}
         </div>
       )}
@@ -692,7 +725,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
         <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
           {msg.text}
           {msg.type === 'conflict' && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}
-          {msg.type === 'err' && <button type="button" disabled={busy} onClick={() => run(retryFields.current)}>분석 다시 시도</button>}
+          {msg.type === 'err' && <button type="button" disabled={blocked} onClick={() => run(retryFields.current)}>분석 다시 시도</button>}
         </p>
       )}
 
@@ -716,11 +749,11 @@ function AiPanel({ w, setW, reloadArtwork }: {
               </p>
               <div className="ai-actions">
                 {w.emotionStatus !== 'confirmed' ? (
-                  <button type="button" className="a-btn sm primary" onClick={() => setStatus({ emotionStatus: 'confirmed' })}>
+                  <button type="button" className="a-btn sm primary" disabled={busy !== null} onClick={() => setStatus({ emotionStatus: 'confirmed' })}>
                     감정 분석 확정
                   </button>
                 ) : (
-                  <button type="button" className="a-btn sm" onClick={() => setStatus({ emotionStatus: 'suggested' })}>
+                  <button type="button" className="a-btn sm" disabled={busy !== null} onClick={() => setStatus({ emotionStatus: 'suggested' })}>
                     확정 해제
                   </button>
                 )}
@@ -759,20 +792,24 @@ function AiPanel({ w, setW, reloadArtwork }: {
               <button
                 type="button"
                 className="a-btn sm primary"
-                disabled={!w.summary.trim()}
+                disabled={busy !== null || !w.summary.trim()}
                 onClick={() => setStatus({ summaryStatus: 'confirmed' })}
               >
                 요약 확정 (수정 내용 포함 저장)
               </button>
             ) : (
-              <button type="button" className="a-btn sm" onClick={() => setStatus({ summaryStatus: 'suggested' })}>
+              <button type="button" className="a-btn sm" disabled={busy !== null} onClick={() => setStatus({ summaryStatus: 'suggested' })}>
                 확정 해제
               </button>
+            )}
+            {w.savedTextProposals?.includes('summary') && (
+              <button type="button" className="a-btn sm" disabled={blocked} onClick={() => discard('summary')}>쉬운 요약 제안 폐기</button>
             )}
           </div>
         </div>
 
-        <GuideCard w={w} setW={setW} badge={badge(w.guideStatus)} setStatus={setStatus} />
+        <GuideCard w={w} setW={setW} badge={badge(w.guideStatus)} setStatus={setStatus}
+          busy={busy !== null} discardBlocked={blocked} onDiscard={() => discard('guide')} />
       </div>
     </section>
   );
@@ -799,11 +836,17 @@ function GuideCard({
   setW,
   badge,
   setStatus,
+  busy,
+  discardBlocked,
+  onDiscard,
 }: {
   w: Artwork;
   setW: (f: (cur: Artwork | null) => Artwork | null) => void;
   badge: ReactNode;
   setStatus: (patch: Partial<Pick<Artwork, 'guideStatus'>>) => Promise<void>;
+  busy: boolean;
+  discardBlocked: boolean;
+  onDiscard: () => void;
 }) {
   // 입력 중인 글은 그대로 두고(예: "질문 |"까지 쓴 상태), 저장된 값이 밖에서 바뀌었을 때만(AI 제안 등) 다시 채운다
   const [text, setText] = useState(() => formatQuestions(w));
@@ -845,13 +888,16 @@ function GuideCard({
       </label>
       <div className="ai-actions">
         {w.guideStatus !== 'confirmed' ? (
-          <button type="button" className="a-btn sm primary" disabled={empty} onClick={() => setStatus({ guideStatus: 'confirmed' })}>
+          <button type="button" className="a-btn sm primary" disabled={busy || empty} onClick={() => setStatus({ guideStatus: 'confirmed' })}>
             가이드 확정 (수정 내용 포함 저장)
           </button>
         ) : (
-          <button type="button" className="a-btn sm" onClick={() => setStatus({ guideStatus: 'suggested' })}>
+          <button type="button" className="a-btn sm" disabled={busy} onClick={() => setStatus({ guideStatus: 'suggested' })}>
             확정 해제
           </button>
+        )}
+        {w.savedTextProposals?.includes('guide') && (
+          <button type="button" className="a-btn sm" disabled={discardBlocked} onClick={onDiscard}>관람가이드 제안 폐기</button>
         )}
       </div>
     </div>

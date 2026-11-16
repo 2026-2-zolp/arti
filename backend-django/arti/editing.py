@@ -64,7 +64,7 @@ def stale(w):
             setattr(w, field, 'suggested')
 
 
-def finish(w, old):
+def finish(w, old, *, discarded_text=None):
     if any(getattr(w, f) != old[f] for f in SOURCE):
         stale(w)
     w.retained_text = {
@@ -77,6 +77,9 @@ def finish(w, old):
         w.guide_revision += 1
     w.version += 1
     public_before = old.get('public_dto')
+    if discarded_text:
+        # Restoring the same public text keeps existing docent references valid.
+        setattr(w, f'{discarded_text}_revision', public_before[f'{discarded_text}Revision'])
     if public_before is None or any(
         value != public_before[key]
         for key, value in artwork_dto(w).items()
@@ -244,6 +247,29 @@ def confirm_ai(request, ex_id):
             for field in fields:setattr(w,STATES[field],'confirmed')
             finish(w,old)
     return Response({'confirmed':len(works)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAdmin])
+def discard_ai(request, artwork_id):
+    kind = request.data.get('kind')
+    if kind not in ('summary', 'guide'):
+        fail('폐기할 요약이나 관람가이드 제안을 선택해 주세요.')
+    status = STATES[kind]
+    with transaction.atomic():
+        work = get_locked(Artwork, artwork_id)
+        version(work, request.data.get('version'))
+        if getattr(work, status) != 'suggested':
+            fail('폐기할 제안이 없어요.')
+        old = before(work)
+        public = artwork_dto(work)
+        old['public_dto'] = public
+        for field in RETAINED_TEXT_FIELDS[kind]:
+            if field in FIELDS:
+                setattr(work, FIELDS[field], public[field])
+        setattr(work, status, public[f'{kind}Status'])
+        finish(work, old, discarded_text=kind)
+    return with_etag(artwork_dto(work, True))
 
 
 @api_view(['POST'])

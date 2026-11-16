@@ -21,6 +21,7 @@ urlpatterns = [
     path('api/admin/artworks/<str:artwork_id>/image', editing.image),
     path('api/admin/exhibitions/<str:ex_id>/floor-plan', editing.image),
     path('api/admin/artworks/<str:artwork_id>/analyze', editing.analyze),
+    path('api/admin/artworks/<str:artwork_id>/discard-ai', editing.discard_ai),
     path('api/admin/exhibitions/<str:ex_id>/confirm-ai', editing.confirm_ai),
     path('api/admin/members', records.members), path('api/admin/reactions', records.reactions),
     path('api/admin/members/<str:user_id>/visits', records.admin_member_visits),

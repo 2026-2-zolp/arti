@@ -92,6 +92,7 @@ def artwork_dto(w, admin=False):
         'summaryRevision': w.summary_revision, 'guideRevision': w.guide_revision,
     }
     if admin:
+        data['savedTextProposals'] = [kind for kind in RETAINED_TEXT_FIELDS if data[f'{kind}Status'] == 'suggested']
         return data
     if not w.show_image:
         data.update(imageUrl='', imageFile=None)
