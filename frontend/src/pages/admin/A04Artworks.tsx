@@ -176,7 +176,9 @@ export function ArtworkList() {
                   <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w, true)} alt="" ratio={1} />
                 </td>
                 <td>
-                  <strong>{w.title}</strong>
+                  <Link to={`/admin/artworks/${w.id}`} onClick={(e) => e.stopPropagation()}>
+                    <strong>{w.title}</strong>
+                  </Link>
                 </td>
                 <td>{w.artist}</td>
                 <td className="a-center">{w.year}</td>
