@@ -164,6 +164,12 @@ async function verify(base) {
     assert.equal(result.artwork.tagScores.landscape, .5);
     assert.equal(result.artwork.tagStatus, 'suggested');
     assert.deepEqual((await json(await context.request.get(gate))).sources, [digest(baseline.description), digest(changedSource)]);
+    const results = a.getByRole('status', { name: 'AI 항목별 처리 결과' });
+    await results.getByRole('listitem').filter({ hasText: /취향 태그.*제안 생성 완료/ }).waitFor();
+    await results.getByRole('listitem').filter({ hasText: /감정 분석.*제안 생성 완료/ }).waitFor();
+    await results.getByRole('listitem').filter({ hasText: /쉬운 요약.*기존 확정 유지/ }).waitFor();
+    await results.getByRole('listitem').filter({ hasText: /관람가이드.*연결 확인 필요/ }).waitFor();
+    assert.equal(await results.getByRole('listitem').count(), 4);
     await a.getByRole('button', { name: '감정 분석 확정' }).waitFor();
     assert.equal(await summary(a).inputValue(), current.summary);
     assert.deepEqual(await json(await context.request.get(base + '/api' + editor, { headers })), result.artwork);
