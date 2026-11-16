@@ -40,7 +40,9 @@ export function buildRecord(s: VisitState, artworks: ReceiptArtwork[], ex: Recei
   const tags = [...new Set<TasteTag>([...s.tastes, ...liked])].filter((t) => TASTE_LABEL[t]).slice(0, 4);
 
   return {
-    visitId: s.visitId, tasteProfile: s.tasteProfile, tastes: s.tastes, selectedDuration: s.duration ?? '30m', requestGeneration: s.requestGeneration, reactionReasons: reasons, dwell,
+    visitId: s.visitId, visitMode: s.visitMode, tasteProfile: s.tasteProfile, tastes: s.tastes,
+    selectedDuration: s.visitMode === 'exhibition_order' ? null : (s.duration ?? '30m'),
+    requestGeneration: s.requestGeneration, reactionReasons: reasons, dwell,
     tasteEvidenceReceipt: s.tasteEvidenceReceipt,
     artworkSnapshots,
     artworkReceiptEvidence: Object.keys(artworkReceiptEvidence).length ? artworkReceiptEvidence : undefined,

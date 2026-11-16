@@ -28,6 +28,7 @@ export default function U09Route() {
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
   const { recommendations, current, viewed, startedAt } = state;
+  const isExhibitionOrder = state.visitMode === 'exhibition_order';
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsync(
@@ -43,7 +44,7 @@ export default function U09Route() {
   );
   const returnToArtwork = entry?.returnToArtwork === true;
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
-  const title = isNextGuide ? '다음 작품 안내' : '추천 관람순서';
+  const title = isNextGuide ? '다음 작품 안내' : isExhibitionOrder ? '전시 관람순서' : '추천 관람순서';
   const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
   const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
   const openArtwork = () => {
@@ -58,7 +59,7 @@ export default function U09Route() {
   const back = () => {
     if (returnToArtwork) backToArtwork();
     else if (hasAppHistory()) navigate(-1);
-    else navigate(to('/recommend'), { replace: true });
+    else navigate(to(isExhibitionOrder ? '' : '/recommend'), { replace: true });
   };
 
   if (askFinished) return <FinishedVisitPrompt key={locationKey} />;
@@ -102,13 +103,18 @@ export default function U09Route() {
   const target = byId.get(recommendations[current].artworkId);
   if (!target) {
     const skip = () => {
+      if (isExhibitionOrder && current + 1 === recommendations.length && !viewed.length) {
+        dispatch({ type: 'resetVisit' });
+        navigate(to(), { replace: true });
+        return;
+      }
       dispatch({ type: 'skipCurrent', visitId: state.visitId, generation: state.requestGeneration, artworkId: recommendations[current].artworkId });
       navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
     };
     return (
       <MobileShell screenId="U-09" title={title} back={back}>
         <div className="notice-card is-err notice-center screen-center" role="alert">
-          <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
+          <p className="notice-body">{isExhibitionOrder ? '이 작품을 현재 볼 수 없어요.' : '추천 작품 정보를 불러올 수 없어요.'}</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
           <button className="btn ghost block" onClick={skip}>이 작품 건너뛰기</button>
         </div>
@@ -172,7 +178,7 @@ export default function U09Route() {
     >
       <div className="route-head">
         <span className="muted">
-          추천 작품 {current + 1}/{recommendations.length}
+          {isExhibitionOrder ? '안내 작품' : '추천 작품'} {current + 1}/{recommendations.length}
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (

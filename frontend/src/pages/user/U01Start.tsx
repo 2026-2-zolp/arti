@@ -12,6 +12,7 @@ import { Icon } from '../../components/Icon';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
+import { visitEntry } from '../../lib/appHistory';
 import { useVisit } from '../../store/VisitContext';
 import { exhibitionPath, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Exhibition } from '../../types';
@@ -59,16 +60,27 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   const { state: entry } = useLocation();
   const to = useExhibitionPath();
   const { data: ex, loading, error, reload } = useAsync(() => api.getExhibition(exhibitionId), [exhibitionId]);
+  const canStartInOrder = !!ex?.exhibitionOrder?.length;
 
   // 화면에 들어온 시점 기준으로 판단 (ExhibitionLayout이 전시를 맞춘 뒤라 같은 전시의 관람이다)
-  const [resumable] = useState(() => state.startedAt !== null);
+  const [resumable, setResumable] = useState(() => state.startedAt !== null);
   useEffect(() => {
     if (!resumable) dispatch({ type: 'resetVisit' });
   }, [resumable, dispatch]);
 
   const restart = () => {
-    dispatch({ type: 'resetVisit' });
-    navigate(to('/entry'));
+    if (canStartInOrder) setResumable(false);
+    else {
+      dispatch({ type: 'resetVisit' });
+      navigate(to('/entry'));
+    }
+  };
+
+  const startInOrder = () => {
+    if (!ex?.exhibitionOrder?.length) return;
+    const { id, title, venue } = ex;
+    dispatch({ type: 'startExhibitionOrder', exhibition: { id, title, venue }, artworkIds: ex.exhibitionOrder });
+    navigate(to('/artwork'), { state: { visitEntry: visitEntry(state, 0) } });
   };
 
   return (
@@ -80,12 +92,19 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
       footer={
         resumable ? (
           <div className="stack gap-10">
-            <button className="btn primary block" onClick={() => navigate(to('/route'))}>
+            <button className="btn primary block" onClick={() => navigate(to(state.visitMode === 'exhibition_order' ? '/artwork' : '/route'), {
+              state: state.visitMode === 'exhibition_order' ? { visitEntry: visitEntry(state) } : undefined,
+            })}>
               이어서 관람
             </button>
             <button className="btn outline block" onClick={restart}>
               새로 시작
             </button>
+          </div>
+        ) : canStartInOrder ? (
+          <div className="stack gap-10">
+            <button className="btn primary block" disabled={loading || !!error} onClick={startInOrder}>전시 순서로 바로 보기</button>
+            <button className="btn outline block" onClick={() => navigate(to('/entry'))}>내 취향으로 추천</button>
           </div>
         ) : (
           <>
@@ -118,7 +137,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
         <div className="resume-card">
           <strong>진행 중인 관람이 있어요</strong>
           <span className="muted small">
-            추천 작품 {state.recommendations.length}점 중 {state.viewed.length}점 감상
+            {state.visitMode === 'exhibition_order' ? '안내 작품' : '추천 작품'} {state.recommendations.length}점 중 {state.viewed.length}점 감상
           </span>
         </div>
       )}

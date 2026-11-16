@@ -44,6 +44,7 @@ services:
       PGUSER: arti
       PGPASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD}
       ALLOW_TEST_FIXTURES: ${ALLOW_TEST_FIXTURES:-false}
+      ARTI_EXHIBITION_ORDER_DEMO_ENABLED: ${ARTI_EXHIBITION_ORDER_DEMO_ENABLED:-false}
       MEDIA_ROOT: /app/media
     depends_on:
       db:

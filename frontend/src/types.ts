@@ -85,6 +85,7 @@ export interface Exhibition {
   rooms: Room[];
   entrance: MapPoint;      // 입구 위치 (경로 시작점)
   floorPlan: FloorPlan | null; // 없으면 rooms 사각형으로 기본 평면도를 그린다
+  exhibitionOrder?: string[];
 }
 
 export interface Artwork {
@@ -157,6 +158,7 @@ export type Reaction = 'like' | 'dislike';
 
 export type ReceiptExhibition = Pick<Exhibition, 'id' | 'title' | 'venue'>;
 export type ReceiptArtwork = Pick<Artwork, 'id' | 'title' | 'tags'>;
+export type VisitMode = 'exhibition_order';
 
 export interface User {
   tasteProfile?: TasteProfile | null;
@@ -177,7 +179,8 @@ export interface VisitRecord {
   tasteEvidenceReceipt?: string;
   artworkReceiptEvidence?: Record<string, string>;
   tastes?: TasteTag[];
-  selectedDuration?: VisitDuration;
+  selectedDuration?: VisitDuration | null;
+  visitMode?: VisitMode;
   requestGeneration?: number;
   reactionReasons?: Record<string, string>;
   dwell?: Record<string, number>;

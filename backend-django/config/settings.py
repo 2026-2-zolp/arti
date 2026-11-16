@@ -10,6 +10,7 @@ if len(SECRET_KEY) < 32 or SECRET_KEY.startswith('replace-'):
 ARTI_ENV = os.environ.get('ARTI_ENV', 'production')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true' and ARTI_ENV == 'development'
 ALLOW_TEST_FIXTURES = os.environ.get('ALLOW_TEST_FIXTURES', 'false').lower() == 'true'
+ARTI_EXHIBITION_ORDER_DEMO_ENABLED = os.environ.get('ARTI_EXHIBITION_ORDER_DEMO_ENABLED', 'false').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,api').split(',')
 CORS_ALLOWED_ORIGINS = tuple(v.strip() for v in os.environ.get('ARTI_ALLOWED_ORIGINS','').split(',') if v.strip())
 INSTALLED_APPS = ['django.contrib.contenttypes', 'rest_framework', 'arti']

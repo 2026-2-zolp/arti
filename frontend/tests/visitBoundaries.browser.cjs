@@ -794,14 +794,161 @@ async function savedV2(browser) {
   }
 }
 
+async function exhibitionOrder(browser, memberVisit) {
+  const page = await openPage(browser);
+  const errors = [];
+  const requests = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => {
+    if (request.method() === 'POST') requests.push(new URL(request.url()).pathname);
+  });
+  const ids = ['fixture-art03', 'fixture-art01', 'fixture-art05'];
+  const setMiddleVisibility = reviewStatus => fixtureCommand([
+    'from arti.models import Artwork',
+    'work = Artwork.objects.get(pk="fixture-art01", exhibition_id="fixture-ex01")',
+    'assert work.source == "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION"',
+    'Artwork.objects.filter(pk=work.pk).update(review_status=os.environ["ARTI_BROWSER_REVIEW_STATUS"])',
+  ], { ARTI_BROWSER_REVIEW_STATUS: reviewStatus });
+  const readState = () => visit(page);
+  let hidden = false;
+  try {
+    await page.setViewportSize({ width: 360, height: 760 });
+    await checkEnvironment(page);
+    assert.deepEqual((await body(await page.request.get('/api' + exhibition))).exhibitionOrder, ids);
+    const works = await body(await page.request.get('/api/artworks?exhibitionId=' + exhibitionId));
+    const title = id => works.find(work => work.id === id).title;
+    const seeArtwork = id => page.getByRole('heading', { name: title(id), exact: true }).waitFor();
+    const member = memberVisit ? await newMember(page) : null;
+    if (member) {
+      await page.goto('/login');
+      await login(page, member);
+      await page.waitForURL(base.href);
+    }
+    requests.length = 0;
+    await page.goto(exhibition);
+    await button(page, '전시 순서로 바로 보기').click();
+    await page.waitForURL('**' + exhibition + '/artwork');
+    await seeArtwork(ids[0]);
+    assert.deepEqual(requests, []);
+    assert.equal(await page.getByText('이 작품이 추천된 이유', { exact: true }).count(), 0);
+    const initial = await readState();
+    assert.equal(initial.visitMode, 'exhibition_order');
+    assert.deepEqual(initial.recommendations.map(rec => rec.artworkId), ids);
+    assert.ok(initial.startedAt);
+    assert.equal(initial.duration, null);
+    assert.equal(initial.ownerId, member?.user.id ?? null);
+
+    await page.goBack();
+    await button(page, '이어서 관람').click();
+    await seeArtwork(ids[0]);
+    assert.equal((await readState()).visitId, initial.visitId);
+
+    const next = button(page, '다음 작품 안내');
+    await next.click();
+    await button(page, '2번 작품 감상하기').waitFor();
+    await page.reload();
+    await button(page, '2번 작품 감상하기').waitFor();
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+    await button(page, '뒤로가기').click();
+    await seeArtwork(ids[0]);
+    await next.click();
+    await button(page, '2번 작품 감상하기').waitFor();
+    await page.goBack();
+    await seeArtwork(ids[0]);
+    assert.equal((await readState()).visitId, initial.visitId);
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+    await page.goForward();
+    await button(page, '2번 작품 감상하기').waitFor();
+
+    setMiddleVisibility('pending');
+    hidden = true;
+    assert.deepEqual((await body(await page.request.get('/api' + exhibition))).exhibitionOrder, [ids[0], ids[2]]);
+    await page.reload();
+    await page.getByRole('alert').getByText('이 작품을 현재 볼 수 없어요.', { exact: true }).waitFor();
+    await button(page, '이 작품 건너뛰기').click();
+    await button(page, '3번 작품 감상하기').click();
+    await seeArtwork(ids[2]);
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+
+    let firstReceipt;
+    if (member) {
+      await page.route('**/api/visits', async route => {
+        const response = await route.fetch();
+        firstReceipt = await body(response, 201);
+        await route.abort('failed');
+      }, { times: 1 });
+    }
+    await button(page, '관람 마치기').click();
+    await page.getByText('전시 순서 안내', { exact: true }).waitFor();
+    if (member) {
+      await page.getByText('관람기록을 저장하지 못했어요', { exact: true }).waitFor();
+      const [replay] = await Promise.all([
+        page.waitForResponse(r => isResponse(r, '/api/visits', 'POST')),
+        button(page, '다시 저장').click(),
+      ]);
+      const record = await body(replay);
+      assert.equal(record.id, firstReceipt.id);
+      assert.equal(record.visitId, initial.visitId);
+      assert.equal(record.visitMode, 'exhibition_order');
+      assert.equal(record.selectedDuration, null);
+      assert.deepEqual(record.viewedArtworkIds, [ids[0], ids[2]]);
+      await page.reload();
+      await page.getByText('관람기록에 저장되었어요', { exact: true }).waitFor();
+      const rows = await body(await page.request.get('/api/users/' + member.user.id + '/visits', {
+        headers: headersFor(await currentToken(page)),
+      }));
+      assert.deepEqual(rows.map(row => row.id), [record.id]);
+      assert.ok(requests.length >= 2 && requests.every(path => path === '/api/visits'));
+    } else {
+      await page.getByText(/비회원 관람기록은 서버에 저장되지 않아요/).waitFor();
+      await page.reload();
+      await page.getByText(/비회원 관람기록은 서버에 저장되지 않아요/).waitFor();
+      assert.deepEqual((await readState()).viewed, [ids[0], ids[2]]);
+      assert.deepEqual(requests, []);
+    }
+    assert.deepEqual(errors, []);
+    console.log(member ? 'PASS exhibition order member: same receipt ID and one row after response loss and reload'
+      : 'PASS exhibition order guest: one click, app/browser back, refresh, private work skipped, zero saves');
+  } finally {
+    try {
+      if (hidden) setMiddleVisibility('approved');
+    } finally {
+      await page.close();
+    }
+  }
+}
+
+async function exhibitionOrderV2(browser) {
+  const page = await openPage(browser);
+  try {
+    await page.goto(exhibition);
+    await button(page, '내 취향으로 추천').click();
+    await button(page, '비회원으로 계속').click();
+    await choosePairs(page);
+    await button(page, '취향 미리 확인').click();
+    await button(page, '이 취향으로 계속').click();
+    assert.equal((await recommend(page)).length, 3);
+    assert.equal((await visit(page)).visitMode, undefined);
+    await button(page, '지도에서 관람순서 보기').waitFor();
+    console.log('PASS exhibition order secondary entry: unchanged V2 five pairs and three recommendations');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
     if (suite === 'saved-v2') return await savedV2(browser);
+    if (suite === 'exhibition-order') {
+      await exhibitionOrder(browser, false);
+      await exhibitionOrder(browser, true);
+      return await exhibitionOrderV2(browser);
+    }
     if (suite !== 'survey-map') {
       await receiptSession(browser, false);
       await receiptSession(browser, true);
