@@ -2,11 +2,13 @@
 [CmdletBinding()]
 param(
     [string]$Revision = 'HEAD',
-    [ValidateRange(1024, 65535)] [int]$HttpsPort = 5623
+    [ValidateRange(1024, 65535)] [int]$HttpsPort = 5623,
+    [switch]$ChromeReceipt
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+. (Join-Path $PSScriptRoot 'artiTestNetwork.ps1')
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $trial = 'arti-preflight-' + [guid]::NewGuid().ToString('N').Substring(0, 12)
 $reportDir = Join-Path $repo "data/private/$trial"
@@ -17,6 +19,7 @@ $webImage = "${trial}-web:local"
 $builtImages = @()
 $pendingSource = $null
 $pendingCandidate = $null
+$sourceNetwork = $null
 $faultNetwork = $null
 $recoveryNetwork = $null
 $report = [ordered]@{ run = $trial; revision = $null; status = 'failed'; failedStage = $null; stages = [ordered]@{} }
@@ -52,6 +55,17 @@ function Convert-ProbeJson($response) {
     ConvertFrom-Json -InputObject $response.Content -NoEnumerate
 }
 
+function Invoke-ProbeReceiptChrome($phase, $config) {
+    $inputJson = ConvertTo-Json -InputObject $config -Depth 5 -Compress
+    $output = $inputJson | & node "$repo/frontend/tests/receiptRestore.browser.cjs" $phase 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        $report.nativeExit = $LASTEXITCODE
+        if (($output -join ' ') -match 'Chrome receipt step ([a-z-]+) failed') { $report.chromeStep = $Matches[1] }
+        throw 'Chrome receipt verification failed.'
+    }
+    ConvertFrom-Json -InputObject ($output -join "`n")
+}
+
 function Get-ProbeWeb([string[]]$project) {
     $port = Invoke-ProbeDocker compose @project port web 80
     if ($port -notmatch '^127\.0\.0\.1:[0-9]+$') { throw 'The probe web service must use IPv4 loopback.' }
@@ -76,21 +90,6 @@ function Test-ProbeStartup([string[]]$project, $base) {
     if ($ready.database -ne 'postgresql' -or $ai.docent -ne 'disabled' -or $ai.analysis -ne 'disabled') {
         throw 'Expected PostgreSQL readiness with AI disabled.'
     }
-}
-
-function New-ProbeNetwork($name, [switch]$Internal) {
-    $mode = @(if ($Internal) { '--internal' })
-    for ($attempt = 0; $attempt -lt 8; $attempt++) {
-        $prefix = "10.247.$(Get-Random -Maximum 256)"
-        $block = (Get-Random -Maximum 16) * 16
-        $id = docker network create --driver bridge @mode --subnet "$prefix.$block/28" --ip-range "$prefix.$block/29" $name 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            # Reserve the upper half of the subnet for deterministic API replacement addresses.
-            return @{ id = $id; name = $name; firstApi = "$prefix.$($block + 9)"; nextApi = "$prefix.$($block + 10)" }
-        }
-        if (($id -join ' ') -notmatch 'Pool overlaps') { throw 'Could not create the isolated candidate network.' }
-    }
-    throw 'No unused subnet found for the isolated candidate network.'
 }
 
 function Wait-ProbeNginxReadyStatus($base, $expected) {
@@ -179,7 +178,15 @@ services:
       - '127.0.0.1::80'
 "@ | Set-Content -LiteralPath $overlay -Encoding utf8
     $compose = @('--env-file', $envFile, '-f', "$checkout/compose.yaml", '-f', $overlay)
-    $source = $compose + @('-p', "$trial-src")
+    $sourceNetwork = New-ArtiTestNetwork "$trial-source"
+    $sourceOverlay = Join-Path $scratch 'compose.source.yaml'
+    @"
+networks:
+  default:
+    external: true
+    name: $($sourceNetwork.name)
+"@ | Set-Content -LiteralPath $sourceOverlay -Encoding utf8
+    $source = $compose + @('-p', "$trial-src", '-f', $sourceOverlay)
     $restore = $compose + @('-p', "$trial-dst")
     $pendingSource = $source
     Invoke-ProbeDocker compose @source up -d --no-build --wait --wait-timeout 100 web | Out-Null
@@ -190,30 +197,44 @@ services:
     if ($LASTEXITCODE -ne 1 -or ($guard -join ' ') -notmatch 'Test fixtures require development/test' -or $accounts -ne '0') {
         throw 'Expected a blank account table and the production fixture guard.'
     }
-    $report.stages[$stage] = @{ ready = 200; database = 'postgresql'; migrateExit = 0; initialAccounts = 0; fixtureGuard = 'passed' }
+    $report.stages[$stage] = @{ ready = 200; database = 'postgresql'; migrateExit = 0; initialAccounts = 0; fixtureGuard = 'passed'; networkAllocation = $sourceNetwork.allocation }
 
     $stage = 'source-receipt'
     Write-Host '[source-receipt] Save and read a synthetic receipt on the source stack'
     Invoke-ProbeDocker compose @source exec -T -e ARTI_ENV=test -e ALLOW_TEST_FIXTURES=true api python manage.py load_test_fixture | Out-Null
     Invoke-ProbeDocker compose @source exec -T -e "ARTI_BOOTSTRAP_PASSWORD=$password" api python manage.py bootstrap_admin --login-id demo-admin --name 'Synthetic preflight' | Out-Null
     $ownerLogin = @{ email = 'preflight-owner@example.test'; password = $password }
-    $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/signup' 200 @{} ($ownerLogin + @{ termsAccepted = $true; termsVersion = '2026-11-14-draft.1' }))
-    $order = @('fixture-art01', 'fixture-art03', 'fixture-art05')
-    $payload = @{
-        visitId = [guid]::NewGuid().ToString(); exhibitionId = 'fixture-ex01'; viewedArtworkIds = $order
-        date = [DateTime]::UtcNow.ToString('o'); durationMin = 5; selectedDuration = '30m'; recommendedCount = 3; requestGeneration = 1
-        reactions = @{ 'fixture-art01' = 'like' }; reactionReasons = @{ 'fixture-art01' = 'Synthetic preflight' }
+    if ($ChromeReceipt) {
+        $original = Invoke-ProbeReceiptChrome 'source' @{ base = $sourceUrl; ownerEmail = $ownerLogin.email; password = $password }
+        if ($original.created -ne 201 -or $original.saveRequests -ne 1) { throw 'The Chrome visit did not save exactly once.' }
+        $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/login' 200 @{} $ownerLogin)
+        $order = @($original.artworkIds)
+        $expectedVisit = $original.visitId
+    } else {
+        $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/signup' 200 @{} ($ownerLogin + @{ termsAccepted = $true; termsVersion = '2026-11-14-draft.1' }))
+        $order = @('fixture-art01', 'fixture-art03', 'fixture-art05')
+        $payload = @{
+            visitId = [guid]::NewGuid().ToString(); exhibitionId = 'fixture-ex01'; viewedArtworkIds = $order
+            date = [DateTime]::UtcNow.ToString('o'); durationMin = 5; selectedDuration = '30m'; recommendedCount = 3; requestGeneration = 1
+            reactions = @{ 'fixture-art01' = 'like' }; reactionReasons = @{ 'fixture-art01' = 'Synthetic preflight' }
+        }
+        $expectedVisit = $payload.visitId
+        $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 @{ Authorization = "Bearer $($owner.token)" } $payload)
     }
     $sourceMemberHeaders = @{ Authorization = "Bearer $($owner.token)" }
-    $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 $sourceMemberHeaders $payload)
-    if (!$original.id -or $original.visitId -ne $payload.visitId) { throw 'The saved synthetic visit did not match its input.' }
+    if (!$original.id -or $original.visitId -ne $expectedVisit -or $original.userId -ne $owner.user.id) {
+        throw 'The saved synthetic visit did not match its input or owner.'
+    }
     $path = "/api/visits/$($original.id)"
     $sourceReceipt = Invoke-ProbeHttp $sourceUrl $path 200 $sourceMemberHeaders
     $report.stages[$stage] = @{ created = 201; lookup = 200 }
+    if ($ChromeReceipt) {
+        $report.stages[$stage].chrome = @{ receiptId = $original.id; saveRequests = $original.saveRequests }
+    }
 
     $stage = 'candidate-migration-failure'
     Write-Host '[candidate-migration-failure] Reject a bad migration credential while the source stays online'
-    $faultNetwork = New-ProbeNetwork "$trial-fault" -Internal
+    $faultNetwork = New-ArtiTestNetwork "$trial-fault" -Internal -ExplicitSubnet
     $faultOverlay = Join-Path $scratch 'compose.fault.yaml'
     @"
 services:
@@ -253,7 +274,7 @@ networks:
     $report.stages[$stage] = @{ composeUpExit = $upExit; migrateExit = 1; databaseAuthRejected = $true; candidateApiBlocked = $true; candidateWebBlocked = $true; publicTables = 0; sourceReady = 200; sourceReceipt = 200; sameSourceReceipt = $true }
     Invoke-ProbeDocker compose @faulted down | Out-Null
     $pendingCandidate = $restore
-    Invoke-ProbeDocker network rm $faultNetwork.id | Out-Null
+    Remove-ArtiTestNetwork $faultNetwork
     $faultNetwork = $null
 
     $stage = 'synthetic-backup'
@@ -271,10 +292,12 @@ networks:
     }
     Invoke-ProbeDocker compose @source down --volumes | Out-Null
     $pendingSource = $null
+    Remove-ArtiTestNetwork $sourceNetwork
+    $sourceNetwork = $null
 
     $stage = 'isolated-restore'
     Write-Host '[isolated-restore] Correct the candidate configuration and restore its blank DB and media'
-    $recoveryNetwork = New-ProbeNetwork "$trial-recovery"
+    $recoveryNetwork = New-ArtiTestNetwork "$trial-recovery" -ExplicitSubnet
     $recoveryOverlay = Join-Path $scratch 'compose.recovery.yaml'
     @"
 services:
@@ -314,7 +337,8 @@ networks:
     Invoke-ProbeHttp $restoreUrl $asset 200 | Out-Null
     $owner = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/login' 200 @{} $ownerLogin)
     $memberHeaders = @{ Authorization = "Bearer $($owner.token)" }
-    $other = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/signup' 200 @{} @{ email = 'preflight-other@example.test'; password = $password; termsAccepted = $true; termsVersion = '2026-11-14-draft.1' })
+    $otherEmail = 'preflight-other@example.test'
+    $other = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/signup' 200 @{} @{ email = $otherEmail; password = $password; termsAccepted = $true; termsVersion = '2026-11-14-draft.1' })
     $admin = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/admin/login' 200 @{} @{ id = 'demo-admin'; password = $password })
     $adminHeaders = @{ 'X-Admin-Token' = $admin.token }
     $memberPath = "/api/users/$($owner.user.id)/visits"
@@ -336,6 +360,17 @@ networks:
     Invoke-ProbeHttp $restoreUrl '/api/uploads/fixture-private.png' 404 $memberHeaders | Out-Null
     Invoke-ProbeHttp $restoreUrl '/api/admin/uploads/fixture-private.png' 200 $adminHeaders | Out-Null
     $report.stages[$stage] = @{ spa = 200; asset = 200; sameReceipt = $true; owner = 200; admin = 200; other = 403; guest = 401; memberAsAdmin = 401; media = @(200, 404, 200) }
+    if ($ChromeReceipt) {
+        $verified = Invoke-ProbeReceiptChrome 'restored' @{
+            base = $restoreUrl; ownerEmail = $ownerLogin.email; otherEmail = $otherEmail; adminId = 'demo-admin'; password = $password
+            expected = $original
+        }
+        if ($verified.id -ne $original.id -or $verified.receipts -ne 1 -or $verified.saveRequests -ne 0) {
+            throw 'Chrome did not restore the same single receipt without saving again.'
+        }
+        $report.stages[$stage].chrome = @{ receiptId = $verified.id; receipts = $verified.receipts; saveRequests = $verified.saveRequests
+            owner = $verified.owner; admin = $verified.admin; other = $verified.other; guest = $verified.guest; reload = $verified.reload }
+    }
 
     $stage = 'nginx-api-recovery'
     Write-Host '[nginx-api-recovery] Recreate the upstream at a second IP while keeping Nginx running'
@@ -393,7 +428,7 @@ services:
     $report.stages[$stage] = @{ ready = @(200, 502, 200); oldApi = $oldIp; newApi = $newIp; sameNginx = $true; spa = @(200, 200); sameAdminQuery = $true; sameReceipt = $true }
     Invoke-ProbeDocker compose @moved down --volumes | Out-Null
     $pendingCandidate = $null
-    Invoke-ProbeDocker network rm $recoveryNetwork.id | Out-Null
+    Remove-ArtiTestNetwork $recoveryNetwork
     $recoveryNetwork = $null
 
     $stage = 'https-callback-logs'
@@ -411,9 +446,9 @@ services:
             try { Invoke-ProbeDocker compose @project down --volumes | Out-Null } catch { $report.cleanup = 'failed' }
         }
     }
-    foreach ($network in @($faultNetwork, $recoveryNetwork)) {
+    foreach ($network in @($sourceNetwork, $faultNetwork, $recoveryNetwork)) {
         if ($network) {
-            try { Invoke-ProbeDocker network rm $network.id | Out-Null } catch { $report.cleanup = 'failed' }
+            try { Remove-ArtiTestNetwork $network } catch { $report.cleanup = 'failed' }
         }
     }
     if ($builtImages.Count) {

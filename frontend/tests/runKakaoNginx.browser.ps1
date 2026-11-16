@@ -8,6 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+. (Join-Path $repo 'scripts/artiTestNetwork.ps1')
 $apiMount = @()
 $webMount = @()
 if (-not $UseImageContents) {
@@ -20,7 +21,7 @@ if (-not $UseImageContents -and -not (Test-Path -LiteralPath "$repo/frontend/dis
 $prefix = 'arti-kakao-https-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
 $scratch = Join-Path $repo "data/private/$prefix"
 $previousPort = $env:ARTI_KAKAO_BROWSER_PORT
-$net = $db = $api = $web = $null
+$network = $db = $api = $web = $null
 
 function Invoke-ArtiDocker {
     docker @args
@@ -49,8 +50,9 @@ try {
     if (-not $conf.Contains('    listen 80;')) { throw 'The static Nginx config no longer has the expected test overlay point.' }
     Set-Content -LiteralPath "$scratch/nginx.conf" -Encoding utf8NoBOM -NoNewline -Value $conf.Replace('    listen 80;', $tls)
 
-    $net = Invoke-ArtiDocker network create $prefix
-    $db = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-db" --network $net --network-alias api -e POSTGRES_DB=arti_kakao_browser_nginx -e POSTGRES_USER=arti -e POSTGRES_PASSWORD=only-nginx-kakao-fixture postgres:17-alpine
+    $network = New-ArtiTestNetwork $prefix
+    Write-Host "[https-network] Bridge allocation: $($network.allocation)"
+    $db = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-db" --network $network.id --network-alias api -e POSTGRES_DB=arti_kakao_browser_nginx -e POSTGRES_USER=arti -e POSTGRES_PASSWORD=only-nginx-kakao-fixture postgres:17-alpine
     for ($attempt = 0; $attempt -lt 30; $attempt++) {
         docker exec $db pg_isready -q -h 127.0.0.1 -U arti -d arti_kakao_browser_nginx
         if ($LASTEXITCODE -eq 0) { break }
@@ -72,8 +74,8 @@ exec gunicorn 'arti.tests.kakao_browser_server:create_gunicorn_application()' --
         '-e','PGUSER=arti','-e','PGPASSWORD=only-nginx-kakao-fixture','-e','MEDIA_ROOT=/tmp/fixture-media'
     )
     # Django shares only this test DB's network namespace to keep PGHOST on loopback.
-    $api = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-api" --network "container:$db" @fixtureEnv @apiMount --entrypoint sh $ApiImage -ec $apiProgram
-    $web = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-web" --network $net -p "127.0.0.1:${HttpsPort}:443" --entrypoint nginx -v "$scratch/nginx.conf`:/etc/nginx/conf.d/default.conf:ro" -v "$scratch`:/run/kakao-https:ro" @webMount $WebImage -g 'daemon off;'
+    $api = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-api" --network "container:$db" @fixtureEnv @apiMount --entrypoint sh $ApiImage -ec ($apiProgram -replace "`r`n", "`n")
+    $web = Invoke-ArtiDocker run --rm -d --pull never --name "$prefix-web" --network $network.id -p "127.0.0.1:${HttpsPort}:443" --entrypoint nginx -v "$scratch/nginx.conf`:/etc/nginx/conf.d/default.conf:ro" -v "$scratch`:/run/kakao-https:ro" @webMount $WebImage -g 'daemon off;'
 
     $base = "https://127.0.0.1:$HttpsPort"
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
@@ -116,11 +118,14 @@ exec gunicorn 'arti.tests.kakao_browser_server:create_gunicorn_application()' --
     foreach ($container in @($web, $api, $db)) {
         if ($container) { docker rm -f $container | Out-Null }
     }
-    if ($net) { docker network rm $net | Out-Null }
-    foreach ($file in @('nginx.conf', 'key.pem', 'cert.pem')) {
-        Remove-Item -LiteralPath (Join-Path $scratch $file) -ErrorAction SilentlyContinue
+    try {
+        if ($network) { Remove-ArtiTestNetwork $network }
+    } finally {
+        foreach ($file in @('nginx.conf', 'key.pem', 'cert.pem')) {
+            Remove-Item -LiteralPath (Join-Path $scratch $file) -ErrorAction SilentlyContinue
+        }
+        if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch }
+        $env:ARTI_KAKAO_BROWSER_PORT = $previousPort
+        Pop-Location
     }
-    if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch }
-    $env:ARTI_KAKAO_BROWSER_PORT = $previousPort
-    Pop-Location
 }
