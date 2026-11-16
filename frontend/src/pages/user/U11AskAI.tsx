@@ -66,7 +66,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     return () => window.clearTimeout(timer);
   }, [retryWindow]);
   const generation = useRef(0);
-  const [contentChanged, setContentChanged] = useState(false);
+  const [artworkIssue, setArtworkIssue] = useState<'changed' | 'unavailable' | null>(null);
   const [input, setInput] = useState(() => load(draftKey, '', 'session'));
   useEffect(() => {
     if (input) save(draftKey, input, 'session');
@@ -84,7 +84,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const selectedQuestion = questionIndex === undefined ? undefined :
     entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
-  const chatReady = !!key && loadedChatKey === key && !contentChanged;
+  const chatReady = !!key && loadedChatKey === key && !artworkIssue;
   const canAsk = chatReady && !pending && !retryWindow;
   useLayoutEffect(() => {
     const shell = shellRef.current;
@@ -132,8 +132,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       if (fromInput) setInput((draft) => draft === question ? '' : draft);
     } catch (e) {
       if (generation.current !== active) return;
-      if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') {
-        setContentChanged(true);
+      if (e instanceof ApiError && e.status === 404 && e.code === 'NOT_FOUND') {
+        setArtworkIssue('unavailable');
+        setFailure({ message: '이 작품을 더 이상 볼 수 없어요. 작품 화면으로 돌아가 주세요.' });
+      } else if (e instanceof ApiError && e.code === 'CONTENT_CHANGED') {
+        setArtworkIssue('changed');
         setFailure({ message: '작품 자료가 변경됐어요. 작품 화면에서 새 내용을 확인해 주세요.' });
         reload();
       } else {
@@ -189,14 +192,14 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                   {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
                 </button>
               )}
-              {contentChanged && <button type="button" className="link-btn" onClick={backToArtwork}>작품으로 돌아가기</button>}
+              {artworkIssue && <button type="button" className="link-btn" onClick={backToArtwork}>작품으로 돌아가기</button>}
             </div>
           )}
           <form className="chat-input" onSubmit={onSubmit}>
             <input
               type="text"
               enterKeyHint="send"
-              disabled={contentChanged}
+              disabled={Boolean(artworkIssue)}
               maxLength={500}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -214,7 +217,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         </>
       }
     >
-      {w && (
+      {w && artworkIssue !== 'unavailable' && (
         <div className="chat-artwork">
           <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1} fit="contain" />
           <div>
@@ -232,7 +235,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
         </div>
       )}
-      {selectedQuestion && !contentChanged && (
+      {selectedQuestion && !artworkIssue && (
         <section className="docent-question bubble ai" aria-labelledby="docent-question-heading">
           <h2 id="docent-question-heading">고른 관찰 질문</h2>
           <p id="docent-question-text">{selectedQuestion}</p>

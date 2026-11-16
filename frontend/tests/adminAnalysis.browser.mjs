@@ -253,6 +253,138 @@ async function verifyProposalDiscard(page, request, base, headers) {
   }
 }
 
+async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imageBytes) {
+  const setup = admin.request;
+  const seed = await json(await setup.get(base + '/api/admin/exhibitions/fixture-ex01', { headers }));
+  const exhibition = await json(await setup.post(base + '/api/admin/exhibitions', {
+    headers, data: { ...seed, title: '공개 수명 검증용 합성 전시' },
+  }));
+  const artwork = await json(await setup.post(base + '/api/admin/artworks', {
+    headers, data: {
+      ...artworkTemplate, exhibitionId: exhibition.id, title: '공개 수명 검증용 합성 작품', position: null,
+      summary: '', summaryKeywords: [], summaryStatus: 'none',
+      guideIntro: '', guidedLooking: [], guidedHints: [], guideStatus: 'none',
+    },
+  }));
+  const adminPath = '/api/admin/artworks/' + artwork.id;
+  const publicPath = '/api/artworks/' + artwork.id;
+  const tour = '/exhibitions/' + exhibition.id;
+  const lookup = () => setup.get(base + publicPath);
+  const recommendations = async () => (await json(await setup.post(base + '/api/recommendations', {
+    data: { exhibitionId: exhibition.id, duration: '30m', tastes: [] },
+  }))).map(item => item.artworkId);
+  const button = (page, name) => page.getByRole('button', { name, exact: true });
+  const adminAction = async (label, method, pathname) => {
+    const response = pendingResponse(admin, method, pathname);
+    await button(admin, label).click();
+    return json(await response);
+  };
+  const guideQuestion = '확정한 작품의 왼쪽에서 어떤 모양이 보이나요?';
+  const guideHint = '왼쪽의 큰 색 덩어리를 살펴보세요.';
+
+  await admin.goto(base + '/admin/exhibitions');
+  await admin.getByRole('link', { name: exhibition.title, exact: true }).press('Enter');
+  await admin.getByRole('link', { name: artwork.title, exact: true }).press('Enter');
+  await admin.waitForURL('**/admin/artworks/' + artwork.id);
+  await adminAction('관람가이드 다시 생성', 'POST', adminPath + '/analyze');
+  await admin.getByLabel(/관찰 질문 — 한 줄에 하나/).fill(guideQuestion + ' | ' + guideHint);
+  const approved = await adminAction('가이드 확정 (수정 내용 포함 저장)', 'PUT', adminPath);
+  const beforePlacement = await json(await lookup());
+  assert.deepEqual(beforePlacement.guidedLooking, [guideQuestion]);
+  assert.equal(beforePlacement.guideRevision, approved.guideRevision);
+  assert.deepEqual(await recommendations(), []);
+
+  await admin.getByRole('main').getByRole('link', { name: '위치·지도 관리', exact: true }).click();
+  await admin.waitForURL(url => url.pathname === '/admin/map' && url.searchParams.get('artwork') === artwork.id);
+  const planResponse = pendingResponse(admin, 'POST', `/api/admin/exhibitions/${exhibition.id}/floor-plan`);
+  await admin.locator('.a-map-layout input[type=file]').setInputFiles({ name: 'synthetic-plan.png', mimeType: 'image/png', buffer: imageBytes });
+  const plan = await json(await planResponse);
+  assert.ok(plan.floorPlan.file);
+  await admin.locator('.a-pos-list').getByRole('button', { name: new RegExp(artwork.title) }).click();
+  const adminMap = admin.locator('.floor-map.has-plan.clickable');
+  await adminMap.click({ position: { x: 170, y: 140 } });
+  const placed = await adminAction('위치 저장', 'PUT', adminPath);
+  const published = await json(await lookup());
+  assert.deepEqual(published.position, placed.position);
+  assert.equal(published.guideRevision, approved.guideRevision);
+  assert.equal(published.sourceVersion, approved.sourceVersion);
+  assert.deepEqual(await recommendations(), [artwork.id]);
+  await admin.getByRole('link', { name: '작품 관리로 이동', exact: true }).click();
+
+  const visitor = await admin.context().browser().newPage({ viewport: { width: 360, height: 740 } });
+  visitor.setDefaultTimeout(10000);
+  try {
+    await visitor.goto(base + tour + '/taste');
+    for (let pair = 1; pair <= 5; pair++) {
+      await visitor.getByText(`${pair}/5`, { exact: true }).waitFor();
+      await visitor.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
+    }
+    await button(visitor, '취향 미리 확인').click();
+    await button(visitor, '이 취향으로 계속').click();
+    await visitor.getByRole('radio', { name: /30분/ }).click();
+    const recommendation = pendingResponse(visitor, 'POST', '/api/recommendations');
+    await button(visitor, '추천 받기').click();
+    assert.deepEqual((await json(await recommendation)).map(item => item.artworkId), [artwork.id]);
+    await button(visitor, '지도에서 관람순서 보기').click();
+    const marker = visitor.locator('.floor-map.has-plan .fm-marker.current');
+    await marker.waitFor();
+    assert.equal(await marker.locator('title').textContent(), artwork.title);
+    const height = 100 / (plan.floorPlan.width / plan.floorPlan.height);
+    assert.equal(await marker.getAttribute('transform'), `translate(${placed.position.x} ${placed.position.y * height / 100})`);
+    assert.equal(await visitor.locator('.floor-map image').getAttribute('href'), '/api/uploads/' + plan.floorPlan.file);
+    await button(visitor, '관람 시작하기').click();
+    await visitor.getByRole('heading', { name: artwork.title, exact: true }).waitFor();
+    await visitor.getByRole('tab', { name: '관람가이드', exact: true }).click();
+    await visitor.locator('.guided-list li').filter({ hasText: guideQuestion }).waitFor();
+    await button(visitor, '1번 질문으로 대화하기').click();
+    const askPath = publicPath + '/ask';
+    const input = visitor.getByRole('textbox', { name: '질문 입력' });
+    const submit = async (question, status = 200) => {
+      await input.fill(question);
+      const response = pendingResponse(visitor, 'POST', askPath);
+      await button(visitor, '보내기').click();
+      const request = await response;
+      assert.equal(request.request().postDataJSON().entryContext.contentVersion, published.contentVersion);
+      return json(request, status);
+    };
+    const before = await submit('확정 가이드를 기준으로 먼저 질문합니다.');
+    assert.equal(before.answer, guideQuestion);
+    assert.deepEqual(before.sourceRefs, [{ artworkId: artwork.id, sourceVersion: published.sourceVersion, kind: 'guide', revision: published.guideRevision }]);
+    await visitor.getByRole('log').getByText(guideQuestion, { exact: false }).waitFor();
+
+    await adminAction('관람가이드 다시 생성', 'POST', adminPath + '/analyze');
+    await button(admin, '관람가이드 제안 폐기').click();
+    const discarded = pendingResponse(admin, 'POST', adminPath + '/discard-ai');
+    await admin.getByRole('alertdialog').getByRole('button', { name: '제안 폐기', exact: true }).click();
+    await json(await discarded);
+    const afterDiscard = await json(await lookup());
+    for (const key of ['position', 'guidedLooking', 'guidedHints', 'sourceVersion', 'contentVersion', 'guideRevision']) {
+      assert.deepEqual(afterDiscard[key], published[key]);
+    }
+    assert.deepEqual(await recommendations(), [artwork.id]);
+    const repeat = await submit('같은 공개본을 기준으로 다시 질문합니다.');
+    assert.deepEqual(repeat.sourceRefs, before.sourceRefs);
+
+    await admin.getByLabel('검수 상태').selectOption('source_check');
+    await adminAction('저장', 'PUT', adminPath);
+    assert.equal((await lookup()).status(), 404);
+    assert.deepEqual(await json(await setup.get(base + '/api/artworks?exhibitionId=' + exhibition.id)), []);
+    assert.deepEqual(await recommendations(), []);
+    // An already open visitor tab still has its old guide until the first rejected request.
+    const draft = '철회 뒤에도 보존할 질문입니다.';
+    assert.equal((await submit(draft, 404)).code, 'NOT_FOUND');
+    await visitor.getByRole('alert').getByText('이 작품을 더 이상 볼 수 없어요. 작품 화면으로 돌아가 주세요.', { exact: true }).waitFor();
+    assert.equal(await input.inputValue(), draft);
+    assert.equal(await button(visitor, '보내기').isEnabled(), false);
+    assert.equal(await visitor.getByRole('log').getByText(guideQuestion, { exact: false }).count(), 0);
+    await button(visitor, '작품으로 돌아가기').click();
+    await button(visitor, '이 작품 건너뛰기').waitFor();
+    console.log('PASS public lifecycle: admin navigation, placement, guide confirmation, discard, withdrawal, recommendation and guest docent references');
+  } finally {
+    await visitor.close();
+  }
+}
+
 async function verify(base) {
   const gate = `${base}/api/__admin_analysis_test__/gate`;
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -415,6 +547,7 @@ async function verify(base) {
     console.log('PASS admin image option: image bytes → text only → same image bytes; source and confirmed summary preserved');
     await verifyRegeneration(a, context.request, base, gate, headers);
     await verifyProposalDiscard(a, context.request, base, headers);
+    await verifyPublicLifecycle(a, base, headers, template, imageBytes);
     assert.deepEqual(errors, []);
   } finally {
     await context.request.post(gate).catch(() => {});
