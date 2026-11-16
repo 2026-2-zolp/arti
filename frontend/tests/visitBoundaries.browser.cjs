@@ -116,7 +116,7 @@ async function receiptSession(browser, switchAccount) {
     await button(page, '이번 관람만 적용').click();
     const recommended = (await recommend(page)).map(item => item.artworkId);
     assert.equal(new Set(recommended).size, 3);
-    await button(page, '2D 지도에서 경로 보기').click();
+    await button(page, '지도에서 관람순서 보기').click();
     await button(page, '관람 시작하기').click();
     await button(page, '좋아요').click();
     await button(page, reason).click();
@@ -313,7 +313,7 @@ async function surveyAndMap(browser) {
     await chooseNewSurveyProfile(page);
     assert.deepEqual(await recommend(page, /여유롭게/), []);
     await page.getByText('지금 추천할 수 있는 작품이 없어요', { exact: true }).waitFor();
-    await button(page, '2D 지도에서 경로 보기').waitFor({ state: 'hidden' });
+    await button(page, '지도에서 관람순서 보기').waitFor({ state: 'hidden' });
     const placed = originalWorks.slice(0, 3);
     assert.equal(placed.length, 3);
     for (const [index, work] of placed.entries()) {
@@ -336,7 +336,7 @@ async function surveyAndMap(browser) {
       }));
       assert.deepEqual(picks.map(item => item.artworkId), placed.map(work => work.id));
     }
-    await button(page, '2D 지도에서 경로 보기').click();
+    await button(page, '지도에서 관람순서 보기').click();
     const floorMap = page.locator('.floor-map');
     await floorMap.locator('image').waitFor();
     assert((await floorMap.locator('image').getAttribute('href')).includes(currentPlan.floorPlan.file));
@@ -468,7 +468,7 @@ async function completeShortageVisit(browser, fixture, duration, requested, sign
     await page.getByText(`선택한 시간의 기준은 ${requested}점이에요. 지금 추천할 수 있는 작품만 안내해요.`, { exact: true }).waitFor();
     assert.deepEqual(await page.locator('.rec-list .rec-info strong').allTextContents(), numberedTitles);
 
-    await button(page, '2D 지도에서 경로 보기').click();
+    await button(page, '지도에서 관람순서 보기').click();
     const visitStart = await visit(page);
     assert.equal(visitStart.ownerId ?? null, member?.user.id ?? null);
     await page.locator('.route-details[open]').waitFor();
@@ -535,7 +535,7 @@ async function completeTasteVisit(page, taste, owner) {
   assert.deepEqual(recommendation.request().postDataJSON().tasteProfile, taste.tasteProfile);
   const recommended = (await body(recommendation)).map(item => item.artworkId);
   assert.equal(new Set(recommended).size, 3);
-  await button(page, '2D 지도에서 경로 보기').click();
+  await button(page, '지도에서 관람순서 보기').click();
   await button(page, '관람 시작하기').click();
   for (const ordinal of [2, 3]) {
     await button(page, '다음 작품 안내').click();

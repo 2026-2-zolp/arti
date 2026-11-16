@@ -101,7 +101,7 @@ async function verify(browser, width) {
     await page.locator('.rec-list li').last().waitFor();
     await checkWidth(page, `${width}px U-08`);
     await checkText(page.locator('.rec-info strong').first(), `${width}px U-08 recommendation title`, '.rec-card');
-    await button('2D 지도에서 경로 보기').click();
+    await button('지도에서 관람순서 보기').click();
     await page.locator('.route-list li').last().waitFor();
     assert.equal(await page.getByRole('heading', { name: '추천 관람순서', exact: true }).isVisible(), true);
     await checkWidth(page, `${width}px U-09 overview`);

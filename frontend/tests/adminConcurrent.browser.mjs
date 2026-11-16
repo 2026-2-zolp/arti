@@ -186,7 +186,7 @@ async function verifyVisitor(browser, { saved, floorPlan }) {
     const recommendation = expectedResponse(page, 'POST', '/api/recommendations');
     await button(page, '추천 받기').click();
     assert.deepEqual((await json(await recommendation)).map(item => item.artworkId), [saved.id]);
-    await button(page, '2D 지도에서 경로 보기').click();
+    await button(page, '지도에서 관람순서 보기').click();
     const marker = page.locator('.floor-map.has-plan .fm-marker');
     await marker.waitFor();
     assert.equal(await marker.locator('title').textContent(), saved.title);

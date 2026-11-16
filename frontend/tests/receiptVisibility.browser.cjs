@@ -73,7 +73,7 @@ async function verify(browser, closed) {
     const recommended = (await body(recommendation)).map(item => item.artworkId);
     assert.equal(recommended.length, 3);
     const work = await body(await page.request.get('/api/artworks/' + recommended[0]));
-    await button('2D 지도에서 경로 보기').click();
+    await button('지도에서 관람순서 보기').click();
     await button('관람 시작하기').click();
     await page.getByRole('heading', { name: work.title, exact: true }).waitFor();
     await button('좋아요').click();

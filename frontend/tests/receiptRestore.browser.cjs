@@ -69,7 +69,7 @@ async function createReceipt(browser, config, base) {
     const titles = artworks.map(artwork => artwork.title);
 
     step = 'source-visit';
-    await button(page, '2D 지도에서 경로 보기').click();
+    await button(page, '지도에서 관람순서 보기').click();
     await button(page, '관람 시작하기').click();
     for (const [index, title] of titles.entries()) {
       await page.getByRole('heading', { name: title, exact: true }).waitFor();

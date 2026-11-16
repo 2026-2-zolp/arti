@@ -157,7 +157,7 @@ async function recoverErrors(browser, member) {
     assert.equal(headerHeight.measured, headerHeight.actual);
     failures.delete('/api/recommendations');
     await retry.click();
-    await button('2D 지도에서 경로 보기').click();
+    await button('지도에서 관람순서 보기').click();
     await button('관람 시작하기').click();
     await artwork(1).waitFor();
     await checkProgress(id, []);
@@ -273,7 +273,7 @@ async function recoverNewErrorCards(browser) {
     await retry.click();
     await button('조사 작품 2 선택').waitFor();
     await page.getByRole('link', { name: '현재 관람으로 돌아가기' }).click();
-    await button('2D 지도에서 경로 보기').click();
+    await button('지도에서 관람순서 보기').click();
     await button('2번 작품 감상하기').waitFor();
 
     failures.set('/api/users/test-member/visits', generic);
@@ -380,7 +380,7 @@ async function visitHistory(browser) {
   try {
     const nextGuide = page.getByRole('heading', { name: '다음 작품 안내', exact: true });
     await page.goto(base + path + '/recommend', { waitUntil: 'domcontentloaded' });
-    await button('2D 지도에서 경로 보기').click();
+    await button('지도에서 관람순서 보기').click();
     await button('관람 시작하기').click();
     await artwork(1).waitFor();
     await spend(4000);
