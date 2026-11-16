@@ -1,5 +1,6 @@
 """Serve Django and an isolated HTTP analysis fixture for the administrator Chrome test."""
 
+import base64
 import hashlib
 import json
 import re
@@ -25,17 +26,29 @@ def serve():
         raise RuntimeError('Use a dedicated loopback admin analysis fixture DB with model providers disabled.')
 
     release = Event()
-    sources = []
+    inputs = []
 
     def respond(attempt):
         request = requests[attempt - 1]
         payload = request['body']
-        if request['path'] != '/analyze' or set(payload) != {'title', 'description', 'imageBase64'}:
+        text_fields = {'title', 'description'}
+        if request['path'] != '/analyze' or set(payload) not in (text_fields, text_fields | {'imageBase64'}):
             return 400, b'unexpected analysis wire format'
-        sources.append(hashlib.sha256(payload['description'].encode()).hexdigest())
+        image = None
+        if 'imageBase64' in payload:
+            try:
+                image = hashlib.sha256(base64.b64decode(payload['imageBase64'], validate=True)).hexdigest()
+            except (TypeError, ValueError):
+                return 400, b'invalid image bytes'
+        inputs.append({
+            'title': hashlib.sha256(payload['title'].encode()).hexdigest(),
+            'source': hashlib.sha256(payload['description'].encode()).hexdigest(),
+            'image': image,
+        })
         if attempt == 1 and not release.wait(20):
             return 504, b'synthetic analysis gate expired'
         mock = result()
+        mock.update(usedImage=image is not None, tagSource='image' if image is not None else 'text')
         mock['emotions']['calm'] = .2 if attempt == 1 else .8
         return 200, json.dumps(mock).encode()
 
@@ -48,7 +61,7 @@ def serve():
         if environ['PATH_INFO'] == '/api/__admin_analysis_test__/gate':
             if environ['REQUEST_METHOD'] == 'POST':
                 release.set()
-            body = json.dumps({'sources': sources}).encode()
+            body = json.dumps({'inputs': inputs}).encode()
             mark('200 OK', [('Content-Type', 'application/json'), ('Content-Length', str(len(body)))])
             return [body]
         return application(environ, mark)

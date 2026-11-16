@@ -78,10 +78,10 @@ def model_service_base():
     return base
 
 
-def analyze(snapshot, *, deadline=None):
+def analyze(snapshot, *, deadline=None, use_image=True):
     base = model_service_base()
     payload = {'title': snapshot.get('title', ''), 'description': snapshot.get('description', '')}
-    name = snapshot.get('imageFile')
+    name = snapshot.get('imageFile') if use_image else None
     image_sha256 = None
     if name:
         root = Path(settings.MEDIA_ROOT).resolve()
@@ -97,7 +97,7 @@ def analyze(snapshot, *, deadline=None):
             failure()
         payload['imageBase64'] = base64.b64encode(content).decode('ascii')
         image_sha256 = hashlib.sha256(content).hexdigest()
-    elif snapshot.get('imageUrl'):
+    elif use_image and snapshot.get('imageUrl'):
         # 외부 이미지 다운로드/SSRF 정책은 별도이며 조용한 텍스트 대체를 막습니다.
         failure(503, 'AI_UNAVAILABLE')
     request = Request(base + '/analyze', data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
@@ -135,6 +135,8 @@ def analyze(snapshot, *, deadline=None):
         if any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in scores.values()):
             failure()
     if type(value.get('usedImage')) is not bool or type(value.get('usedText')) is not bool:
+        failure()
+    if not use_image and (value['usedImage'] or value.get('tagSource') == 'image'):
         failure()
     if name and (not value['usedImage'] or value.get('imageError') or value.get('tagSource') != 'image'):
         failure()

@@ -1,4 +1,4 @@
-/** 관리자 화면의 이전 원문 분석 충돌을 Django·PostgreSQL과 함께 검증합니다. */
+/** 관리자 분석 충돌과 이미지 선택을 Django·PostgreSQL과 함께 검증합니다. */
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
@@ -78,8 +78,10 @@ async function verify(base) {
     // The create API deliberately excludes imageFile; upload fixture bytes via the normal image route.
     const image = await context.request.get(`${base}/api/admin/uploads/fixture-public.png`, { headers });
     assert.equal(image.status(), 200);
+    const imageBytes = await image.body();
+    const imageHash = digest(imageBytes);
     const artwork = await json(await context.request.post(`${catalog}/${initial.id}/image`, {
-      headers: { ...headers, 'If-Match': `"${initial.version}"`, 'Content-Type': 'image/png' }, data: await image.body(),
+      headers: { ...headers, 'If-Match': `"${initial.version}"`, 'Content-Type': 'image/png' }, data: imageBytes,
     }));
     // Uploading new source marks prior confirmations for review; restore the initial confirmations via the API.
     const baseline = await json(await context.request.put(`${catalog}/${initial.id}`, {
@@ -97,10 +99,12 @@ async function verify(base) {
     let gateState;
     do {
       gateState = await json(await context.request.get(gate));
-      if (gateState.sources.length) break;
+      if (gateState.inputs.length) break;
       await delay(40);
     } while (Date.now() < entered);
-    assert.deepEqual(gateState.sources, [digest(baseline.description)]);
+    const titleHash = digest(baseline.title);
+    const expectedInputs = [{ title: titleHash, source: digest(baseline.description), image: imageHash }];
+    assert.deepEqual(gateState.inputs, expectedInputs);
 
     const changedSource = '두 번째 탭에서 검수한 최신 합성 원문입니다.';
     await a.getByLabel('작가', { exact: true }).fill('첫 탭의 미저장 편집');
@@ -155,6 +159,7 @@ async function verify(base) {
     await analyze.click();
     const fresh = await retried;
     assert.equal(fresh.request().postDataJSON().version, current.version);
+    assert.equal(fresh.request().postDataJSON().useImage, true);
     const result = await json(fresh);
     assert.equal(result.artwork.version, current.version + 1);
     assert.equal(result.artwork.sourceVersion, current.sourceVersion);
@@ -163,7 +168,9 @@ async function verify(base) {
     assert.equal(result.artwork.analysis.emotions.calm, .8);
     assert.equal(result.artwork.tagScores.landscape, .5);
     assert.equal(result.artwork.tagStatus, 'suggested');
-    assert.deepEqual((await json(await context.request.get(gate))).sources, [digest(baseline.description), digest(changedSource)]);
+    const sourceHash = digest(changedSource);
+    expectedInputs.push({ title: titleHash, source: sourceHash, image: imageHash });
+    assert.deepEqual((await json(await context.request.get(gate))).inputs, expectedInputs);
     const results = a.getByRole('status', { name: 'AI 항목별 처리 결과' });
     await results.getByRole('listitem').filter({ hasText: /취향 태그.*제안 생성 완료/ }).waitFor();
     await results.getByRole('listitem').filter({ hasText: /감정 분석.*제안 생성 완료/ }).waitFor();
@@ -173,8 +180,33 @@ async function verify(base) {
     await a.getByRole('button', { name: '감정 분석 확정' }).waitFor();
     assert.equal(await summary(a).inputValue(), current.summary);
     assert.deepEqual(await json(await context.request.get(base + '/api' + editor, { headers })), result.artwork);
-    assert.deepEqual(errors, []);
     console.log('PASS admin analysis: original delayed → current source/confirmed summary → 409 → reload → current-source 200');
+
+    const imageOption = a.getByRole('checkbox', { name: '이미지도 분석' });
+    assert.equal(await imageOption.isChecked(), true);
+    assert.equal(result.artwork.analysis.usedImage, true);
+    let savedVersion = result.artwork.version;
+    for (const useImage of [false, true]) {
+      await imageOption.setChecked(useImage);
+      const requested = pendingResponse(a, 'POST', analysis);
+      await analyze.click();
+      const analyzed = await requested;
+      assert.deepEqual(analyzed.request().postDataJSON(), { useImage, version: savedVersion });
+      const { artwork: updated } = await json(analyzed);
+      assert.equal(updated.version, savedVersion + 1);
+      savedVersion = updated.version;
+      assert.equal(updated.analysis.usedImage, useImage);
+      assert.equal(updated.analysis.tagSource, useImage ? 'image' : 'text');
+      assert.equal(updated.sourceVersion, current.sourceVersion);
+      assert.equal(updated.summaryStatus, 'confirmed');
+      assert.equal(updated.summary, current.summary);
+      assert.equal(updated.imageFile, result.artwork.imageFile);
+      expectedInputs.push({ title: titleHash, source: sourceHash, image: useImage ? imageHash : null });
+      assert.deepEqual((await json(await context.request.get(gate))).inputs, expectedInputs);
+      await a.getByText(useImage ? /분석 재료: 이미지 \+ 해설/ : /분석 재료: 해설 ·/).waitFor();
+    }
+    assert.deepEqual(errors, []);
+    console.log('PASS admin image option: image bytes → text only → same image bytes; source and confirmed summary preserved');
   } finally {
     await context.request.post(gate).catch(() => {});
     await browser.close();

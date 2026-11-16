@@ -241,6 +241,9 @@ def analyze(request,artwork_id):
     w=Artwork.objects.filter(pk=artwork_id).first()
     if not w:raise ContractError(404,'NOT_FOUND','작품을 찾을 수 없어요.')
     version(w,request.data.get('version'))
+    use_image = request.data.get('useImage', True)
+    if type(use_image) is not bool:
+        fail('이미지 분석 여부를 확인해 주세요.')
     regenerate=request.data.get('regenerateFields',[])
     if not isinstance(regenerate,list) or any(f not in STATES for f in regenerate):fail()
     if w.review_status!='approved' or not w.description.strip():fail('승인된 원문을 먼저 준비해 주세요.')
@@ -251,9 +254,10 @@ def analyze(request,artwork_id):
             if getattr(w,field)=='confirmed' and kind not in regenerate:
                 results[kind]={'ok':True,'source':'kept','made':False};continue
             try:
-                context = {'analysis_cache': model_cache} if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL else {}
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
-                context['deadline']=deadline
+                context = {'deadline': deadline}
+                if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL:
+                    context.update(analysis_cache=model_cache, use_image=use_image)
                 value=providers.generate(kind,artwork_dto(w,True),**context)
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 providers.validate(kind,value)
