@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
+import { formatDateTime } from '../../lib/adminDate';
 
 /** 전시·작품 운영 현황을 요약하는 화면 */
 export default function A02Dashboard() {
@@ -40,7 +41,7 @@ export default function A02Dashboard() {
               <th>구분</th>
               <th>이름</th>
               <th>상태</th>
-              <th>수정일</th>
+              <th>수정일시</th>
               <th>담당</th>
             </tr>
           </thead>
@@ -52,7 +53,7 @@ export default function A02Dashboard() {
                   <Link to={r.to}>{r.name}</Link>
                 </td>
                 <td>{r.status}</td>
-                <td>{r.date.slice(5).replace('-', '/')}</td>
+                <td className="nowrap">{formatDateTime(r.date)}</td>
                 <td>관리자</td>
               </tr>
             ))}

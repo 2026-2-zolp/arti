@@ -1,6 +1,6 @@
-/** A-03 전시 관리 — 전시 목록, 등록·수정 모달, 전시별 작품 관리로 이동 */
+/** A-03 전시 관리 — 전시 목록, 등록·수정 모달, 전시 행을 누르면 그 전시의 작품 관리로 이동 */
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import type { Exhibition, ExhibitionStatus } from '../../types';
@@ -52,36 +52,47 @@ export default function A03Exhibitions() {
               <th>전시명</th>
               <th>기간</th>
               <th>장소</th>
-              <th>작품 수</th>
-              <th>운영 상태</th>
+              <th className="a-center">작품 수</th>
+              <th className="a-center">운영 상태</th>
               <th />
             </tr>
           </thead>
           <tbody>
-            {data?.[0].map((ex) => (
-              <tr key={ex.id}>
-                <td>
-                  <strong>{ex.title}</strong>
-                  <div className="muted small">{ex.subtitle}</div>
-                </td>
-                <td>
-                  {ex.startDate} ~ {ex.endDate}
-                </td>
-                <td>{ex.venue}</td>
-                <td>{data[1].filter((w) => w.exhibitionId === ex.id).length}</td>
-                <td>
-                  <span className={`badge ${ex.status}`}>{EX_STATUS_LABEL[ex.status]}</span>
-                </td>
-                <td className="actions">
-                  <button className="a-btn sm" onClick={() => setEditing(ex)}>
-                    수정
-                  </button>
-                  <button className="a-btn sm" onClick={() => navigate(`/admin/artworks?exhibition=${ex.id}`)}>
-                    작품 관리
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {data?.[0].map((ex) => {
+              const openArtworks = () => navigate(`/admin/artworks?exhibition=${ex.id}`);
+              return (
+                // 행을 누르면 그 전시의 작품 관리로 이동한다(예전 [작품 관리] 버튼과 같은 이동). 키보드는 전시명 링크로 이동.
+                <tr key={ex.id} className="clickable" onClick={openArtworks}>
+                  <td>
+                    <Link to={`/admin/artworks?exhibition=${ex.id}`} onClick={(e) => e.stopPropagation()}>
+                      <strong>{ex.title}</strong>
+                    </Link>
+                    {ex.subtitle && <div className="muted small a-ex-sub">{ex.subtitle}</div>}
+                  </td>
+                  <td className="nowrap">
+                    {ex.startDate} ~ {ex.endDate}
+                  </td>
+                  <td>{ex.venue}</td>
+                  <td className="a-center">{data[1].filter((w) => w.exhibitionId === ex.id).length}</td>
+                  <td className="a-center">
+                    <span className={`badge ${ex.status}`}>{EX_STATUS_LABEL[ex.status]}</span>
+                  </td>
+                  <td className="actions">
+                    <div className="a-actions">
+                      <button
+                        className="a-btn sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditing(ex);
+                        }}
+                      >
+                        수정
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

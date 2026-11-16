@@ -537,6 +537,8 @@ a.history-card { text-decoration: none; }
 .a-section-title { font-size: 22px; margin: 48px 0 18px; }
 .a-card { background: #fff; border: 1px solid var(--a-line); border-radius: 16px; overflow: hidden; }
 .a-card.pad { padding: 26px; overflow: visible; }
+/* 표가 카드보다 넓어지면(창이 좁을 때) 카드 안에서 좌우로 밀어 볼 수 있게 한다. 넓을 때는 스크롤 막대가 생기지 않는다. */
+.a-card:has(> .a-table) { overflow-x: auto; }
 .a-card h2 { font-size: 21px; margin-bottom: 20px; }
 .a-card h3 { font-size: 16px; margin-bottom: 8px; }
 
@@ -553,11 +555,19 @@ a.history-card { text-decoration: none; }
 .a-table td { padding: 16px 20px; border-bottom: 1px solid var(--a-line); vertical-align: middle; }
 .a-table tr:last-child td { border-bottom: 0; }
 .a-table tr.clickable { cursor: pointer; }
-.a-table tr.clickable:hover td { background: #fafafa; }
-.a-table tr.selected td { background: var(--accent-soft); }
+.a-table tr.clickable:hover td { background: #f3f4f6; } /* 누를 수 있는 행: 마우스를 올리면 눈에 띄게 */
+.a-table tr.selected td,
+.a-table tr.clickable.selected:hover td { background: var(--accent-soft); } /* 선택한 행은 마우스를 올려도 선택 색 유지 */
+.a-table td.nowrap { white-space: nowrap; }
+.a-table th.a-center, .a-table td.a-center { text-align: center; } /* 짧은 숫자·상태 칸: 이름과 내용을 함께 가운데 */
 .a-table a { text-decoration: none; }
 .a-table a:hover { text-decoration: underline; }
-.a-table td.actions { display: flex; gap: 8px; justify-content: flex-end; }
+/* 버튼 칸도 표 칸 그대로 두고(높이·아래 선이 다른 칸과 같게) 안쪽 상자로 버튼을 나란히 둔다 */
+.a-table td.actions { text-align: center; white-space: nowrap; } /* 전시 관리 [수정] 버튼은 칸 가운데 */
+.a-actions { display: inline-flex; gap: 8px; vertical-align: middle; }
+.a-ex-sub { margin-top: 4px; }
+.a-badges { display: flex; flex-wrap: wrap; gap: 4px; } /* AI 감정·요약 배지: 옆으로든 아래로든 4px 간격 */
+.a-room-note { margin-bottom: 14px; } /* 위치·지도 관리: 전시실 안내 문구와 아래 목록 사이 */
 .a-thumb { width: 44px !important; border-radius: 6px; overflow: hidden; }
 
 .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; background: #eef0f2; color: var(--ink-2); white-space: nowrap; }
@@ -574,7 +584,12 @@ a.history-card { text-decoration: none; }
 .a-btn.block { width: 100%; }
 .a-btn.save { height: 50px; min-width: 140px; }
 
-.a-filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+.a-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.a-filters-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+/* 맨 앞 체크박스 칸과 그림 칸: 좌우 여백을 다른 칸(20px)의 반으로 */
+.a-table th.a-check-col, .a-table td.a-check-col,
+.a-table th.a-thumb-col, .a-table td.a-thumb-col { padding-left: 10px; padding-right: 10px; }
+.a-note { color: var(--muted); margin: 0 0 16px; }
 .a-filters select, .a-search { height: 42px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--a-line); background: #fff; }
 .a-search { width: 320px; }
 
@@ -604,11 +619,12 @@ a.history-card { text-decoration: none; }
 .a-room-list li { display: flex; align-items: center; gap: 8px; }
 .a-room-list input, .a-room-new { flex: 1; min-width: 0; }
 
-.a-dl { display: grid; grid-template-columns: 90px 1fr; gap: 10px; margin: 0 0 20px; font-size: 15px; }
+.a-dl { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; margin: 0 0 20px; font-size: 15px; }
 .a-dl dt { color: var(--muted); }
-.a-dl dd { margin: 0; }
+.a-dl dd { margin: 0; min-width: 0; overflow-wrap: anywhere; } /* 긴 이메일·취향 목록이 카드 밖으로 나가지 않게 */
+aside.a-card h2 { overflow-wrap: anywhere; }
 .a-visit-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
-.a-visit-list li { display: flex; justify-content: space-between; padding: 10px 12px; background: #fafafa; border-radius: 8px; }
+.a-visit-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 10px 12px; background: #fafafa; border-radius: 8px; }
 
 .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 18, 20, 0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
 .modal { width: 520px; max-width: 100%; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
