@@ -8,7 +8,7 @@ import {useConfirm} from '../../components/Confirmation';
  * 작품 해설과 AI 응답 데이터의 신뢰성을 위해 출처·참고자료·검수 상태를 함께 관리한다.
  */
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import {analysisFailure, analysisTime, mergeAnalysis} from '../../lib/adminAnalysis';
+import {analysisFailure, analysisOutcomes, analysisTime, mergeAnalysis} from '../../lib/adminAnalysis';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -493,7 +493,7 @@ function ImageField({
 
 /**
  * AI 분석·요약 패널
- * - 「AI 분석 실행」: 저장된 해설(+이미지)로 취향 태그·감정 분석(오픈소스 모델) + 해설 요약(Claude) → 「AI 제안」
+ * - 「AI 분석 실행」에서 생성한 요약·가이드·취향 태그·감정 분석은 「AI 제안」 상태로 저장된다
  * - 관리자가 결과를 확인·수정한 뒤 「확정」해야 사용자 화면과 추천에 쓰인다
  * - 취향 태그 제안은 「기본 정보」의 태그 버튼(TagField)에 표시하고, 여기서는 감정(설명용)·요약을 다룬다
  */
@@ -505,7 +505,9 @@ function AiPanel({ w, setW, reloadArtwork }: {
   const [useImage, setUseImage] = useState(true);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
+  const [msg, setMsg] = useState<
+    {type: 'ok' | 'err' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
+  >(null);
 
   const run = async () => {
     if (inFlight.current || msg?.type === 'conflict') return;
@@ -516,24 +518,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
       const r = await api.analyzeArtwork(w.id, useImage);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
       setW((cur) => cur && mergeAnalysis(cur,w,r));
-      const notes = [
-        r.emotion.ok ? '취향 태그·감정 분석 완료 (태그 제안은 위 「취향 태그」에서 확인)' : `AI 분석 실패: ${r.emotion.error}`,
-        r.summary.ok
-          ? {
-              provider: '분석 서비스 초안',
-            claude: '요약·가이드: Claude',
-              kanana: '요약·가이드: Kanana(로컬 모델)',
-              fallback: '요약: AI 서버의 글쓰기 모델을 쓸 수 없어 원문 앞부분으로 대신했어요',
-              kept: '요약·가이드는 이미 확정되어 있어 그대로 둠',
-            }[r.summary.source]
-          : `요약 실패: ${r.summary.error}`,
-        r.guide?.made
-          ? '관람가이드 제안 완료 — 확인 후 「가이드 확정」'
-          : w.guideStatus === 'confirmed'
-            ? '관람가이드는 확정되어 있어 그대로 둠'
-            : '관람가이드를 만들지 못했어요. 직접 입력해 주세요',
-      ];
-      setMsg({ type: r.emotion.ok ? 'ok' : 'err', text: notes.join(' · ') });
+      setMsg({type: 'result', items: analysisOutcomes(r)});
     } catch (e) {
       setMsg({ type: isVersionConflict(e) ? 'conflict' : 'err', text: analysisFailure(e) });
     } finally {
@@ -585,7 +570,21 @@ function AiPanel({ w, setW, reloadArtwork }: {
           </button>
         </div>
       </div>
-      {msg && (
+      {msg?.type === 'result' && (
+        <div role="status" aria-label="AI 항목별 처리 결과" style={{ marginBottom: 14 }}>
+          <ul className="small">
+            {msg.items.map(({label, status, text}) => (
+              <li key={label} className={status === 'failed' ? 'error-text' : undefined}>
+                <strong>{label}</strong> · {text}
+              </li>
+            ))}
+          </ul>
+          {msg.items.some(({status}) => status === 'failed') && (
+            <button type="button" disabled={busy} onClick={run}>분석 다시 시도</button>
+          )}
+        </div>
+      )}
+      {msg && msg.type !== 'result' && (
         <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
           {msg.text}
           {msg.type === 'conflict' && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}

@@ -24,6 +24,7 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
 import { limitReceiptDuration } from '../lib/receiptPayload';
+import type { ArtworkAnalysisResult } from '../lib/adminAnalysis';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -265,15 +266,7 @@ export const api = {
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
   analyzeArtwork: (id: string, useImage = true) =>
-    request<{
-      artwork: Artwork;
-      tag?: {ok:boolean; made?:boolean};
-      emotion: ({ ok: true } | { ok: false; error: string }) & {made?:boolean};
-      /** claude = Claude API, kanana = 로컬 모델(ai-service), fallback = 원문 앞 2문장, kept = 이미 확정이라 그대로 둠 */
-      summary: ({ ok: true; source: 'provider' | 'claude' | 'kanana' | 'fallback' | 'kept' } | { ok: false; error: string }) & {made?:boolean};
-      /** 관람가이드를 새로 제안했는지 (만들 수 없거나 이미 확정이면 false) */
-      guide?: { made: boolean };
-    }>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage, version: versions.get(`/admin/artworks/${enc(id)}`) }),
+    request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, { useImage, version: versions.get(`/admin/artworks/${enc(id)}`) }),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),

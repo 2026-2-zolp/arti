@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const { createHash, randomUUID } = require('node:crypto');
 const path = require('node:path');
+const { body, button, isResponse, choosePairs, recommend } = require('./visitBrowserHelpers.cjs');
 
 const base = new URL(process.env.ARTI_REVIEW_BASE || 'http://127.0.0.1:5277');
 const exhibitionId = 'fixture-ex01';
@@ -12,11 +13,6 @@ const password = 'Fixture-visit-2026!';
 const reason = '색감이 좋아요';
 const repository = path.resolve(__dirname, '../..');
 const fixtureMarker = 'ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION';
-
-async function body(response, status = 200) {
-  assert.equal(response.status(), status, await response.text());
-  return response.json();
-}
 
 // No browser-accessible expiry hook. The child process only updates the synthetic DB.
 function fixtureCommand(code, values = {}) {
@@ -49,13 +45,10 @@ async function openPage(browser, sharedContext) {
   return page;
 }
 
-const button = (page, name) => page.getByRole('button', { name, exact: true });
 const visit = page => page.evaluate(() => JSON.parse(sessionStorage.getItem('arti.visit')));
 const pending = (page, key) => page.evaluate(key => JSON.parse(sessionStorage.getItem(key)), key);
 const currentToken = page => page.evaluate(() => JSON.parse(localStorage.getItem('arti.token')));
 const headersFor = token => ({ Authorization: `Bearer ${token}` });
-const isResponse = (response, pathname, method) =>
-  new URL(response.url()).pathname === pathname && response.request().method() === method;
 
 async function newMember(page) {
   return body(await page.request.post('/api/auth/signup', { data: {
@@ -81,23 +74,6 @@ async function login(page, member) {
     button(page, '로그인').click(),
   ]);
   assert.equal((await body(response)).user.id, member.user.id);
-}
-
-async function choosePairs(page, start = 1, sides = []) {
-  for (let index = start; index <= 5; index++) {
-    await page.getByText(index + '/5', { exact: true }).waitFor();
-    await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).nth(sides[index - 1] ?? 0).click();
-  }
-}
-
-async function recommend(page, duration = /30분/, status = 200) {
-  await page.getByRole('radio', { name: duration }).click();
-  const [response] = await Promise.all([
-    page.waitForResponse(r => isResponse(r, '/api/recommendations', 'POST')),
-    button(page, '추천 받기').click(),
-  ]);
-  assert.equal(response.request().postDataJSON().tasteProfile.version, 2);
-  return body(response, status);
 }
 
 function expireMember(token, accountId) {

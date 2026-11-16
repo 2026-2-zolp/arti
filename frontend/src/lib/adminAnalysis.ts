@@ -1,9 +1,17 @@
 /** 분석 결과를 편집 중인 작품에 합치고 장애 후 재시도 안내를 구성합니다. */
-import type {Artwork} from '../types';
+import type {AiStatus, Artwork} from '../types';
 
-type Result = {artwork:Artwork; tag?:{made?:boolean}; emotion:{ok:boolean;made?:boolean}; summary:{ok:boolean;made?:boolean;source?:string}; guide?:{made?:boolean}};
+type AnalysisPart = {ok?: boolean; made?: boolean; source?: string; error?: string; code?: string};
+export type ArtworkAnalysisResult = {
+  artwork: Artwork;
+  summary: AnalysisPart & {ok: boolean};
+  guide?: AnalysisPart;
+  tag?: AnalysisPart;
+  emotion: AnalysisPart & {ok: boolean};
+};
+
 /** 서버가 새로 생성한 필드만 반영하고 요청 중 바뀐 입력과 기존 확정 콘텐츠를 보존합니다. */
-export function mergeAnalysis(current:Artwork, started:Artwork, result:Result):Artwork {
+export function mergeAnalysis(current:Artwork, started:Artwork, result:ArtworkAnalysisResult):Artwork {
   if (current.id !== started.id || current.id!==result.artwork.id || (current.version ?? 0)>(result.artwork.version ?? 0)) return current;
   const next={...current};
   const groups: [boolean|undefined,(keyof Artwork)[]][]=[
@@ -21,6 +29,33 @@ export function mergeAnalysis(current:Artwork, started:Artwork, result:Result):A
     for (const key of ['updatedAt','version','contentVersion','sourceVersion'] as const) Object.assign(next,{[key]:result.artwork[key]});
   }
   return next;
+}
+
+type AnalysisOutcome = {status: 'created' | 'kept' | 'unavailable' | 'failed' | 'empty' | 'fallback'; text: string};
+
+function outcome(part: AnalysisPart | undefined, saved: AiStatus): AnalysisOutcome {
+  if (part?.ok === false) {
+    const unavailable = part.code === 'AI_UNAVAILABLE';
+    const label = unavailable ? '연결 확인 필요' : '처리 실패';
+    return {status: unavailable ? 'unavailable' : 'failed', text: part.error ? `${label} · ${part.error}` : label};
+  }
+  if (part?.source === 'kept' || (!part?.made && !part?.ok && saved === 'confirmed')) {
+    return {status: 'kept', text: '기존 확정 유지'};
+  }
+  if (part?.source === 'fallback') return {status: 'fallback', text: '원문으로 제안 작성'};
+  if (part?.made ?? part?.ok) return {status: 'created', text: '제안 생성 완료'};
+  return {status: 'empty', text: '제안 없음'};
+}
+
+/** 태그 결과를 따로 보내지 않는 기존 API도 감정 분석에 포함된 태그를 표시합니다. */
+export function analysisOutcomes({artwork, summary, guide, tag, emotion}: ArtworkAnalysisResult) {
+  const tagResult = tag ?? (!emotion.ok || artwork.analysis?.tags ? emotion : undefined);
+  return [
+    {label: '쉬운 요약', ...outcome(summary, artwork.summaryStatus)},
+    {label: '관람가이드', ...outcome(guide, artwork.guideStatus)},
+    {label: '취향 태그', ...outcome(tagResult, artwork.tagStatus)},
+    {label: '감정 분석', ...outcome(emotion, artwork.emotionStatus)},
+  ];
 }
 
 /** 내부 오류 내용을 추가 노출하지 않고 상태별 다음 행동을 안내합니다. */
