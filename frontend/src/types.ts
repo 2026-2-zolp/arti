@@ -95,6 +95,7 @@ export interface Artwork {
   contentVersion?: number;
   summaryRevision?: number;
   guideRevision?: number;
+  savedTextProposals?: ('summary' | 'guide')[];
   id: string;
   exhibitionId: string;
   title: string;

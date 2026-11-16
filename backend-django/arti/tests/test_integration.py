@@ -308,6 +308,62 @@ class IntegrationTests(Helpers,TestCase):
         self.assertEqual(saved['contentVersion'], original_public['contentVersion'])
         self.assertEqual(self.public.get(public_path).json()['guidedLooking'], ['공개 질문'])
 
+    def test_discard_text_proposals_preserves_public_revisions_and_other_fields(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        public_path = '/api/artworks/' + work.id
+        admin_path = '/api/admin/artworks/' + work.id
+        discard_path = admin_path + '/discard-ai'
+        setup = self.put(work, summaryStatus='confirmed', summary='원래 공개 요약', summaryKeywords=['원래'],
+                         guideStatus='none', guidedLooking=[], guidedHints=[], guideIntro='')
+        self.assertEqual(setup.status_code, 200, setup.content)
+
+        def text_state(dto):
+            return {key: value for key, value in dto.items() if key not in ('version', 'updatedAt')}
+
+        mock = {
+            'summary': {'summary': '새 요약', 'keywords': ['새 키워드']},
+            'guide': {'intro': '새 도입', 'questions': ['새 질문'], 'hints': ['새 힌트']},
+        }
+        public = self.public.get(public_path).json()
+        with patch('arti.providers.generate', side_effect=lambda kind, snapshot, **context: mock[kind]):
+            generated = self.admin.post(admin_path + '/analyze', {
+                'version': setup.json()['version'], 'regenerateFields': list(mock),
+            }, format='json')
+        self.assertEqual(generated.status_code, 200, generated.content)
+        proposal = generated.json()['artwork']
+        public_after_generation = self.public.get(public_path).json()
+        self.assertEqual(public_after_generation['summaryRevision'], public['summaryRevision'])
+        self.assertEqual(proposal['savedTextProposals'], ['summary', 'guide'])
+
+        def discard(kind, version):
+            return self.admin.post(discard_path, {'kind': kind, 'version': version}, format='json')
+
+        unauthorized = self.public.post(discard_path, {'kind': 'summary', 'version': proposal['version']}, format='json')
+        self.assertIn(unauthorized.status_code, (401, 403))
+        discarded_summary = discard('summary', proposal['version'])
+        self.assertEqual(discarded_summary.status_code, 200, discarded_summary.content)
+        restored = discarded_summary.json()
+        self.assertEqual(restored['version'], proposal['version'] + 1)
+        self.assertEqual((restored['summaryStatus'], restored['summary'], restored['summaryKeywords']),
+                         ('confirmed', '원래 공개 요약', ['원래']))
+        self.assertEqual(restored['savedTextProposals'], ['guide'])
+        self.assertEqual(restored['guidedLooking'], ['새 질문'])
+        self.assertEqual(text_state(self.public.get(public_path).json()), text_state(public_after_generation))
+
+        for kind, revision, expected in (('guide', proposal['version'], 409), ('summary', restored['version'], 400)):
+            response = discard(kind, revision)
+            self.assertEqual(response.status_code, expected, response.content)
+            self.assertEqual(self.admin.get(admin_path).json(), restored)
+
+        discarded_guide = discard('guide', restored['version'])
+        self.assertEqual(discarded_guide.status_code, 200, discarded_guide.content)
+        self.assertEqual(discarded_guide.json()['guideStatus'], 'none')
+        self.assertEqual(discarded_guide.json()['guidedLooking'], [])
+        self.assertEqual(discarded_guide.json()['guidedHints'], [])
+        self.assertEqual(discarded_guide.json()['guideIntro'], '')
+        self.assertEqual(discarded_guide.json()['savedTextProposals'], [])
+        self.assertEqual(text_state(self.public.get(public_path).json()), text_state(public_after_generation))
+
     def test_retained_summary_is_not_restored_after_source_change(self):
         work = Artwork.objects.get(pk='fixture-art01')
         work.summary_status = 'confirmed'

@@ -168,6 +168,91 @@ async function verifyRegeneration(page, request, base, gate, headers) {
   }
 }
 
+async function verifyProposalDiscard(page, request, base, headers) {
+  const adminPath = '/api/admin/artworks/fixture-art01';
+  const publicPath = '/api/artworks/fixture-art01';
+  const readAdmin = async () => json(await request.get(base + adminPath, { headers }));
+  const readPublic = async () => json(await request.get(base + publicPath));
+  const question = tab => tab.getByLabel(/관찰 질문 — 한 줄에 하나/);
+  const discardButton = tab => tab.getByRole('button', { name: '관람가이드 제안 폐기', exact: true });
+  const requestDiscard = async (tab, status) => {
+    await discardButton(tab).click();
+    const response = pendingResponse(tab, 'POST', adminPath + '/discard-ai');
+    await tab.getByRole('alertdialog').getByRole('button', { name: '제안 폐기', exact: true }).click();
+    return json(await response, status);
+  };
+  const regenerate = async () => {
+    const response = pendingResponse(page, 'POST', adminPath + '/analyze');
+    await page.getByRole('button', { name: '관람가이드 다시 생성', exact: true }).click();
+    return (await json(await response)).artwork;
+  };
+  const confirmGuide = async (tab, status) => {
+    const response = pendingResponse(tab, 'PUT', adminPath);
+    await tab.getByRole('button', { name: '가이드 확정 (수정 내용 포함 저장)', exact: true }).click();
+    return json(await response, status);
+  };
+  const reloadLatest = async tab => {
+    await tab.getByRole('button', { name: '최신 작품 다시 불러오기' }).click();
+    await tab.getByRole('alertdialog').getByRole('button', { name: '다시 불러오기', exact: true }).click();
+    await tab.getByRole('alertdialog').waitFor({ state: 'hidden' });
+  };
+  const original = await readAdmin();
+  const second = await page.context().newPage();
+  try {
+    const firstProposal = await regenerate();
+    await discardButton(page).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: '취소', exact: true }).click();
+    assert.deepEqual(await readAdmin(), firstProposal);
+    const none = await requestDiscard(page, 200);
+    assert.equal(none.guideStatus, 'none');
+    await discardButton(page).waitFor({ state: 'hidden' });
+    assert.deepEqual((await readPublic()).guidedLooking, []);
+
+    const proposal = await regenerate();
+    await second.goto(base + '/admin/artworks/fixture-art01');
+    await discardButton(second).waitFor();
+    await question(second).fill('두 번째 탭이 확정한 질문 | 확정한 힌트');
+    const newer = await confirmGuide(second, 200);
+    assert.equal(newer.version, proposal.version + 1);
+    await description(page).fill('폐기 실패 후 남아 있어야 할 미저장 해설');
+    assert.equal((await requestDiscard(page, 409)).code, 'VERSION_CONFLICT');
+    assert.deepEqual(await readAdmin(), newer);
+    assert.equal(await description(page).inputValue(), '폐기 실패 후 남아 있어야 할 미저장 해설');
+    await reloadLatest(page);
+    await page.waitForFunction(() => [...document.querySelectorAll('textarea')].some(field =>
+      field.labels[0]?.textContent.includes('관찰 질문') && field.value.includes('두 번째 탭이 확정한 질문')));
+    assert.equal(await discardButton(page).count(), 0);
+
+    const nextProposal = await regenerate();
+    const published = await readPublic();
+    assert.deepEqual(published.guidedLooking, ['두 번째 탭이 확정한 질문']);
+    await second.reload();
+    await discardButton(second).waitFor();
+    await description(page).fill('성공한 폐기와 함께 저장되면 안 되는 해설');
+    const restored = await requestDiscard(page, 200);
+    assert.equal(restored.version, nextProposal.version + 1);
+    assert.equal(restored.guideStatus, 'confirmed');
+    assert.equal(restored.description, original.description);
+    assert.equal(await description(page).inputValue(), '성공한 폐기와 함께 저장되면 안 되는 해설');
+    assert.equal((await confirmGuide(second, 409)).code, 'VERSION_CONFLICT');
+    assert.deepEqual(await readAdmin(), restored);
+    const current = await readPublic();
+    for (const field of ['guidedLooking', 'guidedHints', 'guideRevision', 'contentVersion', 'summary', 'description']) {
+      assert.deepEqual(current[field], published[field]);
+    }
+    const answer = await json(await request.post(base + publicPath + '/ask', {
+      data: { question: '기존 가이드 문맥으로 재질문', entryContext: {
+        tab: 'guided', kind: 'guide', contentVersion: published.contentVersion, questionIndex: 0,
+      } },
+    }));
+    assert.equal(answer.answer, published.guidedLooking[0]);
+    assert.equal(answer.sourceRefs[0].revision, published.guideRevision);
+    console.log('PASS admin proposal discard: cancel, empty guide, stale discard and stale confirmation, preserved publication and guide reference');
+  } finally {
+    await second.close();
+  }
+}
+
 async function verify(base) {
   const gate = `${base}/api/__admin_analysis_test__/gate`;
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -329,6 +414,7 @@ async function verify(base) {
     }
     console.log('PASS admin image option: image bytes → text only → same image bytes; source and confirmed summary preserved');
     await verifyRegeneration(a, context.request, base, gate, headers);
+    await verifyProposalDiscard(a, context.request, base, headers);
     assert.deepEqual(errors, []);
   } finally {
     await context.request.post(gate).catch(() => {});
