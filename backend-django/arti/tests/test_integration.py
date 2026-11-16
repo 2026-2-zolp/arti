@@ -52,13 +52,119 @@ class IntegrationTests(Helpers,TestCase):
 
     def test_postgres_is_real(self):self.assertEqual(connection.vendor,'postgresql')
 
-    def test_source_change_forces_separate_approval_and_stale(self):
-        w=Artwork.objects.get(pk='fixture-art01');source=w.source_version
-        r=self.put(w,description='새 원문',reviewStatus='approved');self.assertEqual(r.status_code,200,r.content)
-        data=r.json();self.assertEqual(data['sourceVersion'],source+1);self.assertEqual(data['reviewStatus'],'source_check');self.assertEqual(data['summaryStatus'],'suggested')
-        self.assertEqual(self.public.get('/api/artworks/'+w.id).status_code,404)
-        w.refresh_from_db();r=self.put(w,reviewStatus='approved');self.assertEqual(r.status_code,200,r.content)
-        public=self.public.get('/api/artworks/'+w.id).json();self.assertEqual(public['summary'],'');self.assertEqual(public['guidedLooking'],[])
+    def test_blank_source_or_description_can_be_saved_but_not_approved(self):
+        works_url = '/api/admin/artworks'
+        fixture = Artwork.objects.get(pk='fixture-art01')
+        artwork = {**artwork_dto(fixture, True), 'title': '승인 검수용 합성 초안',
+                   'source': '', 'description': '', 'referenceUrl': '', 'summaryStatus': 'none', 'guideStatus': 'none'}
+        draft = self.admin.post(works_url, {**artwork, 'reviewStatus': 'pending'}, format='json')
+        self.assertEqual(draft.status_code, 200, draft.content)
+        work = Artwork.objects.get(pk=draft.json()['id'])
+        review = self.put(work, reviewStatus='source_check')
+        self.assertEqual(review.status_code, 200, review.content)
+        self.assertEqual(review.json()['reviewStatus'], 'source_check')
+        work.refresh_from_db()
+        saved_version = work.version
+        count = Artwork.objects.count()
+        for source, description, reference_url in (
+            ('', '', ''), (' \t', '가상 해설', 'https://example.test/catalog'), ('합성 출처', '\n ', ''),
+        ):
+            with self.subTest(source=source, description=description):
+                approval = {'reviewStatus': 'approved', 'source': source, 'description': description,
+                            'referenceUrl': reference_url}
+                create = self.admin.post(works_url, {**artwork, **approval}, format='json')
+                update = self.put(work, **approval)
+                for response in (create, update):
+                    self.assertEqual(response.status_code, 400, response.content)
+                    self.assertEqual(response.json()['code'], 'VALIDATION_ERROR')
+                work.refresh_from_db()
+                self.assertEqual((work.review_status, work.version, work.source, work.description),
+                                 ('source_check', saved_version, '', ''))
+                self.assertEqual(Artwork.objects.count(), count)
+                self.assertEqual(self.public.get('/api/artworks/' + work.id).status_code, 404)
+
+    def test_only_latest_approved_source_and_confirmed_material_reach_docent(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        path = '/api/artworks/' + work.id
+        previous = self.public.get(path).json()
+        question = '이 작품에서 무엇을 먼저 관찰할까요?'
+        new_description = '새 합성 원문에서 가운데에 밝은 사각형이 보입니다.'
+        new_source = '시험용 도록 2판'
+
+        def ask(kind, content_version):
+            entry = {'tab': 'guided' if kind == 'guide' else 'desc', 'kind': kind, 'contentVersion': content_version}
+            if kind == 'guide':
+                entry.update(questionIndex=0, question='클라이언트가 보낸 문구')
+            return self.public.post(path + '/ask', {'question': question, 'entryContext': entry}, format='json')
+
+        with patch('arti.providers.generate', return_value={'answer': '모의 답변'}) as provider:
+            response = self.put(work, description=new_description, source=new_source, reviewStatus='approved')
+            self.assertEqual(response.status_code, 200, response.content)
+            edited = response.json()
+            self.assertEqual(edited['sourceVersion'], previous['sourceVersion'] + 1)
+            self.assertEqual(edited['reviewStatus'], 'source_check')
+            self.assertEqual(edited['summaryStatus'], 'suggested')
+            self.assertEqual(self.public.get(path).status_code, 404)
+            listing = self.public.get('/api/artworks', {'exhibitionId': work.exhibition_id}).json()
+            self.assertNotIn(work.id, [item['id'] for item in listing])
+            self.assertEqual(ask('summary', previous['contentVersion']).status_code, 404)
+
+            work.refresh_from_db()
+            approved = self.put(work, reviewStatus='approved', version=previous['version'])
+            self.assertEqual(approved.status_code, 409, approved.content)
+            self.assertEqual(self.public.get(path).status_code, 404)
+            approved = self.put(work, reviewStatus='approved')
+            self.assertEqual(approved.status_code, 200, approved.content)
+            self.assertEqual(approved.json()['reviewStatus'], 'approved')
+            published = self.public.get(path).json()
+            self.assertEqual((published['description'], published['source']), (new_description, new_source))
+            self.assertEqual((published['summary'], published['guidedLooking'], published['guidedHints']), ('', [], []))
+            stale = ask('summary', previous['contentVersion'])
+            self.assertEqual(stale.status_code, 409, stale.content)
+            self.assertEqual(stale.json()['code'], 'CONTENT_CHANGED')
+            self.assertEqual(ask('summary', published['contentVersion']).status_code, 400)
+            self.assertEqual(ask('guide', published['contentVersion']).status_code, 400)
+            provider.assert_not_called()
+
+            work.refresh_from_db()
+            saved = self.put(work, summary='새 쉬운 요약', summaryStatus='confirmed', guideStatus='confirmed',
+                             guidedLooking=['밝은 사각형은 어디에 있나요?'], guidedHints=['가운데를 보세요.'])
+            self.assertEqual(saved.status_code, 200, saved.content)
+            published = self.public.get(path).json()
+            self.assertEqual(published['summary'], '새 쉬운 요약')
+            self.assertEqual(published['guidedLooking'], ['밝은 사각형은 어디에 있나요?'])
+            self.assertEqual(published['guidedHints'], ['가운데를 보세요.'])
+            for kind, context, revision in (
+                ('original', {'kind': 'original', 'text': new_description}, published['sourceVersion']),
+                ('summary', {'kind': 'summary', 'text': published['summary']}, published['summaryRevision']),
+                ('guide', {'kind': 'guide', 'question': published['guidedLooking'][0]}, published['guideRevision']),
+            ):
+                with self.subTest(kind=kind):
+                    answer = ask(kind, published['contentVersion'])
+                    self.assertEqual(answer.status_code, 200, answer.content)
+                    self.assertEqual(answer.json()['sourceRefs'], [{'artworkId': work.id, 'kind': kind,
+                                     'sourceVersion': published['sourceVersion'], 'revision': revision}])
+                    provider.assert_called_with('answer', published, entry=context, history=[], question=question)
+            self.assertEqual(provider.call_count, 3)
+
+    def test_personalized_explanation_rejects_source_changed_during_generation(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        path = '/api/artworks/' + work.id + '/explanation'
+
+        def edit_during_generation(kind, artwork):
+            self.assertEqual(kind, 'explanation')
+            self.assertEqual(artwork['description'], work.description)
+            edited = self.put(work, description='검수 중인 새 원문')
+            self.assertEqual(edited.status_code, 200, edited.content)
+            return {'text': '이전 원문으로 생성한 해설'}
+
+        with patch('arti.providers.generate', side_effect=edit_during_generation) as provider:
+            stale = self.public.post(path, {}, format='json')
+            self.assertEqual(stale.status_code, 409, stale.content)
+            self.assertEqual(stale.json()['code'], 'CONTENT_CHANGED')
+            self.assertNotIn('text', stale.json())
+            self.assertEqual(self.public.post(path, {}, format='json').status_code, 404)
+            provider.assert_called_once()
 
     def test_roundtrip_guide_and_independent_confirmation(self):
         w=Artwork.objects.get(pk='fixture-art01');r=self.put(w,guideIntro='도입 수정',guidedLooking=['관찰 질문'],guidedHints=['힌트'],guideStatus='confirmed')
