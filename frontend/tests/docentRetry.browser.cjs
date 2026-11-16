@@ -155,11 +155,29 @@ async function inspectJourney(browser, status, code) {
     const error = page.getByRole('alert');
     await error.waitFor();
     assert.doesNotMatch(await error.textContent(), /upstream-private-debug/);
+    assert.equal(await chat.getByRole('alert').textContent(), await error.textContent());
+    assert.equal(await chat.locator('.docent-attempt').textContent(), question);
     const retry = button('다시 시도');
     await retry.waitFor();
     assert.equal(await input.inputValue(), draft);
     assert.equal(await chat.locator('.bubble.user').count(), 1);
     assert.equal(askRequests.length, 2);
+
+    const viewport = page.viewportSize();
+    if (status === 504) {
+      await page.setViewportSize({ width: 320, height: 340 });
+      await page.waitForFunction(() => {
+        const shell = document.querySelector('[data-screen="U-11"]');
+        const body = shell?.querySelector('main')?.getBoundingClientRect();
+        const card = shell?.querySelector('.docent-error-card')?.getBoundingClientRect();
+        const controls = [...(shell?.querySelectorAll('.docent-chat-actions button, .chat-input input, .send-btn') ?? [])];
+        return body && card && card.top >= body.top - 1 && card.bottom <= body.bottom + 1
+          && controls.length === 3 && controls.every(control => {
+            const rect = control.getBoundingClientRect();
+            return rect.top >= 0 && rect.bottom <= innerHeight + 1 && rect.left >= 0 && rect.right <= innerWidth + 1;
+          });
+      });
+    }
 
     if (status === 429) {
       const seconds = Number(failed.headers()['retry-after']);
@@ -200,10 +218,13 @@ async function inspectJourney(browser, status, code) {
     assert.ok(reply.sourceRefs[0].sourceVersion > 0);
     assert.equal(reply.sourceRefs[0].revision, reply.sourceRefs[0].sourceVersion);
     await chat.locator('.bubble.user').filter({ hasText: question }).waitFor();
+    await chat.locator('.docent-error-card').waitFor({ state: 'hidden' });
+    assert.equal(await chat.locator('.docent-attempt').count(), 0);
     assert.equal(await chat.locator('.bubble.ai').count(), 2);
     assert.equal(await chat.locator('img').count(), 0, 'provider text stays inert');
     assert.equal(await input.inputValue(), status === 504 ? newDraft : '');
     assert.equal(askRequests.length, 3);
+    if (status === 504) await page.setViewportSize(viewport);
 
     if (status === 429) {
       const refreshDraft = `[합성 429 ${randomUUID()} 시험] 새로고침 뒤에도 입력이 남나요?`;
@@ -409,6 +430,8 @@ async function inspectArtworkChange(browser) {
     const draft = '  원래 작품에서 이어서 물어보고 싶어요.  ';
     let late;
     try {
+      assert.equal(await chat.locator('.docent-attempt').textContent(), delayed.question);
+      await chat.getByRole('status').getByText('답변을 작성하고 있어요…', { exact: true }).waitFor();
       await input.fill(draft);
       await button('뒤로가기').click();
       await artwork(titles[0]).waitFor();
