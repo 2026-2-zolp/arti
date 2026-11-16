@@ -33,10 +33,8 @@ export default function AdminLayout() {
       <header className="admin-top">
         <div className="admin-brand">
           <strong>ARTI</strong>
-          <span>관리자</span>
         </div>
         <div className="admin-account">
-          <span>관리자 계정</span>
           <button className="text-btn" onClick={logout}>
             로그아웃
           </button>
