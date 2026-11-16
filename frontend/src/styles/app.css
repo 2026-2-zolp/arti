@@ -467,7 +467,7 @@ a.history-card { text-decoration: none; }
 .bubble.docent-error-card { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; align-self: flex-start; }
 .chat-log .bubble small { display: block; color: var(--ink-2); }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
-.docent-chat-actions { display: flex; justify-content: flex-end; }
+.docent-chat-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 12px; }
 .docent-chat-actions .link-btn { min-height: 44px; }
 .chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
 .chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }

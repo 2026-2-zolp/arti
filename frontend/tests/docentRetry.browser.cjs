@@ -422,6 +422,76 @@ async function inspectContentUpdate(browser) {
   }
 }
 
+async function inspectReadingAndContinuing(browser) {
+  const page = await newPage(browser);
+  try {
+    const { button, input, send, chat, before, recommendations, respondTo, pageErrors } = await journey(page);
+    await page.setViewportSize({ width: 360, height: 420 });
+    const conversation = page.locator('[data-screen="U-11"] main');
+    const position = () => conversation.evaluate(el => ({
+      top: el.scrollTop, remaining: el.scrollHeight - el.clientHeight - el.scrollTop,
+    }));
+    const history = [];
+    let sourceRefs;
+    for (const question of [
+      '이 작품에서 가장 먼저 살펴볼 곳을 구체적으로 알려 주세요.',
+      '방금 살펴본 부분의 모양과 색을 차례대로 설명해 주세요.',
+      '그 부분과 화면 반대쪽에 보이는 요소를 비교하면 어떤가요?',
+      '앞에서 비교한 두 부분의 경계도 같은 작품 안에서 살펴보고 싶어요.',
+    ]) {
+      await input.fill(question);
+      const response = await respondTo(() => send.click());
+      assert.equal(response.status(), 200);
+      const reply = await response.json();
+      assert.deepEqual(response.request().postDataJSON().history, history);
+      sourceRefs ??= reply.sourceRefs;
+      assert.deepEqual(reply.sourceRefs, sourceRefs);
+      history.push({ role: 'user', text: question }, { role: 'assistant', text: reply.answer });
+      await chat.locator('.bubble.user').getByText(question, { exact: true }).waitFor();
+    }
+    assert.ok((await position()).top > 100, 'conversation must scroll');
+    assert.ok((await position()).remaining < 24, 'latest conversation followed before manual scroll');
+    await conversation.evaluate(async el => {
+      el.scrollTop = 40;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    const readingTop = (await position()).top;
+    assert.ok((await position()).remaining > 100, 'the visitor is reading an earlier reply');
+
+    const question = `[합성 대기 ${randomUUID()} 시험] 그러면 그 경계는 어디에서 다시 찾을 수 있나요?`;
+    const delayed = await delayedQuestion(page, input, send, question);
+    let response;
+    try {
+      assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'sending keeps the old reply in place');
+    } finally {
+      response = await delayed.finish();
+    }
+    assert.equal(response.status(), 200);
+    assert.equal(new URL(response.url()).pathname, `/api/artworks/${recommendations[0]}/ask`);
+    const payload = response.request().postDataJSON();
+    assert.equal(payload.visitId, before.visitId);
+    assert.equal(payload.question, question);
+    assert.equal(payload.entryContext.kind, 'original');
+    assert.deepEqual(payload.history, history);
+    const reply = await response.json();
+    assert.deepEqual(reply.sourceRefs, sourceRefs);
+    await chat.locator('.bubble.user').getByText(question, { exact: true }).waitFor();
+    const latest = button('최신 대화 보기');
+    await latest.waitFor();
+    assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'the new reply preserves reading position');
+
+    await latest.click();
+    await latest.waitFor({ state: 'hidden' });
+    assert.ok((await position()).remaining < 24);
+    assert.equal(await chat.evaluate(log => document.activeElement === log), true);
+    assert.equal(await chat.locator('.bubble.user').count(), 5);
+    assert.deepEqual(pageErrors, []);
+    console.log('PASS older reply stays in place while sending and receiving; artwork, visit and four prior exchanges stay aligned');
+  } finally {
+    await page.close();
+  }
+}
+
 async function inspectArtworkChange(browser) {
   const page = await newPage(browser);
   try {
@@ -804,6 +874,7 @@ async function inspectEntryContexts(browser) {
   try {
     const checks = process.env.ARTI_DOCENT_RACE_TESTS === '1'
       ? [
+        ['이전 답변 읽기와 같은 작품 이어 묻기', inspectReadingAndContinuing],
         ['작품 자료 갱신', inspectContentUpdate], ['다음 작품 이동', inspectArtworkChange],
         ['다른 작품 두 탭 격리', inspectTwoTabs], ['같은 작품 두 탭 격리', browser => inspectTwoTabs(browser, 0)],
       ]

@@ -77,6 +77,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const pending = pendingQuestion !== null;
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const followLatest = useRef(true);
+  const [newOutput, setNewOutput] = useState(false);
   const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
 
   const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
@@ -96,28 +99,36 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
-    if (!shell || !viewport) return;
+    const conversation = shell?.querySelector('main');
+    if (!shell || !conversation) return;
+
+    const trackReadingPosition = () => {
+      followLatest.current = conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < 24;
+      if (followLatest.current) setNewOutput(false);
+    };
 
     // Android Chrome에서 키보드가 열린 동안 보이는 영역에 입력부를 맞춥니다.
     const syncViewport = () => {
-      if (viewport.scale !== 1) return;
-      const conversation = shell.querySelector('main');
-      const following = conversation && conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < 24;
+      if (!viewport || viewport.scale !== 1) return;
       shell.style.setProperty('--docent-height', `${viewport.height}px`);
       shell.style.setProperty('--docent-top', `${viewport.offsetTop}px`);
-      if (following) conversation.scrollTop = conversation.scrollHeight;
+      if (followLatest.current) conversation.scrollTop = conversation.scrollHeight;
     };
     syncViewport();
-    viewport.addEventListener('resize', syncViewport);
-    viewport.addEventListener('scroll', syncViewport);
+    conversation.addEventListener('scroll', trackReadingPosition, { passive: true });
+    viewport?.addEventListener('resize', syncViewport);
+    viewport?.addEventListener('scroll', syncViewport);
     return () => {
-      viewport.removeEventListener('resize', syncViewport);
-      viewport.removeEventListener('scroll', syncViewport);
+      conversation.removeEventListener('scroll', trackReadingPosition);
+      viewport?.removeEventListener('resize', syncViewport);
+      viewport?.removeEventListener('scroll', syncViewport);
     };
   }, []);
 
   useEffect(() => {
     generation.current += 1; sending.current = false; setPendingQuestion(null);
+    followLatest.current = true;
+    setNewOutput(false);
     setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
     setLoadedChatKey(key);
     return () => { generation.current += 1; };
@@ -125,8 +136,21 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   useLayoutEffect(() => {
     if (!messages.length && !pending && !sendError) return;
     const conversation = shellRef.current?.querySelector('main');
-    if (conversation) conversation.scrollTop = conversation.scrollHeight;
-  }, [messages, pending, sendError]);
+    if (!conversation) return;
+    if (followLatest.current || artworkIssue) {
+      conversation.scrollTop = conversation.scrollHeight;
+    } else if (!pending) {
+      setNewOutput(true);
+    }
+  }, [messages, pending, sendError, artworkIssue]);
+  const showLatest = () => {
+    const conversation = shellRef.current?.querySelector('main');
+    if (!conversation) return;
+    followLatest.current = true;
+    conversation.scrollTop = conversation.scrollHeight;
+    chatRef.current?.focus({ preventScroll: true });
+    setNewOutput(false);
+  };
   const ask = async (question: string, fromInput = false) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
@@ -190,8 +214,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       back={backToArtwork}
       footer={
         <>
-          {(retry || artworkIssue) && (
+          {(retry || artworkIssue || newOutput) && (
             <div className="docent-chat-actions">
+              {newOutput && !artworkIssue && (
+                <button type="button" className="link-btn" onClick={showLatest}>최신 대화 보기</button>
+              )}
               {retry && (
                 <button type="button" className="link-btn" disabled={!canAsk}
                   aria-describedby="docent-send-error"
@@ -252,7 +279,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
           )}
         </section>
       )}
-      <div className="chat-log" role="log" aria-label="도슨트 대화">
+      <div ref={chatRef} className="chat-log" role="log" aria-label="도슨트 대화" tabIndex={-1}>
         {chatReady && messages.length === 0 && !selectedQuestion && !attemptedQuestion && !sendError && (
           <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
         )}
