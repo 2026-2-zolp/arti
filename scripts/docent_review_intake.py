@@ -186,10 +186,12 @@ def report(refs, answers, text_replies):
         if reply['reviewer'] and counts[reply['reviewer'].casefold()] > 1:
             reply['issues'].append({'field': REVIEWER, 'issue': 'duplicate-reviewer'})
     exposures = [r['priorReviewExposure'] if r['priorReviewExposure'] in EXPOSURE_VALUES else '미기록' for r in replies]
+    unexposed_replies = [reply for reply in replies if reply['priorReviewExposure'] == '미열람']
     return {
         'archive': refs, 'caseCount': len(answers), 'replyCount': len(replies),
         'priorReviewExposureCounts': dict(Counter(exposures)),
         'caseSummary': {case: disagreement(replies, case) for case in answers},
+        'unexposedCaseSummary': {case: disagreement(unexposed_replies, case) for case in answers},
         'replies': replies,
         'scope': 'receipt precheck; human decisions preserved; publication and gate decisions unchanged',
     }

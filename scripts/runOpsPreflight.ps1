@@ -18,6 +18,7 @@ $builtImages = @()
 $pendingSource = $null
 $pendingCandidate = $null
 $faultNetwork = $null
+$recoveryNetwork = $null
 $report = [ordered]@{ run = $trial; revision = $null; status = 'failed'; failedStage = $null; stages = [ordered]@{} }
 $stage = 'prerequisites'
 $failure = $null
@@ -77,15 +78,30 @@ function Test-ProbeStartup([string[]]$project, $base) {
     }
 }
 
-function New-ProbeFaultNetwork($name) {
-    # Both projects run during the failure check. Use a small, internal subnet outside the default pool.
+function New-ProbeNetwork($name, [switch]$Internal) {
+    $mode = @(if ($Internal) { '--internal' })
     for ($attempt = 0; $attempt -lt 8; $attempt++) {
-        $subnet = "10.247.$(Get-Random -Maximum 256).$((Get-Random -Maximum 16) * 16)/28"
-        $id = docker network create --driver bridge --internal --subnet $subnet $name 2>&1
-        if ($LASTEXITCODE -eq 0) { return $id }
-        if (($id -join ' ') -notmatch 'Pool overlaps') { throw 'Could not create the isolated candidate fault network.' }
+        $prefix = "10.247.$(Get-Random -Maximum 256)"
+        $block = (Get-Random -Maximum 16) * 16
+        $id = docker network create --driver bridge @mode --subnet "$prefix.$block/28" --ip-range "$prefix.$block/29" $name 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            # Reserve the upper half of the subnet for deterministic API replacement addresses.
+            return @{ id = $id; name = $name; firstApi = "$prefix.$($block + 9)"; nextApi = "$prefix.$($block + 10)" }
+        }
+        if (($id -join ' ') -notmatch 'Pool overlaps') { throw 'Could not create the isolated candidate network.' }
     }
-    throw 'No unused subnet found for the isolated candidate fault network.'
+    throw 'No unused subnet found for the isolated candidate network.'
+}
+
+function Wait-ProbeNginxReadyStatus($base, $expected) {
+    $deadline = [DateTime]::UtcNow.AddSeconds(20)
+    do {
+        $response = Invoke-WebRequest "$base/api/ready?check=dns" -SkipHttpErrorCheck -NoProxy -TimeoutSec 10
+        if ([int]$response.StatusCode -eq $expected) { return $response }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTime]::UtcNow -lt $deadline)
+    $report.httpStatus = @{ expected = $expected; actual = [int]$response.StatusCode }
+    throw 'Nginx did not return the expected readiness status after the API change.'
 }
 
 New-Item -ItemType Directory -Path $scratch | Out-Null
@@ -197,8 +213,7 @@ services:
 
     $stage = 'candidate-migration-failure'
     Write-Host '[candidate-migration-failure] Reject a bad migration credential while the source stays online'
-    $faultNetworkName = "$trial-fault"
-    $faultNetwork = New-ProbeFaultNetwork $faultNetworkName
+    $faultNetwork = New-ProbeNetwork "$trial-fault" -Internal
     $faultOverlay = Join-Path $scratch 'compose.fault.yaml'
     @"
 services:
@@ -208,7 +223,7 @@ services:
 networks:
   default:
     external: true
-    name: $faultNetworkName
+    name: $($faultNetwork.name)
 "@ | Set-Content -LiteralPath $faultOverlay -Encoding utf8
     $faulted = $restore + @('-f', $faultOverlay)
     $pendingCandidate = $faulted
@@ -238,7 +253,7 @@ networks:
     $report.stages[$stage] = @{ composeUpExit = $upExit; migrateExit = 1; databaseAuthRejected = $true; candidateApiBlocked = $true; candidateWebBlocked = $true; publicTables = 0; sourceReady = 200; sourceReceipt = 200; sameSourceReceipt = $true }
     Invoke-ProbeDocker compose @faulted down | Out-Null
     $pendingCandidate = $restore
-    Invoke-ProbeDocker network rm $faultNetwork | Out-Null
+    Invoke-ProbeDocker network rm $faultNetwork.id | Out-Null
     $faultNetwork = $null
 
     $stage = 'synthetic-backup'
@@ -259,6 +274,21 @@ networks:
 
     $stage = 'isolated-restore'
     Write-Host '[isolated-restore] Correct the candidate configuration and restore its blank DB and media'
+    $recoveryNetwork = New-ProbeNetwork "$trial-recovery"
+    $recoveryOverlay = Join-Path $scratch 'compose.recovery.yaml'
+    @"
+services:
+  api:
+    networks:
+      default:
+        ipv4_address: $($recoveryNetwork.firstApi)
+networks:
+  default:
+    external: true
+    name: $($recoveryNetwork.name)
+"@ | Set-Content -LiteralPath $recoveryOverlay -Encoding utf8
+    $restore += @('-f', $recoveryOverlay)
+    $pendingCandidate = $restore
     Invoke-ProbeDocker compose @restore up -d --wait --wait-timeout 60 db | Out-Null
     $tables = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc $tableCountSql
     $restoreSystemId = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc $systemIdSql
@@ -306,8 +336,65 @@ networks:
     Invoke-ProbeHttp $restoreUrl '/api/uploads/fixture-private.png' 404 $memberHeaders | Out-Null
     Invoke-ProbeHttp $restoreUrl '/api/admin/uploads/fixture-private.png' 200 $adminHeaders | Out-Null
     $report.stages[$stage] = @{ spa = 200; asset = 200; sameReceipt = $true; owner = 200; admin = 200; other = 403; guest = 401; memberAsAdmin = 401; media = @(200, 404, 200) }
-    Invoke-ProbeDocker compose @restore down --volumes | Out-Null
+
+    $stage = 'nginx-api-recovery'
+    Write-Host '[nginx-api-recovery] Recreate the upstream at a second IP while keeping Nginx running'
+    $proxy = Invoke-ProbeDocker compose @restore ps -q web
+    $proxyFormat = '{{.Id}} {{.State.StartedAt}}'
+    $proxyBefore = Invoke-ProbeDocker inspect --format $proxyFormat $proxy
+    $apiBefore = Invoke-ProbeDocker compose @restore ps -q api
+    $ipFormat = '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+    $oldIp = Invoke-ProbeDocker inspect --format $ipFormat $apiBefore
+    if ($oldIp -ne $recoveryNetwork.firstApi) { throw 'The old API did not use its reserved address.' }
+    Invoke-ProbeHttp $restoreUrl '/api/ready?check=dns' 200 | Out-Null
+    $memberQuery = '/api/admin/members?q=' + [uri]::EscapeDataString($ownerLogin.email)
+    $queryBefore = Invoke-ProbeHttp $restoreUrl $memberQuery 200 $adminHeaders
+    $queryMembers = Convert-ProbeJson $queryBefore
+    if ($queryMembers.Count -ne 1 -or $queryMembers[0].id -ne $owner.user.id) {
+        throw 'The proxied admin request did not apply its query filter.'
+    }
+
+    Invoke-ProbeDocker compose @restore stop api | Out-Null
+    Wait-ProbeNginxReadyStatus $restoreUrl 502 | Out-Null
+    $spaPath = "/receipt/$($original.id)"
+    $spaDuring = Invoke-ProbeHttp $restoreUrl $spaPath 200
+    if ($spaDuring.Content -cne $direct.Content) { throw 'The static receipt route changed during API outage.' }
+
+    $movedOverlay = Join-Path $scratch 'compose.api-moved.yaml'
+    @"
+services:
+  api:
+    networks:
+      default:
+        ipv4_address: $($recoveryNetwork.nextApi)
+"@ | Set-Content -LiteralPath $movedOverlay -Encoding utf8
+    $moved = $restore + @('-f', $movedOverlay)
+    $pendingCandidate = $moved
+    Invoke-ProbeDocker compose @moved up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 100 api | Out-Null
+    $apiAfter = Invoke-ProbeDocker compose @moved ps -q api
+    $newIp = Invoke-ProbeDocker inspect --format $ipFormat $apiAfter
+    if ($apiAfter -eq $apiBefore -or $newIp -eq $oldIp -or $newIp -ne $recoveryNetwork.nextApi) {
+        throw 'The replacement API did not take the second address.'
+    }
+    $ready = Convert-ProbeJson (Wait-ProbeNginxReadyStatus $restoreUrl 200)
+    $proxy = Invoke-ProbeDocker compose @moved ps -q web
+    $proxyAfter = Invoke-ProbeDocker inspect --format $proxyFormat $proxy
+    if ($ready.database -ne 'postgresql' -or $proxyAfter -ne $proxyBefore -or (Get-ProbeWeb $moved) -ne $restoreUrl) {
+        throw 'The same Nginx service did not reconnect to the replacement API.'
+    }
+    $spaAfter = Invoke-ProbeHttp $restoreUrl $spaPath 200
+    $queryAfter = Invoke-ProbeHttp $restoreUrl $memberQuery 200 $adminHeaders
+    $ownerAfter = Invoke-ProbeHttp $restoreUrl $path 200 $memberHeaders
+    $adminAfter = Invoke-ProbeHttp $restoreUrl "/api/admin/visits/$($original.id)" 200 $adminHeaders
+    if ($spaAfter.Content -cne $direct.Content -or $queryAfter.Content -cne $queryBefore.Content -or
+        $ownerAfter.Content -cne $ownerDetail.Content -or $adminAfter.Content -cne $adminDetail.Content) {
+        throw 'The static route, query filter or restored receipt changed after API replacement.'
+    }
+    $report.stages[$stage] = @{ ready = @(200, 502, 200); oldApi = $oldIp; newApi = $newIp; sameNginx = $true; spa = @(200, 200); sameAdminQuery = $true; sameReceipt = $true }
+    Invoke-ProbeDocker compose @moved down --volumes | Out-Null
     $pendingCandidate = $null
+    Invoke-ProbeDocker network rm $recoveryNetwork.id | Out-Null
+    $recoveryNetwork = $null
 
     $stage = 'https-callback-logs'
     Write-Host '[https-callback-logs] Run the signed mock Kakao Chrome and outage checks'
@@ -324,8 +411,10 @@ networks:
             try { Invoke-ProbeDocker compose @project down --volumes | Out-Null } catch { $report.cleanup = 'failed' }
         }
     }
-    if ($faultNetwork) {
-        try { Invoke-ProbeDocker network rm $faultNetwork | Out-Null } catch { $report.cleanup = 'failed' }
+    foreach ($network in @($faultNetwork, $recoveryNetwork)) {
+        if ($network) {
+            try { Invoke-ProbeDocker network rm $network.id | Out-Null } catch { $report.cleanup = 'failed' }
+        }
     }
     if ($builtImages.Count) {
         try { Invoke-ProbeDocker image rm @builtImages | Out-Null } catch { $report.cleanup = 'failed' }
