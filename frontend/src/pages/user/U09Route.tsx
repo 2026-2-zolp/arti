@@ -1,5 +1,5 @@
 /**
- * U-09 추천 관람 경로 (2D 지도)
+ * U-09 추천 관람순서 (2D 지도)
  * - 최초 진입: "관람 시작하기" → U-10
  * - 작품 감상 후 "다음 작품 안내"로 다시 들어오면 같은 화면을 재사용해 다음 작품 위치를 보여 준다.
  * 실시간 실내 내비게이션이 아니라 위치와 순서를 시각적으로 안내하는 수준.
@@ -43,6 +43,7 @@ export default function U09Route() {
   );
   const returnToArtwork = entry?.returnToArtwork === true;
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
+  const title = isNextGuide ? '다음 작품 안내' : '추천 관람순서';
   const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
   const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
   const openArtwork = () => {
@@ -71,7 +72,7 @@ export default function U09Route() {
       navigate(to('/receipt'), { replace: true });
     };
     return (
-      <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
+      <MobileShell screenId="U-09" title={title} back={back}>
         <div className="notice-card is-err notice-center screen-center" role="alert">
           <p className="notice-body">전시를 더 이상 관람할 수 없어요.</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
@@ -83,7 +84,7 @@ export default function U09Route() {
 
   if (error || loading || !data) {
     return (
-      <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
+      <MobileShell screenId="U-09" title={title} back={back}>
         {error ? (
           <div className="notice-card is-err notice-center screen-center" role="alert">
             <p className="notice-body">지도 정보를 불러오지 못했어요.{errorDetail(error)}</p>
@@ -105,7 +106,7 @@ export default function U09Route() {
       navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
     };
     return (
-      <MobileShell screenId="U-09" title="추천 관람 경로" back={back}>
+      <MobileShell screenId="U-09" title={title} back={back}>
         <div className="notice-card is-err notice-center screen-center" role="alert">
           <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
@@ -161,7 +162,7 @@ export default function U09Route() {
   return (
     <MobileShell
       screenId="U-09"
-      title={isNextGuide ? '다음 작품 안내' : '추천 관람 경로'}
+      title={title}
       back={back}
       footer={
         <button className="btn primary block" onClick={go}>

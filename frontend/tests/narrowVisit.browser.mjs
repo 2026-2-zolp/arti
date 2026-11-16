@@ -103,6 +103,7 @@ async function verify(browser, width) {
     await checkText(page.locator('.rec-info strong').first(), `${width}px U-08 recommendation title`, '.rec-card');
     await button('2D 지도에서 경로 보기').click();
     await page.locator('.route-list li').last().waitFor();
+    assert.equal(await page.getByRole('heading', { name: '추천 관람순서', exact: true }).isVisible(), true);
     await checkWidth(page, `${width}px U-09 overview`);
     await checkText(page.locator('.route-title').first(), `${width}px U-09 route title`, '.route-list');
     assert.equal(await page.locator('.floor-map .fm-marker.current title').textContent(), artworkTitles[0]);
@@ -113,8 +114,28 @@ async function verify(browser, width) {
     await checkText(firstArtwork, `${width}px U-10 artwork title`, '.m-body');
     await button('좋아요').click();
     await button('색감이 좋아요').click();
-    await button('다음 작품 안내').click();
+    const guideTitle = page.getByRole('heading', { name: '다음 작품 안내', exact: true });
+    const mapRequest = `**/api/exhibitions/${exhibition.id}`;
+    let releaseMap;
+    const mapDelay = new Promise(resolve => { releaseMap = resolve; });
+    await page.route(mapRequest, async route => {
+      await mapDelay;
+      await route.fulfill({ status: 503, json: { message: '시험용 지도 지연' } });
+    }, { times: 1 });
+    try {
+      const requested = page.waitForRequest(request => new URL(request.url()).pathname === `/api/exhibitions/${exhibition.id}`);
+      await button('다음 작품 안내').click();
+      await requested;
+      await page.getByText('불러오는 중…', { exact: true }).waitFor();
+      assert.equal(await guideTitle.isVisible(), true);
+    } finally {
+      releaseMap();
+    }
+    await page.getByRole('alert').getByText(/지도 정보를 불러오지 못했어요/).waitFor();
+    assert.equal(await guideTitle.isVisible(), true);
+    await button('다시 시도하기').click();
     await page.getByText('추천 작품 2/3').waitFor();
+    assert.equal(await guideTitle.isVisible(), true);
     const map = page.locator('.floor-map.has-plan');
     const details = page.locator('.route-details');
     const mapHeight = () => map.evaluate(element => element.getBoundingClientRect().height);
