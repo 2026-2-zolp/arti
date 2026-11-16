@@ -14,7 +14,7 @@
  *  전시/taste/saved             U-06 저장 취향 확인
  *  전시/time                    U-07 관람 시간 선택
  *  전시/recommend               U-08 개인화 작품 추천
- *  전시/route                   U-09 추천 관람 경로(2D 지도)
+ *  전시/route                   U-09 추천 관람순서(2D 지도)
  *  전시/artwork                 U-10 작품 감상
  *  전시/artwork/ask             U-11 AI 자유 질문
  *  전시/receipt                 U-12 아트 영수증

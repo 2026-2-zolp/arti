@@ -87,7 +87,7 @@ async function journey(page, { useClock = false, enterDocent = true, checkViewer
   const cards = page.locator('.rec-list .rec-card strong');
   await cards.last().waitFor();
   const titles = (await cards.allTextContents()).map(title => title.replace(/^\d+\.\s*/, ''));
-  await button('2D 지도에서 경로 보기').click();
+  await button('지도에서 관람순서 보기').click();
   await page.locator('.fm-route.active').waitFor();
   await button('관람 시작하기').click();
   await artwork(titles[0]).waitFor();
