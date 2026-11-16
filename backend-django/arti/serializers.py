@@ -64,10 +64,12 @@ class AdminLoginInput(serializers.Serializer):
 
 
 def exhibition_dto(ex):
+    from .indoor import current_layout
     return {'id': ex.id, 'title': ex.title, 'subtitle': ex.subtitle, 'venue': ex.venue,
             'startDate': ex.start_date.isoformat(), 'endDate': ex.end_date.isoformat(), 'status': ex.status,
             'rooms': ex.rooms, 'entrance': {'x': ex.entrance_x, 'y': ex.entrance_y},
-            'floorPlan': ex.floor_plan, 'version': ex.version}
+            'floorPlan': ex.floor_plan, 'floorPlanRevision': ex.floor_plan_revision,
+            'navigationLayout': current_layout(ex), 'version': ex.version}
 
 
 RETAINED_TEXT_FIELDS = {

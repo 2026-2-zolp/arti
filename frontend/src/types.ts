@@ -85,8 +85,21 @@ export interface Exhibition {
   rooms: Room[];
   entrance: MapPoint;      // 입구 위치 (경로 시작점)
   floorPlan: FloorPlan | null; // 없으면 rooms 사각형으로 기본 평면도를 그린다
+  floorPlanRevision?: number;
+  navigationLayout?: NavigationLayout | null;
   exhibitionOrder?: string[];
 }
+
+export interface NavigationLayoutInput {
+  walkable: { x: number; y: number; w: number; h: number }[];
+  walls: NavigationLayoutInput['walkable'];
+  pillars: NavigationLayoutInput['walkable'];
+  doors: NavigationLayoutInput['walkable'];
+  corridors: NavigationLayoutInput['walkable'];
+  waypoints: MapPoint[];
+}
+
+export type NavigationLayout = NavigationLayoutInput & { floorPlanRevision: number; aspect: number };
 
 export interface Artwork {
   receiptExhibition?: ReceiptExhibition;

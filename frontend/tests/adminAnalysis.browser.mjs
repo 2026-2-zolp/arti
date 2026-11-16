@@ -65,6 +65,9 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     ({ summary, guideIntro, guidedLooking, guidedHints, contentVersion, summaryRevision, guideRevision });
   const verifyOriginal = async () => assert.deepEqual(publicText(await readPublic()), publicText(original));
   await page.goto(`${base}/admin/artworks/${id}`);
+  const draftImage = page.getByRole('checkbox', { name: '요약·가이드 Luna 생성에 도판 사용' });
+  await draftImage.waitFor();
+  assert.equal(await draftImage.isChecked(), false);
   await page.getByText('관람자 미리보기', { exact: true }).click();
   const live = page.getByRole('region', { name: '현재 공개본' });
   const draft = page.getByRole('region', { name: '편집 중인 내용' });
@@ -101,20 +104,25 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     await see(live, confirmed.summary);
     await verifyOriginal();
 
+    await draftImage.check();
     const beforeInvalid = await json(await request.get(base + adminPath, { headers }));
     const { result: guide } = await start('관람가이드 다시 생성');
     assert.equal((await json(await guide, 502)).code, 'PROVIDER_ERROR');
+    assert.equal((await guide).request().postDataJSON().useDraftImage, true);
     assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
     await verifyOriginal();
+    await draftImage.uncheck();
     const { result: retry } = await start('분석 다시 시도');
     const recovered = await retry;
     assert.deepEqual(recovered.request().postDataJSON().regenerateFields, ['guide']);
+    assert.equal(recovered.request().postDataJSON().useDraftImage, true);
     assert.equal((await json(recovered)).artwork.guideStatus, 'suggested');
     await seeQuestion(draft, '새 관찰 질문입니다.');
     await see(draft, '힌트 · 새 힌트입니다.');
     await seeQuestion(live, confirmed.guidedLooking[0]);
     await verifyOriginal();
     assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide']);
+    assert.deepEqual((await json(await request.get(gate))).draftImageRequests, [false, true, true]);
 
     const asked = await json(await request.post(base + publicPath + '/ask', {
       data: { question: '합성 질문', entryContext: { tab: 'guided', kind: 'guide', contentVersion: original.contentVersion, questionIndex: 0 } },

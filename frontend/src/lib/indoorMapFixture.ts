@@ -1,7 +1,9 @@
 import type { Exhibition } from '../types';
 import type { IndoorLayout, MapRect } from './indoorRoute';
 
-type FixtureLayout = IndoorLayout & { corridors: readonly MapRect[]; doors: readonly MapRect[] };
+type FixtureLayout = IndoorLayout & {
+  corridors: readonly MapRect[]; doors: readonly MapRect[]; rooms?: readonly MapRect[];
+};
 
 const pillarLayout: FixtureLayout = {
   aspect: 360 / 640,
@@ -39,4 +41,17 @@ export function indoorMapFixture(exhibition: Pick<Exhibition, 'id' | 'subtitle' 
   const plan = exhibition.floorPlan;
   if (plan?.file === 'fixture-map-pillar.png' && plan.width === 360 && plan.height === 640) return pillarLayout;
   if (plan?.file === 'fixture-map-two-rooms.png' && plan.width === 640 && plan.height === 360) return roomLayout;
+}
+
+export function exhibitionIndoorLayout(exhibition: Exhibition): FixtureLayout | undefined {
+  const layout = exhibition.navigationLayout;
+  if (layout && layout.floorPlanRevision === exhibition.floorPlanRevision) {
+    return {
+      ...layout,
+      rooms: layout.walkable,
+      walkable: [...layout.walkable, ...layout.doors, ...layout.corridors],
+      barriers: [...layout.walls, ...layout.pillars],
+    };
+  }
+  return indoorMapFixture(exhibition);
 }

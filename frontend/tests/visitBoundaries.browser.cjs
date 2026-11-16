@@ -1055,6 +1055,47 @@ async function mapVariants(browser) {
           await legacy.close();
         }
       }
+      if (variant === 'native') {
+        await admin.getByText('이동 구조 등록', { exact: true }).click();
+        const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+        const drawing = editor.locator('.floor-map');
+        const select = editor.getByRole('combobox', { name: '이동 구조 종류' });
+        const rect = async (category, a, b) => {
+          await select.selectOption(category);
+          const box = await drawing.boundingBox();
+          for (const [x, y] of [a, b]) {
+            await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+          }
+        };
+        await rect('walkable', [4, 4], [96, 96]);
+        await rect('pillars', [40, 35], [60, 65]);
+        await select.selectOption('waypoints');
+        for (const [x, y] of [[36, 31], [64, 31], [36, 69], [64, 69]]) {
+          const box = await drawing.boundingBox();
+          await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+        }
+        await button(editor, '이동 구조 저장').click();
+        await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+        const saved = await body(await admin.request.get('/api/exhibitions/' + exhibitionId));
+        assert.equal(saved.navigationLayout.floorPlanRevision, saved.floorPlanRevision);
+        assert.equal(saved.navigationLayout.pillars.length, 1);
+        assert.equal(saved.navigationLayout.waypoints.length, 4);
+        await admin.reload();
+        await admin.locator('.floor-map .fm-wall').waitFor();
+        const visitor = await openPage(browser);
+        try {
+          await visitor.goto(exhibition);
+          await button(visitor, '전시 순서로 바로 보기').click();
+          await button(visitor, '다음 작품 안내').click();
+          await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+          const svg = visitor.locator('.floor-map');
+          await svg.locator('.fm-route.active').waitFor();
+          assert.equal(await svg.locator('.fm-wall').count(), 1);
+          assert.ok((await svg.locator('.fm-route.active').getAttribute('points')).split(' ').length > 2);
+        } finally {
+          await visitor.close();
+        }
+      }
       console.log('PASS map variant:', variant, 'native geometry, visitor routes and fallback checked');
     }
   } finally {

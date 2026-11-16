@@ -14,7 +14,8 @@ works = Artwork.objects.filter(exhibition=exhibition)
 
 if variant == 'restore':
     exhibition.floor_plan = None
-    exhibition.save(update_fields=['floor_plan'])
+    exhibition.navigation_layout = None
+    exhibition.save(update_fields=['floor_plan', 'navigation_layout'])
     call_command('load_test_fixture')
 else:
     rooms = [{'id': 'room-1', 'name': '첫 전시실', 'rect': {'x': 4, 'y': 4, 'w': 92, 'h': 92}}]
@@ -31,6 +32,7 @@ else:
     exhibition.entrance_x = 12
     exhibition.entrance_y = entrance_y
     exhibition.floor_plan = None
+    exhibition.navigation_layout = None
     if variant in ('pillar', 'two-rooms'):
         width, height = (360, 640) if variant == 'pillar' else (640, 360)
         left, top, right, bottom = (40, 35, 60, 65) if variant == 'pillar' else (47, 0, 53, 72)
@@ -51,7 +53,7 @@ else:
             + chunk(b'IDAT', zlib.compress(b''.join(rows))) + chunk(b'IEND', b'')
         )
         exhibition.floor_plan = {'file': filename, 'width': width, 'height': height}
-    exhibition.save(update_fields=['rooms', 'entrance_x', 'entrance_y', 'floor_plan'])
+    exhibition.save(update_fields=['rooms', 'entrance_x', 'entrance_y', 'floor_plan', 'navigation_layout'])
     works.update(position_x=None, position_y=None, room_id='room-1')
     works.filter(pk='fixture-art03').update(position_x=20, position_y=entrance_y)
     works.filter(pk='fixture-art01').update(position_x=82, position_y=entrance_y,

@@ -30,6 +30,8 @@ class Exhibition(models.Model):
     entrance_x = models.FloatField(default=0)
     entrance_y = models.FloatField(default=0)
     floor_plan = models.JSONField(null=True, default=None, blank=True)
+    floor_plan_revision = models.PositiveIntegerField(default=1)
+    navigation_layout = models.JSONField(null=True, default=None, blank=True)
     version = models.PositiveIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
 

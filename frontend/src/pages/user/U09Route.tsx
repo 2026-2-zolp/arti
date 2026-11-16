@@ -12,7 +12,7 @@ import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api, ApiError } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
-import { indoorMapFixture } from '../../lib/indoorMapFixture';
+import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
 import { indoorLeg, indoorSequence } from '../../lib/indoorRoute';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
@@ -148,7 +148,7 @@ export default function U09Route() {
   };
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
   const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
-  const indoor = indoorMapFixture(ex);
+  const indoor = exhibitionIndoorLayout(ex);
   const stops = recommendations.map((r) => byId.get(r.artworkId));
   const hasRouteLines = !!indoor || !isExhibitionOrder || isMapFixture;
   const baselineRoute = hasRouteLines && mapOpen && !indoor ? [ex.entrance, ...stops.flatMap((stop, i) => {
@@ -171,7 +171,7 @@ export default function U09Route() {
   let routeNote = '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.';
   if (isMapFixture) routeNote = '검증용 도면이에요. 출입문과 복도를 따라 이동하는 예시입니다.';
   if (indoor) routeNote = activeLeg
-    ? '검증용 도면에 등록된 이동 가능 구간이에요.'
+    ? '도면에 등록된 이동 가능 구간이에요.'
     : '이어지는 통로를 확인할 수 없어요. 작품 번호와 전시실을 확인해 주세요.';
   else if (!hasRouteLines) routeNote = '번호는 감상 순서를 나타내요. 이동할 때는 전시실 안내를 따라가 주세요.';
   else if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';

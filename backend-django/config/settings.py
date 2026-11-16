@@ -66,6 +66,7 @@ ARTI_DRAFT_API_KEY = os.environ.get('ARTI_DRAFT_API_KEY', '')
 ARTI_DRAFT_MODEL = os.environ.get('ARTI_DRAFT_MODEL', '')
 ARTI_DRAFT_TOKEN_PARAMETER = os.environ.get('ARTI_DRAFT_TOKEN_PARAMETER', 'max_tokens')
 ARTI_DRAFT_JSON_MODE = os.environ.get('ARTI_DRAFT_JSON_MODE', 'true').lower() == 'true'
+ARTI_LUNA_DRAFT_VISION = os.environ.get('ARTI_LUNA_DRAFT_VISION', 'false').lower() == 'true'
 
 # 내부 CLIP·mDeBERTa 서비스 주소. 빈 값이면 비활성, GPT와 독립입니다.
 ARTI_MODEL_SERVICE_URL = os.environ.get('ARTI_MODEL_SERVICE_URL', '')

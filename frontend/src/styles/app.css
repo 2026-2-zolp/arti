@@ -337,6 +337,7 @@ a.history-card { text-decoration: none; }
 .fm-corridor { fill: #e6e2d7; }
 .fm-wall { fill: #9d978c; }
 .fm-door { fill: #faf8f2; }
+.fm-waypoint { fill: var(--accent, #ba526a); }
 .fm-marker circle { fill: var(--accent); }
 .fm-marker text { font-size: 3.4px; fill: #fff; font-weight: 600; pointer-events: none; }
 .fm-marker.upcoming circle, .fm-marker.plain circle { fill: #fff; stroke: var(--accent); stroke-width: 0.6; }

@@ -10,7 +10,7 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { uploadedImageUrl } from '../api/client';
 import { useProtectedImage } from '../lib/useProtectedImage';
-import { indoorMapFixture } from '../lib/indoorMapFixture';
+import { exhibitionIndoorLayout } from '../lib/indoorMapFixture';
 import type { Exhibition, MapPoint } from '../types';
 
 export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
@@ -40,6 +40,7 @@ interface Props {
   showEntrance?: boolean;
   showCompletedNumbers?: boolean;
   forAdmin?: boolean;
+  showReference?: boolean;
 }
 
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
@@ -59,11 +60,13 @@ export function FloorMap({
   showEntrance = true,
   showCompletedNumbers = false,
   forAdmin = false,
+  showReference = false,
 }: Props) {
   const plan = exhibition.floorPlan;
-  const indoor = indoorMapFixture(exhibition);
-  const { src: planSrc } = useProtectedImage(plan && !indoor ? uploadedImageUrl(plan.file, forAdmin) : undefined);
-  const ratio = plan ? plan.width / plan.height : aspect;
+  const indoor = exhibitionIndoorLayout(exhibition);
+  const showPlan = !!plan && (!indoor || showReference);
+  const { src: planSrc } = useProtectedImage(showPlan && plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
+  const ratio = indoor?.aspect ?? (plan ? plan.width / plan.height : aspect);
   const H = 100 / ratio;
   const sy = (y: number) => (y * H) / 100;
   const toPts = (ps: MapPoint[]) => ps.map((p) => `${p.x},${sy(p.y)}`).join(' ');
@@ -131,31 +134,26 @@ export function FloorMap({
       role="img"
       aria-label={`${exhibition.title} 평면도`}
     >
-      {plan && !indoor ? (
-        <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
-      ) : (
-        exhibition.rooms.map(
-          (r) =>
-            r.rect && (
-              <g key={r.id}>
-                <rect className="fm-room" x={r.rect.x} y={sy(r.rect.y)} width={r.rect.w} height={sy(r.rect.h)} rx={1.2} />
-                <text className="fm-room-label" x={r.rect.x + 2} y={sy(r.rect.y) + 4.2}>
-                  {r.name}
-                </text>
-              </g>
-            ),
-        )
-      )}
+      {showPlan && <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />}
+      {!showPlan && !indoor?.rooms && exhibition.rooms.map(r => r.rect && (
+        <rect key={r.id} className="fm-room" x={r.rect.x} y={sy(r.rect.y)} width={r.rect.w} height={sy(r.rect.h)} rx={1.2} />
+      ))}
 
       {indoor && ([
-        ['fm-corridor', indoor.corridors], ['fm-wall', indoor.barriers], ['fm-door', indoor.doors],
+        ['fm-room', indoor.rooms ?? []], ['fm-corridor', indoor.corridors], ['fm-wall', indoor.barriers], ['fm-door', indoor.doors],
       ] as const).map(([className, rectangles]) => (
-        <g key={className} aria-hidden="true">
-          {rectangles.map(rect => (
-            <rect key={`${rect.x}-${rect.y}`} className={className}
+        <g key={className} aria-hidden="true" opacity={showPlan ? 0.55 : 1}>
+          {rectangles.map((rect, index) => (
+            <rect key={index} className={className}
               x={rect.x} y={sy(rect.y)} width={rect.w} height={sy(rect.h)} />
           ))}
         </g>
+      ))}
+      {(!showPlan || indoor) && exhibition.rooms.map(r => r.rect && (
+        <text key={r.id} className="fm-room-label" x={r.rect.x + 2} y={sy(r.rect.y) + 4.2}>{r.name}</text>
+      ))}
+      {showReference && indoor?.waypoints.map((point, index) => (
+        <circle key={index} className="fm-waypoint" cx={point.x} cy={sy(point.y)} r={1.5} />
       ))}
 
       {showEntrance && (

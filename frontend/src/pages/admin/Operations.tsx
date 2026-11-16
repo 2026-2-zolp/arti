@@ -8,7 +8,7 @@ import { PageHead } from './AdminLayout';
 const configurationLabel = { configured: '설정됨', disabled: '꺼짐', invalid: '설정 확인 필요' };
 const actionLabel: Record<string, string> = {
   exhibition_save: '전시 저장', artwork_save: '작품 저장', artwork_image: '도판 변경',
-  floor_plan: '도면 변경', artwork_analysis: '작품 AI 분석', discard_proposal: 'AI 제안 폐기',
+  floor_plan: '도면 변경', navigation_layout: '지도 이동 구조 저장', artwork_analysis: '작품 AI 분석', discard_proposal: 'AI 제안 폐기',
   confirm_proposals: 'AI 제안 일괄 확정', docent_question: '도슨트 질문',
   docent_explanation: '도슨트 해설', receipt_interpretation: '영수증 해석',
 };

@@ -34,6 +34,7 @@ def serve():
     regeneration = Event()
     release_regeneration = Event()
     text_requests = []
+    draft_image_requests = []
     original_generate = providers.generate
 
     def generate(kind, snapshot, **context):
@@ -42,6 +43,7 @@ def serve():
         if kind == 'answer':
             return {'answer': (context['entry'].get('text') or context['entry']['question'])}
         text_requests.append(kind)
+        draft_image_requests.append(bool(context.get('draft_image_file')))
         if kind == 'summary':
             if not release_regeneration.wait(20):
                 raise ContractError(504, 'AI_TIMEOUT', '시험 재생성 대기 시간 초과')
@@ -89,14 +91,17 @@ def serve():
                     release_regeneration.set()
                 else:
                     release.set()
-            body = json.dumps({'inputs': inputs, 'textRequests': text_requests}).encode()
+            body = json.dumps({'inputs': inputs, 'textRequests': text_requests,
+                               'draftImageRequests': draft_image_requests}).encode()
             mark('200 OK', [('Content-Type', 'application/json'), ('Content-Length', str(len(body)))])
             return [body]
         return application(environ, mark)
 
     with endpoint(respond=respond) as requests, override_settings(
         ARTI_MODEL_SERVICE_URL=settings.OPENAI_BASE_URL.removesuffix('/v1'),
-    ), patch('arti.providers.generate', side_effect=generate), make_server(
+    ), patch('arti.providers.generate', side_effect=generate), patch(
+        'arti.llm.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide'),
+    ), patch('arti.operations.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide')), make_server(
         '127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         worker = Thread(target=server.serve_forever, daemon=True)

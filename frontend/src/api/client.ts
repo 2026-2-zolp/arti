@@ -13,6 +13,7 @@ import type {
   Artwork, TasteProfile, EntryContext, DocentAnswer,
   EmotionScores,
   Exhibition,
+  NavigationLayoutInput,
   Reaction,
   Recommendation,
   TasteTag,
@@ -52,6 +53,7 @@ type KakaoFinish = Exclude<KakaoResult, { status: 'logged_in' }>
 export type OperationsReport = {
   configuration: { docent: 'configured' | 'disabled' | 'invalid'; analysis: 'configured' | 'disabled' | 'invalid' };
   draftConfiguration: 'configured' | 'disabled' | 'invalid';
+  draftImageTasks: ('summary' | 'guide')[];
   today: { docentRequests: number; analysisRequests: number; aiErrors: number };
   recent: { action: string; requestId: string; occurredAt: string; status: number }[];
 };
@@ -273,9 +275,10 @@ export const api = {
   },
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
-  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = []) =>
+  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = [], useDraftImage = false) =>
     request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, {
       useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
+      ...(useDraftImage && { useDraftImage: true }),
     }),
 
   discardArtworkProposal: (w: Artwork, kind: 'summary' | 'guide') =>
@@ -292,6 +295,10 @@ export const api = {
 
   deleteFloorPlan: (exhibitionId: string, version?: number) =>
     request<Exhibition>('DELETE', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan`, undefined, version),
+  saveNavigationLayout: (exhibition: Exhibition, layout: NavigationLayoutInput | null) =>
+    request<Exhibition>('PUT', `/admin/exhibitions/${enc(exhibition.id)}/navigation`, {
+      version: exhibition.version, floorPlanRevision: exhibition.floorPlanRevision, layout,
+    }),
 
   /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
   analyzeExhibition: (exhibitionId: string, useImage = true) =>

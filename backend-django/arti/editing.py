@@ -19,6 +19,7 @@ from .views import with_etag
 from . import providers
 from .docent import AIThrottle
 from . import budget
+from .indoor import normalize_layout
 
 FIELDS = {'title':'title', 'artist':'artist', 'year':'year', 'exhibitionId':'exhibition_id', 'roomId':'room_id',
           'palette':'palette', 'imageUrl':'image_url', 'showImage':'show_image', 'tags':'tags', 'description':'description',
@@ -171,6 +172,23 @@ def exhibitions(request, ex_id=None):
         return with_etag(exhibition_dto(ex))
 
 
+@api_view(['PUT'])
+@permission_classes([IsAdmin])
+def navigation_layout(request, ex_id):
+    data = request.data
+    if not isinstance(data, dict) or 'layout' not in data or type(data.get('floorPlanRevision')) is not int:
+        fail('도면 버전과 이동 구조를 함께 보내 주세요.')
+    with transaction.atomic():
+        ex = get_locked(Exhibition, ex_id)
+        version(ex, data.get('version'))
+        if data['floorPlanRevision'] != ex.floor_plan_revision:
+            raise ContractError(409, 'VERSION_CONFLICT', '도면이 바뀌었어요. 새 도면을 다시 불러와 주세요.')
+        ex.navigation_layout = normalize_layout(data['layout'], ex.floor_plan_revision)
+        ex.version += 1
+        validate_save(ex)
+        return with_etag(exhibition_dto(ex))
+
+
 # 이미지 업로드 크기를 제한하며 원시 바이트를 읽습니다.
 class RawImageParser(BaseParser):
     media_type='*/*'
@@ -213,6 +231,8 @@ def image(request, artwork_id=None, ex_id=None):
                 obj.image_file=filename;finish(obj,old)
             else:
                 obj.floor_plan={'file':filename,'width':width,'height':height} if filename else None
+                obj.floor_plan_revision += 1
+                obj.navigation_layout = None
                 obj.version+=1;validate_save(obj)
                 # A replaced plan cannot carry a previously checked coordinate forward.
                 for w in Artwork.objects.select_for_update().filter(exhibition=obj):
@@ -282,9 +302,16 @@ def analyze(request,artwork_id):
     use_image = request.data.get('useImage', True)
     if type(use_image) is not bool:
         fail('이미지 분석 여부를 확인해 주세요.')
+    draft_image = request.data.get('useDraftImage', False)
+    if type(draft_image) is not bool:
+        fail('요약·가이드의 도판 사용 여부를 확인해 주세요.')
     regenerate=request.data.get('regenerateFields',[])
     if not isinstance(regenerate,list) or any(f not in STATES for f in regenerate):fail()
     if w.review_status!='approved' or not w.description.strip():fail('승인된 원문을 먼저 준비해 주세요.')
+    if draft_image:
+        from .llm import DRAFT_TASKS, luna_image_route
+        if not regenerate or not w.image_file or not all(kind in DRAFT_TASKS and luna_image_route(kind) for kind in regenerate):
+            fail('업로드 도판은 Luna 요약·가이드 요청에서 사용할 수 있어요.')
     deadline=budget.monotonic()+budget.ANALYSIS_SECONDS
     results={};updates={};model_cache={};retry_waits=[]
     with analysis_slot():
@@ -298,12 +325,16 @@ def analyze(request,artwork_id):
                 context = {'deadline': deadline}
                 if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL:
                     context.update(analysis_cache=model_cache, use_image=use_image)
+                if draft_image:
+                    context['draft_image_file'] = w.image_file
                 value=providers.generate(kind,artwork_dto(w,True),**context)
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 providers.validate(kind,value)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}
             except ContractError as e:
+                if draft_image and e.status_code in (400, 413, 415):
+                    raise
                 results[kind]={'ok':False,'error':str(e.detail),'code':e.contract_code,'made':False}
                 if getattr(e,'wait',None) is not None:retry_waits.append(e.wait)
     # 전체 예산이 소진되면 앞서 받은 부분 결과도 저장하지 않습니다.

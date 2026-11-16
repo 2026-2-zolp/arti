@@ -15,6 +15,7 @@ import { useAsync } from '../../lib/useAsync';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import type { Artwork, Exhibition, MapPoint, Room } from '../../types';
 import { PageHead } from './AdminLayout';
+import NavigationEditor from './NavigationEditor';
 
 /** 기본 평면도(사각형)에서 좌표가 들어 있는 전시실 */
 const roomAt = (ex: Exhibition, p: MapPoint) =>
@@ -36,6 +37,7 @@ export default function A05Map() {
   const [draft, setDraft] = useState<MapPoint | null>(null);
   const [reloading, setReloading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
+  const [editingNavigation, setEditingNavigation] = useState(false);
 
   useEffect(() => {
     setDraft(null);
@@ -159,6 +161,13 @@ export default function A05Map() {
             }}
             onError={fail}
           />
+          {ex.floorPlanRevision !== undefined && (
+            <details onToggle={event => setEditingNavigation(event.currentTarget.open)}>
+              <summary>이동 구조 등록</summary>
+              {editingNavigation && <NavigationEditor key={`${ex.id}:${ex.floorPlanRevision}`}
+                exhibition={ex} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
+            </details>
+          )}
 
           <section className="a-card pad">
             <FloorMap

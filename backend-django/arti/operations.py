@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from .authentication import IsAdmin
 from .models import OperationEvent
 from .providers import configuration_status, draft_configuration_status
+from .llm import DRAFT_TASKS, luna_image_route
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ ADMIN_ACTIONS = {
     'api/admin/artworks/<str:artwork_id>': 'artwork_save',
     'api/admin/artworks/<str:artwork_id>/image': 'artwork_image',
     'api/admin/exhibitions/<str:ex_id>/floor-plan': 'floor_plan',
+    'api/admin/exhibitions/<str:ex_id>/navigation': 'navigation_layout',
     'api/admin/artworks/<str:artwork_id>/analyze': 'artwork_analysis',
     'api/admin/artworks/<str:artwork_id>/discard-ai': 'discard_proposal',
     'api/admin/exhibitions/<str:ex_id>/confirm-ai': 'confirm_proposals',
@@ -74,6 +76,7 @@ def dashboard(request):
     return Response({
         'configuration': configuration_status(),
         'draftConfiguration': draft_configuration_status(),
+        'draftImageTasks': [kind for kind in DRAFT_TASKS if luna_image_route(kind)],
         'today': counts,
         'recent': [
             {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
