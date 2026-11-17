@@ -1,11 +1,15 @@
 import json
+from datetime import datetime, timedelta, timezone
+from io import StringIO
 from unittest.mock import patch
+from uuid import uuid4
 
 from django.conf import settings
+from django.core.management import call_command, CommandError
 from django.test import TestCase, override_settings
 
 from arti.http import ContractError
-from arti.models import Artwork
+from arti.models import Artwork, OperationEvent, OperationTextModelUsage
 from arti.tests.test_integration import Helpers
 from arti.tests.test_provider import endpoint
 
@@ -13,6 +17,29 @@ from arti.tests.test_provider import endpoint
 @override_settings(ARTI_ENV='test', ALLOW_TEST_FIXTURES=True, ARTI_LLM_PROVIDER='disabled',
                    ARTI_DRAFT_PROVIDER='default', ARTI_MODEL_SERVICE_URL='')
 class OperationsTests(Helpers, TestCase):
+    def test_usage_export_is_half_open_and_marks_history_without_model_groups(self):
+        start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        end = start + timedelta(days=1)
+        for when, count in ((start - timedelta(seconds=1), 8), (start, 2), (end, 8)):
+            event = OperationEvent.objects.create(action='artwork_analysis', status=200, request_id=uuid4(),
+                                                  text_model_attempts=count)
+            OperationEvent.objects.filter(pk=event.pk).update(occurred_at=when)
+            OperationTextModelUsage.objects.create(event=event, model='fixture', task='summary', attempts=1,
+                                                   measured=1, input_tokens=count, output_tokens=1,
+                                                   cache_measured=1, cached_input_tokens=0)
+        output = StringIO()
+        call_command('export_model_usage', '--project', 'fixture-project', '--start', '2026-01-01T09:00:00+09:00',
+                     '--end', '2026-01-02T00:00:00Z', stdout=output)
+        exported = json.loads(output.getvalue())
+        self.assertEqual((exported['start'], exported['end']), (start.isoformat(), end.isoformat()))
+        self.assertEqual(exported['ungroupedAttempts'], 1)
+        self.assertEqual(exported['rows'], [{'model': 'fixture', 'task': 'summary', 'attempts': 1, 'missing': 0,
+                                            'inputTokens': 2, 'outputTokens': 1, 'cachedInputTokens': 0,
+                                            'cacheMissing': 0}])
+        with self.assertRaisesMessage(CommandError, 'UTC offset'):
+            call_command('export_model_usage', '--project', 'fixture', '--start', '2026-01-01',
+                         '--end', '2026-01-02T00:00:00Z')
+
     def test_request_counts_and_model_usage_are_recorded_separately(self):
         self.setup_clients()
         operations = '/api/admin/operations?summary=1'

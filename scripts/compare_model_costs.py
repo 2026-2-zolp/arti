@@ -41,6 +41,9 @@ def compare(application, provider):
     currency = provider['currency']
     if not isinstance(currency, str) or len(currency) != 3 or not currency.isascii() or not currency.isalpha():
         raise ValueError('Specify the bill currency as a three-letter code')
+    ungrouped = application.get('ungroupedAttempts', 0)
+    if type(ungrouped) is not int or ungrouped < 0:
+        raise ValueError('Ungrouped attempts must be a nonnegative integer')
 
     app_groups = {}
     seen = set()
@@ -87,8 +90,9 @@ def compare(application, provider):
                        'provider': dict(zip(TOKEN_FIELDS, vendor_values)),
                        'estimatedCost': format(estimate, 'f') if estimate is not None else None})
     billed = amount(provider['billedCost']) if provider.get('billedCost') is not None else None
-    project_estimate = sum(estimates, Decimal(0)) if report and len(estimates) == len(report) else None
+    project_estimate = sum(estimates, Decimal(0)) if not ungrouped and report and len(estimates) == len(report) else None
     return {'project': provider['project'], 'currency': currency.upper(), 'models': report,
+            'ungroupedAttempts': ungrouped,
             'billedCost': format(billed, 'f') if billed is not None else None,
             'comparableEstimatedCost': format(project_estimate, 'f') if project_estimate is not None else None,
             'estimateMinusBill': format(project_estimate - billed, 'f') if project_estimate is not None and billed is not None else None}
