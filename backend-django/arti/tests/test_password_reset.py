@@ -1,7 +1,7 @@
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
-from threading import Barrier
+from threading import Barrier, Event
 from unittest.mock import patch
 
 from django.core import mail
@@ -120,4 +120,33 @@ class PasswordResetTests(Helpers, TransactionTestCase):
         self.assertEqual(deliver_pending(), 0)
         PasswordResetDelivery.objects.update(next_attempt_at=timezone.now())
         self.assertEqual(deliver_pending(), 1)
+        self.assertEqual(self.confirm(self.token()).status_code, 204)
+
+    def test_two_delivery_workers_send_a_queued_message_only_once(self):
+        self.assertEqual(self.request_link().status_code, 204)
+        entered, release = Event(), Event()
+
+        def send(*args, **kwargs):
+            entered.set()
+            if not release.wait(timeout=8):
+                raise TimeoutError('Synthetic mail gate did not release')
+            return mail.send_mail(*args, **kwargs)
+
+        def worker():
+            close_old_connections()
+            try:
+                return deliver_pending()
+            finally:
+                close_old_connections()
+
+        with patch('arti.password_reset.send_mail', side_effect=send), ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(worker)
+            try:
+                self.assertTrue(entered.wait(timeout=5))
+                second = pool.submit(worker)
+                self.assertEqual(second.result(timeout=5), 0)
+            finally:
+                release.set()
+            self.assertEqual(first.result(timeout=5), 1)
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(self.confirm(self.token()).status_code, 204)
