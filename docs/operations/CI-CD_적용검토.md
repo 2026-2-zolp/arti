@@ -41,3 +41,7 @@ GitHub Actions는 PostgreSQL 서비스 컨테이너를 지원하며 컨테이너
 ## 실제 원격 검증 후 갱신
 
 후속 사용자 승인으로 dev/임준억 push의 [첫 실제 Actions4job](https://github.com/2026-2-zolp/arti/actions/runs/42448758269)이 모두 성공했다. 도입 전/로컬검사 단계의 미실행 표현은 당시 기록이다. PR 이벤트/required checks 확인과 AWS/CD는 남아 있으며 [W11현재기록](../execution-plan/2026-11-07/records/W11/README.md)을 따른다.
+
+## AWS 배포 준비 갱신
+
+AWS 단일 EC2와 ECR·SSM으로 배포할 워크플로와 호스트 절차를 추가했다. 후속 운영 인수에는 [AWS 첫 배포와 CI/CD](2026-11-18_AWS_CICD_첫배포.md)의 설정과 검수 순서를 사용한다.

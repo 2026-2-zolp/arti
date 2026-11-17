@@ -1,0 +1,120 @@
+name: ARTI AWS Release
+
+on:
+  workflow_run:
+    workflows: [ARTI CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: Publish and deploy the verified main release
+    if: >-
+      vars.ARTI_AWS_CD_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_run' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    environment: arti-staging
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    concurrency:
+      group: arti-aws-staging
+      cancel-in-progress: false
+    env:
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      AWS_REGION: ${{ vars.ARTI_AWS_REGION || 'ap-northeast-2' }}
+      AWS_ACCOUNT_ID: ${{ vars.ARTI_AWS_ACCOUNT_ID }}
+      INSTANCE_ID: ${{ vars.ARTI_AWS_INSTANCE_ID }}
+    steps:
+      - name: Verify main and its successful CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ && "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ && "$INSTANCE_ID" =~ ^i-([0-9a-f]{8}|[0-9a-f]{17})$ ]]
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" == "$RELEASE_SHA" ]]
+          ci_run="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f branch=main -f event=push -f status=success -f head_sha="$RELEASE_SHA" \
+            --jq '.workflow_runs[0].id // empty')"
+          [[ "$ci_run" =~ ^[0-9]+$ ]]
+          printf 'CI run %s verified for %s\n' "$ci_run" "$RELEASE_SHA"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ vars.ARTI_AWS_ROLE_ARN }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: arti-release-${{ github.run_id }}
+      - name: Build and publish immutable API and web images
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+          tag="$RELEASE_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          DOCKER_CONFIG="$(mktemp -d "$RUNNER_TEMP/arti-ecr.XXXXXX")"
+          export DOCKER_CONFIG
+          trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+          aws ecr get-login-password --region "$AWS_REGION" |
+            docker login --username AWS --password-stdin "$registry"
+          for component in api web; do
+            metadata="$RUNNER_TEMP/arti-$component.json"
+            if [[ "$component" == api ]]; then
+              context=backend-django; dockerfile=backend-django/Dockerfile
+            else
+              context=frontend; dockerfile=frontend/Dockerfile.static
+            fi
+            docker buildx build --platform linux/amd64 --push --metadata-file "$metadata" \
+              --label "org.opencontainers.image.revision=$RELEASE_SHA" \
+              --tag "$registry/arti-$component:$tag" --file "$dockerfile" "$context"
+            digest="$(jq -er '."containerimage.digest"' "$metadata")"
+            [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+            printf '%s=%s/arti-%s@%s\n' "$component" "$registry" "$component" "$digest" >> "$GITHUB_OUTPUT"
+          done
+      - name: Deploy by digest and wait for the host checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_IMAGE: ${{ steps.publish.outputs.api }}
+          WEB_IMAGE: ${{ steps.publish.outputs.web }}
+        run: |
+          set -euo pipefail
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" == "$RELEASE_SHA" ]]
+          parameters="$(jq -cn --arg sha "$RELEASE_SHA" --arg api "$API_IMAGE" --arg web "$WEB_IMAGE" \
+            '{ReleaseSha:[$sha],ApiImage:[$api],WebImage:[$web]}')"
+          command="$(aws ssm send-command --instance-ids "$INSTANCE_ID" --document-name ARTI-DeployRelease \
+            --document-version 1 --timeout-seconds 180 --parameters "$parameters" --query Command.CommandId --output text)"
+          [[ "$command" =~ ^[0-9a-f-]{36}$ ]]
+          printf 'SSM command %s for %s\n' "$command" "$RELEASE_SHA"
+          for ((attempt = 0; attempt < 150; attempt++)); do
+            if ! status="$(aws ssm get-command-invocation --command-id "$command" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>"$RUNNER_TEMP/arti-ssm-status.err")"; then
+              grep -q 'InvocationDoesNotExist' "$RUNNER_TEMP/arti-ssm-status.err" || exit 1
+              sleep 5
+              continue
+            fi
+            case "$status" in
+              Success)
+                printf "### ARTI deployment\n\n- Commit \`%s\`\n- API \`%s\`\n- Web \`%s\`\n- SSM command \`%s\`\n" \
+                  "$RELEASE_SHA" "$API_IMAGE" "$WEB_IMAGE" "$command" >> "$GITHUB_STEP_SUMMARY"
+                exit 0 ;;
+              Pending|InProgress|Delayed|Cancelling) sleep 5 ;;
+              *) printf 'SSM command %s ended with %s\n' "$command" "$status" >&2; exit 1 ;;
+            esac
+          done
+          printf 'Timed out waiting for SSM command %s\n' "$command" >&2
+          exit 1
