@@ -1047,6 +1047,25 @@ async function navigationPreview(browser, admin) {
     await rectangles('doors', [[[57, 70], [63, 79]]]);
     await checkWalkableSvg(drawing, 'two-rooms');
 
+    const preset = button(editor, '복도로 연결된 두 전시실 불러오기');
+    const confirm = admin.getByRole('alertdialog');
+    await preset.click();
+    await button(confirm, '취소').click();
+    assert.equal(await drawing.locator('.fm-wall').count(), 6, 'Cancel preserves the drawn pillar');
+    const loadPreset = async () => {
+      await preset.click();
+      await button(confirm, '프리셋으로 바꾸기').click();
+      await checkWalkableSvg(drawing, 'two-rooms');
+      assert.equal(await drawing.locator('.fm-wall').count(), 5);
+      assert.equal(await drawing.locator('.fm-door').count(), 2);
+      assert.equal(await drawing.locator('.fm-corridor').count(), 1);
+    };
+    await loadPreset();
+    await category.selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+
     assert.equal(writes.length, 0);
     assert.deepEqual(await readExhibition(), original);
     assert.deepEqual(await recommendAll(), baseline);
@@ -1054,12 +1073,34 @@ async function navigationPreview(browser, admin) {
     visitorMap = await openVisitorMap();
     assert.equal(await visitorMap.locator('.fm-route, .fm-wall').count(), 0);
 
-    await button(editor, '이동 구조 저장').click();
-    await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    const save = async () => {
+      const savedResponse = admin.waitForResponse(response => isResponse(response, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT'));
+      await button(editor, '이동 구조 저장').click();
+      await body(await savedResponse);
+      await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    };
+    await save();
     assert.equal(writes.length, 1);
+    const blocked = await readExhibition();
+    assert.equal(blocked.navigationLayout.doors.length, 1);
+    assert.deepEqual(await recommendAll(), baseline);
+    const checkBlockedVisitor = async () => {
+      await visitor.reload();
+      const map = await openVisitorMap();
+      await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    await checkBlockedVisitor();
+
+    await loadPreset();
+    assert.equal(writes.length, 1);
+    assert.deepEqual(await readExhibition(), blocked, 'Reopening in the editor must remain a draft');
+    assert.deepEqual(await recommendAll(), baseline);
+    await checkBlockedVisitor();
+    await save();
+    assert.equal(writes.length, 2);
     const saved = await readExhibition();
     assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
-    assert.equal(saved.navigationLayout.pillars.length, 1);
     assert.equal(saved.navigationLayout.doors.length, 2);
     const byArtwork = items => Object.fromEntries(items.map(({ artworkId, order, ...details }) => [artworkId, details]));
     const updated = await recommendAll();
@@ -1074,7 +1115,7 @@ async function navigationPreview(browser, admin) {
     await checkWalkableSvg(visitorMap, 'two-rooms');
     await admin.reload();
     await admin.locator('.floor-map .fm-wall').first().waitFor();
-    console.log('PASS navigation preview: pillar, doors and corridor, disconnected draft, unchanged public map before save, V2 3/5/7 reorder only after save');
+    console.log('PASS navigation preset: cancel keeps edits, open/blocked preview, public map and V2 unchanged until save, blocked fallback and open 3/5/7 reorder');
   } finally {
     await visitor.close();
   }

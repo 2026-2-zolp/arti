@@ -1,8 +1,10 @@
 import { useId, useState } from 'react';
 import { api, ApiError } from '../../api/client';
+import { useConfirm } from '../../components/Confirmation';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
 import { indoorLeg } from '../../lib/indoorRoute';
+import { twoRoomNavigationPreset } from '../../lib/navigationPresets';
 import type { Artwork, Exhibition, MapPoint, NavigationLayoutInput } from '../../types';
 
 const categories = {
@@ -21,6 +23,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
 }) {
   const revision = exhibition.floorPlanRevision!;
   const previewId = useId();
+  const confirmAction = useConfirm();
   const [layout, setLayout] = useState<NavigationLayoutInput>(() => ({
     ...emptyLayout,
     ...Object.fromEntries(categoryKeys.map(key => [key, exhibition.navigationLayout?.[key] ?? []])),
@@ -60,6 +63,17 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     else previewStatus = preview ? '현재 편집 내용으로 연결된 경로예요.' : '이어지는 경로가 없어요. 문·통로·연결점을 확인해 주세요.';
   }
 
+  const loadPreset = async () => {
+    const hasGeometry = corner !== null || categoryKeys.some(key => layout[key].length > 0);
+    if (hasGeometry && !await confirmAction('편집 중인 이동 구조를 두 전시실 프리셋으로 바꿀까요?', {
+      confirm: '프리셋으로 바꾸기',
+    })) return;
+    setLayout(structuredClone(twoRoomNavigationPreset));
+    setCategory('walkable');
+    setCorner(null);
+    setMessage(null);
+  };
+
   const addPoint = (point: MapPoint) => {
     if (busy || layout[category].length >= 32) return;
     if (category === 'waypoints') {
@@ -92,6 +106,10 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     <section className="a-card pad stack gap-10" aria-label="이동 구조 편집">
       <h3>이동 구조 편집</h3>
       <p className="muted small">도면 버전 {revision} · 사각형은 마주 보는 모서리 두 곳, 연결점은 한 곳을 누르세요. 벽은 문이 있는 곳에서 나눠 그리세요.</p>
+      <div>
+        <button type="button" className="a-btn" disabled={busy || !!message?.conflict}
+          onClick={() => void loadPreset()}>복도로 연결된 두 전시실 불러오기</button>
+      </div>
       <div className="a-inline">
         <select aria-label="이동 구조 종류" value={category} onChange={event => {
           setCategory(event.target.value as Category); setCorner(null);

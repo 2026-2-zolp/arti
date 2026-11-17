@@ -1,5 +1,6 @@
 import type { Exhibition } from '../types';
 import type { IndoorLayout, MapRect } from './indoorRoute';
+import { twoRoomNavigationPreset } from './navigationPresets';
 
 type FixtureLayout = IndoorLayout & {
   corridors: readonly MapRect[]; doors: readonly MapRect[]; rooms?: readonly MapRect[];
@@ -14,25 +15,15 @@ const pillarLayout: FixtureLayout = {
   doors: [],
 };
 
-const corridor = { x: 4, y: 74, w: 92, h: 22 };
-const doors = [{ x: 36, y: 71, w: 8, h: 4 }, { x: 56, y: 71, w: 8, h: 4 }];
 const roomLayout: FixtureLayout = {
   aspect: 640 / 360,
   walkable: [
-    { x: 4, y: 4, w: 42, h: 68 }, { x: 54, y: 4, w: 42, h: 68 },
-    corridor, ...doors,
+    ...twoRoomNavigationPreset.walkable, ...twoRoomNavigationPreset.corridors, ...twoRoomNavigationPreset.doors,
   ],
-  barriers: [
-    { x: 46, y: 4, w: 8, h: 70 },
-    { x: 4, y: 72, w: 32, h: 2 }, { x: 44, y: 72, w: 2, h: 2 },
-    { x: 54, y: 72, w: 2, h: 2 }, { x: 64, y: 72, w: 32, h: 2 },
-  ],
-  waypoints: [
-    { x: 40, y: 70 }, { x: 40, y: 76 }, { x: 40, y: 85 },
-    { x: 60, y: 85 }, { x: 60, y: 76 }, { x: 60, y: 70 },
-  ],
-  corridors: [corridor],
-  doors,
+  barriers: twoRoomNavigationPreset.walls,
+  waypoints: twoRoomNavigationPreset.waypoints,
+  corridors: twoRoomNavigationPreset.corridors,
+  doors: twoRoomNavigationPreset.doors,
 };
 
 /** 동일한 합성 배치와 명시적으로 연결한 구조만 사용합니다. 도면 교체 시 파일명이 바뀝니다. */
