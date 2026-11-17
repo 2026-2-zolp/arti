@@ -1,15 +1,18 @@
+import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import timedelta
 from email import policy
 from email.parser import BytesParser
+from io import StringIO
 from socketserver import StreamRequestHandler, TCPServer
 from threading import Barrier, Event, Thread
 from unittest.mock import patch
 
 from django.core import mail
 from django.core.cache import cache
+from django.core.management import call_command, CommandError
 from django.db import close_old_connections
 from django.test import TransactionTestCase, override_settings
 from django.utils import timezone
@@ -86,6 +89,21 @@ class PasswordResetTests(Helpers, TransactionTestCase):
 
     def confirm(self, token, password=None):
         return self.public.post(self.confirm_path, {'token': token, 'password': password or self.password}, format='json')
+
+    def test_mail_worker_status_is_read_only_and_anonymous(self):
+        for email in ('a@example.test', 'unknown@example.test', 'b@example.test'):
+            self.assertEqual(self.request_link(email).status_code, 204)
+        _, deferred, expired = PasswordResetDelivery.objects.order_by('pk')
+        now = timezone.now()
+        PasswordResetDelivery.objects.filter(pk=deferred.pk).update(next_attempt_at=now + timedelta(minutes=2))
+        PasswordResetDelivery.objects.filter(pk=expired.pk).update(expires_at=now - timedelta(seconds=1))
+        output = StringIO()
+        call_command('send_password_reset_mail', '--status', stdout=output)
+        self.assertEqual(json.loads(output.getvalue()), {'enabled': True, 'ready': 1, 'deferred': 1, 'expired': 1})
+        self.assertEqual(PasswordResetDelivery.objects.filter(processed_at__isnull=True).count(), 3)
+        self.assertEqual(len(mail.outbox), 0)
+        with self.settings(ARTI_PASSWORD_RESET_ORIGIN=''), self.assertRaisesMessage(CommandError, 'mail worker'):
+            call_command('send_password_reset_mail', '--watch')
 
     def test_link_resets_the_same_member_and_preserves_kakao_and_receipt(self):
         KakaoIdentity.objects.create(account=self.member, client_id='fixture-app', subject='fixture-subject')
