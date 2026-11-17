@@ -1813,6 +1813,14 @@ async function passwordReset(browser) {
   try {
     const member = await newMember(page);
     const secondMember = await newMember(other);
+    const savedReceipt = await body(await page.request.post('/api/visits', {
+      headers: headersFor(member.token),
+      data: {
+        visitId: randomUUID(), exhibitionId: 'fixture-ex01', date: '2026-11-08T01:00:00Z',
+        durationMin: 10, recommendedCount: 3, selectedDuration: '30m', requestGeneration: 1,
+        tastes: ['landscape'], viewedArtworkIds: ['fixture-art01'], reactions: {}, reactionReasons: {}, dwell: {},
+      },
+    }), 201);
     await page.goto('/login');
     await button(page, '로그인 도움').click();
     await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
@@ -1848,8 +1856,22 @@ async function passwordReset(browser) {
       page.waitForResponse(r => isResponse(r, '/api/auth/login', 'POST')),
       button(page, '로그인').click(),
     ]);
-    assert.equal((await body(loginResult)).user.id, member.user.id);
-    console.log('PASS password reset: synthetic mailbox, same member, one use and session revocation');
+    const restored = await body(loginResult);
+    assert.equal(restored.user.id, member.user.id);
+    const receiptPath = `/api/visits/${savedReceipt.id}`;
+    assert.equal((await other.request.get(receiptPath, { headers: headersFor(secondMember.token) })).status(), 403);
+    await page.waitForURL(base.href);
+    await page.goto('/mypage');
+    const receiptCard = page.getByRole('button', { name: /아트 영수증 보기/ });
+    await receiptCard.waitFor();
+    assert.equal(await receiptCard.count(), 1);
+    const [opened] = await Promise.all([
+      page.waitForResponse(response => isResponse(response, receiptPath, 'GET')),
+      receiptCard.click(),
+    ]);
+    assert.equal((await body(opened)).id, savedReceipt.id);
+    await page.waitForURL(`**/receipt/${savedReceipt.id}`);
+    console.log('PASS password reset: synthetic mailbox, one-use link, prior session revoked, same member and receipt, other member denied');
   } finally {
     await Promise.all([page.close(), other.close()]);
   }
