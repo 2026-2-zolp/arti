@@ -959,16 +959,17 @@ async function checkWalkableSvg(map, variant) {
         .some(point => walls.some(rect => point.x >= rect.x && point.x <= rect.x + rect.width &&
           point.y >= rect.y && point.y <= rect.y + rect.height));
     });
-    const active = [...svg.querySelector('polyline.fm-route.active').points].map(point =>
-      ({ x: point.x, y: point.y * 100 / svg.viewBox.baseVal.height }));
-    return { blocked, active };
+    const active = [...svg.querySelector('polyline.fm-route.active').points];
+    const corridor = svg.querySelector('rect.fm-corridor')?.getBBox();
+    const corridorPoints = corridor ? active.filter(point => point.x >= corridor.x && point.x <= corridor.x + corridor.width &&
+      point.y >= corridor.y && point.y <= corridor.y + corridor.height) : [];
+    const middle = corridor ? corridor.x + corridor.width / 2 : 0;
+    return { blocked, activeCount: active.length,
+      crossesCorridor: corridorPoints.some(point => point.x < middle) && corridorPoints.some(point => point.x > middle) };
   });
   assert.equal(geometry.blocked, false);
-  assert.ok(geometry.active.length >= 3);
-  if (variant === 'two-rooms') {
-    assert.ok(geometry.active.some(point => point.x < 46 && point.y > 74));
-    assert.ok(geometry.active.some(point => point.x > 54 && point.y > 74));
-  }
+  assert.ok(geometry.activeCount >= 3);
+  if (variant === 'two-rooms') assert.ok(geometry.crossesCorridor, 'The path uses both sides of the displayed corridor');
 }
 
 async function navigationPreview(browser, admin) {
@@ -1121,6 +1122,69 @@ async function navigationPreview(browser, admin) {
   }
 }
 
+async function fitNavigationToReference(browser, admin) {
+  const publicPath = '/api' + exhibition;
+  const original = await body(await admin.request.get(publicPath));
+  await admin.goto('/admin/map?exhibition=' + exhibitionId);
+  await admin.getByText('이동 구조 등록', { exact: true }).click();
+  const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+  const map = editor.locator('.floor-map');
+  const preview = editor.getByRole('group', { name: '경로 미리보기' });
+  const save = button(editor, '이동 구조 저장');
+  const pick = async (x, y) => {
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+  };
+  await map.locator('image[href]').waitFor();
+  await button(editor, '복도로 연결된 두 전시실 불러오기').click();
+  await button(editor, '원본 도면에 맞추기').click();
+  assert.ok(await save.isDisabled());
+  await pick(10, 8);
+  await pick(90, 88);
+  await editor.getByText('이동 구조를 선택한 영역에 맞췄어요.').waitFor();
+  const bounds = await map.evaluate(svg => {
+    const room = svg.querySelector('rect.fm-room').getBBox();
+    const corridor = svg.querySelector('rect.fm-corridor').getBBox();
+    return { left: room.x, top: room.y * 100 / svg.viewBox.baseVal.height,
+      right: corridor.x + corridor.width, bottom: (corridor.y + corridor.height) * 100 / svg.viewBox.baseVal.height };
+  });
+  for (const [side, expected] of Object.entries({ left: 10, top: 8, right: 90, bottom: 88 })) {
+    assert.ok(Math.abs(bounds[side] - expected) < 0.5, side + ' follows the reference corners');
+  }
+  await preview.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+  await preview.getByLabel('출발', { exact: true }).selectOption('fixture-art03');
+  await checkWalkableSvg(map, 'two-rooms');
+  const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+  await category.selectOption('waypoints');
+  for (let count = 0; count < 6; count++) await button(editor, '마지막 입력 취소').click();
+  await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+  await button(editor, '제안 연결점 6개 추가').click();
+  assert.equal(await map.locator('.fm-waypoint').count(), 6);
+  await checkWalkableSvg(map, 'two-rooms');
+  assert.ok(await button(editor, '제안 연결점 0개 추가').isDisabled());
+  assert.deepEqual(await body(await admin.request.get(publicPath)), original);
+
+  await save.click();
+  await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+  const saved = await body(await admin.request.get(publicPath));
+  assert.deepEqual(saved.floorPlan, original.floorPlan);
+  assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
+  assert.equal(saved.navigationLayout.waypoints.length, 6);
+
+  const visitor = await openPage(browser);
+  try {
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+    await checkWalkableSvg(visitor.locator('.floor-map'), 'two-rooms');
+  } finally {
+    await visitor.close();
+  }
+  console.log('PASS original floor plan fit: draft overlay, suggested links reconnect corridor, saved revision visible to visitor');
+}
+
 async function mapVariants(browser) {
   const admin = await openAdmin(browser);
   const setup = variant => fixtureCommand([
@@ -1250,6 +1314,8 @@ async function mapVariants(browser) {
     }
     setup('preview');
     await navigationPreview(browser, admin);
+    setup('fit');
+    await fitNavigationToReference(browser, admin);
   } finally {
     try { setup('restore'); } finally { await admin.close(); }
   }

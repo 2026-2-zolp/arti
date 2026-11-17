@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { canWalkSegment, indoorLeg, indoorSequence } from '../src/lib/indoorRoute';
+import { canWalkSegment, indoorLeg, indoorSequence, type IndoorLayout } from '../src/lib/indoorRoute';
 import { indoorMapFixture } from '../src/lib/indoorMapFixture';
+import { fitNavigationDraft, suggestNavigationWaypoints } from '../src/lib/navigationDraft';
+import { twoRoomNavigationPreset } from '../src/lib/navigationPresets';
+import type { NavigationLayoutInput } from '../src/types';
 
 const fixture = {
   id: 'fixture-ex01',
@@ -40,4 +43,42 @@ test('a map with no registered link across open space and a replaced plan do not
   assert.equal(indoorLeg(separated, left, right), null);
   assert.deepEqual(indoorSequence(pillar, [left, null, right]), [left, null, right]);
   assert.equal(indoorMapFixture({ ...fixture, floorPlan: { file: 'replacement.png', width: 360, height: 640 } }), undefined);
+});
+
+function navigationGeometry(layout: NavigationLayoutInput): IndoorLayout {
+  return {
+    aspect: 640 / 360,
+    walkable: [...layout.walkable, ...layout.doors, ...layout.corridors],
+    barriers: [...layout.walls, ...layout.pillars],
+    waypoints: layout.waypoints,
+  };
+}
+
+test('fitting a draft to either corner order keeps the doorway geometry connected', () => {
+  const first = { x: 10, y: 8 };
+  const last = { x: 90, y: 88 };
+  const fitted = fitNavigationDraft(twoRoomNavigationPreset, last, first);
+  assert.ok(fitted);
+  assert.deepEqual(fitted, fitNavigationDraft(twoRoomNavigationPreset, first, last));
+  assert.deepEqual({ x: fitted.walkable[0].x, y: fitted.walkable[0].y }, first);
+  const corridor = fitted.corridors[0];
+  assert.deepEqual({ x: corridor.x + corridor.w, y: corridor.y + corridor.h }, last);
+  assert.equal(fitNavigationDraft(twoRoomNavigationPreset, first, { x: 10, y: 88 }), null);
+  assert.ok(indoorLeg(navigationGeometry(fitted), { x: 24, y: 26 }, { x: 78, y: 26 }));
+});
+
+test('door suggestions connect open rooms and skip openings obstructed by a wall', () => {
+  const left = { x: 20, y: 25 };
+  const right = { x: 82, y: 25 };
+  const draft = { ...twoRoomNavigationPreset, waypoints: [] };
+  const connected = suggestNavigationWaypoints(draft, navigationGeometry(draft));
+  assert.equal(connected.length, 6);
+  assert.ok(indoorLeg({ ...navigationGeometry(draft), waypoints: connected }, left, right));
+  const applied = { ...draft, waypoints: connected };
+  assert.deepEqual(suggestNavigationWaypoints(applied, navigationGeometry(applied)), []);
+
+  const obstructed = { ...draft, walls: [...draft.walls, { x: 56, y: 72, w: 8, h: 2 }] };
+  const suggestions = suggestNavigationWaypoints(obstructed, navigationGeometry(obstructed));
+  assert.ok(suggestions.every(point => point.x < 46));
+  assert.equal(indoorLeg({ ...navigationGeometry(obstructed), waypoints: suggestions }, left, right), null);
 });

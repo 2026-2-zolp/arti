@@ -4,6 +4,7 @@ import { useConfirm } from '../../components/Confirmation';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
 import { indoorLeg } from '../../lib/indoorRoute';
+import { fitNavigationDraft, navigationShapeLimit, suggestNavigationWaypoints } from '../../lib/navigationDraft';
 import { twoRoomNavigationPreset } from '../../lib/navigationPresets';
 import type { Artwork, Exhibition, MapPoint, NavigationLayoutInput } from '../../types';
 
@@ -30,6 +31,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   }));
   const [category, setCategory] = useState<Category>('walkable');
   const [corner, setCorner] = useState<MapPoint | null>(null);
+  const [fitting, setFitting] = useState(false);
   const [reference, setReference] = useState(true);
   const [departureId, setDepartureId] = useState('');
   const [destinationId, setDestinationId] = useState('');
@@ -46,6 +48,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const departure = positioned.find(work => work.id === departureId);
   const destination = positioned.find(work => work.id === destinationId);
   const indoor = layout.walkable.length > 0 ? exhibitionIndoorLayout(draftExhibition) : undefined;
+  const suggestions = indoor ? suggestNavigationWaypoints(layout, indoor) : [];
   const preview = indoor && destination
     ? indoorLeg(indoor, departure?.point ?? exhibition.entrance, destination.point)
     : null;
@@ -71,11 +74,26 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     setLayout(structuredClone(twoRoomNavigationPreset));
     setCategory('walkable');
     setCorner(null);
+    setFitting(false);
     setMessage(null);
   };
 
   const addPoint = (point: MapPoint) => {
-    if (busy || layout[category].length >= 32) return;
+    if (busy) return;
+    if (fitting) {
+      if (!corner) { setCorner(point); return; }
+      const fitted = fitNavigationDraft(layout, corner, point);
+      if (!fitted) {
+        setMessage({ text: '가로와 세로가 있는 영역의 반대쪽 모서리를 선택해 주세요.', error: true });
+        return;
+      }
+      setLayout(fitted);
+      setFitting(false);
+      setCorner(null);
+      setMessage({ text: '이동 구조를 선택한 영역에 맞췄어요.' });
+      return;
+    }
+    if (layout[category].length >= navigationShapeLimit) return;
     if (category === 'waypoints') {
       setLayout({ ...layout, waypoints: [...layout.waypoints, point] });
       return;
@@ -110,20 +128,44 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
         <button type="button" className="a-btn" disabled={busy || !!message?.conflict}
           onClick={() => void loadPreset()}>복도로 연결된 두 전시실 불러오기</button>
       </div>
+      {exhibition.floorPlan && layout.walkable.length > 0 && (
+        <div>
+          <button type="button" className="a-btn" disabled={busy || !!message?.conflict || (!fitting && corner !== null)} onClick={() => {
+            setFitting(!fitting);
+            if (!fitting) setReference(true);
+            setCorner(null);
+            setMessage(null);
+          }}>{fitting ? '맞추기 취소' : '원본 도면에 맞추기'}</button>
+        </div>
+      )}
       <div className="a-inline">
-        <select aria-label="이동 구조 종류" value={category} onChange={event => {
+        <select aria-label="이동 구조 종류" value={category} disabled={fitting} onChange={event => {
           setCategory(event.target.value as Category); setCorner(null);
         }}>
           {categoryKeys.map(key => <option key={key} value={key}>{categories[key]} ({layout[key].length})</option>)}
         </select>
-        <button type="button" className="a-btn" disabled={busy || (!corner && !layout[category].length)} onClick={() => {
+        <button type="button" className="a-btn" disabled={fitting || busy || (!corner && !layout[category].length)} onClick={() => {
           if (corner) setCorner(null);
           else setLayout({ ...layout, [category]: layout[category].slice(0, -1) });
         }}>마지막 입력 취소</button>
-        {exhibition.floorPlan && <label><input type="checkbox" checked={reference}
+        {exhibition.floorPlan && <label><input type="checkbox" checked={reference} disabled={fitting}
           onChange={event => setReference(event.target.checked)} /> 원본 도면 겹쳐 보기</label>}
       </div>
-      <p className="small" role="status">{corner ? '반대쪽 모서리를 선택해 주세요.' : `${categories[category]} 위치를 선택해 주세요.`}</p>
+      <p className="small" role="status">{corner ? '반대쪽 모서리를 선택해 주세요.' : fitting
+        ? '원본 도면에서 이동 구조가 들어갈 영역의 첫 모서리를 선택해 주세요.'
+        : `${categories[category]} 위치를 선택해 주세요.`}</p>
+      {layout.doors.length > 0 && layout.corridors.length > 0 && (
+        <div>
+          <button type="button" className="a-btn" disabled={fitting || busy || corner !== null || !!message?.conflict || suggestions.length === 0}
+            onClick={() => {
+              setLayout({ ...layout, waypoints: [...layout.waypoints, ...suggestions] });
+              setCategory('waypoints');
+              setCorner(null);
+              setReference(true);
+              setMessage({ text: `문과 복도에서 연결점 ${suggestions.length}개를 추가했어요. 경로를 확인해 주세요.` });
+            }}>제안 연결점 {suggestions.length}개 추가</button>
+        </div>
+      )}
       <div role="group" aria-label="경로 미리보기" className="a-navigation-preview stack gap-10">
         <h4>경로 미리보기</h4>
         <p className="muted small">관람자 지도에는 저장한 구조가 표시돼요.</p>
@@ -152,7 +194,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
       </div>
       <FloorMap exhibition={draftExhibition} markers={markers} activeLeg={preview}
         onMapClick={addPoint} forAdmin showReference={reference} showEntrance={!!destination && !departure} />
-      <button className="a-btn primary" type="button" onClick={save} disabled={busy || corner !== null || !!message?.conflict}>이동 구조 저장</button>
+      <button className="a-btn primary" type="button" onClick={save} disabled={fitting || busy || corner !== null || !!message?.conflict}>이동 구조 저장</button>
       {message && <p role={message.error ? 'alert' : 'status'}>{message.text}</p>}
       {message?.conflict && <button type="button" className="a-btn" onClick={onConflict}>최신 도면 다시 불러오기</button>}
     </section>
