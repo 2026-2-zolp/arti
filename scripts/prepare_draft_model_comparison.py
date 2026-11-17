@@ -52,18 +52,64 @@ def review_template(plan):
     }
 
 
+def validate_review(plan, sheet):
+    revision_keys = ('productRevision', 'fixtureVersion', 'inputMode')
+    if not isinstance(sheet, dict) or any(sheet.get(key) != plan[key] for key in revision_keys):
+        raise ValueError('Review product revision or input mode does not match')
+    expected = {(row['id'], row['label']): row for row in review_template(plan)['reviews']}
+    remaining = set(expected)
+    scores = {'pending': 0, 'usable': 0, 'revise': 0, 'failed': 0}
+    if not isinstance(sheet.get('reviews'), list):
+        raise ValueError('Review rows are missing')
+    for row in sheet['reviews']:
+        if (not isinstance(row, dict) or not isinstance(row.get('id'), str)
+                or row.get('label') not in ('X', 'Y')):
+            raise ValueError('Review row needs a trial ID and X/Y label')
+        key = (row['id'], row['label'])
+        if key not in remaining:
+            raise ValueError(f'{key[0]} {key[1]} is unknown or duplicated')
+        remaining.remove(key)
+        if any(row.get(field) != expected[key][field] for field in ('caseId', 'task', 'sourceVersion', 'sourceSha256')):
+            raise ValueError(f'{key[0]} {key[1]} input does not match')
+        verdict = row.get('verdict')
+        if verdict == 'pending':
+            scores['pending'] += 1
+            continue
+        points = (row.get('evidenceScore'), row.get('taskScore'))
+        critical = row.get('criticalError')
+        note, draft = row.get('evidenceNote'), row.get('draft')
+        has_draft = isinstance(draft, (str, dict)) and bool(draft)
+        failed_without_draft = draft is None and critical is True and points == (0, 0)
+        if (type(critical) is not bool or not all(type(point) is int and 0 <= point <= 2 for point in points)
+                or not isinstance(note, str) or not note.strip() or not (has_draft or failed_without_draft)):
+            raise ValueError(f'{key[0]} {key[1]} needs scores, a draft and evidence')
+        expected_verdict = 'failed' if critical else 'usable' if sum(points) >= 3 else 'revise'
+        if verdict != expected_verdict:
+            raise ValueError(f'{key[0]} {key[1]} verdict should be {expected_verdict}')
+        scores[expected_verdict] += 1
+    if remaining:
+        raise ValueError(f'Missing {len(remaining)} review rows')
+    return scores
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--product-revision', required=True, help='Full ARTI Git commit SHA')
-    parser.add_argument('--review-template', action='store_true', help='Emit the blank X/Y scoring sheet without model IDs')
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument('--review-template', action='store_true', help='Emit the blank X/Y scoring sheet without model IDs')
+    output.add_argument('--validate-review', type=Path, help='Validate a completed or partial X/Y scoring sheet')
     args = parser.parse_args()
     if not re.fullmatch(r'[a-f0-9]{40}', args.product_revision):
         parser.error('Provide a full 40-character Git SHA.')
     try:
         plan = prepare(args.product_revision)
+        if args.validate_review:
+            result = validate_review(plan, json.loads(args.validate_review.read_text(encoding='utf-8-sig')))
+        else:
+            result = review_template(plan) if args.review_template else plan
     except (OSError, ValueError) as error:
         parser.error(str(error))
-    print(json.dumps(review_template(plan) if args.review_template else plan, indent=2, ensure_ascii=False))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
 if __name__ == '__main__':
