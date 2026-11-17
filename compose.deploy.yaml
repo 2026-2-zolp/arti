@@ -1,0 +1,37 @@
+# Use with compose.yaml. A host-local HTTPS proxy forwards to the loopback web port.
+x-runtime: &runtime
+  image: ${ARTI_API_IMAGE:?Set ARTI_API_IMAGE to the release image digest}
+  environment:
+    ARTI_ENV: production
+    DJANGO_DEBUG: "false"
+    ALLOW_TEST_FIXTURES: "false"
+    ARTI_EXHIBITION_ORDER_DEMO_ENABLED: "false"
+    ARTI_ALLOWED_ORIGINS: ""
+
+services:
+  db:
+    image: ${ARTI_DB_IMAGE:?Set ARTI_DB_IMAGE to the PostgreSQL 17 image digest}
+    restart: unless-stopped
+  api:
+    <<: *runtime
+    build: !reset null
+    ports: !reset []
+    depends_on: !override
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  migrate:
+    <<: *runtime
+    build: !reset null
+    profiles: [migration]
+  reset-mail:
+    <<: *runtime
+    build: !reset null
+  web:
+    image: ${ARTI_WEB_IMAGE:?Set ARTI_WEB_IMAGE to the release image digest}
+    ports:
+      - "127.0.0.1:${ARTI_DEPLOY_HTTP_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
