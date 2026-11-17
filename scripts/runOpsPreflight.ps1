@@ -40,8 +40,8 @@ function Invoke-ProbeHttp($base, $path, $expected, $headers = @{}, $body = $null
     $request = @{ Uri = "$base$path"; Headers = $headers; SkipHttpErrorCheck = $true; NoProxy = $true; TimeoutSec = 10 }
     if ($null -ne $body) {
         $request.Method = 'Post'
-        $request.ContentType = 'application/json'
-        $request.Body = $body | ConvertTo-Json -Compress -Depth 5
+        $request.ContentType = 'application/json; charset=utf-8'
+        $request.Body = if ($body -is [string]) { $body } else { $body | ConvertTo-Json -Compress -Depth 5 }
     }
     $response = Invoke-WebRequest @request
     if ([int]$response.StatusCode -ne $expected) {
@@ -205,7 +205,10 @@ networks:
     Invoke-ProbeDocker compose @source exec -T -e "ARTI_BOOTSTRAP_PASSWORD=$password" api python manage.py bootstrap_admin --login-id demo-admin --name 'Synthetic preflight' | Out-Null
     $ownerLogin = @{ email = 'preflight-owner@example.test'; password = $password }
     if ($ChromeReceipt) {
-        $original = Invoke-ProbeReceiptChrome 'source' @{ base = $sourceUrl; ownerEmail = $ownerLogin.email; password = $password }
+        $captured = Invoke-ProbeReceiptChrome 'source' @{ base = $sourceUrl; ownerEmail = $ownerLogin.email; password = $password }
+        $original = $captured.receipt
+        $saveRequest = $captured.saveRequest
+        $conflictingRequest = $captured.conflictingRequest
         if ($original.created -ne 201 -or $original.saveRequests -ne 1) { throw 'The Chrome visit did not save exactly once.' }
         $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/login' 200 @{} $ownerLogin)
         $order = @($original.artworkIds)
@@ -219,7 +222,11 @@ networks:
             reactions = @{ 'fixture-art01' = 'like' }; reactionReasons = @{ 'fixture-art01' = 'Synthetic preflight' }
         }
         $expectedVisit = $payload.visitId
-        $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 @{ Authorization = "Bearer $($owner.token)" } $payload)
+        $saveRequest = $payload | ConvertTo-Json -Compress -Depth 5
+        $changed = $payload.Clone()
+        $changed.requestGeneration++
+        $conflictingRequest = $changed | ConvertTo-Json -Compress -Depth 5
+        $original = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/visits' 201 @{ Authorization = "Bearer $($owner.token)" } $saveRequest)
     }
     $sourceMemberHeaders = @{ Authorization = "Bearer $($owner.token)" }
     if (!$original.id -or $original.visitId -ne $expectedVisit -or $original.userId -ne $owner.user.id) {
@@ -371,6 +378,20 @@ networks:
         $report.stages[$stage].chrome = @{ receiptId = $verified.id; receipts = $verified.receipts; saveRequests = $verified.saveRequests
             owner = $verified.owner; admin = $verified.admin; other = $verified.other; guest = $verified.guest; reload = $verified.reload }
     }
+
+    $stage = 'restored-save-retry'
+    Write-Host '[restored-save-retry] Replay the saved visit and reject a changed request for the same visit'
+    $replayed = Invoke-ProbeHttp $restoreUrl '/api/visits' 200 $memberHeaders $saveRequest
+    $conflict = Invoke-ProbeHttp $restoreUrl '/api/visits' 409 $memberHeaders $conflictingRequest
+    $ownerAfterRetry = Invoke-ProbeHttp $restoreUrl $path 200 $memberHeaders
+    $adminAfterRetry = Invoke-ProbeHttp $restoreUrl "/api/admin/visits/$($original.id)" 200 $adminHeaders
+    $countsAfterRetry = Invoke-ProbeDocker compose @restore exec -T db psql -U arti -d arti -tAc 'select (select count(*) from arti_visit), (select count(*) from arti_visitreaction)'
+    if ((Convert-ProbeJson $conflict).code -ne 'IDEMPOTENCY_CONFLICT' -or $countsAfterRetry -ne '1|1' -or
+        $replayed.Content -cne $sourceReceipt.Content -or $ownerAfterRetry.Content -cne $sourceReceipt.Content -or
+        $adminAfterRetry.Content -cne $sourceReceipt.Content) {
+        throw 'Restored retry changed the receipt or reaction count, body, or identity.'
+    }
+    $report.stages[$stage] = @{ replay = 200; conflict = 409; sameReceipt = $true; receipts = 1; reactions = 1 }
 
     $stage = 'nginx-api-recovery'
     Write-Host '[nginx-api-recovery] Recreate the upstream at a second IP while keeping Nginx running'
