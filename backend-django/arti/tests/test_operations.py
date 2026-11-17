@@ -1,15 +1,52 @@
+import json
 from unittest.mock import patch
 
+from django.conf import settings
 from django.test import TestCase, override_settings
 
 from arti.http import ContractError
 from arti.models import Artwork
 from arti.tests.test_integration import Helpers
+from arti.tests.test_provider import endpoint
 
 
 @override_settings(ARTI_ENV='test', ALLOW_TEST_FIXTURES=True, ARTI_LLM_PROVIDER='disabled',
                    ARTI_DRAFT_PROVIDER='default', ARTI_MODEL_SERVICE_URL='')
 class OperationsTests(Helpers, TestCase):
+    def test_request_counts_and_model_usage_are_recorded_separately(self):
+        self.setup_clients()
+        operations = '/api/admin/operations?summary=1'
+        self.assertEqual(self.admin.get(operations).json()['textModelUsage'], {
+            'attempts': 0, 'missing': 0, 'inputTokens': None, 'outputTokens': None,
+        })
+        path = '/api/admin/artworks/fixture-art01/analyze'
+
+        def respond(number):
+            if number == 3:
+                return 429, b'{}'
+            content = ({'summary': '합성 요약', 'keywords': []} if number == 1 else
+                       {'intro': '합성 안내', 'questions': ['어떤 색인가요?'], 'hints': ['가운데를 보세요.']})
+            usage = ({'prompt_tokens': 120, 'completion_tokens': 30} if number == 1 else
+                     {'prompt_tokens': True, 'completion_tokens': 10})
+            response = {'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps(content)}}], 'usage': usage}
+            return 200, json.dumps(response).encode()
+
+        with endpoint(respond=respond) as requests:
+            with self.settings(ARTI_DRAFT_PROVIDER='openai_compatible', ARTI_DRAFT_BASE_URL=settings.OPENAI_BASE_URL,
+                               ARTI_DRAFT_MODEL='synthetic-usage', ARTI_DRAFT_API_KEY='synthetic-test-only'):
+                work = Artwork.objects.get(pk='fixture-art01')
+                result = self.admin.post(path, {'version': work.version, 'regenerateFields': ['summary', 'guide']}, format='json')
+                self.assertEqual(result.status_code, 200, result.content)
+                again = self.admin.post(path, {'version': result.json()['artwork']['version'],
+                                               'regenerateFields': ['guide']}, format='json')
+                self.assertEqual(again.status_code, 429, again.content)
+        self.assertEqual(len(requests), 3)
+        report = self.admin.get(operations).json()
+        self.assertEqual(report['today']['analysisRequests'], 2)
+        self.assertEqual(report['textModelUsage'], {
+            'attempts': 3, 'missing': 2, 'inputTokens': 120, 'outputTokens': 30,
+        })
+
     def test_partial_analysis_filter_and_counts_exclude_disabled_fields_and_request_content(self):
         self.setup_clients()
         path = '/api/admin/artworks/fixture-art01/analyze'

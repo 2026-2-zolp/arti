@@ -10,6 +10,7 @@ from urllib.request import Request, HTTPRedirectHandler, build_opener
 from django.conf import settings
 from .http import ContractError
 from .budget import remaining
+from .model_usage import record_text_attempt, record_text_tokens
 
 TIMEOUT_SECONDS = 25
 MAX_RESPONSE_BYTES = 256 * 1024
@@ -163,12 +164,15 @@ def generate_text(kind, snapshot, **context):
             encoded = json.dumps(payload, ensure_ascii=False).encode('utf-8')
         request = Request(base + '/chat/completions', data=encoded,
                           headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'}, method='POST')
-        with build_opener(NoRedirect()).open(request, timeout=remaining(context.get('deadline'), TIMEOUT_SECONDS)) as response:
+        timeout = remaining(context.get('deadline'), TIMEOUT_SECONDS)
+        record_text_attempt()
+        with build_opener(NoRedirect()).open(request, timeout=timeout) as response:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
         remaining(context.get('deadline'), TIMEOUT_SECONDS)
         if len(raw) > MAX_RESPONSE_BYTES:
             failed()
         result = json.loads(raw)
+        record_text_tokens(result)
         choice = result['choices'][0]
         if choice.get('finish_reason') != 'stop' or choice['message'].get('refusal'):
             failed()

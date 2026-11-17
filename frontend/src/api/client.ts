@@ -55,6 +55,7 @@ export type OperationsReport = {
   draftConfiguration: 'configured' | 'disabled' | 'invalid';
   draftImageTasks: ('summary' | 'guide')[];
   today: { docentRequests: number; analysisRequests: number; aiErrors: number; analysisPartialFailures: number };
+  textModelUsage?: { attempts: number; missing: number; inputTokens: number | null; outputTokens: number | null };
   recent: { action: string; requestId: string; occurredAt: string; status: number;
     analysisFailures?: { field: 'summary' | 'guide' | 'tag' | 'emotion'; code: string }[] }[];
 };

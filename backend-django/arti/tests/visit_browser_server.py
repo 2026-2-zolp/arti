@@ -4,7 +4,6 @@ import json
 import re
 import sys
 from threading import Thread
-from unittest.mock import patch
 from wsgiref.simple_server import make_server
 
 from django.conf import settings
@@ -32,19 +31,19 @@ def serve(suite=None):
                                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             return run_loopback(reset_mail_application())
     if suite == 'operations':
-        from arti import providers
-        from arti.http import ContractError
+        from arti.tests.test_provider import endpoint
 
-        original = providers.generate
+        def respond(number):
+            if number != 1:
+                return 502, '합성 운영 로그 검수 세부 정보'.encode()
+            summary = json.dumps({'summary': '합성 운영 로그 요약', 'keywords': []})
+            return 200, json.dumps({'choices': [{'finish_reason': 'stop', 'message': {'content': summary}}],
+                                    'usage': {'prompt_tokens': 120, 'completion_tokens': 30}}).encode()
 
-        def generate(kind, snapshot, **context):
-            if kind == 'summary':
-                return {'summary': '합성 운영 로그 요약', 'keywords': []}
-            if kind == 'guide':
-                raise ContractError(502, 'PROVIDER_ERROR', '합성 운영 로그 검수 세부 정보')
-            return original(kind, snapshot, **context)
-
-        with patch('arti.providers.generate', side_effect=generate):
+        with endpoint(respond=respond), override_settings(
+            ARTI_DRAFT_PROVIDER='openai_compatible', ARTI_DRAFT_BASE_URL=settings.OPENAI_BASE_URL,
+            ARTI_DRAFT_MODEL='synthetic-operations', ARTI_DRAFT_API_KEY='synthetic-test-only',
+        ):
             return run_loopback(get_wsgi_application())
     run_loopback(get_wsgi_application())
 

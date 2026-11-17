@@ -255,6 +255,10 @@ class OperationEvent(models.Model):
     status = models.PositiveSmallIntegerField()
     request_id = models.UUIDField()
     analysis_failures = models.JSONField(default=list, blank=True)
+    text_model_attempts = models.PositiveIntegerField(default=0)
+    text_model_measured = models.PositiveIntegerField(default=0)
+    text_model_input_tokens = models.PositiveBigIntegerField(default=0)
+    text_model_output_tokens = models.PositiveBigIntegerField(default=0)
 
 
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.

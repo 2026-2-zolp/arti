@@ -2,13 +2,14 @@ import logging
 from zoneinfo import ZoneInfo
 
 from django.db import DatabaseError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from .authentication import IsAdmin
 from .models import OperationEvent
+from .model_usage import collect_text_usage
 from .providers import configuration_status, draft_configuration_status
 from .llm import DRAFT_TASKS, luna_image_route
 
@@ -60,22 +61,26 @@ class OperationEventMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
         if request.method not in ('POST', 'PUT', 'DELETE'):
-            return response
+            return self.get_response(request)
+        with collect_text_usage() as usage:
+            response = self.get_response(request)
 
         route = getattr(request.resolver_match, 'route', None)
         action = ADMIN_ACTIONS.get(route)
         if action and getattr(getattr(request, 'user', None), 'role', None) != 'admin':
             return response
-        if request.method == 'POST' and response.status_code in (200, 429, 500, 502, 503, 504):
+        if request.method == 'POST' and (usage.attempts or response.status_code in (200, 429, 500, 502, 503, 504)):
             action = action or VISITOR_ACTIONS.get(route)
         if action and response.status_code != 405:
             try:
                 with transaction.atomic():
                     failures = partial_analysis_failures(response) if action == 'artwork_analysis' else []
                     OperationEvent.objects.create(action=action, status=response.status_code,
-                                                  request_id=request.request_id, analysis_failures=failures)
+                                                  request_id=request.request_id, analysis_failures=failures,
+                                                  text_model_attempts=usage.attempts, text_model_measured=usage.measured,
+                                                  text_model_input_tokens=usage.input_tokens,
+                                                  text_model_output_tokens=usage.output_tokens)
             except DatabaseError:
                 # 원래 요청은 완료됐습니다. 기록 장애를 쓰기 실패로 돌려보내지 않습니다.
                 logger.warning('Operation log unavailable requestId=%s', request.request_id)
@@ -92,7 +97,13 @@ def dashboard(request):
         analysisRequests=Count('id', filter=Q(action='artwork_analysis')),
         aiErrors=Count('id', filter=Q(action__in=AI_ACTIONS, status__gte=400)),
         analysisPartialFailures=Count('id', filter=PARTIAL_ANALYSIS),
+        attempts=Sum('text_model_attempts', default=0),
+        measured=Sum('text_model_measured', default=0),
+        inputTokens=Sum('text_model_input_tokens', default=0),
+        outputTokens=Sum('text_model_output_tokens', default=0),
     )
+    attempts, measured = counts.pop('attempts'), counts.pop('measured')
+    input_tokens, output_tokens = counts.pop('inputTokens'), counts.pop('outputTokens')
     recent = OperationEvent.objects.order_by('-occurred_at', '-pk')
     if request.query_params.get('errors') == '1':
         recent = recent.filter(Q(status__gte=400) | PARTIAL_ANALYSIS)
@@ -102,6 +113,9 @@ def dashboard(request):
         'draftConfiguration': draft_configuration_status(),
         'draftImageTasks': [kind for kind in DRAFT_TASKS if luna_image_route(kind)],
         'today': counts,
+        'textModelUsage': {'attempts': attempts, 'missing': attempts - measured,
+                           'inputTokens': input_tokens if measured else None,
+                           'outputTokens': output_tokens if measured else None},
         'recent': [
             {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
              'action': event.action, 'status': event.status,

@@ -15,10 +15,14 @@ const actionLabel: Record<string, string> = {
 };
 
 function OperationsSummary({ report }: { report: OperationsReport }) {
+  const usage = report.textModelUsage;
   return (
     <>
       <p>도슨트 {configurationLabel[report.configuration.docent]} · 요약·가이드 {configurationLabel[report.draftConfiguration]} · 태그·감정 분석 {configurationLabel[report.configuration.analysis]}</p>
       <p>오늘 도슨트 요청 {report.today.docentRequests}건 · 관리자 AI 분석 {report.today.analysisRequests}건 · AI 요청 오류 {report.today.aiErrors}건 · 분석 부분 실패 {report.today.analysisPartialFailures}건</p>
+      {usage && <p>텍스트 모델 호출 시도 {usage.attempts}건 · {usage.inputTokens === null || usage.outputTokens === null
+        ? '토큰 미수집' : `입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰`}
+        {usage.missing > 0 && ` · 토큰 미수집 요청 ${usage.missing}건`}</p>}
     </>
   );
 }

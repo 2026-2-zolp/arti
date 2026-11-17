@@ -1457,6 +1457,12 @@ async function reviewThreeRooms(browser, admin) {
     await visitor.goto(exhibition);
     await button(visitor, '전시 순서로 바로 보기').click();
     await button(visitor, '다음 작품 안내').click();
+    const progress = async () => {
+      const { visitId, current, viewed, recommendations } = await visit(visitor);
+      return { visitId, current, viewed, order: recommendations.map(work => work.artworkId) };
+    };
+    const initialProgress = await progress();
+    assert.deepEqual(initialProgress.viewed, ['fixture-art03']);
     const visitorMap = async () => {
       await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
       return visitor.locator('.floor-map');
@@ -1502,17 +1508,29 @@ async function reviewThreeRooms(browser, admin) {
     await visitor.reload();
     await expectBlocked();
 
-    const [response] = await Promise.all([
-      admin.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
-      button(editor, '이동 구조 저장').click(),
-    ]);
-    const saved = await body(response);
+    const save = async () => {
+      const [response] = await Promise.all([
+        admin.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
+        button(editor, '이동 구조 저장').click(),
+      ]);
+      return body(response);
+    };
+    const saved = await save();
     assert.deepEqual((await published()).navigationLayout, saved.navigationLayout);
     await visitor.reload();
     const savedMap = await visitorMap();
     await checkWalkableSvg(savedMap, 'three-rooms');
     assert.equal(await savedMap.locator('.fm-check-focus, .fm-marker.check').count(), 0);
-    console.log('PASS three rooms: works within one room, nearest competing doors, saved cross-room repair');
+    assert.deepEqual(await progress(), initialProgress);
+
+    await button(editor, '마지막 입력 취소').click();
+    await editor.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal((await published()).navigationLayout.doors.length, original.navigationLayout.doors.length + 1);
+    await save();
+    await visitor.reload();
+    await expectBlocked();
+    assert.deepEqual(await progress(), initialProgress);
+    console.log('PASS three rooms: nearest doors, saved repair and closure, same visit progress after reload');
   } finally {
     await visitor.close();
   }
@@ -1697,11 +1715,17 @@ async function operationsLog(browser) {
     assert.equal((await body(fullFailure, 502)).code, 'PROVIDER_ERROR');
     const report = await body(await page.request.get(opsPath, { headers }));
     assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
-    assert.equal(report.draftConfiguration, 'disabled');
+    assert.equal(report.draftConfiguration, 'configured');
     assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
     assert.equal(report.today.analysisRequests, before.today.analysisRequests + 2);
     assert.equal(report.today.analysisPartialFailures, before.today.analysisPartialFailures + 1);
     assert.equal(report.today.aiErrors, before.today.aiErrors + 1);
+    const usage = {
+      attempts: before.textModelUsage.attempts + 3, missing: before.textModelUsage.missing + 2,
+      inputTokens: (before.textModelUsage.inputTokens ?? 0) + 120,
+      outputTokens: (before.textModelUsage.outputTokens ?? 0) + 30,
+    };
+    assert.deepEqual(report.textModelUsage, usage);
     const storedEvent = report.recent.find(event => event.requestId === failedId);
     assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
     assert.equal(storedEvent.status, 503);
@@ -1713,6 +1737,7 @@ async function operationsLog(browser) {
     await page.reload();
     await page.getByText(/오늘 도슨트 요청/).waitFor();
     await page.getByRole('link', { name: '운영 로그', exact: true }).click();
+    await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
     await page.getByText(requestId, { exact: true }).waitFor();
     await page.getByText(failedId, { exact: true }).waitFor();
     fixtureCommand([
