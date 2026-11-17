@@ -106,6 +106,10 @@ jobs:
             name: Visit Chrome (boundaries)
             database: arti_visit_boundaries
             admin: visit-boundaries-admin
+          - suite: indoor-map
+            name: Visit Chrome (indoor map and direct visit)
+            database: arti_visit_boundaries_indoor_map
+            admin: visit-boundaries-admin
           - suite: narrow-visit
             name: Visit Chrome (narrow layout)
             database: arti_narrow_pc_ci
@@ -203,6 +207,13 @@ jobs:
       - name: Run V2 recommendation shortage Chrome
         if: matrix.suite == 'visit-boundaries'
         run: node frontend/tests/runVisitBoundaries.browser.mjs recommendation-shortage
+      - name: Run indoor map and direct visit Chrome
+        if: matrix.suite == 'indoor-map'
+        env:
+          ARTI_EXHIBITION_ORDER_DEMO_ENABLED: 'true'
+        run: |
+          node frontend/tests/runVisitBoundaries.browser.mjs map-variants
+          node frontend/tests/runVisitBoundaries.browser.mjs exhibition-order
       - name: Run saved V2 Chrome
         if: matrix.suite == 'saved-v2'
         run: node frontend/tests/runVisitBoundaries.browser.mjs saved-v2
