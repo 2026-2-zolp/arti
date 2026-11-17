@@ -71,12 +71,32 @@ async function verifyRegeneration(page, request, base, gate, headers) {
   await page.getByText('관람자 미리보기', { exact: true }).click();
   const live = page.getByRole('region', { name: '현재 공개본' });
   const draft = page.getByRole('region', { name: '편집 중인 내용' });
+  const comparison = page.locator('details').filter({ has: live });
   const see = async (region, text) => region.getByText(text, { exact: true }).waitFor();
   const seeQuestion = async (region, text) => region.getByRole('listitem').filter({ hasText: text }).waitFor();
   await see(live, confirmed.summary);
   await see(live, confirmed.description);
   await see(live, '힌트 · ' + confirmed.guidedHints[0]);
+  await see(live, confirmed.source);
+  await see(live, `저장된 근거 버전 ${confirmed.sourceVersion}`);
+  await see(draft, `저장된 근거 버전 ${confirmed.sourceVersion}`);
+  await see(comparison, '공개본과 내용이 같아요.');
+  const source = page.getByLabel('출처', { exact: true });
+  const reference = page.getByLabel('참고자료 URL', { exact: true });
+  await source.fill('합성 출처 수정 초안');
+  await reference.fill('https://example.test/source-draft');
+  await see(comparison, '공개본과 다른 항목 · 출처 · 참고자료 URL');
+  await see(draft, '합성 출처 수정 초안');
+  await see(draft, 'https://example.test/source-draft');
+  await see(live, confirmed.source);
+  await source.fill('');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: '검수 완료로 저장하려면 출처 항목을 채워 주세요.' }).waitFor();
+  assert.equal((await readPublic()).source, confirmed.source);
+  await source.fill(confirmed.source);
+  await reference.fill(confirmed.referenceUrl);
   await summary(page).fill('아직 저장하지 않은 미리보기 요약입니다.');
+  await see(comparison, '공개본과 다른 항목 · 쉬운 요약');
   await see(draft, '아직 저장하지 않은 미리보기 요약입니다.');
   await see(live, confirmed.summary);
   await summary(page).fill(confirmed.summary);
@@ -101,6 +121,7 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     assert.deepEqual(saved.request().postDataJSON().regenerateFields, ['summary']);
     assert.equal((await json(saved)).artwork.summaryStatus, 'suggested');
     await see(draft, '새 요약 제안입니다.');
+    await see(comparison, '공개본과 다른 항목 · 쉬운 요약');
     await see(live, confirmed.summary);
     await verifyOriginal();
 
@@ -119,6 +140,7 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     assert.equal((await json(recovered)).artwork.guideStatus, 'suggested');
     await seeQuestion(draft, '새 관찰 질문입니다.');
     await see(draft, '힌트 · 새 힌트입니다.');
+    await see(comparison, '공개본과 다른 항목 · 쉬운 요약 · 관람가이드');
     await seeQuestion(live, confirmed.guidedLooking[0]);
     await verifyOriginal();
     assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide']);
