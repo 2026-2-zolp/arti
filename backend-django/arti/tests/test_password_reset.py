@@ -150,3 +150,22 @@ class PasswordResetTests(Helpers, TransactionTestCase):
             self.assertEqual(first.result(timeout=5), 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(self.confirm(self.token()).status_code, 204)
+
+    def test_mail_response_loss_retries_the_same_one_time_link(self):
+        self.assertEqual(self.request_link().status_code, 204)
+
+        def accepted_then_disconnected(*args, **kwargs):
+            mail.send_mail(*args, **kwargs)
+            raise OSError('synthetic acknowledgement lost after accept')
+
+        with patch('arti.password_reset.send_mail', side_effect=accepted_then_disconnected):
+            self.assertEqual(deliver_pending(), 0)
+        self.assertEqual(len(mail.outbox), 1)
+        delivery = PasswordResetDelivery.objects.get()
+        self.assertFalse(delivery.delivered)
+        PasswordResetDelivery.objects.filter(pk=delivery.pk).update(next_attempt_at=timezone.now())
+        self.assertEqual(deliver_pending(), 1)
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(self.token(0), self.token(1))
+        self.assertEqual(self.confirm(self.token(0)).status_code, 204)
+        self.assertEqual(self.confirm(self.token(1)).json()['code'], 'PASSWORD_RESET_INVALID')
