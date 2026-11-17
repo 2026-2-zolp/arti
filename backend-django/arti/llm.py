@@ -165,14 +165,14 @@ def generate_text(kind, snapshot, **context):
         request = Request(base + '/chat/completions', data=encoded,
                           headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'}, method='POST')
         timeout = remaining(context.get('deadline'), TIMEOUT_SECONDS)
-        record_text_attempt()
+        usage = record_text_attempt(kind, model if model != key else '')
         with build_opener(NoRedirect()).open(request, timeout=timeout) as response:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
         remaining(context.get('deadline'), TIMEOUT_SECONDS)
         if len(raw) > MAX_RESPONSE_BYTES:
             failed()
         result = json.loads(raw)
-        record_text_tokens(result)
+        record_text_tokens(usage, result)
         choice = result['choices'][0]
         if choice.get('finish_reason') != 'stop' or choice['message'].get('refusal'):
             failed()

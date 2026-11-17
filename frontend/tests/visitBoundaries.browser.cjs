@@ -1530,7 +1530,12 @@ async function reviewThreeRooms(browser, admin) {
     await visitor.reload();
     await expectBlocked();
     assert.deepEqual(await progress(), initialProgress);
-    console.log('PASS three rooms: nearest doors, saved repair and closure, same visit progress after reload');
+    await button(visitor, '2번 작품 감상하기').click();
+    await visitor.waitForURL('**/artwork');
+    await visitor.goBack();
+    await expectBlocked();
+    assert.deepEqual(await progress(), initialProgress);
+    console.log('PASS three rooms: door repair and closure, same visit after reload and browser back');
   } finally {
     await visitor.close();
   }
@@ -1738,6 +1743,13 @@ async function operationsLog(browser) {
     await page.getByText(/오늘 도슨트 요청/).waitFor();
     await page.getByRole('link', { name: '운영 로그', exact: true }).click();
     await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
+    const summaryGroup = report.textModelUsageByTaskModel.find(row => row.task === 'summary' && row.model === 'synthetic-operations');
+    const guideGroup = report.textModelUsageByTaskModel.find(row => row.task === 'guide' && row.model === 'synthetic-operations');
+    assert.equal(summaryGroup.cachedInputTokens, summaryGroup.attempts * 45);
+    assert.equal(guideGroup.cachedInputTokens, null);
+    const modelTable = page.getByRole('region', { name: '작업·모델별 토큰 사용량' });
+    await modelTable.getByRole('row').filter({ hasText: '쉬운 요약' }).getByText(String(summaryGroup.cachedInputTokens), { exact: true }).waitFor();
+    await modelTable.getByRole('row').filter({ hasText: '관람가이드' }).getByText(`토큰 ${guideGroup.missing}건 · 캐시 ${guideGroup.cacheMissing}건`, { exact: true }).waitFor();
     await page.getByText(requestId, { exact: true }).waitFor();
     await page.getByText(failedId, { exact: true }).waitFor();
     fixtureCommand([

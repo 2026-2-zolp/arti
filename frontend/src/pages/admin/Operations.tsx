@@ -7,6 +7,9 @@ import { PageHead } from './AdminLayout';
 
 const configurationLabel = { configured: '설정됨', disabled: '꺼짐', invalid: '설정 확인 필요' };
 const analysisLabel = { summary: '쉬운 요약', guide: '관람가이드', tag: '취향 태그', emotion: '감정 분석' };
+const textTaskLabel: Record<string, string> = {
+  summary: '쉬운 요약', guide: '관람가이드', answer: '도슨트 질문', explanation: '쉬운 해설', interpret: '영수증 해석',
+};
 const actionLabel: Record<string, string> = {
   exhibition_save: '전시 저장', artwork_save: '작품 저장', artwork_image: '도판 변경',
   floor_plan: '도면 변경', navigation_layout: '지도 이동 구조 저장', artwork_analysis: '작품 AI 분석', discard_proposal: 'AI 제안 폐기',
@@ -24,6 +27,28 @@ function OperationsSummary({ report }: { report: OperationsReport }) {
         ? '토큰 미수집' : `입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰`}
         {usage.missing > 0 && ` · 토큰 미수집 요청 ${usage.missing}건`}</p>}
     </>
+  );
+}
+
+function TextModelUsageTable({ rows }: { rows: NonNullable<OperationsReport['textModelUsageByTaskModel']> }) {
+  const tokens = (value: number | null) => value === null ? '미수집' : value.toLocaleString('ko-KR');
+  return (
+    <section className="a-card pad stack gap-10" aria-label="작업·모델별 토큰 사용량">
+      <h2>작업·모델별 토큰 사용량</h2>
+      <p className="muted small">캐시 입력은 전체 입력에 포함돼요. 집계를 시작한 뒤의 요청을 표시해요.</p>
+      {rows.length ? (
+        <table className="a-table">
+          <thead><tr><th>작업</th><th>모델</th><th>호출 시도</th><th>입력 토큰</th><th>출력 토큰</th><th>캐시 입력</th><th>미수집</th></tr></thead>
+          <tbody>{rows.map(row => (
+            <tr key={JSON.stringify([row.task, row.model])}>
+              <td>{textTaskLabel[row.task] ?? row.task}</td><td>{row.model || '모델명 미식별'}</td><td>{row.attempts}</td>
+              <td>{tokens(row.inputTokens)}</td><td>{tokens(row.outputTokens)}</td><td>{tokens(row.cachedInputTokens)}</td>
+              <td>토큰 {row.missing}건 · 캐시 {row.cacheMissing}건</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      ) : <p>오늘 집계한 모델 사용량이 없어요.</p>}
+    </section>
   );
 }
 
@@ -56,6 +81,7 @@ export default function Operations() {
       </section>
       {error && <p role="alert">{error}</p>}
       {loading && <p role="status">불러오는 중…</p>}
+      {data?.textModelUsageByTaskModel && <TextModelUsageTable rows={data.textModelUsageByTaskModel} />}
       {data && (
         <>
           <div className="a-card">

@@ -261,6 +261,21 @@ class OperationEvent(models.Model):
     text_model_output_tokens = models.PositiveBigIntegerField(default=0)
 
 
+class OperationTextModelUsage(models.Model):
+    event = models.ForeignKey(OperationEvent, on_delete=models.CASCADE)
+    task = models.CharField(max_length=16)
+    model = models.CharField(max_length=200, blank=True)
+    attempts = models.PositiveIntegerField()
+    measured = models.PositiveIntegerField()
+    input_tokens = models.PositiveBigIntegerField()
+    output_tokens = models.PositiveBigIntegerField()
+    cache_measured = models.PositiveIntegerField()
+    cached_input_tokens = models.PositiveBigIntegerField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['event', 'task', 'model'], name='operation_text_usage_group_unique')]
+
+
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.
 class VisitReaction(models.Model):
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, related_name='reactions')

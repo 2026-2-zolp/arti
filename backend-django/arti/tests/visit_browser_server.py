@@ -38,7 +38,8 @@ def serve(suite=None):
                 return 502, '합성 운영 로그 검수 세부 정보'.encode()
             summary = json.dumps({'summary': '합성 운영 로그 요약', 'keywords': []})
             return 200, json.dumps({'choices': [{'finish_reason': 'stop', 'message': {'content': summary}}],
-                                    'usage': {'prompt_tokens': 120, 'completion_tokens': 30}}).encode()
+                                    'usage': {'prompt_tokens': 120, 'completion_tokens': 30,
+                                              'prompt_tokens_details': {'cached_tokens': 45}}}).encode()
 
         with endpoint(respond=respond), override_settings(
             ARTI_DRAFT_PROVIDER='openai_compatible', ARTI_DRAFT_BASE_URL=settings.OPENAI_BASE_URL,

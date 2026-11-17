@@ -24,11 +24,13 @@ class OperationsTests(Helpers, TestCase):
         def respond(number):
             if number == 3:
                 return 429, b'{}'
-            content = ({'summary': '합성 요약', 'keywords': []} if number == 1 else
+            content = ({'summary': '합성 요약', 'keywords': []} if number in (1, 4) else
                        {'intro': '합성 안내', 'questions': ['어떤 색인가요?'], 'hints': ['가운데를 보세요.']})
-            usage = ({'prompt_tokens': 120, 'completion_tokens': 30} if number == 1 else
-                     {'prompt_tokens': True, 'completion_tokens': 10})
-            response = {'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps(content)}}], 'usage': usage}
+            usage = {1: {'prompt_tokens': 120, 'completion_tokens': 30, 'prompt_tokens_details': {'cached_tokens': 0}},
+                     2: {'prompt_tokens': True, 'completion_tokens': 10},
+                     4: {'prompt_tokens': 200, 'completion_tokens': 40, 'prompt_tokens_details': {'cached_tokens': 80}}}[number]
+            response = {'model': 'provider-private-metadata',
+                        'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps(content)}}], 'usage': usage}
             return 200, json.dumps(response).encode()
 
         with endpoint(respond=respond) as requests:
@@ -40,12 +42,26 @@ class OperationsTests(Helpers, TestCase):
                 again = self.admin.post(path, {'version': result.json()['artwork']['version'],
                                                'regenerateFields': ['guide']}, format='json')
                 self.assertEqual(again.status_code, 429, again.content)
-        self.assertEqual(len(requests), 3)
+                with self.settings(ARTI_DRAFT_MODEL='synthetic-alternate'):
+                    alternate = self.admin.post(path, {'version': result.json()['artwork']['version'],
+                                                       'regenerateFields': ['summary']}, format='json')
+                    self.assertEqual(alternate.status_code, 200, alternate.content)
+        self.assertEqual(len(requests), 4)
         report = self.admin.get(operations).json()
-        self.assertEqual(report['today']['analysisRequests'], 2)
+        self.assertEqual(report['today']['analysisRequests'], 3)
         self.assertEqual(report['textModelUsage'], {
-            'attempts': 3, 'missing': 2, 'inputTokens': 120, 'outputTokens': 30,
+            'attempts': 4, 'missing': 2, 'inputTokens': 320, 'outputTokens': 70,
         })
+        self.assertNotIn('textModelUsageByTaskModel', report)
+        groups = self.admin.get('/api/admin/operations?errors=1').json()['textModelUsageByTaskModel']
+        self.assertEqual(groups, [
+            {'task': 'guide', 'model': 'synthetic-usage', 'attempts': 2, 'missing': 2,
+             'inputTokens': None, 'outputTokens': None, 'cachedInputTokens': None, 'cacheMissing': 2},
+            {'task': 'summary', 'model': 'synthetic-alternate', 'attempts': 1, 'missing': 0,
+             'inputTokens': 200, 'outputTokens': 40, 'cachedInputTokens': 80, 'cacheMissing': 0},
+            {'task': 'summary', 'model': 'synthetic-usage', 'attempts': 1, 'missing': 0,
+             'inputTokens': 120, 'outputTokens': 30, 'cachedInputTokens': 0, 'cacheMissing': 0},
+        ])
 
     def test_partial_analysis_filter_and_counts_exclude_disabled_fields_and_request_content(self):
         self.setup_clients()
