@@ -937,8 +937,8 @@ async function exhibitionOrderV2(browser) {
   }
 }
 
-async function openAdmin(browser) {
-  const page = await openPage(browser);
+async function openAdmin(browser, context) {
+  const page = await openPage(browser, context);
   await page.goto('/admin/login');
   await page.getByLabel('관리자 ID', { exact: true }).fill('visit-boundaries-admin');
   await page.getByLabel('비밀번호', { exact: true }).fill(process.env.ARTI_BOOTSTRAP_PASSWORD);
@@ -968,7 +968,7 @@ async function checkWalkableSvg(map, variant) {
       crossesCorridor: corridorPoints.some(point => point.x < middle) && corridorPoints.some(point => point.x > middle) };
   });
   assert.equal(geometry.blocked, false);
-  assert.ok(geometry.activeCount >= 3);
+  assert.ok(geometry.activeCount >= (variant === 'branch' ? 2 : 3));
   if (variant === 'two-rooms') assert.ok(geometry.crossesCorridor, 'The path uses both sides of the displayed corridor');
 }
 
@@ -1344,13 +1344,110 @@ async function reviewMultiTurnCorridor(browser, admin) {
   }
 }
 
+async function reviewBranchConflict(browser, admin) {
+  const visitor = await openPage(browser);
+  const other = await openPage(browser, admin.context());
+  const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+  const recommendAll = () => Promise.all(['30m', '60m', 'relaxed'].map(duration =>
+    visitor.request.post('/api/recommendations', {
+      data: { exhibitionId, duration, tastes: ['warm'],
+        tasteProfile: { version: 2, source: 'manual', selectedTags: ['warm'] } },
+    }).then(response => body(response))));
+  const byArtwork = items => Object.fromEntries(items.map(({ order, ...item }) => [item.artworkId, item]));
+  const openEditor = async page => {
+    await page.goto('/admin/map?exhibition=' + exhibitionId);
+    await page.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = page.getByRole('region', { name: '이동 구조 편집' });
+    await editor.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    return editor;
+  };
+  const verifyRoute = async (map, upper) => {
+    await checkWalkableSvg(map, 'branch');
+    const crossing = await map.locator('.fm-route.active').evaluate(line => {
+      const count = Math.ceil(line.getTotalLength() * 4);
+      return Array.from({ length: count + 1 }, (_, index) => line.getPointAtLength(index / 4))
+        .find(point => Math.abs(point.x - 50) < 0.5)?.y;
+    });
+    assert.ok(upper ? crossing >= 24 && crossing <= 30 : crossing >= 70 && crossing <= 78,
+      `Expected ${upper ? 'upper' : 'lower'} corridor, crossing y=${crossing}`);
+  };
+  const removeDoor = async editor => {
+    await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+  };
+  const save = async (page, editor, status) => {
+    const [response] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
+      button(editor, '이동 구조 저장').click(),
+    ]);
+    return body(response, status);
+  };
+
+  try {
+    const original = await readExhibition();
+    const recommendations = await recommendAll();
+    assert.deepEqual(recommendations.map(items => items.length), [3, 5, 7]);
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const openVisitorMap = async () => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      return visitor.locator('.floor-map');
+    };
+    const editor = await openEditor(admin);
+    const staleEditor = await openEditor(other);
+    const map = editor.locator('.floor-map');
+    const staleMap = staleEditor.locator('.floor-map');
+    await verifyRoute(await openVisitorMap(), true);
+    await verifyRoute(map, true);
+    await verifyRoute(staleMap, true);
+
+    await removeDoor(editor);
+    await verifyRoute(map, false);
+    assert.deepEqual(await readExhibition(), original);
+    await visitor.reload();
+    await verifyRoute(await openVisitorMap(), true);
+    const saved = await save(admin, editor, 200);
+    assert.equal(saved.navigationLayout.doors.length, 3);
+    const published = await readExhibition();
+    assert.equal(published.version, saved.version);
+    assert.deepEqual(published.navigationLayout, saved.navigationLayout);
+    await visitor.reload();
+    await verifyRoute(await openVisitorMap(), false);
+    const after = await recommendAll();
+    assert.deepEqual(after.map(byArtwork), recommendations.map(byArtwork));
+
+    await removeDoor(staleEditor);
+    await removeDoor(staleEditor);
+    await staleEditor.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal((await save(other, staleEditor, 409)).code, 'VERSION_CONFLICT');
+    const reload = button(staleEditor, '최신 도면 다시 불러오기');
+    assert.equal(await button(staleEditor, '이동 구조 저장').isDisabled(), true);
+    await reload.click();
+    const dialog = other.getByRole('alertdialog');
+    await button(dialog, '취소').click();
+    assert.equal(await staleMap.locator('.fm-door').count(), 2);
+    await reload.click();
+    await button(dialog, '다시 불러오기').click();
+    await other.getByText('이동 구조 등록', { exact: true }).click();
+    await staleEditor.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    await verifyRoute(staleMap, false);
+    assert.equal(await staleMap.locator('.fm-door').count(), 3);
+    assert.deepEqual(await readExhibition(), published);
+    console.log('PASS branch corridor: saved detour, stable V2 choices, stale 409 and latest preview recovery');
+  } finally {
+    await Promise.all([visitor.close(), other.close()]);
+  }
+}
+
 async function mapVariants(browser) {
-  const admin = await openAdmin(browser);
+  const adminContext = await browser.newContext(pageOptions);
   const setup = variant => fixtureCommand([
     'from pathlib import Path',
     'exec(Path("frontend/tests/fixtures/mapVariants.py").read_text(encoding="utf-8"))',
   ], { ARTI_BROWSER_MAP_VARIANT: variant });
   try {
+    const admin = await openAdmin(browser, adminContext);
     for (const variant of ['native', 'pillar', 'two-rooms']) {
       setup(variant);
       await admin.goto('/admin/map?exhibition=' + exhibitionId);
@@ -1479,8 +1576,10 @@ async function mapVariants(browser) {
     await reviewBentCorridor(browser, admin);
     setup('multi-turn');
     await reviewMultiTurnCorridor(browser, admin);
+    setup('branch');
+    await reviewBranchConflict(browser, admin);
   } finally {
-    try { setup('restore'); } finally { await admin.close(); }
+    try { setup('restore'); } finally { await adminContext.close(); }
   }
 }
 
