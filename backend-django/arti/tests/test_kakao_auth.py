@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import re
 from datetime import timedelta
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
@@ -8,6 +9,7 @@ from uuid import uuid4
 import jwt
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth.hashers import make_password
+from django.core import mail
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.utils import timezone
@@ -16,6 +18,7 @@ from rest_framework.test import APIClient
 from arti import kakao
 from arti.kakao_auth import COMPLETE_PATH, COOKIE_PATH, FLOW_COOKIE
 from arti.models import Account, Exhibition, KakaoIdentity, KakaoOAuthFlow, Session, Visit
+from arti.password_reset import deliver_pending
 
 CLIENT_ID = 'test-kakao-app'
 CALLBACK = 'https://arti.example.test/api/auth/kakao/callback'
@@ -149,6 +152,44 @@ class KakaoAuthTests(TestCase):
         self.assertEqual([record['id'] for record in records.data], [visit.pk])
         self.assertEqual(self.submit_finish(self.client, login).status_code, 400)
         self.assertFalse(KakaoOAuthFlow.objects.exists())
+
+    @override_settings(ARTI_ENV='test', ARTI_PASSWORD_RESET_ORIGIN='http://127.0.0.1:5277',
+                       ARTI_PASSWORD_RESET_FROM='reset@example.test',
+                       EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_email_recovery_keeps_kakao_login_and_the_same_receipt(self):
+        today = timezone.localdate()
+        exhibition = Exhibition.objects.create(title='Synthetic recovery', start_date=today, end_date=today)
+        visit = Visit.objects.create(user=self.account, visit_id=uuid4(), exhibition=exhibition,
+                                     canonical_payload={'tastes': self.account.tastes, 'viewedArtworkIds': [], 'dwell': {}})
+        original_token = self.login(self.client, self.account)
+        link = self.start(self.client, 'link', password=PASSWORD)
+        with self.provider(link):
+            self.callback(self.client, link, code='one-time-code')
+        self.finish(self.client, link, 'linked')
+
+        recovery = APIClient()
+        mail.get_connection()
+        mail.outbox.clear()
+        reset = '/api/auth/password-reset'
+        self.assertEqual(recovery.post(reset + '/request', {'email': self.account.email}, format='json').status_code, 204)
+        self.assertEqual(deliver_pending(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+        token = re.search(r'/password/reset#token=([a-f0-9.]+)', mail.outbox[0].body).group(1)
+        payload = {'token': token, 'password': 'Synthetic-new-42!'}
+        self.assertEqual(recovery.post(reset + '/confirm', payload, format='json').status_code, 204)
+        self.assertEqual(recovery.post(reset + '/confirm', payload, format='json').status_code, 400)
+        self.assertEqual(self.client.get('/api/auth/me').status_code, 401)
+
+        login = self.start(recovery, 'login')
+        with self.provider(login):
+            self.callback(recovery, login, code='one-time-code')
+        result = self.finish(recovery, login, 'logged_in')
+        self.assertEqual(result['user']['id'], self.account.pk)
+        self.assertNotEqual(result['token'], original_token)
+        recovery.credentials(HTTP_AUTHORIZATION='Bearer ' + result['token'])
+        records = recovery.get(f'/api/users/{self.account.pk}/visits')
+        self.assertEqual(records.status_code, 200)
+        self.assertEqual([record['id'] for record in records.data], [visit.pk])
 
     def test_matching_email_never_links_or_creates_accounts(self):
         params = self.start(self.client, 'login', returnTo='/%2fevil.example')
