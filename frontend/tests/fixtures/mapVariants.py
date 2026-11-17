@@ -17,6 +17,15 @@ if variant == 'restore':
     exhibition.navigation_layout = None
     exhibition.save(update_fields=['floor_plan', 'navigation_layout'])
     call_command('load_test_fixture')
+elif variant == 'preview':
+    exhibition.floor_plan = None
+    exhibition.navigation_layout = None
+    exhibition.entrance_x, exhibition.entrance_y = 42, 20
+    exhibition.save(update_fields=['floor_plan', 'navigation_layout', 'entrance_x', 'entrance_y'])
+    works.update(position_x=None, position_y=None, tag_status='none', tags=['warm'])
+    positions = [(58, 20), (24, 45), (70, 54), (18, 55), (23, 58), (30, 65), (80, 42)]
+    for index, (x, y) in enumerate(positions, start=1):
+        works.filter(pk=f'fixture-art{index:02}').update(position_x=x, position_y=y)
 else:
     rooms = [{'id': 'room-1', 'name': '첫 전시실', 'rect': {'x': 4, 'y': 4, 'w': 92, 'h': 92}}]
     entrance_y = 50

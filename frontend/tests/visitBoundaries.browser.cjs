@@ -971,6 +971,115 @@ async function checkWalkableSvg(map, variant) {
   }
 }
 
+async function navigationPreview(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const durations = ['30m', '60m', 'relaxed'];
+    const recommendAll = () => Promise.all(durations.map(duration => visitor.request.post('/api/recommendations', {
+      data: { exhibitionId, duration, tastes: ['warm'],
+        tasteProfile: { version: 2, source: 'manual', selectedTags: ['warm'] } },
+    }).then(response => body(response))));
+    const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const original = await readExhibition();
+    const baseline = await recommendAll();
+    assert.equal(original.navigationLayout, null);
+    assert.deepEqual(baseline.map(items => items.length), [3, 5, 7]);
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await button(visitor, '2번 작품 감상하기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const openVisitorMap = async () => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      const map = visitor.locator('.floor-map');
+      await map.locator('.fm-marker.current').waitFor();
+      return map;
+    };
+    let visitorMap = await openVisitorMap();
+    assert.equal(await visitorMap.locator('.fm-route, .fm-wall').count(), 0);
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const drawing = editor.locator('.floor-map');
+    const preview = editor.getByRole('group', { name: '경로 미리보기' });
+    const from = preview.getByLabel('출발', { exact: true });
+    const to = preview.getByLabel('도착', { exact: true });
+    const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+    const pick = async ([x, y]) => {
+      const box = await drawing.boundingBox();
+      await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+    };
+    const rectangles = async (kind, pairs) => {
+      await category.selectOption(kind);
+      for (const [first, second] of pairs) {
+        await pick(first);
+        await pick(second);
+      }
+    };
+    const writes = [];
+    admin.on('request', request => {
+      if (request.method() === 'PUT' && new URL(request.url()).pathname.endsWith('/navigation')) writes.push(request);
+    });
+    await to.selectOption('fixture-art02');
+    await preview.getByText('관람 가능 공간을 먼저 등록해 주세요.').waitFor();
+    await rectangles('walkable', [[[4, 4], [47, 73]], [[53, 4], [96, 73]]]);
+    await rectangles('walls', [
+      [[46, 4], [54, 76]], [[4, 72], [36, 76]], [[44, 72], [47, 76]],
+      [[53, 72], [56, 76]], [[64, 72], [96, 76]],
+    ]);
+    await rectangles('pillars', [[[30, 28], [36, 36]]]);
+    await rectangles('corridors', [[[4, 75], [96, 97]]]);
+    await category.selectOption('waypoints');
+    for (const point of [[40, 45], [40, 70], [40, 78], [40, 86], [60, 86], [60, 78], [60, 70]]) await pick(point);
+    await checkWalkableSvg(drawing, 'pillar');
+    await to.selectOption('fixture-art01');
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+    await rectangles('doors', [[[37, 70], [43, 79]], [[57, 70], [63, 79]]]);
+    await checkWalkableSvg(drawing, 'two-rooms');
+    await from.selectOption('fixture-art05');
+    await checkWalkableSvg(drawing, 'two-rooms');
+    await category.selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+    await rectangles('doors', [[[57, 70], [63, 79]]]);
+    await checkWalkableSvg(drawing, 'two-rooms');
+
+    assert.equal(writes.length, 0);
+    assert.deepEqual(await readExhibition(), original);
+    assert.deepEqual(await recommendAll(), baseline);
+    await visitor.reload();
+    visitorMap = await openVisitorMap();
+    assert.equal(await visitorMap.locator('.fm-route, .fm-wall').count(), 0);
+
+    await button(editor, '이동 구조 저장').click();
+    await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    assert.equal(writes.length, 1);
+    const saved = await readExhibition();
+    assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
+    assert.equal(saved.navigationLayout.pillars.length, 1);
+    assert.equal(saved.navigationLayout.doors.length, 2);
+    const byArtwork = items => Object.fromEntries(items.map(({ artworkId, order, ...details }) => [artworkId, details]));
+    const updated = await recommendAll();
+    assert.deepEqual(updated.map(items => items.length), [3, 5, 7]);
+    for (const [index, items] of updated.entries()) {
+      assert.deepEqual(byArtwork(items), byArtwork(baseline[index]));
+      assert.deepEqual(items.map(item => item.order), items.map((_, order) => order + 1));
+      assert.notDeepEqual(items.map(item => item.artworkId), baseline[index].map(item => item.artworkId));
+    }
+    await visitor.reload();
+    visitorMap = await openVisitorMap();
+    await checkWalkableSvg(visitorMap, 'two-rooms');
+    await admin.reload();
+    await admin.locator('.floor-map .fm-wall').first().waitFor();
+    console.log('PASS navigation preview: pillar, doors and corridor, disconnected draft, unchanged public map before save, V2 3/5/7 reorder only after save');
+  } finally {
+    await visitor.close();
+  }
+}
+
 async function mapVariants(browser) {
   const admin = await openAdmin(browser);
   const setup = variant => fixtureCommand([
@@ -1098,6 +1207,8 @@ async function mapVariants(browser) {
       }
       console.log('PASS map variant:', variant, 'native geometry, visitor routes and fallback checked');
     }
+    setup('preview');
+    await navigationPreview(browser, admin);
   } finally {
     try { setup('restore'); } finally { await admin.close(); }
   }

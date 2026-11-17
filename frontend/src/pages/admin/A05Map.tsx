@@ -165,7 +165,7 @@ export default function A05Map() {
             <details onToggle={event => setEditingNavigation(event.currentTarget.open)}>
               <summary>이동 구조 등록</summary>
               {editingNavigation && <NavigationEditor key={`${ex.id}:${ex.floorPlanRevision}`}
-                exhibition={ex} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
+                exhibition={ex} artworks={artworks} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
             </details>
           )}
 
