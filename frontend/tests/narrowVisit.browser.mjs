@@ -60,8 +60,9 @@ async function verify(browser, width) {
     await page.goto(fixturePath + '/taste');
     const portrait = button(`${longTitle} 크게 보기`);
     await portrait.waitFor();
-    await portrait.locator('img').evaluate(image => image.decode());
-    assert.deepEqual(await portrait.locator('img').evaluate(image => [image.naturalWidth, image.naturalHeight, getComputedStyle(image).objectFit]), [160, 320, 'contain']);
+    const portraitImage = page.locator('.duel-card').filter({ has: portrait }).locator('img');
+    await portraitImage.evaluate(image => image.decode());
+    assert.deepEqual(await portraitImage.evaluate(image => [image.naturalWidth, image.naturalHeight, getComputedStyle(image).objectFit]), [160, 320, 'contain']);
     assert.deepEqual(await page.locator('.duel-card').evaluateAll(cards => cards.map(card => {
       const bounds = card.getBoundingClientRect();
       return bounds.top >= 0 && bounds.bottom <= innerHeight;
@@ -72,9 +73,14 @@ async function verify(browser, width) {
     await page.getByText('작가·연도', { exact: true }).click();
     await page.locator('.duel-metadata').getByText(longTitle, { exact: true }).waitFor();
     await page.getByText('작가·연도', { exact: true }).click();
+    const viewer = page.getByRole('dialog');
+    await portrait.click();
+    await viewer.waitFor();
+    await page.keyboard.press('Escape');
+    await viewer.waitFor({ state: 'hidden' });
+    assert.equal(await page.getByText('1/5', { exact: true }).isVisible(), true);
     await portrait.focus();
     await page.keyboard.press('Enter');
-    const viewer = page.getByRole('dialog');
     await viewer.waitFor();
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), '전체 화면 닫기');
@@ -82,12 +88,15 @@ async function verify(browser, width) {
     await viewer.waitFor({ state: 'hidden' });
     assert.equal(await portrait.evaluate(element => document.activeElement === element), true);
 
-    for (let pair = 1; pair <= 5; pair++) {
+    const imageRect = await portraitImage.boundingBox();
+    await page.mouse.click(imageRect.x + imageRect.width / 2, imageRect.y + imageRect.height / 2);
+    for (let pair = 2; pair <= 5; pair++) {
       await page.getByText(`${pair}/5`, { exact: true }).waitFor();
-      await page.locator('.duel-card .duel-select[aria-label]').first().click();
+      assert.equal(await viewer.count(), 0, 'Selecting a card must not open the artwork viewer');
+      await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
     }
-    await button('취향 미리 확인').click();
     await button('이 취향으로 계속').click();
+    await page.waitForURL('**/time');
     await page.getByRole('radio', { name: /30분/ }).click();
     const [recommendation] = await Promise.all([
       page.waitForResponse(response => response.url().endsWith('/api/recommendations')),
@@ -112,8 +121,16 @@ async function verify(browser, width) {
     await firstArtwork.waitFor();
     await checkWidth(page, `${width}px U-10`);
     await checkText(firstArtwork, `${width}px U-10 artwork title`, '.m-body');
-    await button('좋아요').click();
-    await button('색감이 좋아요').click();
+    const like = button('좋아요');
+    await like.click();
+    const reasons = page.getByRole('group', { name: '좋아요 이유' });
+    await reasons.getByRole('button', { name: '닫기', exact: true }).click();
+    await reasons.waitFor({ state: 'hidden' });
+    assert.equal(await like.getAttribute('aria-pressed'), 'true');
+    await page.reload();
+    await like.waitFor();
+    assert.equal(await like.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.getByText('고른 이유', { exact: true }).count(), 0);
     const guideTitle = page.getByRole('heading', { name: '다음 작품 안내', exact: true });
     const mapRequest = `**/api/exhibitions/${exhibition.id}`;
     let releaseMap;
@@ -181,6 +198,7 @@ async function verify(browser, width) {
     await receipt.waitFor();
     const rows = receipt.locator('.receipt-works li span:first-child');
     assert.deepEqual(await rows.allTextContents(), artworkTitles.map((artTitle, index) => `${index + 1}. ${artTitle}`));
+    assert.equal(await receipt.locator('.receipt-works li').first().locator('span').last().textContent(), '👍');
     await checkWidth(page, `${width}px U-12`);
     await checkText(rows.first(), `${width}px U-12 receipt title`, '.receipt-works');
     const durationRow = receipt.locator('.receipt-rows div').filter({ has: page.getByText('관람 시간', { exact: true }) });
@@ -197,7 +215,7 @@ async function verify(browser, width) {
     assert.ok(pngSize.every((side, index) => Math.abs(side - (size[index] + 40) * 3) <= 2));
     assert.equal(guestSaves, 0);
     assert.deepEqual(errors, []);
-    console.log(`${width}px comparison/focus → V2 map/back/forward/reload → receipt and PNG ${pngSize.join(' × ')}`);
+    console.log(`${width}px card/zoom → one-step V2 → like without reason after reload → map, receipt and PNG ${pngSize.join(' × ')}`);
   } catch (error) {
     const detail = `${width}px at ${page.url()}: ${error.message}`;
     layoutFailures.push(detail);

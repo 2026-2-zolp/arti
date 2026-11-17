@@ -112,7 +112,6 @@ async function receiptSession(browser, switchAccount) {
 
     await page.goto(exhibition + '/taste');
     await choosePairs(page);
-    await button(page, '취향 미리 확인').click();
     await button(page, '이번 관람만 적용').click();
     const recommended = (await recommend(page)).map(item => item.artworkId);
     assert.equal(new Set(recommended).size, 3);
@@ -122,6 +121,15 @@ async function receiptSession(browser, switchAccount) {
     await button(page, reason).click();
     await button(page, '다음 작품 안내').click();
     await button(page, '2번 작품 감상하기').click();
+    const dislike = button(page, '별로예요');
+    await dislike.click();
+    const optionalReason = page.getByRole('group', { name: '별로예요 이유' });
+    await optionalReason.getByRole('button', { name: '닫기', exact: true }).click();
+    await optionalReason.waitFor({ state: 'hidden' });
+    await page.reload();
+    await dislike.waitFor();
+    assert.equal(await dislike.getAttribute('aria-pressed'), 'true');
+    assert.equal(await optionalReason.count(), 0);
     await button(page, '다음 작품 안내').click();
     await button(page, '3번 작품 감상하기').click();
 
@@ -141,6 +149,8 @@ async function receiptSession(browser, switchAccount) {
     assert.equal(savedDraft.visitId, activeVisit.visitId);
     assert.deepEqual(savedDraft.viewedArtworkIds, recommended);
     assert.equal(savedDraft.reactionReasons[recommended[0]], reason);
+    assert.equal(savedDraft.reactions[recommended[1]], 'dislike');
+    assert.equal(savedDraft.reactionReasons[recommended[1]], '');
 
     await button(page, '로그인하고 복구하기').click();
     await login(page, next);
@@ -188,6 +198,8 @@ async function receiptSession(browser, switchAccount) {
       assert.deepEqual(saves, [savedDraft]);
       assert.equal(record.visitId, activeVisit.visitId);
       assert.deepEqual(record.viewedArtworkIds, recommended);
+      assert.deepEqual(record.reactions, savedDraft.reactions);
+      assert.deepEqual(record.reactionReasons, savedDraft.reactionReasons);
       assert.deepEqual(await list(), [record]);
       assert.equal(await pending(page, pendingKey), null);
       await receiptCards.first().waitFor();
@@ -198,13 +210,15 @@ async function receiptSession(browser, switchAccount) {
       assert.equal(await pending(page, pendingKey), null);
       await receiptCards.first().click();
       await page.waitForURL(new URL(`/receipt/${record.id}`, base).href);
-      await page.getByRole('article', { name: '아트 영수증' }).waitFor();
+      const receipt = page.getByRole('article', { name: '아트 영수증' });
+      await receipt.waitFor();
+      assert.equal(await receipt.locator('.receipt-works li').nth(1).locator('span').last().textContent(), '👎');
       assert.deepEqual(saves, [savedDraft]);
       assert.deepEqual(await adminList(original), [record]);
     }
     assert.deepEqual(errors, []);
     console.log(switchAccount ? 'PASS expired session → other member: 0 save requests' :
-      'PASS expired session → original member: original visit ID, one save and one receipt');
+      'PASS expired session → original member: same visit, one receipt and reaction without a reason');
   } finally {
     await page.close();
   }
@@ -228,7 +242,6 @@ function reviseSurvey(ids) {
 async function chooseNewSurveyProfile(page) {
   await button(page, '취향 다시 선택').click();
   await choosePairs(page);
-  await button(page, '취향 미리 확인').click();
   await button(page, '이 취향으로 계속').click();
 }
 
@@ -277,7 +290,7 @@ async function surveyAndMap(browser) {
     assert.notEqual(updated.poolVersion, initial.poolVersion);
     const [stale] = await Promise.all([
       page.waitForResponse(r => isResponse(r, '/api/taste-profiles/resolve', 'POST')),
-      button(page, '취향 미리 확인').click(),
+      button(page, '이 취향으로 계속').click(),
     ]);
     assert.equal(stale.request().postDataJSON().tasteProfile.poolVersion, initial.poolVersion);
     assert.equal(stale.status(), 409);
@@ -287,11 +300,11 @@ async function surveyAndMap(browser) {
     await choosePairs(page);
     const [preview] = await Promise.all([
       page.waitForResponse(r => isResponse(r, '/api/taste-profiles/resolve', 'POST')),
-      button(page, '취향 미리 확인').click(),
+      button(page, '이 취향으로 계속').click(),
     ]);
     assert.equal(preview.status(), 200);
     assert.equal(preview.request().postDataJSON().tasteProfile.poolVersion, updated.poolVersion);
-    await button(page, '이 취향으로 계속').click();
+    await page.waitForURL('**' + exhibition + '/time');
 
     const exPath = '/api/admin' + exhibition;
     const ex = await body(await page.request.get(exPath, { headers }));
@@ -460,7 +473,6 @@ async function completeShortageVisit(browser, fixture, duration, requested, sign
     }
     await page.goto(`/exhibitions/${id}/taste`);
     await choosePairs(page);
-    await button(page, '취향 미리 확인').click();
     await button(page, member ? '이번 관람만 적용' : '이 취향으로 계속').click();
     const recs = await recommend(page, duration);
     assert.deepEqual(recs.map(item => item.artworkId), expectedIds);
@@ -610,15 +622,6 @@ async function savedV2(browser) {
     await page.waitForURL(base.href);
     await page.goto(exhibition + '/taste');
     await choosePairs(page, 1, [0, 0, 0, 1, 1]);
-    const preview = await resolved('취향 미리 확인');
-    assert.equal(preview.tasteProfile.version, 2);
-    assert.equal(preview.tasteProfile.source, 'picks');
-    assert.equal(preview.tasteProfile.poolVersion, initial.poolVersion);
-    assert.equal(preview.tasteProfile.tieContextVersion, initial.tieContext.tieContextVersion);
-    assert.deepEqual(preview.tasteProfile.picks.map(pick => pick.artworkId), initial.pairs.map((pair, index) =>
-      index < 3 ? pair.leftId : pair.rightId));
-    assert.equal(preview.tasteProfile.counts.landscape, 3);
-    assert.equal(preview.tasteProfile.counts.warm, 3);
     const savePath = `/api/users/${member.user.id}/tastes`;
     let committedStatus;
     // Let Django commit the first PUT before dropping only its response to Chrome.
@@ -628,7 +631,15 @@ async function savedV2(browser) {
       if (committedStatus === 204) await route.abort('connectionreset');
       else await route.fulfill({ response });
     }, { times: 1 });
-    await button(page, '확인하고 계정에 저장').click();
+    const preview = await resolved('확인하고 계정에 저장');
+    assert.equal(preview.tasteProfile.version, 2);
+    assert.equal(preview.tasteProfile.source, 'picks');
+    assert.equal(preview.tasteProfile.poolVersion, initial.poolVersion);
+    assert.equal(preview.tasteProfile.tieContextVersion, initial.tieContext.tieContextVersion);
+    assert.deepEqual(preview.tasteProfile.picks.map(pick => pick.artworkId), initial.pairs.map((pair, index) =>
+      index < 3 ? pair.leftId : pair.rightId));
+    assert.equal(preview.tasteProfile.counts.landscape, 3);
+    assert.equal(preview.tasteProfile.counts.warm, 3);
     await page.getByRole('alert').getByText(/취향을 계정에 저장하지 못했어요/).waitFor();
     assert.equal(committedStatus, 204);
     const committed = tasteState(await account());
@@ -695,7 +706,6 @@ async function savedV2(browser) {
     const tags = page.getByLabel('수정할 취향 태그');
     await tags.getByRole('button', { pressed: false }).first().click();
     assert.equal(await tags.getByRole('button', { pressed: true }).count(), stored.tastes.length + 1);
-    await resolved('취향 미리 확인');
     const manual = await resolved('이 취향으로 계속');
     assert.equal(manual.tasteProfile.version, 2);
     assert.equal(manual.tasteProfile.source, 'manual');
@@ -734,7 +744,6 @@ async function savedV2(browser) {
       await writer.goto(exhibition + '/taste');
       assert.equal(await currentToken(writer), await currentToken(page));
       await choosePairs(writer, 1, [1, 1, 1, 1, 1]);
-      await button(writer, '취향 미리 확인').click();
       // The first tab has checked /api/auth/me when it reaches this request.
       await page.route(new URL(resolvePath, base).href, async route => {
         await resolveGate;
@@ -926,7 +935,6 @@ async function exhibitionOrderV2(browser) {
     await button(page, '내 취향으로 추천').click();
     await button(page, '비회원으로 계속').click();
     await choosePairs(page);
-    await button(page, '취향 미리 확인').click();
     await button(page, '이 취향으로 계속').click();
     assert.equal((await recommend(page)).length, 3);
     assert.equal((await visit(page)).visitMode, undefined);

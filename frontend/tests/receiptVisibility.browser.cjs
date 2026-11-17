@@ -62,7 +62,6 @@ async function verify(browser, closed) {
       await page.getByText(i + '/5', { exact: true }).waitFor();
       await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
     }
-    await button('취향 미리 확인').click();
     await button('이번 관람만 적용').click();
     await page.getByRole('radio', { name: /30분/ }).click();
     const [recommendation] = await Promise.all([

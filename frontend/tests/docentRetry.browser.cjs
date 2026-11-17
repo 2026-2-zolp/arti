@@ -73,7 +73,6 @@ async function journey(page, { useClock = false, enterDocent = true, checkViewer
     }
     await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
   }
-  await button('취향 미리 확인').click();
   await button('이 취향으로 계속').click();
   await page.getByRole('radio', { name: /30분/ }).click();
   const [recommendation] = await Promise.all([
@@ -159,6 +158,7 @@ async function inspectJourney(browser, status, code) {
     assert.equal(await chat.locator('.docent-attempt').textContent(), question);
     const retry = button('다시 시도');
     await retry.waitFor();
+    assert.equal(await error.getByRole('button', { name: '다시 시도', exact: true }).count(), 1);
     assert.equal(await input.inputValue(), draft);
     assert.equal(await chat.locator('.bubble.user').count(), 1);
     assert.equal(askRequests.length, 2);
@@ -170,7 +170,7 @@ async function inspectJourney(browser, status, code) {
         const shell = document.querySelector('[data-screen="U-11"]');
         const body = shell?.querySelector('main')?.getBoundingClientRect();
         const card = shell?.querySelector('.docent-error-card')?.getBoundingClientRect();
-        const controls = [...(shell?.querySelectorAll('.docent-chat-actions button, .chat-input input, .send-btn') ?? [])];
+        const controls = [...(shell?.querySelectorAll('.docent-error-card button, .chat-input input, .send-btn') ?? [])];
         return body && card && card.top >= body.top - 1 && card.bottom <= body.bottom + 1
           && controls.length === 3 && controls.every(control => {
             const rect = control.getBoundingClientRect();
@@ -198,7 +198,8 @@ async function inspectJourney(browser, status, code) {
 
     const newDraft = '다음에 물어볼 새 질문';
     if (status === 504) await input.fill(newDraft);
-    const recovered = await respondTo(() => (status === 504 ? button('이전 질문 다시 시도') : retry).click());
+    const retryInCard = error.getByRole('button', { name: status === 504 ? '이전 질문 다시 시도' : '다시 시도', exact: true });
+    const recovered = await respondTo(() => retryInCard.click());
     assert.equal(recovered.status(), 200);
     assert.equal(new URL(recovered.url()).pathname, `/api/artworks/${recommendations[0]}/ask`);
     const payload = failed.request().postDataJSON();
