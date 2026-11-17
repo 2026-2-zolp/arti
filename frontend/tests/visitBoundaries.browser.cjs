@@ -948,7 +948,7 @@ async function openAdmin(browser, context) {
 }
 
 async function checkWalkableSvg(map, variant) {
-  await map.locator('polyline.fm-route.active').waitFor();
+  await map.locator('polyline.fm-route.active').waitFor({ state: 'attached' });
   const geometry = await map.evaluate(svg => {
     const walls = [...svg.querySelectorAll('rect.fm-wall')].map(rect => rect.getBBox());
     const lines = [...svg.querySelectorAll('.fm-route')];
@@ -959,16 +959,19 @@ async function checkWalkableSvg(map, variant) {
         .some(point => walls.some(rect => point.x >= rect.x && point.x <= rect.x + rect.width &&
           point.y >= rect.y && point.y <= rect.y + rect.height));
     });
-    const active = [...svg.querySelector('polyline.fm-route.active').points];
+    const activeLine = svg.querySelector('polyline.fm-route.active');
+    const active = [...activeLine.points];
     const corridor = svg.querySelector('rect.fm-corridor')?.getBBox();
     const corridorPoints = corridor ? active.filter(point => point.x >= corridor.x && point.x <= corridor.x + corridor.width &&
       point.y >= corridor.y && point.y <= corridor.y + corridor.height) : [];
     const middle = corridor ? corridor.x + corridor.width / 2 : 0;
-    return { blocked, activeCount: active.length,
+    return { blocked, activeCount: active.length, activeLength: activeLine.getTotalLength(),
+      activeStroke: getComputedStyle(activeLine).stroke,
       crossesCorridor: corridorPoints.some(point => point.x < middle) && corridorPoints.some(point => point.x > middle) };
   });
   assert.equal(geometry.blocked, false);
-  assert.ok(geometry.activeCount >= (variant === 'branch' ? 2 : 3));
+  assert.ok(geometry.activeLength > 0 && geometry.activeStroke !== 'none');
+  assert.ok(geometry.activeCount >= (['branch', 'three-rooms'].includes(variant) ? 2 : 3));
   if (variant === 'two-rooms') assert.ok(geometry.crossesCorridor, 'The path uses both sides of the displayed corridor');
 }
 
@@ -1446,6 +1449,75 @@ async function reviewBranchConflict(browser, admin) {
   }
 }
 
+async function reviewThreeRooms(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const published = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const original = await published();
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const visitorMap = async () => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      return visitor.locator('.floor-map');
+    };
+    const expectBlocked = async () => {
+      const map = await visitorMap();
+      await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    await expectBlocked();
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const map = editor.locator('.floor-map');
+    const departure = editor.getByLabel('출발', { exact: true });
+    const destination = editor.getByLabel('도착', { exact: true });
+    await departure.selectOption('fixture-art02');
+    await destination.selectOption('fixture-art04');
+    await checkWalkableSvg(map, 'three-rooms');
+    assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    assert.equal(await map.locator('.fm-room').count(), 3);
+
+    await departure.selectOption('fixture-art03');
+    await destination.selectOption('fixture-art01');
+    await editor.getByText(/이어지는 경로가 없어요/).waitFor();
+    const left = editor.getByRole('group', { name: 'A 주변 구조' });
+    const right = editor.getByRole('group', { name: 'B 주변 구조' });
+    await button(left, '문 3 표시').waitFor();
+    await button(right, '문 4 표시').click();
+    assert.equal(await button(right, '문 5 표시').count(), 0);
+    await map.locator('.fm-check-focus').waitFor();
+    assert.equal(Number(await map.locator('.fm-check-focus').getAttribute('cy')), 33);
+
+    await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+    const bounds = await map.boundingBox();
+    for (const [x, y] of [[72.5, 25], [76, 29]]) {
+      await map.click({ position: { x: bounds.width * x / 100, y: bounds.height * y / 100 } });
+    }
+    await checkWalkableSvg(map, 'three-rooms');
+    assert.equal(await map.locator('.fm-check-focus, .fm-marker.check').count(), 0);
+    assert.deepEqual(await published(), original);
+    await visitor.reload();
+    await expectBlocked();
+
+    const [response] = await Promise.all([
+      admin.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
+      button(editor, '이동 구조 저장').click(),
+    ]);
+    const saved = await body(response);
+    assert.deepEqual((await published()).navigationLayout, saved.navigationLayout);
+    await visitor.reload();
+    const savedMap = await visitorMap();
+    await checkWalkableSvg(savedMap, 'three-rooms');
+    assert.equal(await savedMap.locator('.fm-check-focus, .fm-marker.check').count(), 0);
+    console.log('PASS three rooms: works within one room, nearest competing doors, saved cross-room repair');
+  } finally {
+    await visitor.close();
+  }
+}
+
 async function mapVariants(browser) {
   const adminContext = await browser.newContext(pageOptions);
   const setup = variant => fixtureCommand([
@@ -1584,6 +1656,8 @@ async function mapVariants(browser) {
     await reviewMultiTurnCorridor(browser, admin);
     setup('branch');
     await reviewBranchConflict(browser, admin);
+    setup('three-rooms');
+    await reviewThreeRooms(browser, admin);
   } finally {
     try { setup('restore'); } finally { await adminContext.close(); }
   }
@@ -1600,26 +1674,41 @@ async function operationsLog(browser) {
     const workPath = '/api/admin/artworks/fixture-art03';
     const work = await body(await page.request.get(workPath, { headers }));
     const saved = await page.request.put(workPath, { headers, data: work });
-    assert.equal(saved.status(), 200);
+    const savedWork = await body(saved);
     const requestId = saved.headers()['x-request-id'];
     const question = '합성 작품의 모양을 알려 주세요.';
     const failed = await page.request.post('/api/artworks/fixture-art03/ask', { data: { question } });
     assert.equal(failed.status(), 503);
     const failedId = failed.headers()['x-request-id'];
-    const partialId = randomUUID();
-    fixtureCommand([
-      'from arti.models import OperationEvent',
-      'OperationEvent.objects.create(action="artwork_analysis", status=200, request_id=os.environ["ARTI_PARTIAL_ID"], analysis_failures=[{"field": "guide", "code": "PROVIDER_ERROR"}])',
-    ], { ARTI_PARTIAL_ID: partialId });
+    const before = await body(await page.request.get(opsPath, { headers }));
+    const partial = await page.request.post(workPath + '/analyze', { headers, data: {
+      version: savedWork.version, regenerateFields: ['summary', 'guide', 'tag', 'emotion'],
+    } });
+    const partialId = partial.headers()['x-request-id'];
+    const partialResult = await body(partial);
+    assert.equal(partialResult.summary.made, true);
+    assert.equal(partialResult.guide.code, 'PROVIDER_ERROR');
+    for (const kind of ['tag', 'emotion']) assert.equal(partialResult[kind].code, 'AI_UNAVAILABLE');
+
+    const fullFailure = await page.request.post(workPath + '/analyze', { headers, data: {
+      version: partialResult.artwork.version, regenerateFields: ['guide'],
+    } });
+    const fullFailureId = fullFailure.headers()['x-request-id'];
+    assert.equal((await body(fullFailure, 502)).code, 'PROVIDER_ERROR');
     const report = await body(await page.request.get(opsPath, { headers }));
     assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
     assert.equal(report.draftConfiguration, 'disabled');
     assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
-    assert.ok(report.today.analysisPartialFailures >= 1);
+    assert.equal(report.today.analysisRequests, before.today.analysisRequests + 2);
+    assert.equal(report.today.analysisPartialFailures, before.today.analysisPartialFailures + 1);
+    assert.equal(report.today.aiErrors, before.today.aiErrors + 1);
     const storedEvent = report.recent.find(event => event.requestId === failedId);
     assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
     assert.equal(storedEvent.status, 503);
     assert.equal(JSON.stringify(report).includes(question), false);
+    assert.equal(JSON.stringify(report).includes('합성 운영 로그 검수 세부 정보'), false);
+    assert.deepEqual(report.recent.find(event => event.requestId === partialId).analysisFailures,
+      [{ field: 'guide', code: 'PROVIDER_ERROR' }]);
 
     await page.reload();
     await page.getByText(/오늘 도슨트 요청/).waitFor();
@@ -1638,6 +1727,7 @@ async function operationsLog(browser) {
     const partialRow = page.getByRole('row').filter({ hasText: partialId });
     await partialRow.getByText('관람가이드 · PROVIDER_ERROR', { exact: true }).waitFor();
     await partialRow.getByText('200', { exact: true }).waitFor();
+    await page.getByRole('row').filter({ hasText: fullFailureId }).getByText('502', { exact: true }).waitFor();
     assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
     assert.equal(await page.getByText(failedId, { exact: true }).count(), 1);
     console.log('PASS admin operations: authorization, event IDs, dashboard counts, error filter and request-data exclusion');
@@ -1684,6 +1774,8 @@ async function passwordReset(browser) {
     await page.getByRole('heading', { name: '비밀번호를 바꿨어요' }).waitFor();
     assert.equal((await page.request.get('/api/auth/me', { headers: headersFor(member.token) })).status(), 401);
     assert.equal((await other.request.get('/api/auth/me', { headers: headersFor(secondMember.token) })).status(), 200);
+    const oldLogin = await page.request.post('/api/auth/login', { data: { email: member.user.email, password } });
+    assert.equal(oldLogin.status(), 401);
     await page.goto(resetPath);
     await fill();
     await button(page, '비밀번호 바꾸기').click();

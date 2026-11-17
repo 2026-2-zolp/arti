@@ -16,7 +16,7 @@ assert(process.env.ARTI_BOOTSTRAP_PASSWORD, 'Set ARTI_BOOTSTRAP_PASSWORD for vis
 function startApi() {
   const child = spawn(python, [
     'backend-django/manage.py', 'shell', '-c',
-    `from arti.tests.visit_browser_server import serve; serve(reset_mail=${suite === 'password-reset' ? 'True' : 'False'})`,
+    `from arti.tests.visit_browser_server import serve; serve(${JSON.stringify(suite)})`,
   ], { cwd: root, stdio: ['pipe', 'pipe', 'inherit'], windowsHide: true });
   const closed = new Promise(resolve => child.once('close', resolve));
   const stdout = createInterface({ input: child.stdout });

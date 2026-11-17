@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from threading import Thread
+from unittest.mock import patch
 from wsgiref.simple_server import make_server
 
 from django.conf import settings
@@ -23,13 +24,28 @@ def require_visit_fixture():
         raise RuntimeError('Use a dedicated loopback visit fixture DB with both model providers disabled.')
 
 
-def serve(reset_mail=False):
+def serve(suite=None):
     require_visit_fixture()
-    if reset_mail:
+    if suite == 'password-reset':
         with override_settings(ARTI_PASSWORD_RESET_ORIGIN='http://127.0.0.1:1',
                                ARTI_PASSWORD_RESET_FROM='reset@example.test',
                                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             return run_loopback(reset_mail_application())
+    if suite == 'operations':
+        from arti import providers
+        from arti.http import ContractError
+
+        original = providers.generate
+
+        def generate(kind, snapshot, **context):
+            if kind == 'summary':
+                return {'summary': '합성 운영 로그 요약', 'keywords': []}
+            if kind == 'guide':
+                raise ContractError(502, 'PROVIDER_ERROR', '합성 운영 로그 검수 세부 정보')
+            return original(kind, snapshot, **context)
+
+        with patch('arti.providers.generate', side_effect=generate):
+            return run_loopback(get_wsgi_application())
     run_loopback(get_wsgi_application())
 
 

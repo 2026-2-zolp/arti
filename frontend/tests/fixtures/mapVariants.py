@@ -63,6 +63,21 @@ elif variant == 'fit':
     works.filter(pk='fixture-art03').update(position_x=24, position_y=26)
     works.filter(pk='fixture-art01').update(position_x=78, position_y=26)
     works.filter(pk='fixture-art05').update(position_x=25, position_y=61)
+elif variant == 'three-rooms':
+    layout = json.loads(Path('frontend/tests/fixtures/navigationThreeRooms.json').read_text(encoding='utf-8'))
+    exhibition.rooms = [
+        {'id': f'room-{index}', 'name': f'전시실 {index}', 'rect': rect}
+        for index, rect in enumerate(layout['walkable'], start=1)
+    ]
+    exhibition.floor_plan = None
+    exhibition.navigation_layout = {**layout, 'floorPlanRevision': exhibition.floor_plan_revision}
+    exhibition.entrance_x, exhibition.entrance_y = 8, 27
+    exhibition.save(update_fields=['rooms', 'floor_plan', 'navigation_layout', 'entrance_x', 'entrance_y'])
+    works.update(position_x=None, position_y=None)
+    positions = [(3, 82, 27), (1, 12, 25), (1, 18, 27), (1, 25, 28),
+                 (2, 51, 26), (2, 57, 61), (3, 84, 55)]
+    for index, (room, x, y) in enumerate(positions, start=1):
+        works.filter(pk=f'fixture-art{index:02}').update(room_id=f'room-{room}', position_x=x, position_y=y)
 elif variant in ('bend', 'multi-turn', 'branch'):
     filename, origin, target = {
         'bend': ('navigationBend.json', (22, 27), (76, 76)),
