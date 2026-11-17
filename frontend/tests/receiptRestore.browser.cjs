@@ -85,8 +85,11 @@ async function createReceipt(browser, config, base) {
     step = 'source-save';
     const saved = await readResponse(page, '/api/visits', 'POST', () => button(page, '관람 마치기').click());
     const record = await body(saved, 201);
+    const request = saved.request();
+    const payload = request.postDataJSON();
     assert(record.id && record.visitId);
-    assert.equal(record.visitId, saved.request().postDataJSON().visitId);
+    assert.equal(record.visitId, payload.visitId);
+    assert(Number.isInteger(payload.requestGeneration));
     assert.equal(record.userId, user.id);
     assert.deepEqual(record.viewedArtworkIds, artworkIds);
     assert.equal(record.reactionReasons[artworkIds[0]], reason);
@@ -95,7 +98,11 @@ async function createReceipt(browser, config, base) {
     await verifyReceiptArtwork(page, titles);
     assert.equal(saves.length, 1);
     assert.equal(errors.length, 0);
-    return { id: record.id, visitId: record.visitId, userId: user.id, artworkIds, titles, created: saved.status(), saveRequests: saves.length };
+    return {
+      receipt: { id: record.id, visitId: record.visitId, userId: user.id, artworkIds, titles, created: saved.status(), saveRequests: saves.length },
+      saveRequest: request.postData(),
+      conflictingRequest: JSON.stringify({ ...payload, requestGeneration: payload.requestGeneration + 1 }),
+    };
   } finally {
     await page.close();
   }
