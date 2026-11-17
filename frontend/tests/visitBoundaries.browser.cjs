@@ -1454,6 +1454,10 @@ async function reviewThreeRooms(browser, admin) {
   try {
     const published = () => visitor.request.get('/api' + exhibition).then(response => body(response));
     const original = await published();
+    const member = await newMember(visitor);
+    await visitor.goto('/login');
+    await login(visitor, member);
+    await visitor.waitForURL(base.href);
     await visitor.goto(exhibition);
     await button(visitor, '전시 순서로 바로 보기').click();
     await button(visitor, '다음 작품 안내').click();
@@ -1464,8 +1468,11 @@ async function reviewThreeRooms(browser, admin) {
     const initialProgress = await progress();
     assert.deepEqual(initialProgress.viewed, ['fixture-art03']);
     const visitorMap = async () => {
-      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
-      return visitor.locator('.floor-map');
+      const details = visitor.locator('.route-details');
+      const summary = details.locator('summary');
+      await summary.waitFor();
+      if (!await details.evaluate(element => element.open)) await summary.click();
+      return details.locator('.floor-map');
     };
     const expectBlocked = async () => {
       const map = await visitorMap();
@@ -1535,7 +1542,24 @@ async function reviewThreeRooms(browser, admin) {
     await visitor.goBack();
     await expectBlocked();
     assert.deepEqual(await progress(), initialProgress);
-    console.log('PASS three rooms: door repair and closure, same visit after reload and browser back');
+
+    await button(visitor, '2번 작품 감상하기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await button(visitor, '3번 작품 감상하기').click();
+    const [posted] = await Promise.all([
+      visitor.waitForResponse(response => isResponse(response, '/api/visits', 'POST')),
+      button(visitor, '관람 마치기').click(),
+    ]);
+    const receipt = await body(posted, 201);
+    assert.equal(receipt.visitId, initialProgress.visitId);
+    assert.deepEqual(receipt.viewedArtworkIds, ['fixture-art03', 'fixture-art01', 'fixture-art05']);
+    await visitor.reload();
+    await visitor.getByText('관람기록에 저장되었어요', { exact: true }).waitFor();
+    const visits = await body(await visitor.request.get('/api/users/' + member.user.id + '/visits', {
+      headers: headersFor(await currentToken(visitor)),
+    }));
+    assert.deepEqual(visits.map(row => row.id), [receipt.id]);
+    console.log('PASS three rooms: door repair and closure, same visit after back, one member receipt');
   } finally {
     await visitor.close();
   }

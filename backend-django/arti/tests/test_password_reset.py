@@ -1,7 +1,11 @@
 import re
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import timedelta
-from threading import Barrier, Event
+from email import policy
+from email.parser import BytesParser
+from socketserver import StreamRequestHandler, TCPServer
+from threading import Barrier, Event, Thread
 from unittest.mock import patch
 
 from django.core import mail
@@ -14,6 +18,47 @@ from rest_framework.test import APIClient
 from arti.models import Account, KakaoIdentity, PasswordResetDelivery, Session, Visit
 from arti.password_reset import deliver_pending
 from arti.tests.test_integration import Helpers
+
+
+@contextmanager
+def loopback_smtp():
+    messages = []
+
+    class Handler(StreamRequestHandler):
+        def handle(self):
+            self.request.settimeout(4)
+            self.wfile.write(b'220 ari-test ESMTP\r\n')
+            while line := self.rfile.readline():
+                command = line.split(maxsplit=1)[0].upper()
+                if command == b'DATA':
+                    self.wfile.write(b'354 End with dot\r\n')
+                    data = []
+                    while part := self.rfile.readline():
+                        if part == b'.\r\n':
+                            break
+                        data.append(part)
+                    if not part:
+                        return
+                    messages.append(BytesParser(policy=policy.default).parsebytes(b''.join(data)))
+                    if len(messages) == 1:
+                        return  # Accept the data and close before sending the acknowledgement.
+                    self.wfile.write(b'250 Accepted\r\n')
+                elif command == b'QUIT':
+                    self.wfile.write(b'221 Bye\r\n')
+                    return
+                elif command in (b'EHLO', b'HELO', b'MAIL', b'RCPT', b'RSET'):
+                    self.wfile.write(b'250 OK\r\n')
+                else:
+                    self.wfile.write(b'500 Unexpected command\r\n')
+
+    with TCPServer(('127.0.0.1', 0), Handler) as server:
+        worker = Thread(target=server.serve_forever, kwargs={'poll_interval': .05}, daemon=True)
+        worker.start()
+        try:
+            yield server.server_address[1], messages
+        finally:
+            server.shutdown()
+            worker.join(timeout=2)
 
 
 @override_settings(ARTI_PASSWORD_RESET_ORIGIN='http://127.0.0.1:5277',
@@ -169,3 +214,22 @@ class PasswordResetTests(Helpers, TransactionTestCase):
         self.assertEqual(self.token(0), self.token(1))
         self.assertEqual(self.confirm(self.token(0)).status_code, 204)
         self.assertEqual(self.confirm(self.token(1)).json()['code'], 'PASSWORD_RESET_INVALID')
+
+    def test_smtp_transport_accepts_data_then_loses_acknowledgement(self):
+        self.assertEqual(self.request_link().status_code, 204)
+        with loopback_smtp() as (port, messages), self.settings(
+            EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend', EMAIL_HOST='127.0.0.1', EMAIL_PORT=port,
+            EMAIL_TIMEOUT=4, EMAIL_USE_TLS=False, EMAIL_USE_SSL=False, EMAIL_HOST_USER='', EMAIL_HOST_PASSWORD='',
+        ):
+            self.assertEqual(deliver_pending(), 0)
+            self.assertEqual(len(messages), 1)
+            self.assertFalse(PasswordResetDelivery.objects.get().delivered)
+            PasswordResetDelivery.objects.update(next_attempt_at=timezone.now())
+            self.assertEqual(deliver_pending(), 1)
+            self.assertEqual(len(messages), 2)
+        self.assertTrue(all(str(message['To']) == self.member.email for message in messages))
+        token_pattern = r'/password/reset#token=([a-f0-9.]+)'
+        first, second = (re.search(token_pattern, message.get_content()).group(1) for message in messages)
+        self.assertEqual(first, second)
+        self.assertEqual(self.confirm(first).status_code, 204)
+        self.assertEqual(self.confirm(second).json()['code'], 'PASSWORD_RESET_INVALID')
