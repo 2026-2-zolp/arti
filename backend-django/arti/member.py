@@ -43,6 +43,12 @@ def issue(a):
     return Response({'user': user_dto(a), 'token': token})
 
 
+def validate_member_password(password):
+    if (not isinstance(password, str) or not 8 <= len(password) <= 128
+            or not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password)):
+        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8~128자로 입력해 주세요.')
+
+
 @api_view(['POST'])
 @throttle_classes([LoginThrottle])
 def signup(request):
@@ -57,8 +63,7 @@ def signup(request):
         validate_email(email)
     except ValidationError:
         raise ContractError(400, 'VALIDATION_ERROR', '이메일 형식을 확인해 주세요.')
-    if not 8 <= len(password) <= 128 or not re.search(r'[A-Za-z]',password) or not re.search(r'[0-9]',password):
-        raise ContractError(400, 'VALIDATION_ERROR', '비밀번호는 영문·숫자 포함 8~128자로 입력해 주세요.')
+    validate_member_password(password)
     # 닉네임은 화면과 동일하게 선택 입력이며, 공백은 빈 값으로 보존합니다.
     if len(nickname.strip()) > 100:
         raise ContractError(400, 'VALIDATION_ERROR', '닉네임은 100자 이내로 입력해 주세요.')
@@ -87,7 +92,12 @@ def login(request):
     valid = check_password(password, a.password if a else DUMMY_PASSWORD)
     if not a or not valid:
         raise ContractError(401, 'AUTH_REQUIRED', '이메일 또는 비밀번호가 올바르지 않아요.')
-    return issue(a)
+    with transaction.atomic():
+        # 비밀번호 검증 중 재설정된 계정에는 이전 비밀번호로 세션을 발급하지 않습니다.
+        current = Account.objects.select_for_update().filter(pk=a.pk, password=a.password, status='active').first()
+        if not current:
+            raise ContractError(401, 'AUTH_REQUIRED', '이메일 또는 비밀번호가 올바르지 않아요.')
+        return issue(current)
 
 
 @api_view(['GET'])
@@ -159,8 +169,3 @@ def tastes(request, user_id):
         } if v2 else None
         account.save(update_fields=fields)
     return Response(status=204)
-
-
-@api_view(['POST'])
-def reset_disabled(request):
-    raise ContractError(501, 'FEATURE_DISABLED', '비밀번호 재설정은 아직 제공되지 않아요. 로그인 화면으로 돌아가 주세요.')

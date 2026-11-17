@@ -287,7 +287,7 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
   const setup = admin.request;
   const seed = await json(await setup.get(base + '/api/admin/exhibitions/fixture-ex01', { headers }));
   const exhibition = await json(await setup.post(base + '/api/admin/exhibitions', {
-    headers, data: { ...seed, title: '공개 수명 검증용 합성 전시' },
+    headers, data: { ...seed, title: `공개 수명 검증용 합성 전시 ${randomUUID()}` },
   }));
   const artwork = await json(await setup.post(base + '/api/admin/artworks', {
     headers, data: {

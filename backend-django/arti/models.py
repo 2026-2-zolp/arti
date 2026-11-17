@@ -195,6 +195,16 @@ class Session(models.Model):
     expires_at = models.DateTimeField()
 
 
+class PasswordResetDelivery(models.Model):
+    account = models.ForeignKey(Account, null=True, on_delete=models.CASCADE)
+    email_key = models.CharField(max_length=64, db_index=True)
+    token_id = models.UUIDField(unique=True)
+    expires_at = models.DateTimeField(db_index=True)
+    next_attempt_at = models.DateTimeField()
+    processed_at = models.DateTimeField(null=True, default=None)
+    delivered = models.BooleanField(default=False)
+
+
 class KakaoIdentity(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     client_id = models.CharField(max_length=128)
@@ -244,6 +254,7 @@ class OperationEvent(models.Model):
     action = models.CharField(max_length=32)
     status = models.PositiveSmallIntegerField()
     request_id = models.UUIDField()
+    analysis_failures = models.JSONField(default=list, blank=True)
 
 
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.

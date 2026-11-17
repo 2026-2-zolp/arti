@@ -92,6 +92,29 @@ export function suggestNavigationWaypoints(layout: NavigationLayoutInput, indoor
 
 type RouteCheck = { departure?: MapPoint; destination?: MapPoint; outside: boolean };
 
+const checkKinds = ['doors', 'corridors', 'waypoints'] as const;
+
+/** A·B 쪽에서 가까운 문·통로·연결점 한 곳씩을 편집기에서 확인합니다. */
+export function nearbyNavigationChecks(layout: NavigationLayoutInput, anchor: MapPoint, other: MapPoint, aspect: number) {
+  const distance = (point: MapPoint, target: MapPoint) => Math.hypot(point.x - target.x, (point.y - target.y) / aspect);
+  const closestPoint = (shape: MapPoint | MapRect): MapPoint => 'w' in shape ? {
+    x: Math.max(shape.x, Math.min(shape.x + shape.w, anchor.x)),
+    y: Math.max(shape.y, Math.min(shape.y + shape.h, anchor.y)),
+  } : shape;
+  return checkKinds.flatMap(kind => {
+    let best: { kind: typeof kind; index: number; point: MapPoint } | undefined;
+    let nearest = 12;
+    for (const [index, shape] of layout[kind].entries()) {
+      const point = closestPoint(shape);
+      const gap = distance(point, anchor);
+      if (gap >= nearest || gap > distance(point, other)) continue;
+      best = { kind, index, point };
+      nearest = gap;
+    }
+    return best ? [best] : [];
+  });
+}
+
 /** 경로가 없는 경우 출발 쪽과 도착 쪽에서 각각 닿을 수 있는 가장 가까운 두 점을 찾습니다. */
 export function navigationCheckLocations(layout: IndoorLayout, from: MapPoint, to: MapPoint): RouteCheck {
   const fromValid = canWalkSegment(layout, from, from);

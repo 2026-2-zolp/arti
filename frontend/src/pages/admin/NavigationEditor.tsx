@@ -4,7 +4,7 @@ import { useConfirm } from '../../components/Confirmation';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
 import { indoorLeg } from '../../lib/indoorRoute';
-import { fitNavigationDraft, navigationCheckLocations, navigationShapeLimit, suggestNavigationWaypoints } from '../../lib/navigationDraft';
+import { fitNavigationDraft, navigationCheckLocations, navigationShapeLimit, nearbyNavigationChecks, suggestNavigationWaypoints } from '../../lib/navigationDraft';
 import { twoRoomNavigationPreset } from '../../lib/navigationPresets';
 import type { Artwork, Exhibition, MapPoint, NavigationLayoutInput } from '../../types';
 
@@ -35,6 +35,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const [reference, setReference] = useState(true);
   const [departureId, setDepartureId] = useState('');
   const [destinationId, setDestinationId] = useState('');
+  const [selectedCheck, setSelectedCheck] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean; conflict?: boolean } | null>(null);
   const draftExhibition: Exhibition = {
@@ -54,6 +55,11 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const checks = indoor && destination && !preview && !fitting
     ? navigationCheckLocations(indoor, routeStart, destination.point)
     : null;
+  const nearby = indoor && checks?.departure && checks.destination && !checks.outside ? [
+    { side: 'A', items: nearbyNavigationChecks(layout, checks.departure, checks.destination, indoor.aspect) },
+    { side: 'B', items: nearbyNavigationChecks(layout, checks.destination, checks.departure, indoor.aspect) },
+  ] : [];
+  const checkedPoint = nearby.flatMap(({ side, items }) => items.filter(item => `${side}-${item.kind}-${item.index}` === selectedCheck))[0]?.point;
   const markers: MapMarker[] = [];
   if (destination) {
     if (departure) markers.push({ ...departure, state: 'plain' });
@@ -203,9 +209,20 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
           </div>
         </div>
         <p className="small" role="status">{previewStatus}{checks && ` ${checkHint}`}</p>
+        {nearby.map(({ side, items }) => (
+          <div className="a-inline" key={side} aria-label={`${side} 주변 구조`} role="group">
+            <span className="small">{side} 주변</span>
+            {items.length ? items.map(({ kind, index }) => {
+              const id = `${side}-${kind}-${index}`;
+              return <button key={id} type="button" className="a-btn sm" aria-pressed={selectedCheck === id}
+                onClick={() => setSelectedCheck(selectedCheck === id ? null : id)}>{categories[kind]} {index + 1} 표시</button>;
+            }) : <span className="small muted">가까이 등록된 구조가 없어요.</span>}
+          </div>
+        ))}
       </div>
       <FloorMap exhibition={draftExhibition} markers={markers} activeLeg={preview}
-        onMapClick={addPoint} forAdmin showReference={reference} showEntrance={!!destination && !departure} />
+        onMapClick={addPoint} forAdmin showReference={reference} showEntrance={!!destination && !departure}
+        checkFocus={checkedPoint} />
       <button className="a-btn primary" type="button" onClick={save} disabled={fitting || busy || corner !== null || !!message?.conflict}>이동 구조 저장</button>
       {message && <p role={message.error ? 'alert' : 'status'}>{message.text}</p>}
       {message?.conflict && <button type="button" className="a-btn" onClick={onConflict}>최신 도면 다시 불러오기</button>}

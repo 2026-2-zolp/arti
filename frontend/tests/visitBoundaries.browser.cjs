@@ -1420,6 +1420,12 @@ async function reviewBranchConflict(browser, admin) {
     await removeDoor(staleEditor);
     await removeDoor(staleEditor);
     await staleEditor.getByText(/이어지는 경로가 없어요/).waitFor();
+    const candidates = staleEditor.getByRole('group', { name: 'A 주변 구조' });
+    const candidate = candidates.getByRole('button', { name: /통로 \d+ 표시/ });
+    await candidate.click();
+    await staleMap.locator('.fm-check-focus').waitFor();
+    assert.equal(await candidate.getAttribute('aria-pressed'), 'true');
+    assert.equal(await visitor.locator('.fm-check-focus').count(), 0);
     assert.equal((await save(other, staleEditor, 409)).code, 'VERSION_CONFLICT');
     const reload = button(staleEditor, '최신 도면 다시 불러오기');
     assert.equal(await button(staleEditor, '이동 구조 저장').isDisabled(), true);
@@ -1600,10 +1606,16 @@ async function operationsLog(browser) {
     const failed = await page.request.post('/api/artworks/fixture-art03/ask', { data: { question } });
     assert.equal(failed.status(), 503);
     const failedId = failed.headers()['x-request-id'];
+    const partialId = randomUUID();
+    fixtureCommand([
+      'from arti.models import OperationEvent',
+      'OperationEvent.objects.create(action="artwork_analysis", status=200, request_id=os.environ["ARTI_PARTIAL_ID"], analysis_failures=[{"field": "guide", "code": "PROVIDER_ERROR"}])',
+    ], { ARTI_PARTIAL_ID: partialId });
     const report = await body(await page.request.get(opsPath, { headers }));
     assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
     assert.equal(report.draftConfiguration, 'disabled');
     assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
+    assert.ok(report.today.analysisPartialFailures >= 1);
     const storedEvent = report.recent.find(event => event.requestId === failedId);
     assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
     assert.equal(storedEvent.status, 503);
@@ -1623,6 +1635,9 @@ async function operationsLog(browser) {
     await page.getByText(failedId, { exact: true }).waitFor({ state: 'hidden' });
     await page.getByRole('checkbox', { name: '오류만 보기' }).check();
     await page.getByText(failedId, { exact: true }).waitFor();
+    const partialRow = page.getByRole('row').filter({ hasText: partialId });
+    await partialRow.getByText('관람가이드 · PROVIDER_ERROR', { exact: true }).waitFor();
+    await partialRow.getByText('200', { exact: true }).waitFor();
     assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
     assert.equal(await page.getByText(failedId, { exact: true }).count(), 1);
     console.log('PASS admin operations: authorization, event IDs, dashboard counts, error filter and request-data exclusion');
@@ -1641,16 +1656,63 @@ async function operationsLog(browser) {
   }
 }
 
+async function passwordReset(browser) {
+  const page = await openPage(browser);
+  const other = await openPage(browser);
+  try {
+    const member = await newMember(page);
+    const secondMember = await newMember(other);
+    await page.goto('/login');
+    await button(page, '로그인 도움').click();
+    await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
+    await button(page, '재설정 링크 요청').click();
+    await page.getByRole('status').filter({ hasText: '등록된 이메일이라면' }).waitFor();
+    const missing = await page.request.post('/api/auth/password-reset/request', { data: { email: 'unknown-reset@example.test' } });
+    assert.equal(missing.status(), 204);
+    const inbox = await body(await page.request.post('/api/__test__/reset-inbox'));
+    assert.equal(inbox.length, 1);
+    const resetPath = inbox[0];
+    const newPassword = 'Replacement-42!';
+    const fill = async () => {
+      await page.getByLabel('새 비밀번호', { exact: true }).fill(newPassword);
+      await page.getByLabel('새 비밀번호 확인', { exact: true }).fill(newPassword);
+    };
+    await page.goto(resetPath);
+    await page.waitForURL(url => url.pathname === '/password/reset' && !url.hash);
+    await fill();
+    await button(page, '비밀번호 바꾸기').click();
+    await page.getByRole('heading', { name: '비밀번호를 바꿨어요' }).waitFor();
+    assert.equal((await page.request.get('/api/auth/me', { headers: headersFor(member.token) })).status(), 401);
+    assert.equal((await other.request.get('/api/auth/me', { headers: headersFor(secondMember.token) })).status(), 200);
+    await page.goto(resetPath);
+    await fill();
+    await button(page, '비밀번호 바꾸기').click();
+    await page.getByRole('alert').filter({ hasText: '만료됐거나 이미 사용됐어요' }).waitFor();
+    await page.getByRole('link', { name: '로그인으로 돌아가기' }).click();
+    await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
+    await page.getByLabel('비밀번호', { exact: true }).fill(newPassword);
+    const [loginResult] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/auth/login', 'POST')),
+      button(page, '로그인').click(),
+    ]);
+    assert.equal((await body(loginResult)).user.id, member.user.id);
+    console.log('PASS password reset: synthetic mailbox, same member, one use and session revocation');
+  } finally {
+    await Promise.all([page.close(), other.close()]);
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations', 'password-reset'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
     if (suite === 'saved-v2') return await savedV2(browser);
     if (suite === 'map-variants') return await mapVariants(browser);
     if (suite === 'operations') return await operationsLog(browser);
+    if (suite === 'password-reset') return await passwordReset(browser);
     if (suite === 'exhibition-order') {
       await exhibitionOrder(browser, false);
       await exhibitionOrder(browser, true);

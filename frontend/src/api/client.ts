@@ -54,8 +54,9 @@ export type OperationsReport = {
   configuration: { docent: 'configured' | 'disabled' | 'invalid'; analysis: 'configured' | 'disabled' | 'invalid' };
   draftConfiguration: 'configured' | 'disabled' | 'invalid';
   draftImageTasks: ('summary' | 'guide')[];
-  today: { docentRequests: number; analysisRequests: number; aiErrors: number };
-  recent: { action: string; requestId: string; occurredAt: string; status: number }[];
+  today: { docentRequests: number; analysisRequests: number; aiErrors: number; analysisPartialFailures: number };
+  recent: { action: string; requestId: string; occurredAt: string; status: number;
+    analysisFailures?: { field: 'summary' | 'guide' | 'tag' | 'emotion'; code: string }[] }[];
 };
 
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
@@ -216,8 +217,10 @@ export const api = {
     request<void>('PUT', `/users/${enc(userId)}/tastes`, { tastes, tasteProfile, exhibitionId, ...mutation }),
 
   /** 현재 Django에서는 FEATURE_DISABLED. 실제 메일 발송 성공으로 표시하지 않는다. */
+  passwordResetStatus: () => request<{ enabled: boolean }>('GET', '/auth/password-reset/status'),
+
   requestPasswordReset: (email: string) =>
-    request<{ demoToken: string | null }>('POST', '/auth/password-reset/request', { email }),
+    request<void>('POST', '/auth/password-reset/request', { email }),
 
   resetPassword: (token: string, password: string) =>
     request<void>('POST', '/auth/password-reset/confirm', { token, password }),

@@ -1,13 +1,16 @@
 """A fresh loopback Django process for each visit Chrome run."""
 
+import json
 import re
 import sys
 from threading import Thread
 from wsgiref.simple_server import make_server
 
 from django.conf import settings
+from django.core import mail
 from django.core.servers.basehttp import ThreadedWSGIServer, WSGIRequestHandler
 from django.core.wsgi import get_wsgi_application
+from django.test import override_settings
 
 
 def require_visit_fixture():
@@ -20,9 +23,36 @@ def require_visit_fixture():
         raise RuntimeError('Use a dedicated loopback visit fixture DB with both model providers disabled.')
 
 
-def serve():
+def serve(reset_mail=False):
     require_visit_fixture()
-    with make_server('127.0.0.1', 0, get_wsgi_application(),
+    if reset_mail:
+        with override_settings(ARTI_PASSWORD_RESET_ORIGIN='http://127.0.0.1:1',
+                               ARTI_PASSWORD_RESET_FROM='reset@example.test',
+                               EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+            return run_loopback(reset_mail_application())
+    run_loopback(get_wsgi_application())
+
+
+def reset_mail_application():
+    from arti.password_reset import deliver_pending
+
+    application = get_wsgi_application()
+    mail.get_connection()
+
+    def inbox(environ, start_response):
+        if (environ.get('PATH_INFO') != '/api/__test__/reset-inbox'
+                or environ.get('REQUEST_METHOD') != 'POST'):
+            return application(environ, start_response)
+        deliver_pending()
+        links = [re.search(r'/password/reset#token=[a-f0-9.]+', message.body).group(0) for message in mail.outbox]
+        start_response('200 OK', [('Content-Type', 'application/json'), ('Cache-Control', 'no-store')])
+        return [json.dumps(links).encode()]
+
+    return inbox
+
+
+def run_loopback(application):
+    with make_server('127.0.0.1', 0, application,
                      ThreadedWSGIServer, WSGIRequestHandler) as server:
         worker = Thread(target=server.serve_forever, daemon=True)
         worker.start()

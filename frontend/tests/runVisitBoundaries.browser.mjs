@@ -10,13 +10,13 @@ import { preview } from 'vite';
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const python = process.env.ARTI_TEST_PYTHON || 'python';
 const suite = process.argv[2] || 'all';
-assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations'].includes(suite), 'Unknown Chrome suite');
+assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations', 'password-reset'].includes(suite), 'Unknown Chrome suite');
 assert(process.env.ARTI_BOOTSTRAP_PASSWORD, 'Set ARTI_BOOTSTRAP_PASSWORD for visit-boundaries-admin.');
 
 function startApi() {
   const child = spawn(python, [
     'backend-django/manage.py', 'shell', '-c',
-    'from arti.tests.visit_browser_server import serve; serve()',
+    `from arti.tests.visit_browser_server import serve; serve(reset_mail=${suite === 'password-reset' ? 'True' : 'False'})`,
   ], { cwd: root, stdio: ['pipe', 'pipe', 'inherit'], windowsHide: true });
   const closed = new Promise(resolve => child.once('close', resolve));
   const stdout = createInterface({ input: child.stdout });

@@ -1,7 +1,7 @@
 # API URL을 Django 처리 함수에 연결합니다.
 from django.urls import path, re_path
 from arti import views
-from arti import member, editing, records, docent, kakao_auth, operations
+from arti import member, editing, records, docent, kakao_auth, operations, password_reset
 
 handler404 = 'arti.http.not_found'
 urlpatterns = [
@@ -34,7 +34,9 @@ urlpatterns = [
     path('api/auth/kakao/start', kakao_auth.start),
     path('api/auth/kakao/callback', kakao_auth.callback),
     path('api/auth/kakao/finish', kakao_auth.finish),
-    path('api/auth/password-reset/request', member.reset_disabled),path('api/auth/password-reset/confirm', member.reset_disabled),
+    path('api/auth/password-reset/status', password_reset.status),
+    path('api/auth/password-reset/request', password_reset.request_reset),
+    path('api/auth/password-reset/confirm', password_reset.confirm_reset),
     path('api/users/<str:user_id>/tastes', member.tastes),path('api/users/<str:user_id>/visits', records.visits),
     path('api/visits', records.save_visit),path('api/visits/interpret', records.interpret),path('api/visits/<str:visit_id>', records.visits),
     path('api/artworks/<str:artwork_id>/ask', docent.ask),path('api/artworks/<str:artwork_id>/explanation', docent.explanation),

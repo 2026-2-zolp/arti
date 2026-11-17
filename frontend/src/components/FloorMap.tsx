@@ -41,6 +41,7 @@ interface Props {
   showCompletedNumbers?: boolean;
   forAdmin?: boolean;
   showReference?: boolean;
+  checkFocus?: MapPoint;
 }
 
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
@@ -61,6 +62,7 @@ export function FloorMap({
   showCompletedNumbers = false,
   forAdmin = false,
   showReference = false,
+  checkFocus,
 }: Props) {
   const plan = exhibition.floorPlan;
   const indoor = exhibitionIndoorLayout(exhibition);
@@ -171,6 +173,8 @@ export function FloorMap({
 
       {routePath && <path className="fm-route" d={routePath} />}
       {activeLeg && <polyline className="fm-route active" points={toPts(activeLeg)} />}
+      {forAdmin && checkFocus && <circle className="fm-check-focus" aria-hidden="true"
+        cx={checkFocus.x} cy={sy(checkFocus.y)} r={2.8} />}
 
       {markers.map((m) => {
         const point = drag?.kind === 'marker' && drag.id === m.id ? drag.point : m.point;

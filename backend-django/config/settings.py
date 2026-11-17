@@ -50,6 +50,15 @@ PASSWORD_HASHERS = ['django.contrib.auth.hashers.PBKDF2PasswordHasher']
 ARTI_KAKAO_CLIENT_ID = os.environ.get('ARTI_KAKAO_CLIENT_ID', '').strip()
 ARTI_KAKAO_CLIENT_SECRET = os.environ.get('ARTI_KAKAO_CLIENT_SECRET', '').strip()
 ARTI_KAKAO_CALLBACK_URL = os.environ.get('ARTI_KAKAO_CALLBACK_URL', '').strip()
+ARTI_PASSWORD_RESET_ORIGIN = os.environ.get('ARTI_PASSWORD_RESET_ORIGIN', '').strip().rstrip('/')
+ARTI_PASSWORD_RESET_FROM = os.environ.get('ARTI_PASSWORD_RESET_FROM', '').strip()
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
+EMAIL_TIMEOUT = 10
 
 # Server only. No key/model is required to boot or run normal CI.
 ARTI_LLM_PROVIDER = os.environ.get('ARTI_LLM_PROVIDER', 'disabled')

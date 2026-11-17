@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { canWalkSegment, indoorLeg, indoorSequence, type IndoorLayout } from '../src/lib/indoorRoute';
 import { indoorMapFixture } from '../src/lib/indoorMapFixture';
-import { fitNavigationDraft, navigationCheckLocations, suggestNavigationWaypoints } from '../src/lib/navigationDraft';
+import { fitNavigationDraft, navigationCheckLocations, nearbyNavigationChecks, suggestNavigationWaypoints } from '../src/lib/navigationDraft';
 import { twoRoomNavigationPreset } from '../src/lib/navigationPresets';
 import type { NavigationLayoutInput } from '../src/types';
 
@@ -135,4 +135,16 @@ test('three corridor turns can connect through short seams and the final door', 
   const [horizontal, vertical, ...remaining] = layout.corridors;
   const touchingCorner = { ...layout, corridors: [horizontal, { ...vertical, x: 51, w: 4.8 }, ...remaining] };
   assert.equal(indoorLeg(withSuggestions(touchingCorner), from, to), null);
+});
+test('editor highlights the nearest door, corridor and waypoint separately on each side', () => {
+  const layout = {
+    walkable: [], walls: [], pillars: [],
+    doors: [{ x: 8, y: 20, w: 4, h: 5 }, { x: 19, y: 21, w: 2, h: 4 }, { x: 39, y: 21, w: 3, h: 4 }],
+    corridors: [{ x: 10, y: 22, w: 12, h: 4 }, { x: 38, y: 22, w: 14, h: 4 }],
+    waypoints: [{ x: 21, y: 24 }, { x: 41, y: 24 }, { x: 65, y: 80 }],
+  };
+  const near = (from: { x: number; y: number }, to: { x: number; y: number }) =>
+    nearbyNavigationChecks(layout, from, to, 1).map(({ kind, index }) => [kind, index]);
+  assert.deepEqual(near({ x: 23, y: 24 }, { x: 38, y: 24 }), [['doors', 1], ['corridors', 0], ['waypoints', 0]]);
+  assert.deepEqual(near({ x: 38, y: 24 }, { x: 23, y: 24 }), [['doors', 2], ['corridors', 1], ['waypoints', 1]]);
 });

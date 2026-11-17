@@ -21,7 +21,7 @@
  *  /receipt/:visitId           U-12 아트 영수증(조회 모드)
  *  /mypage                     U-13 마이페이지(관람기록·좋아요 목록)  마이페이지 URL (미로그인 → U-03 → 복귀)
  *  /password/forgot            U-14 비밀번호 찾기
- *  /password/reset?token=      U-15 새 비밀번호 설정      비밀번호 재설정 링크 URL
+ *  /password/reset#token=      U-15 새 비밀번호 설정      비밀번호 재설정 링크 URL
  *  /admin/login                A-01 관리자 로그인
  *  /admin                      A-02 관리자 대시보드
  *  /admin/exhibitions          A-03 전시 관리

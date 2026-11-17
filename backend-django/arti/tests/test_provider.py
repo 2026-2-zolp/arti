@@ -3,6 +3,9 @@
 import io
 import json
 import threading
+from hashlib import sha256
+from pathlib import Path
+from time import monotonic
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.error import HTTPError, URLError
@@ -35,7 +38,7 @@ def endpoint(status=200, body=None, *, respond=None, server_class=HTTPServer):
                 if code == 302: self.send_header('Location', '/credential-must-not-arrive')
                 self.end_headers()
                 self.wfile.write(response)
-            except (BrokenPipeError, ConnectionResetError):
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass  # A timed-out test request may close its socket before the response.
     server = server_class(('127.0.0.1', 0), Handler)
     thread = threading.Thread(target=server.serve_forever, kwargs={'poll_interval': .05}, daemon=True); thread.start()
@@ -127,6 +130,48 @@ class ProviderTests(SimpleTestCase):
                         self.failure(503, lambda: providers.generate('guide', {}))
             self.assertEqual(len(draft_calls), 1)
         self.assertEqual(main_calls, [])
+
+    def test_kanana_draft_uses_pinned_text_and_rejects_invalid_guide_and_slow_response(self):
+        folder = Path(__file__).resolve().parents[3] / 'docs/review/docent-2026-11-15/luna-fixtures'
+        cases = json.loads((folder / 'manifest.json').read_text(encoding='utf-8'))['cases']
+        sources = []
+        for case in cases:
+            raw = (folder / case['source']['file']).read_bytes()
+            self.assertEqual(sha256(raw).hexdigest(), case['source']['sha256'])
+            sources.append(raw.decode('utf-8'))
+
+        summary = {'summary': '합성 요약', 'keywords': []}
+        guide = {'intro': '합성 안내', 'questions': ['어떤 형태가 보여요?'], 'hints': ['가운데를 보세요.']}
+        outputs = [summary, guide] * len(sources) + [{**guide, 'hints': []}]
+
+        def respond(attempt):
+            if attempt == len(outputs) + 1:
+                return 429, b'{}'
+            if attempt == len(outputs) + 2:
+                threading.Event().wait(0.8)
+            result = outputs[attempt - 1] if attempt <= len(outputs) else guide
+            return 200, json.dumps({'choices': [{'finish_reason': 'stop',
+                'message': {'content': json.dumps(result)}}]}).encode()
+
+        with endpoint() as docent_calls:
+            docent_url = settings.OPENAI_BASE_URL
+            with endpoint(respond=respond) as draft_calls:
+                with override_settings(OPENAI_BASE_URL=docent_url, ARTI_DRAFT_PROVIDER='openai_compatible',
+                                       ARTI_DRAFT_BASE_URL=settings.OPENAI_BASE_URL, ARTI_DRAFT_API_KEY='synthetic-draft-key',
+                                       ARTI_DRAFT_MODEL='kakaocorp/kanana-2-3b-instruct'):
+                    for source in sources:
+                        snapshot = {'description': source, 'imageFile': 'private-synthetic.png'}
+                        self.assertEqual(providers.generate('summary', snapshot), summary)
+                        self.assertEqual(providers.generate('guide', snapshot), guide)
+                    self.failure(502, lambda: providers.generate('guide', snapshot))
+                    self.failure(429, lambda: providers.generate('guide', snapshot))
+                    self.failure(504, lambda: providers.generate('guide', snapshot, deadline=monotonic() + 0.4))
+                    self.assertEqual(providers.generate('guide', snapshot), guide)
+        self.assertEqual(docent_calls, [])
+        self.assertEqual(len(draft_calls), 10)
+        self.assertEqual([json.loads(call['body']['messages'][1]['content'])['artworkData'] for call in draft_calls[:6]],
+                         [{'description': source} for source in sources for _ in range(2)])
+        self.assertTrue(all(call['body']['model'] == 'kakaocorp/kanana-2-3b-instruct' for call in draft_calls))
 
     def test_disabled_missing_key_and_model_do_not_send(self):
         with patch('arti.llm.build_opener') as send:
