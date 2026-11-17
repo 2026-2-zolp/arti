@@ -214,19 +214,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       back={backToArtwork}
       footer={
         <>
-          {(retry || artworkIssue || newOutput) && (
+          {newOutput && !artworkIssue && (
             <div className="docent-chat-actions">
-              {newOutput && !artworkIssue && (
-                <button type="button" className="link-btn" onClick={showLatest}>최신 대화 보기</button>
-              )}
-              {retry && (
-                <button type="button" className="link-btn" disabled={!canAsk}
-                  aria-describedby="docent-send-error"
-                  onClick={() => ask(retry.question, retry.fromInput)}>
-                  {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
-                </button>
-              )}
-              {artworkIssue && <button type="button" className="link-btn" onClick={backToArtwork}>작품으로 돌아가기</button>}
+              <button type="button" className="link-btn" onClick={showLatest}>최신 대화 보기</button>
             </div>
           )}
           <form className="chat-input" onSubmit={onSubmit}>
@@ -291,8 +281,15 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         {attemptedQuestion && <div className="bubble docent-attempt">{attemptedQuestion}</div>}
         {pending && <p className="bubble ai muted small" role="status">답변을 작성하고 있어요…</p>}
         {sendError && (
-          <div className="bubble docent-error-card">
-            <p id="docent-send-error" className="error-text" role="alert">{sendError}</p>
+          <div className="bubble docent-error-card" role="alert">
+            <p id="docent-send-error" className="error-text">{sendError}</p>
+            {retry && (
+              <button type="button" className="link-btn" disabled={!canAsk}
+                onClick={() => ask(retry.question, retry.fromInput)}>
+                {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
+              </button>
+            )}
+            {artworkIssue && <button type="button" className="link-btn" onClick={backToArtwork}>작품으로 돌아가기</button>}
           </div>
         )}
       </div>

@@ -258,21 +258,20 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             {works.map((work, index) => (
               <Fragment key={work.id}>
                 {index > 0 && <p className="duel-separator" aria-hidden="true">또는</p>}
-                {/* 그림 영역을 누르면 크게 보기(확대·축소), 제목 옆 [선택]을 눌러야 이 작품을 고른다. */}
+                {/* 확대 아이콘만 크게 보기. 그림과 제목은 이 작품을 고르고 다음 쌍으로 넘긴다. */}
                 <div className={`duel-card${picked === work.id ? ' picked' : ''}`}>
-                  <button type="button" className="duel-image" aria-label={`${work.title} 크게 보기`} onClick={() => setViewing(work.id)}>
+                  <div className="duel-visual">
                     <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt="" ratio={5 / 2} fit="contain" />
-                    <span className="duel-zoom-hint" aria-hidden="true"><Icon name="expand" size={16} /></span>
-                  </button>
-                  <div className="duel-title-row">
-                    {/* 오른쪽 [선택]과 같은 크기의 보이지 않는 칸 — 어느 화면 폭에서도 제목이 카드 정가운데에 오게 한다. */}
-                    <span className="duel-select duel-select-spacer" aria-hidden="true">선택</span>
-                    <span className="duel-title">{work.title}</span>
-                    <button type="button" className="duel-select" aria-label={`${work.title} 선택`} aria-pressed={picked === work.id}
-                      disabled={blocked || picked !== null} onClick={() => choose(work.id)}>
-                      선택
+                    <button type="button" className="duel-zoom" aria-label={`${work.title} 크게 보기`} onClick={() => setViewing(work.id)}>
+                      <Icon name="expand" size={16} />
                     </button>
                   </div>
+                  <button type="button" className="duel-card-hit" aria-label={`${work.title} 선택`} aria-pressed={picked === work.id}
+                    disabled={blocked || picked !== null} onClick={() => choose(work.id)} />
+                  <button type="button" className="duel-title" aria-pressed={picked === work.id}
+                    disabled={blocked || picked !== null} onClick={() => choose(work.id)}>
+                    {work.title}
+                  </button>
                   {picked === work.id && <span className="duel-picked" aria-hidden="true">선택함</span>}
                 </div>
               </Fragment>
