@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory)] [string]$ApiImage,
     [string]$WebImage = 'nginx:1.28-alpine',
     [ValidateRange(1024, 65535)] [int]$HttpsPort = 5623,
+    [string]$WebDist,
     [switch]$UseImageContents
 )
 
@@ -12,11 +13,13 @@ $repo = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $apiMount = @()
 $webMount = @()
 if (-not $UseImageContents) {
+    if (-not $WebDist) { $WebDist = Join-Path $repo 'frontend/dist' }
+    if (-not (Test-Path -LiteralPath (Join-Path $WebDist 'index.html') -PathType Leaf)) {
+        throw 'Build the Django-target frontend before running this regression.'
+    }
+    $WebDist = (Resolve-Path -LiteralPath $WebDist).Path
     $apiMount = @('-v', "$repo/backend-django`:/app:ro")
-    $webMount = @('-v', "$repo/frontend/dist`:/usr/share/nginx/html:ro")
-}
-if (-not $UseImageContents -and -not (Test-Path -LiteralPath "$repo/frontend/dist/index.html")) {
-    throw 'Build the Django-target frontend before running this regression.'
+    $webMount = @('-v', "$WebDist`:/usr/share/nginx/html:ro")
 }
 $prefix = 'arti-kakao-https-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
 $scratch = Join-Path $repo "data/private/$prefix"

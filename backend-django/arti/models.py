@@ -30,6 +30,8 @@ class Exhibition(models.Model):
     entrance_x = models.FloatField(default=0)
     entrance_y = models.FloatField(default=0)
     floor_plan = models.JSONField(null=True, default=None, blank=True)
+    floor_plan_revision = models.PositiveIntegerField(default=1)
+    navigation_layout = models.JSONField(null=True, default=None, blank=True)
     version = models.PositiveIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -193,6 +195,16 @@ class Session(models.Model):
     expires_at = models.DateTimeField()
 
 
+class PasswordResetDelivery(models.Model):
+    account = models.ForeignKey(Account, null=True, on_delete=models.CASCADE)
+    email_key = models.CharField(max_length=64, db_index=True)
+    token_id = models.UUIDField(unique=True)
+    expires_at = models.DateTimeField(db_index=True)
+    next_attempt_at = models.DateTimeField()
+    processed_at = models.DateTimeField(null=True, default=None)
+    delivered = models.BooleanField(default=False)
+
+
 class KakaoIdentity(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     client_id = models.CharField(max_length=128)
@@ -235,6 +247,33 @@ class Visit(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['user', 'visit_id'], name='visit_actor_id_unique')]
+
+
+class OperationEvent(models.Model):
+    occurred_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    action = models.CharField(max_length=32)
+    status = models.PositiveSmallIntegerField()
+    request_id = models.UUIDField()
+    analysis_failures = models.JSONField(default=list, blank=True)
+    text_model_attempts = models.PositiveIntegerField(default=0)
+    text_model_measured = models.PositiveIntegerField(default=0)
+    text_model_input_tokens = models.PositiveBigIntegerField(default=0)
+    text_model_output_tokens = models.PositiveBigIntegerField(default=0)
+
+
+class OperationTextModelUsage(models.Model):
+    event = models.ForeignKey(OperationEvent, on_delete=models.CASCADE)
+    task = models.CharField(max_length=16)
+    model = models.CharField(max_length=200, blank=True)
+    attempts = models.PositiveIntegerField()
+    measured = models.PositiveIntegerField()
+    input_tokens = models.PositiveBigIntegerField()
+    output_tokens = models.PositiveBigIntegerField()
+    cache_measured = models.PositiveIntegerField()
+    cached_input_tokens = models.PositiveBigIntegerField()
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['event', 'task', 'model'], name='operation_text_usage_group_unique')]
 
 
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.

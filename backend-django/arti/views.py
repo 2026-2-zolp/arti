@@ -25,6 +25,7 @@ from .taste_evidence import issue_visit_evidence, uuid_value
 from .taste_resolution import POLICY, invalid, locked_actor, pool_context, require_enabled, resolve, taste_transaction
 
 DUMMY_PASSWORD = make_password('not-an-account-password')
+FIXTURE_EXHIBITION_ORDER = ('fixture-art03', 'fixture-art01', 'fixture-art05')
 
 
 def public_exhibition(ex_id):
@@ -64,7 +65,15 @@ def ready(request):
 @api_view(['GET'])
 def exhibitions(request, ex_id=None):
     if ex_id:
-        return with_etag(exhibition_dto(public_exhibition(ex_id)))
+        ex = public_exhibition(ex_id)
+        data = exhibition_dto(ex)
+        if (settings.ARTI_EXHIBITION_ORDER_DEMO_ENABLED and settings.ARTI_ENV in ('development', 'test')
+                and settings.ALLOW_TEST_FIXTURES and ex.id == 'fixture-ex01'):
+            eligible = set(public_works(ex.id).filter(id__in=FIXTURE_EXHIBITION_ORDER).values_list('id', flat=True))
+            data['exhibitionOrder'] = [artwork_id for artwork_id in FIXTURE_EXHIBITION_ORDER if artwork_id in eligible]
+            # 공개 작품이 바뀌면 전시 자체의 버전이 그대로여도 순서는 달라집니다.
+            return Response(data, headers={'Cache-Control': 'no-store'})
+        return with_etag(data)
     return Response([exhibition_dto(e) for e in Exhibition.objects.filter(status='running')])
 
 

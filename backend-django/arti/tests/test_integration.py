@@ -52,6 +52,21 @@ class IntegrationTests(Helpers,TestCase):
 
     def test_postgres_is_real(self):self.assertEqual(connection.vendor,'postgresql')
 
+    def test_exhibition_order_receipt_uses_actual_duration_without_a_selected_duration(self):
+        payload = {**self.payload(), 'visitMode': 'exhibition_order', 'tastes': [], 'selectedDuration': None}
+        for changes in ({'selectedDuration': '30m'}, {'tastes': ['warm']}, {'visitMode': 'unrecognized'}):
+            self.assertEqual(self.a.post('/api/visits', {**payload, **changes}, format='json').status_code, 400)
+        saved = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(saved.status_code, 201, saved.content)
+        self.assertEqual(saved.json()['durationMin'], 10)
+        self.assertIsNone(saved.json()['selectedDuration'])
+        self.assertEqual(saved.json()['visitMode'], 'exhibition_order')
+        replay = self.a.post('/api/visits', payload, format='json')
+        self.assertEqual(replay.status_code, 200)
+        self.assertEqual(replay.json()['id'], saved.json()['id'])
+        self.assertEqual(self.a.post('/api/visits', {**payload, 'visitMode': None}, format='json').status_code, 409)
+        self.assertEqual(Visit.objects.count(), 1)
+
     def test_blank_source_or_description_can_be_saved_but_not_approved(self):
         works_url = '/api/admin/artworks'
         fixture = Artwork.objects.get(pk='fixture-art01')

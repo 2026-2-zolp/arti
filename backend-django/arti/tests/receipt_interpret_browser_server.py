@@ -18,7 +18,8 @@ def serve(port=5552):
     if (settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES
             or database['NAME'] != 'arti_receipt_interpret'
             or database['HOST'] not in ('127.0.0.1', 'localhost')
-            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_MODEL_SERVICE_URL):
+            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_DRAFT_PROVIDER != 'default'
+            or settings.ARTI_MODEL_SERVICE_URL):
         raise RuntimeError('Use the isolated loopback receipt test database with models disabled.')
 
     application = get_wsgi_application()

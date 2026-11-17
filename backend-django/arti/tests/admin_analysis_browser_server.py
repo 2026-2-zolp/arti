@@ -25,7 +25,8 @@ def serve():
     if (settings.ARTI_ENV != 'test' or not settings.ALLOW_TEST_FIXTURES
             or not re.fullmatch(r'arti_admin_analysis(?:_[a-z0-9_]{1,40})?', database['NAME'])
             or database['HOST'] not in ('127.0.0.1', 'localhost')
-            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_MODEL_SERVICE_URL):
+            or settings.ARTI_LLM_PROVIDER != 'disabled' or settings.ARTI_DRAFT_PROVIDER != 'default'
+            or settings.ARTI_MODEL_SERVICE_URL):
         raise RuntimeError('Use a dedicated loopback admin analysis fixture DB with model providers disabled.')
 
     release = Event()
@@ -33,7 +34,9 @@ def serve():
     regeneration = Event()
     release_regeneration = Event()
     text_requests = []
+    draft_image_requests = []
     original_generate = providers.generate
+    original_generate_text = providers.generate_text
 
     def generate(kind, snapshot, **context):
         if not regeneration.is_set() or kind not in ('summary', 'guide', 'answer'):
@@ -41,13 +44,23 @@ def serve():
         if kind == 'answer':
             return {'answer': (context['entry'].get('text') or context['entry']['question'])}
         text_requests.append(kind)
+        draft_image_requests.append(bool(context.get('draft_image_file')))
         if kind == 'summary':
             if not release_regeneration.wait(20):
                 raise ContractError(504, 'AI_TIMEOUT', '시험 재생성 대기 시간 초과')
             return {'summary': '새 요약 제안입니다.', 'keywords': ['합성']}
         if text_requests.count('guide') == 1:
             return {'intro': '힌트 개수 검수용 도입', 'questions': ['관찰 질문'], 'hints': []}
+        if text_requests.count('guide') == 2:
+            return {'intro': '노란 원을 살펴봐요.', 'questions': ['오른쪽 위의 노란 원이 보이나요?'],
+                    'hints': ['오른쪽 위를 봐요.']}
         return {'intro': '새 가이드 도입입니다.', 'questions': ['새 관찰 질문입니다.'], 'hints': ['새 힌트입니다.']}
+
+    def generate_text(kind, snapshot, **context):
+        if kind != 'guide_review':
+            return original_generate_text(kind, snapshot, **context)
+        candidate = context['guide_candidate']
+        return {'supported': candidate['questions'] == ['새 관찰 질문입니다.']}
 
     def respond(attempt):
         request = requests[attempt - 1]
@@ -88,14 +101,20 @@ def serve():
                     release_regeneration.set()
                 else:
                     release.set()
-            body = json.dumps({'inputs': inputs, 'textRequests': text_requests}).encode()
+            body = json.dumps({'inputs': inputs, 'textRequests': text_requests,
+                               'draftImageRequests': draft_image_requests}).encode()
             mark('200 OK', [('Content-Type', 'application/json'), ('Content-Length', str(len(body)))])
             return [body]
         return application(environ, mark)
 
     with endpoint(respond=respond) as requests, override_settings(
         ARTI_MODEL_SERVICE_URL=settings.OPENAI_BASE_URL.removesuffix('/v1'),
-    ), patch('arti.providers.generate', side_effect=generate), make_server(
+        ARTI_DRAFT_GUIDE_REVIEW=True,
+    ), patch('arti.providers.generate', side_effect=generate), patch(
+        'arti.providers.generate_text', side_effect=generate_text,
+    ), patch(
+        'arti.llm.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide'),
+    ), patch('arti.operations.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide')), make_server(
         '127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         worker = Thread(target=server.serve_forever, daemon=True)

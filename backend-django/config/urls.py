@@ -1,7 +1,7 @@
 # API URL을 Django 처리 함수에 연결합니다.
 from django.urls import path, re_path
 from arti import views
-from arti import member, editing, records, docent, kakao_auth
+from arti import member, editing, records, docent, kakao_auth, operations, password_reset
 
 handler404 = 'arti.http.not_found'
 urlpatterns = [
@@ -14,12 +14,14 @@ urlpatterns = [
     path('api/artworks', views.artworks), path('api/artworks/<str:artwork_id>', views.artworks),
     path('api/recommendations', views.recommendations),
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
+    path('api/admin/operations', operations.dashboard),
     path('api/admin/exhibitions', editing.exhibitions),
     path('api/admin/exhibitions/<str:ex_id>', editing.exhibitions),
     path('api/admin/artworks', editing.artworks),
     path('api/admin/artworks/<str:artwork_id>', editing.artworks),
     path('api/admin/artworks/<str:artwork_id>/image', editing.image),
     path('api/admin/exhibitions/<str:ex_id>/floor-plan', editing.image),
+    path('api/admin/exhibitions/<str:ex_id>/navigation', editing.navigation_layout),
     path('api/admin/artworks/<str:artwork_id>/analyze', editing.analyze),
     path('api/admin/artworks/<str:artwork_id>/discard-ai', editing.discard_ai),
     path('api/admin/exhibitions/<str:ex_id>/confirm-ai', editing.confirm_ai),
@@ -32,7 +34,9 @@ urlpatterns = [
     path('api/auth/kakao/start', kakao_auth.start),
     path('api/auth/kakao/callback', kakao_auth.callback),
     path('api/auth/kakao/finish', kakao_auth.finish),
-    path('api/auth/password-reset/request', member.reset_disabled),path('api/auth/password-reset/confirm', member.reset_disabled),
+    path('api/auth/password-reset/status', password_reset.status),
+    path('api/auth/password-reset/request', password_reset.request_reset),
+    path('api/auth/password-reset/confirm', password_reset.confirm_reset),
     path('api/users/<str:user_id>/tastes', member.tastes),path('api/users/<str:user_id>/visits', records.visits),
     path('api/visits', records.save_visit),path('api/visits/interpret', records.interpret),path('api/visits/<str:visit_id>', records.visits),
     path('api/artworks/<str:artwork_id>/ask', docent.ask),path('api/artworks/<str:artwork_id>/explanation', docent.explanation),

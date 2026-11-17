@@ -51,10 +51,14 @@ async function verifyRegeneration(page, request, base, gate, headers) {
   const adminPath = `/api/admin/artworks/${id}`;
   const publicPath = `/api/artworks/${id}`;
   const baseline = await json(await request.get(base + adminPath, { headers }));
+  const withSource = await json(await request.put(base + adminPath, {
+    headers, data: { ...baseline, description: '파란 바탕 왼쪽 위에 작은 노란 원이 있다.' },
+  }));
   const confirmed = await json(await request.put(base + adminPath, {
     headers,
     data: {
-      ...baseline, summaryStatus: 'confirmed', summary: '공개 중인 쉬운 요약입니다.',
+      ...withSource, reviewStatus: 'approved', summaryStatus: 'confirmed', summary: '공개 중인 쉬운 요약입니다.',
+      tagStatus: baseline.tagStatus,
       guideStatus: 'confirmed', guideIntro: '공개 중인 안내입니다.',
       guidedLooking: ['공개 중인 관찰 질문입니다.'], guidedHints: ['공개 중인 힌트입니다.'],
     },
@@ -65,15 +69,38 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     ({ summary, guideIntro, guidedLooking, guidedHints, contentVersion, summaryRevision, guideRevision });
   const verifyOriginal = async () => assert.deepEqual(publicText(await readPublic()), publicText(original));
   await page.goto(`${base}/admin/artworks/${id}`);
+  const draftImage = page.getByRole('checkbox', { name: '요약·가이드 Luna 생성에 도판 사용' });
+  await draftImage.waitFor();
+  assert.equal(await draftImage.isChecked(), false);
   await page.getByText('관람자 미리보기', { exact: true }).click();
   const live = page.getByRole('region', { name: '현재 공개본' });
   const draft = page.getByRole('region', { name: '편집 중인 내용' });
+  const comparison = page.locator('details').filter({ has: live });
   const see = async (region, text) => region.getByText(text, { exact: true }).waitFor();
   const seeQuestion = async (region, text) => region.getByRole('listitem').filter({ hasText: text }).waitFor();
   await see(live, confirmed.summary);
   await see(live, confirmed.description);
   await see(live, '힌트 · ' + confirmed.guidedHints[0]);
+  await see(live, confirmed.source);
+  await see(live, `저장된 근거 버전 ${confirmed.sourceVersion}`);
+  await see(draft, `저장된 근거 버전 ${confirmed.sourceVersion}`);
+  await see(comparison, '공개본과 내용이 같아요.');
+  const source = page.getByLabel('출처', { exact: true });
+  const reference = page.getByLabel('참고자료 URL', { exact: true });
+  await source.fill('합성 출처 수정 초안');
+  await reference.fill('https://example.test/source-draft');
+  await see(comparison, '공개본과 다른 항목 · 출처 · 참고자료 URL');
+  await see(draft, '합성 출처 수정 초안');
+  await see(draft, 'https://example.test/source-draft');
+  await see(live, confirmed.source);
+  await source.fill('');
+  await page.getByRole('button', { name: '저장', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: '검수 완료로 저장하려면 출처 항목을 채워 주세요.' }).waitFor();
+  assert.equal((await readPublic()).source, confirmed.source);
+  await source.fill(confirmed.source);
+  await reference.fill(confirmed.referenceUrl);
   await summary(page).fill('아직 저장하지 않은 미리보기 요약입니다.');
+  await see(comparison, '공개본과 다른 항목 · 쉬운 요약');
   await see(draft, '아직 저장하지 않은 미리보기 요약입니다.');
   await see(live, confirmed.summary);
   await summary(page).fill(confirmed.summary);
@@ -98,23 +125,38 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     assert.deepEqual(saved.request().postDataJSON().regenerateFields, ['summary']);
     assert.equal((await json(saved)).artwork.summaryStatus, 'suggested');
     await see(draft, '새 요약 제안입니다.');
+    await see(comparison, '공개본과 다른 항목 · 쉬운 요약');
     await see(live, confirmed.summary);
     await verifyOriginal();
 
+    await draftImage.check();
     const beforeInvalid = await json(await request.get(base + adminPath, { headers }));
     const { result: guide } = await start('관람가이드 다시 생성');
     assert.equal((await json(await guide, 502)).code, 'PROVIDER_ERROR');
+    assert.equal((await guide).request().postDataJSON().useDraftImage, true);
     assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
+    await verifyOriginal();
+    await draftImage.uncheck();
+    const { result: unsupported } = await start('분석 다시 시도');
+    const blocked = await unsupported;
+    assert.equal((await json(blocked, 502)).code, 'GUIDE_UNSUPPORTED');
+    assert.equal(blocked.request().postDataJSON().useDraftImage, true);
+    await page.getByRole('alert').filter({ hasText: '가이드의 위치나 작가 의도를 작품 자료에서 확인하지 못했어요.' }).waitFor();
+    assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
+    await seeQuestion(live, confirmed.guidedLooking[0]);
     await verifyOriginal();
     const { result: retry } = await start('분석 다시 시도');
     const recovered = await retry;
     assert.deepEqual(recovered.request().postDataJSON().regenerateFields, ['guide']);
+    assert.equal(recovered.request().postDataJSON().useDraftImage, true);
     assert.equal((await json(recovered)).artwork.guideStatus, 'suggested');
     await seeQuestion(draft, '새 관찰 질문입니다.');
     await see(draft, '힌트 · 새 힌트입니다.');
+    await see(comparison, '공개본과 다른 항목 · 쉬운 요약 · 관람가이드');
     await seeQuestion(live, confirmed.guidedLooking[0]);
     await verifyOriginal();
-    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide']);
+    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide', 'guide']);
+    assert.deepEqual((await json(await request.get(gate))).draftImageRequests, [false, true, true, true]);
 
     const asked = await json(await request.post(base + publicPath + '/ask', {
       data: { question: '합성 질문', entryContext: { tab: 'guided', kind: 'guide', contentVersion: original.contentVersion, questionIndex: 0 } },
@@ -257,7 +299,7 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
   const setup = admin.request;
   const seed = await json(await setup.get(base + '/api/admin/exhibitions/fixture-ex01', { headers }));
   const exhibition = await json(await setup.post(base + '/api/admin/exhibitions', {
-    headers, data: { ...seed, title: '공개 수명 검증용 합성 전시' },
+    headers, data: { ...seed, title: `공개 수명 검증용 합성 전시 ${randomUUID()}` },
   }));
   const artwork = await json(await setup.post(base + '/api/admin/artworks', {
     headers, data: {

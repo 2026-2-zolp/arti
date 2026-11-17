@@ -281,8 +281,10 @@ export function ArtworkEdit() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!w.title.trim() || !w.artist.trim()) return setMsg({ type: 'err', text: '작품명과 작가는 필수입니다.' });
-    if (w.reviewStatus === 'approved' && (!w.source.trim() || !w.description.trim()))
-      return setMsg({ type: 'err', text: '검수 완료로 저장하려면 작품 해설과 출처가 있어야 해요.' });
+    if (w.reviewStatus === 'approved') {
+      const missing = [!w.description.trim() && '작품 해설', !w.source.trim() && '출처'].filter(Boolean);
+      if (missing.length) return setMsg({ type: 'err', text: `검수 완료로 저장하려면 ${missing.join('·')} 항목을 채워 주세요.` });
+    }
     let saved: Artwork;
     try {
       saved = await api.saveArtwork(w);
@@ -421,20 +423,13 @@ function ArtworkContentPreview({ work }: { work: Artwork }) {
   return (
     <details className="a-card pad ai-panel" onToggle={event => setOpen(event.currentTarget.open)}>
       <summary>관람자 미리보기</summary>
-      {open && (
-        <div className="ai-grid">
-          <PublishedArtworkPreview key={`${work.id}:${work.version}`} id={work.id} />
-          <section className="ai-box" aria-label="편집 중인 내용">
-            <h3>편집 중인 내용</h3>
-            <ArtworkTextPreview work={work} />
-          </section>
-        </div>
-      )}
+      {open && <ArtworkPreviewComparison key={`${work.id}:${work.version}`} work={work} />}
     </details>
   );
 }
 
-function PublishedArtworkPreview({ id }: { id: string }) {
+function ArtworkPreviewComparison({ work }: { work: Artwork }) {
+  const { id } = work;
   const { data, error, loading, reload } = useAsync(async () => {
     if (!id) return null;
     try {
@@ -444,16 +439,36 @@ function PublishedArtworkPreview({ id }: { id: string }) {
       throw err;
     }
   }, [id]);
+  const changed = data && [
+    work.source !== data.source && '출처',
+    work.referenceUrl !== data.referenceUrl && '참고자료 URL',
+    work.description !== data.description && '작품 해설',
+    work.summary !== data.summary && '쉬운 요약',
+    (work.guideIntro !== data.guideIntro ||
+      JSON.stringify(work.guidedLooking) !== JSON.stringify(data.guidedLooking) ||
+      JSON.stringify(work.guidedHints) !== JSON.stringify(data.guidedHints)) && '관람가이드',
+  ].filter(Boolean);
   return (
-    <section className="ai-box" aria-label="현재 공개본">
-      <h3>현재 공개본</h3>
-      {id && <button className="a-btn sm" type="button" onClick={reload} disabled={loading}>공개본 새로고침</button>}
-      {loading ? <p role="status">공개본을 불러오는 중이에요.</p> : error ? (
-        <p role="alert">공개본을 불러오지 못했어요.</p>
-      ) : data ? (
-        <ArtworkTextPreview work={data} />
-      ) : <p>현재 관람자에게 공개된 작품 내용이 없어요.</p>}
-    </section>
+    <>
+      {changed && <p className="small" role="status">{changed.length > 0
+        ? `공개본과 다른 항목 · ${changed.join(' · ')}`
+        : '공개본과 내용이 같아요.'}</p>}
+      <div className="ai-grid">
+        <section className="ai-box" aria-label="현재 공개본">
+          <h3>현재 공개본</h3>
+          {id && <button className="a-btn sm" type="button" onClick={reload} disabled={loading}>공개본 새로고침</button>}
+          {loading ? <p role="status">공개본을 불러오는 중이에요.</p> : error ? (
+            <p role="alert">공개본을 불러오지 못했어요.</p>
+          ) : data ? (
+            <ArtworkTextPreview work={data} />
+          ) : <p>현재 관람자에게 공개된 작품 내용이 없어요.</p>}
+        </section>
+        <section className="ai-box" aria-label="편집 중인 내용">
+          <h3>편집 중인 내용</h3>
+          <ArtworkTextPreview work={work} />
+        </section>
+      </div>
+    </>
   );
 }
 
@@ -461,6 +476,10 @@ function ArtworkTextPreview({ work }: { work: Artwork }) {
   const questions = work.guidedLooking.length ? work.guidedLooking : BASIC_LOOKING_TIPS;
   return (
     <>
+      {work.sourceVersion != null && <p className="muted small">저장된 근거 버전 {work.sourceVersion}</p>}
+      <h4>출처</h4>
+      <p className="artwork-prose">{work.source || '출처가 비어 있어요.'}</p>
+      {work.referenceUrl && <p className="artwork-prose">{work.referenceUrl}</p>}
       <h4>작품 해설</h4>
       <p className="artwork-prose">{work.description || '작품 해설이 비어 있어요.'}</p>
       <h4>쉬운 요약</h4>
@@ -601,22 +620,37 @@ function AiPanel({ w, setW, reloadArtwork }: {
 }) {
   const confirmAction = useConfirm();
   const [useImage, setUseImage] = useState(true);
+  const [useDraftImage, setUseDraftImage] = useState(false);
+  const [draftTasks, setDraftTasks] = useState<('summary' | 'guide')[]>([]);
   const [busy, setBusy] = useState<'analysis' | 'save' | null>(null);
   const inFlight = useRef(false);
-  const retryFields = useRef<('summary' | 'guide')[]>([]);
+  const retryRequest = useRef({ fields: [] as ('summary' | 'guide')[], draftImage: false, tagImage: true });
   const [msg, setMsg] = useState<
     {type: 'ok' | 'err' | 'save-error' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
   >(null);
   const blocked = busy !== null || msg?.type === 'conflict';
 
-  const run = async (regenerateFields: ('summary' | 'guide')[] = []) => {
+  useEffect(() => {
+    let active = true;
+    api.adminOperations('summary').then((report) => {
+      if (active) setDraftTasks(report.draftImageTasks ?? []);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const run = async (
+    regenerateFields: ('summary' | 'guide')[] = [],
+    draftImage = !!w.imageFile && useDraftImage && regenerateFields.length > 0 &&
+      regenerateFields.every((field) => draftTasks.includes(field)),
+    tagImage = useImage,
+  ) => {
     if (inFlight.current || msg?.type === 'conflict') return;
     inFlight.current=true;
-    retryFields.current = regenerateFields;
+    retryRequest.current = { fields: regenerateFields, draftImage, tagImage };
     setBusy('analysis');
     setMsg(null);
     try {
-      const r = await api.analyzeArtwork(w.id, useImage, regenerateFields);
+      const r = await api.analyzeArtwork(w.id, tagImage, regenerateFields, draftImage);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
       setW((cur) => cur && mergeAnalysis(cur,w,r));
       setMsg({type: 'result', items: analysisOutcomes(r)});
@@ -626,6 +660,11 @@ function AiPanel({ w, setW, reloadArtwork }: {
       inFlight.current=false;
       setBusy(null);
     }
+  };
+
+  const retry = () => {
+    const { fields, draftImage, tagImage } = retryRequest.current;
+    void run(fields, draftImage, tagImage);
   };
 
   /** 확정/해제는 바로 서버에 저장 */
@@ -705,6 +744,12 @@ function AiPanel({ w, setW, reloadArtwork }: {
       <div className="a-inline">
         <button className="a-btn sm" type="button" disabled={blocked} onClick={() => run(['summary'])}>쉬운 요약 다시 생성</button>
         <button className="a-btn sm" type="button" disabled={blocked} onClick={() => run(['guide'])}>관람가이드 다시 생성</button>
+        {w.imageFile && draftTasks.length > 0 && (
+          <label className="ai-check">
+            <input type="checkbox" disabled={blocked} checked={useDraftImage} onChange={(e) => setUseDraftImage(e.target.checked)} />
+            {draftTasks.length === 2 ? '요약·가이드' : draftTasks[0] === 'summary' ? '쉬운 요약' : '관람가이드'} Luna 생성에 도판 사용
+          </label>
+        )}
       </div>
       <p className="muted small">새 제안을 확정할 때까지 현재 공개된 요약과 관람가이드가 표시돼요.</p>
       {msg?.type === 'result' && (
@@ -717,7 +762,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
             ))}
           </ul>
           {msg.items.some(({status}) => status === 'failed') && (
-            <button type="button" disabled={blocked} onClick={() => run(retryFields.current)}>분석 다시 시도</button>
+            <button type="button" disabled={blocked} onClick={retry}>분석 다시 시도</button>
           )}
         </div>
       )}
@@ -725,7 +770,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
         <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>
           {msg.text}
           {msg.type === 'conflict' && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}
-          {msg.type === 'err' && <button type="button" disabled={blocked} onClick={() => run(retryFields.current)}>분석 다시 시도</button>}
+          {msg.type === 'err' && <button type="button" disabled={blocked} onClick={retry}>분석 다시 시도</button>}
         </p>
       )}
 

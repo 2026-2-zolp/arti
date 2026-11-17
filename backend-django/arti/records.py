@@ -80,7 +80,15 @@ def canonical(data, account=None):
     numeric={'durationMin':1440,'recommendedCount':200,'requestGeneration':2147483647}
     for key,maximum in numeric.items():
         if type(data.get(key)) is not int or not 0<=data[key]<=maximum:bad()
-    if data.get('selectedDuration') not in ('30m','60m','relaxed'):bad()
+    visit_mode = data.get('visitMode')
+    if visit_mode not in (None, 'exhibition_order'):
+        bad()
+    if visit_mode == 'exhibition_order':
+        if ('selectedDuration' not in data or data['selectedDuration'] is not None or
+                data.get('tasteProfile') is not None or data.get('tastes', []) != []):
+            bad()
+    elif data.get('selectedDuration') not in ('30m','60m','relaxed'):
+        bad()
     incoming=data.get('tasteProfile')
     if incoming is not None and not isinstance(incoming,dict):bad()
     tags=data.get('tastes',(incoming or {}).get('selectedTags',[]))
@@ -101,6 +109,8 @@ def canonical(data, account=None):
             bad('관람 취향 근거와 프로필 버전이 일치하지 않아요.')
         profile = profile_snapshot(tags, incoming, works, account, ex['id'])
     value={k:data[k] for k in ['date','durationMin','recommendedCount','selectedDuration','requestGeneration']}
+    if visit_mode:
+        value['visitMode'] = visit_mode
     value.update(visitId=str(visit_id),exhibitionId=ex['id'],viewedArtworkIds=ids,reactions=reactions,
                  reactionReasons=reasons,dwell=dwell,tastes=tags,tasteProfile=profile,
                  exhibitionTitle=ex['title'],venue=ex['venue'],submittedTasteProfile=incoming)
@@ -155,6 +165,8 @@ def check_retry(v,data):
     if profile is not None and not isinstance(profile,dict):bad()
     data={**data,'visitId':uuid_value(data.get('visitId'), visit=True),
           'tastes':data.get('tastes',(profile or {}).get('selectedTags',[]))}
+    if data.get('visitMode') != p.get('visitMode'):
+        raise ContractError(409, 'IDEMPOTENCY_CONFLICT', '관람 방식이 달라졌어요.')
     for key in ['visitId','exhibitionId','date','durationMin','recommendedCount','selectedDuration','requestGeneration','reactions','reactionReasons','dwell','tastes']:
         if data.get(key,{} if key in ('reactions','reactionReasons','dwell') else [] if key=='tastes' else None)!=p[key]:
             raise ContractError(409,'IDEMPOTENCY_CONFLICT','같은 관람에 다른 내용이 전송됐어요. 기존 기록은 유지됩니다.')

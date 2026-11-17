@@ -1,4 +1,23 @@
 # Local development only. No fixture/account creation on startup; no production deployment claim.
+x-django-environment: &django_environment
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set a random DJANGO_SECRET_KEY}
+  ARTI_ENV: ${ARTI_ENV:-development}
+  DJANGO_DEBUG: "false"
+  PGHOST: db
+  PGPORT: "5432"
+  PGDATABASE: arti
+  PGUSER: arti
+  PGPASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD}
+x-reset-mail-environment: &reset_mail_environment
+  ARTI_PASSWORD_RESET_ORIGIN: ${ARTI_PASSWORD_RESET_ORIGIN:-}
+  ARTI_PASSWORD_RESET_FROM: ${ARTI_PASSWORD_RESET_FROM:-}
+  EMAIL_HOST: ${EMAIL_HOST:-localhost}
+  EMAIL_PORT: ${EMAIL_PORT:-587}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+  EMAIL_USE_TLS: ${EMAIL_USE_TLS:-true}
+  EMAIL_USE_SSL: ${EMAIL_USE_SSL:-false}
+
 services:
   db:
     image: postgres:17-alpine
@@ -16,10 +35,8 @@ services:
   api:
     build: ./backend-django
     environment: &api_environment
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set a random DJANGO_SECRET_KEY}
-      ARTI_ENV: ${ARTI_ENV:-development}
-      DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+      <<: [*django_environment, *reset_mail_environment]
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,api}
       ARTI_ALLOWED_ORIGINS: ${ARTI_ALLOWED_ORIGINS:-}
       ARTI_KAKAO_CLIENT_ID: ${ARTI_KAKAO_CLIENT_ID:-}
       ARTI_KAKAO_CLIENT_SECRET: ${ARTI_KAKAO_CLIENT_SECRET:-}
@@ -38,12 +55,16 @@ services:
       ARTI_LLM_MODEL_INTERPRET: ${ARTI_LLM_MODEL_INTERPRET:-}
       ARTI_LLM_JSON_MODE: ${ARTI_LLM_JSON_MODE:-true}
       ARTI_LLM_TOKEN_PARAMETER: ${ARTI_LLM_TOKEN_PARAMETER:-max_completion_tokens}
-      PGHOST: db
-      PGPORT: "5432"
-      PGDATABASE: arti
-      PGUSER: arti
-      PGPASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD}
+      ARTI_DRAFT_PROVIDER: ${ARTI_DRAFT_PROVIDER:-default}
+      ARTI_DRAFT_BASE_URL: ${ARTI_DRAFT_BASE_URL:-}
+      ARTI_DRAFT_API_KEY: ${ARTI_DRAFT_API_KEY:-}
+      ARTI_DRAFT_MODEL: ${ARTI_DRAFT_MODEL:-}
+      ARTI_DRAFT_TOKEN_PARAMETER: ${ARTI_DRAFT_TOKEN_PARAMETER:-max_tokens}
+      ARTI_DRAFT_JSON_MODE: ${ARTI_DRAFT_JSON_MODE:-true}
+      ARTI_DRAFT_GUIDE_REVIEW: ${ARTI_DRAFT_GUIDE_REVIEW:-false}
+      ARTI_LUNA_DRAFT_VISION: ${ARTI_LUNA_DRAFT_VISION:-false}
       ALLOW_TEST_FIXTURES: ${ALLOW_TEST_FIXTURES:-false}
+      ARTI_EXHIBITION_ORDER_DEMO_ENABLED: ${ARTI_EXHIBITION_ORDER_DEMO_ENABLED:-false}
       MEDIA_ROOT: /app/media
     depends_on:
       db:
@@ -67,6 +88,16 @@ services:
       db:
         condition: service_healthy
     restart: "no"
+  reset-mail:
+    profiles: [reset-mail]
+    build: ./backend-django
+    environment:
+      <<: [*django_environment, *reset_mail_environment]
+    command: [python, manage.py, send_password_reset_mail, --watch]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
   frontend:
     profiles: [ui]
     build:

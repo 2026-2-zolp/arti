@@ -13,6 +13,7 @@ import type {
   Artwork, TasteProfile, EntryContext, DocentAnswer,
   EmotionScores,
   Exhibition,
+  NavigationLayoutInput,
   Reaction,
   Recommendation,
   TasteTag,
@@ -48,6 +49,20 @@ type KakaoResult =
   | { status: 'linked' | 'unlinked' | 'conflict' | 'cancelled' | 'failed'; returnTo: string };
 type KakaoFinish = Exclude<KakaoResult, { status: 'logged_in' }>
   | { status: 'logged_in'; user: User; token: string; returnTo: string };
+
+export type OperationsReport = {
+  configuration: { docent: 'configured' | 'disabled' | 'invalid'; analysis: 'configured' | 'disabled' | 'invalid' };
+  draftConfiguration: 'configured' | 'disabled' | 'invalid';
+  draftImageTasks: ('summary' | 'guide')[];
+  today: { docentRequests: number; analysisRequests: number; aiErrors: number; analysisPartialFailures: number };
+  textModelUsage?: { attempts: number; missing: number; inputTokens: number | null; outputTokens: number | null };
+  textModelUsageByTaskModel?: {
+    task: string; model: string; attempts: number; missing: number; inputTokens: number | null;
+    outputTokens: number | null; cachedInputTokens: number | null; cacheMissing: number;
+  }[];
+  recent: { action: string; requestId: string; occurredAt: string; status: number;
+    analysisFailures?: { field: 'summary' | 'guide' | 'tag' | 'emotion'; code: string }[] }[];
+};
 
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
 export const uploadedImageUrl = (file: string, forAdmin = false) =>
@@ -123,6 +138,7 @@ async function request<T>(method: string, path: string, body?: unknown, expected
 const enc = encodeURIComponent;
 
 export const api = {
+  adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
   // Admin preview must not consume filtered public catalog data on the Django target.
   listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
   listAdminArtworks: (exhibitionId?: string) =>
@@ -206,8 +222,10 @@ export const api = {
     request<void>('PUT', `/users/${enc(userId)}/tastes`, { tastes, tasteProfile, exhibitionId, ...mutation }),
 
   /** 현재 Django에서는 FEATURE_DISABLED. 실제 메일 발송 성공으로 표시하지 않는다. */
+  passwordResetStatus: () => request<{ enabled: boolean }>('GET', '/auth/password-reset/status'),
+
   requestPasswordReset: (email: string) =>
-    request<{ demoToken: string | null }>('POST', '/auth/password-reset/request', { email }),
+    request<void>('POST', '/auth/password-reset/request', { email }),
 
   resetPassword: (token: string, password: string) =>
     request<void>('POST', '/auth/password-reset/confirm', { token, password }),
@@ -265,9 +283,10 @@ export const api = {
   },
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
-  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = []) =>
+  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = [], useDraftImage = false) =>
     request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, {
       useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
+      ...(useDraftImage && { useDraftImage: true }),
     }),
 
   discardArtworkProposal: (w: Artwork, kind: 'summary' | 'guide') =>
@@ -284,6 +303,10 @@ export const api = {
 
   deleteFloorPlan: (exhibitionId: string, version?: number) =>
     request<Exhibition>('DELETE', `/admin/exhibitions/${enc(exhibitionId)}/floor-plan`, undefined, version),
+  saveNavigationLayout: (exhibition: Exhibition, layout: NavigationLayoutInput | null) =>
+    request<Exhibition>('PUT', `/admin/exhibitions/${enc(exhibition.id)}/navigation`, {
+      version: exhibition.version, floorPlanRevision: exhibition.floorPlanRevision, layout,
+    }),
 
   /** 전시 작품 전체 AI 분석 (확정된 작품은 건너뜀) */
   analyzeExhibition: (exhibitionId: string, useImage = true) =>

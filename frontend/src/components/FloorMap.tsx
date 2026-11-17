@@ -10,9 +10,10 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { uploadedImageUrl } from '../api/client';
 import { useProtectedImage } from '../lib/useProtectedImage';
+import { exhibitionIndoorLayout } from '../lib/indoorMapFixture';
 import type { Exhibition, MapPoint } from '../types';
 
-export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
+export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected' | 'check';
 
 export interface MapMarker {
   id: string;
@@ -39,6 +40,8 @@ interface Props {
   showEntrance?: boolean;
   showCompletedNumbers?: boolean;
   forAdmin?: boolean;
+  showReference?: boolean;
+  checkFocus?: MapPoint;
 }
 
 /** origin = 끌기 시작 때 마커 위치, start = 그때 포인터 위치 (마커가 포인터 쪽으로 튀지 않게 차이만큼 옮긴다) */
@@ -58,10 +61,14 @@ export function FloorMap({
   showEntrance = true,
   showCompletedNumbers = false,
   forAdmin = false,
+  showReference = false,
+  checkFocus,
 }: Props) {
   const plan = exhibition.floorPlan;
-  const { src: planSrc } = useProtectedImage(plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
-  const ratio = plan ? plan.width / plan.height : aspect;
+  const indoor = exhibitionIndoorLayout(exhibition);
+  const showPlan = !!plan && (!indoor || showReference);
+  const { src: planSrc } = useProtectedImage(showPlan && plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
+  const ratio = indoor?.aspect ?? (plan ? plan.width / plan.height : aspect);
   const H = 100 / ratio;
   const sy = (y: number) => (y * H) / 100;
   const toPts = (ps: MapPoint[]) => ps.map((p) => `${p.x},${sy(p.y)}`).join(' ');
@@ -129,21 +136,27 @@ export function FloorMap({
       role="img"
       aria-label={`${exhibition.title} 평면도`}
     >
-      {plan ? (
-        <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />
-      ) : (
-        exhibition.rooms.map(
-          (r) =>
-            r.rect && (
-              <g key={r.id}>
-                <rect className="fm-room" x={r.rect.x} y={sy(r.rect.y)} width={r.rect.w} height={sy(r.rect.h)} rx={1.2} />
-                <text className="fm-room-label" x={r.rect.x + 2} y={sy(r.rect.y) + 4.2}>
-                  {r.name}
-                </text>
-              </g>
-            ),
-        )
-      )}
+      {showPlan && <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />}
+      {!showPlan && !indoor?.rooms && exhibition.rooms.map(r => r.rect && (
+        <rect key={r.id} className="fm-room" x={r.rect.x} y={sy(r.rect.y)} width={r.rect.w} height={sy(r.rect.h)} rx={1.2} />
+      ))}
+
+      {indoor && ([
+        ['fm-room', indoor.rooms ?? []], ['fm-corridor', indoor.corridors], ['fm-wall', indoor.barriers], ['fm-door', indoor.doors],
+      ] as const).map(([className, rectangles]) => (
+        <g key={className} aria-hidden="true" opacity={showPlan ? 0.55 : 1}>
+          {rectangles.map((rect, index) => (
+            <rect key={index} className={className}
+              x={rect.x} y={sy(rect.y)} width={rect.w} height={sy(rect.h)} />
+          ))}
+        </g>
+      ))}
+      {(!showPlan || indoor) && exhibition.rooms.map(r => r.rect && (
+        <text key={r.id} className="fm-room-label" x={r.rect.x + 2} y={sy(r.rect.y) + 4.2}>{r.name}</text>
+      ))}
+      {showReference && indoor?.waypoints.map((point, index) => (
+        <circle key={index} className="fm-waypoint" cx={point.x} cy={sy(point.y)} r={1.5} />
+      ))}
 
       {showEntrance && (
         <g
@@ -160,9 +173,26 @@ export function FloorMap({
 
       {routePath && <path className="fm-route" d={routePath} />}
       {activeLeg && <polyline className="fm-route active" points={toPts(activeLeg)} />}
+      {forAdmin && checkFocus && <circle className="fm-check-focus" aria-hidden="true"
+        cx={checkFocus.x} cy={sy(checkFocus.y)} r={2.8} />}
 
       {markers.map((m) => {
         const point = drag?.kind === 'marker' && drag.id === m.id ? drag.point : m.point;
+        if (m.state === 'check') {
+          const side = m.label === 'A' ? -1 : 1;
+          const y = sy(point.y);
+          const margin = Math.min(8, H / 2);
+          const labelX = Math.min(97, Math.max(3, point.x + side * 4)) - point.x;
+          const labelY = Math.min(H - margin, Math.max(margin, y)) + side * margin / 2 - y;
+          return (
+            <g key={m.id} className="fm-marker check" transform={`translate(${point.x} ${y})`}>
+              <title>{m.title}</title>
+              <line x2={labelX} y2={labelY} />
+              <circle r={1.25} />
+              <text x={labelX} y={labelY} textAnchor="middle" dy="1.25">{m.label}</text>
+            </g>
+          );
+        }
         return (
           <g
             key={m.id}

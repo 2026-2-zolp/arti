@@ -794,14 +794,1105 @@ async function savedV2(browser) {
   }
 }
 
+async function exhibitionOrder(browser, memberVisit) {
+  const page = await openPage(browser);
+  const errors = [];
+  const requests = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('request', request => {
+    if (request.method() === 'POST') requests.push(new URL(request.url()).pathname);
+  });
+  const ids = ['fixture-art03', 'fixture-art01', 'fixture-art05'];
+  const setMiddleVisibility = reviewStatus => fixtureCommand([
+    'from arti.models import Artwork',
+    'work = Artwork.objects.get(pk="fixture-art01", exhibition_id="fixture-ex01")',
+    'assert work.source == "ARTI DEVELOPMENT FIXTURE — NOT A REAL EXHIBITION"',
+    'Artwork.objects.filter(pk=work.pk).update(review_status=os.environ["ARTI_BROWSER_REVIEW_STATUS"])',
+  ], { ARTI_BROWSER_REVIEW_STATUS: reviewStatus });
+  const readState = () => visit(page);
+  let hidden = false;
+  try {
+    await page.setViewportSize({ width: 360, height: 760 });
+    await checkEnvironment(page);
+    assert.deepEqual((await body(await page.request.get('/api' + exhibition))).exhibitionOrder, ids);
+    const works = await body(await page.request.get('/api/artworks?exhibitionId=' + exhibitionId));
+    const title = id => works.find(work => work.id === id).title;
+    const seeArtwork = id => page.getByRole('heading', { name: title(id), exact: true }).waitFor();
+    const member = memberVisit ? await newMember(page) : null;
+    if (member) {
+      await page.goto('/login');
+      await login(page, member);
+      await page.waitForURL(base.href);
+    }
+    requests.length = 0;
+    await page.goto(exhibition);
+    await button(page, '전시 순서로 바로 보기').click();
+    await page.waitForURL('**' + exhibition + '/artwork');
+    await seeArtwork(ids[0]);
+    assert.deepEqual(requests, []);
+    assert.equal(await page.getByText('이 작품이 추천된 이유', { exact: true }).count(), 0);
+    const initial = await readState();
+    assert.equal(initial.visitMode, 'exhibition_order');
+    assert.deepEqual(initial.recommendations.map(rec => rec.artworkId), ids);
+    assert.ok(initial.startedAt);
+    assert.equal(initial.duration, null);
+    assert.equal(initial.ownerId, member?.user.id ?? null);
+
+    await page.goBack();
+    await button(page, '이어서 관람').click();
+    await seeArtwork(ids[0]);
+    assert.equal((await readState()).visitId, initial.visitId);
+
+    const next = button(page, '다음 작품 안내');
+    await next.click();
+    await button(page, '2번 작품 감상하기').waitFor();
+    assert.equal(await page.locator('.floor-map').count(), 0, 'next artwork does not require opening the map');
+    await page.reload();
+    await button(page, '2번 작품 감상하기').waitFor();
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+    await button(page, '뒤로가기').click();
+    await seeArtwork(ids[0]);
+    await next.click();
+    await button(page, '2번 작품 감상하기').waitFor();
+    await page.goBack();
+    await seeArtwork(ids[0]);
+    assert.equal((await readState()).visitId, initial.visitId);
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+    await page.goForward();
+    await button(page, '2번 작품 감상하기').waitFor();
+
+    setMiddleVisibility('pending');
+    hidden = true;
+    assert.deepEqual((await body(await page.request.get('/api' + exhibition))).exhibitionOrder, [ids[0], ids[2]]);
+    await page.reload();
+    await page.getByRole('alert').getByText('이 작품을 현재 볼 수 없어요.', { exact: true }).waitFor();
+    await button(page, '이 작품 건너뛰기').click();
+    await button(page, '3번 작품 감상하기').click();
+    await seeArtwork(ids[2]);
+    assert.deepEqual((await readState()).viewed, [ids[0]]);
+
+    let firstReceipt;
+    if (member) {
+      await page.route('**/api/visits', async route => {
+        const response = await route.fetch();
+        firstReceipt = await body(response, 201);
+        await route.abort('failed');
+      }, { times: 1 });
+    }
+    await button(page, '관람 마치기').click();
+    await page.getByText('전시 순서 안내', { exact: true }).waitFor();
+    if (member) {
+      await page.getByText('관람기록을 저장하지 못했어요', { exact: true }).waitFor();
+      const [replay] = await Promise.all([
+        page.waitForResponse(r => isResponse(r, '/api/visits', 'POST')),
+        button(page, '다시 저장').click(),
+      ]);
+      const record = await body(replay);
+      assert.equal(record.id, firstReceipt.id);
+      assert.equal(record.visitId, initial.visitId);
+      assert.equal(record.visitMode, 'exhibition_order');
+      assert.equal(record.selectedDuration, null);
+      assert.deepEqual(record.viewedArtworkIds, [ids[0], ids[2]]);
+      await page.reload();
+      await page.getByText('관람기록에 저장되었어요', { exact: true }).waitFor();
+      const rows = await body(await page.request.get('/api/users/' + member.user.id + '/visits', {
+        headers: headersFor(await currentToken(page)),
+      }));
+      assert.deepEqual(rows.map(row => row.id), [record.id]);
+      assert.ok(requests.length >= 2 && requests.every(path => path === '/api/visits'));
+    } else {
+      await page.getByText(/비회원 관람기록은 서버에 저장되지 않아요/).waitFor();
+      await page.reload();
+      await page.getByText(/비회원 관람기록은 서버에 저장되지 않아요/).waitFor();
+      assert.deepEqual((await readState()).viewed, [ids[0], ids[2]]);
+      assert.deepEqual(requests, []);
+    }
+    assert.deepEqual(errors, []);
+    console.log(member ? 'PASS exhibition order member: same receipt ID and one row after response loss and reload'
+      : 'PASS exhibition order guest: one click, app/browser back, refresh, private work skipped, zero saves');
+  } finally {
+    try {
+      if (hidden) setMiddleVisibility('approved');
+    } finally {
+      await page.close();
+    }
+  }
+}
+
+async function exhibitionOrderV2(browser) {
+  const page = await openPage(browser);
+  try {
+    await page.goto(exhibition);
+    await button(page, '내 취향으로 추천').click();
+    await button(page, '비회원으로 계속').click();
+    await choosePairs(page);
+    await button(page, '취향 미리 확인').click();
+    await button(page, '이 취향으로 계속').click();
+    assert.equal((await recommend(page)).length, 3);
+    assert.equal((await visit(page)).visitMode, undefined);
+    await button(page, '지도에서 관람순서 보기').waitFor();
+    console.log('PASS exhibition order secondary entry: unchanged V2 five pairs and three recommendations');
+  } finally {
+    await page.close();
+  }
+}
+
+async function openAdmin(browser, context) {
+  const page = await openPage(browser, context);
+  await page.goto('/admin/login');
+  await page.getByLabel('관리자 ID', { exact: true }).fill('visit-boundaries-admin');
+  await page.getByLabel('비밀번호', { exact: true }).fill(process.env.ARTI_BOOTSTRAP_PASSWORD);
+  await button(page, '로그인').click();
+  await page.waitForURL('**/admin');
+  return page;
+}
+
+async function checkWalkableSvg(map, variant) {
+  await map.locator('polyline.fm-route.active').waitFor({ state: 'attached' });
+  const geometry = await map.evaluate(svg => {
+    const walls = [...svg.querySelectorAll('rect.fm-wall')].map(rect => rect.getBBox());
+    const lines = [...svg.querySelectorAll('.fm-route')];
+    const blocked = lines.some(line => {
+      const length = line.getTotalLength();
+      const samples = Math.ceil(length * 5);
+      return Array.from({ length: samples + 1 }, (_, index) => line.getPointAtLength(Math.min(length, index / 5)))
+        .some(point => walls.some(rect => point.x >= rect.x && point.x <= rect.x + rect.width &&
+          point.y >= rect.y && point.y <= rect.y + rect.height));
+    });
+    const activeLine = svg.querySelector('polyline.fm-route.active');
+    const active = [...activeLine.points];
+    const corridor = svg.querySelector('rect.fm-corridor')?.getBBox();
+    const corridorPoints = corridor ? active.filter(point => point.x >= corridor.x && point.x <= corridor.x + corridor.width &&
+      point.y >= corridor.y && point.y <= corridor.y + corridor.height) : [];
+    const middle = corridor ? corridor.x + corridor.width / 2 : 0;
+    return { blocked, activeCount: active.length, activeLength: activeLine.getTotalLength(),
+      activeStroke: getComputedStyle(activeLine).stroke,
+      crossesCorridor: corridorPoints.some(point => point.x < middle) && corridorPoints.some(point => point.x > middle) };
+  });
+  assert.equal(geometry.blocked, false);
+  assert.ok(geometry.activeLength > 0 && geometry.activeStroke !== 'none');
+  assert.ok(geometry.activeCount >= (['branch', 'three-rooms'].includes(variant) ? 2 : 3));
+  if (variant === 'two-rooms') assert.ok(geometry.crossesCorridor, 'The path uses both sides of the displayed corridor');
+}
+
+async function navigationPreview(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const durations = ['30m', '60m', 'relaxed'];
+    const recommendAll = () => Promise.all(durations.map(duration => visitor.request.post('/api/recommendations', {
+      data: { exhibitionId, duration, tastes: ['warm'],
+        tasteProfile: { version: 2, source: 'manual', selectedTags: ['warm'] } },
+    }).then(response => body(response))));
+    const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const original = await readExhibition();
+    const baseline = await recommendAll();
+    assert.equal(original.navigationLayout, null);
+    assert.deepEqual(baseline.map(items => items.length), [3, 5, 7]);
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await button(visitor, '2번 작품 감상하기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const openVisitorMap = async () => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      const map = visitor.locator('.floor-map');
+      await map.locator('.fm-marker.current').waitFor();
+      return map;
+    };
+    let visitorMap = await openVisitorMap();
+    assert.equal(await visitorMap.locator('.fm-route, .fm-wall').count(), 0);
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const drawing = editor.locator('.floor-map');
+    const preview = editor.getByRole('group', { name: '경로 미리보기' });
+    const from = preview.getByLabel('출발', { exact: true });
+    const to = preview.getByLabel('도착', { exact: true });
+    const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+    const pick = async ([x, y]) => {
+      const box = await drawing.boundingBox();
+      await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+    };
+    const rectangles = async (kind, pairs) => {
+      await category.selectOption(kind);
+      for (const [first, second] of pairs) {
+        await pick(first);
+        await pick(second);
+      }
+    };
+    const writes = [];
+    admin.on('request', request => {
+      if (request.method() === 'PUT' && new URL(request.url()).pathname.endsWith('/navigation')) writes.push(request);
+    });
+    await to.selectOption('fixture-art02');
+    await preview.getByText('관람 가능 공간을 먼저 등록해 주세요.').waitFor();
+    await rectangles('walkable', [[[4, 4], [47, 73]], [[53, 4], [96, 73]]]);
+    await rectangles('walls', [
+      [[46, 4], [54, 76]], [[4, 72], [36, 76]], [[44, 72], [47, 76]],
+      [[53, 72], [56, 76]], [[64, 72], [96, 76]],
+    ]);
+    await rectangles('pillars', [[[30, 28], [36, 36]]]);
+    await rectangles('corridors', [[[4, 75], [96, 97]]]);
+    await category.selectOption('waypoints');
+    for (const point of [[40, 45], [40, 70], [40, 78], [40, 86], [60, 86], [60, 78], [60, 70]]) await pick(point);
+    await checkWalkableSvg(drawing, 'pillar');
+    await to.selectOption('fixture-art01');
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+    await rectangles('doors', [[[37, 70], [43, 79]], [[57, 70], [63, 79]]]);
+    await checkWalkableSvg(drawing, 'two-rooms');
+    await from.selectOption('fixture-art05');
+    await checkWalkableSvg(drawing, 'two-rooms');
+    await category.selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+    await rectangles('doors', [[[57, 70], [63, 79]]]);
+    await checkWalkableSvg(drawing, 'two-rooms');
+
+    const preset = button(editor, '복도로 연결된 두 전시실 불러오기');
+    const confirm = admin.getByRole('alertdialog');
+    await preset.click();
+    await button(confirm, '취소').click();
+    assert.equal(await drawing.locator('.fm-wall').count(), 6, 'Cancel preserves the drawn pillar');
+    const loadPreset = async () => {
+      await preset.click();
+      await button(confirm, '프리셋으로 바꾸기').click();
+      await checkWalkableSvg(drawing, 'two-rooms');
+      assert.equal(await drawing.locator('.fm-wall').count(), 5);
+      assert.equal(await drawing.locator('.fm-door').count(), 2);
+      assert.equal(await drawing.locator('.fm-corridor').count(), 1);
+    };
+    await loadPreset();
+    await category.selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+    await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal(await drawing.locator('.fm-route.active').count(), 0);
+
+    assert.equal(writes.length, 0);
+    assert.deepEqual(await readExhibition(), original);
+    assert.deepEqual(await recommendAll(), baseline);
+    await visitor.reload();
+    visitorMap = await openVisitorMap();
+    assert.equal(await visitorMap.locator('.fm-route, .fm-wall').count(), 0);
+
+    const save = async () => {
+      const savedResponse = admin.waitForResponse(response => isResponse(response, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT'));
+      await button(editor, '이동 구조 저장').click();
+      await body(await savedResponse);
+      await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    };
+    await save();
+    assert.equal(writes.length, 1);
+    const blocked = await readExhibition();
+    assert.equal(blocked.navigationLayout.doors.length, 1);
+    assert.deepEqual(await recommendAll(), baseline);
+    const checkBlockedVisitor = async () => {
+      await visitor.reload();
+      const map = await openVisitorMap();
+      await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    await checkBlockedVisitor();
+
+    await loadPreset();
+    assert.equal(writes.length, 1);
+    assert.deepEqual(await readExhibition(), blocked, 'Reopening in the editor must remain a draft');
+    assert.deepEqual(await recommendAll(), baseline);
+    await checkBlockedVisitor();
+    await save();
+    assert.equal(writes.length, 2);
+    const saved = await readExhibition();
+    assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
+    assert.equal(saved.navigationLayout.doors.length, 2);
+    const byArtwork = items => Object.fromEntries(items.map(({ artworkId, order, ...details }) => [artworkId, details]));
+    const updated = await recommendAll();
+    assert.deepEqual(updated.map(items => items.length), [3, 5, 7]);
+    for (const [index, items] of updated.entries()) {
+      assert.deepEqual(byArtwork(items), byArtwork(baseline[index]));
+      assert.deepEqual(items.map(item => item.order), items.map((_, order) => order + 1));
+      assert.notDeepEqual(items.map(item => item.artworkId), baseline[index].map(item => item.artworkId));
+    }
+    await visitor.reload();
+    visitorMap = await openVisitorMap();
+    await checkWalkableSvg(visitorMap, 'two-rooms');
+    await admin.reload();
+    await admin.locator('.floor-map .fm-wall').first().waitFor();
+    console.log('PASS navigation preset: cancel keeps edits, open/blocked preview, public map and V2 unchanged until save, blocked fallback and open 3/5/7 reorder');
+  } finally {
+    await visitor.close();
+  }
+}
+
+async function fitNavigationToReference(browser, admin) {
+  const publicPath = '/api' + exhibition;
+  const original = await body(await admin.request.get(publicPath));
+  await admin.goto('/admin/map?exhibition=' + exhibitionId);
+  await admin.getByText('이동 구조 등록', { exact: true }).click();
+  const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+  const map = editor.locator('.floor-map');
+  const preview = editor.getByRole('group', { name: '경로 미리보기' });
+  const save = button(editor, '이동 구조 저장');
+  const pick = async (x, y) => {
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+  };
+  await map.locator('image[href]').waitFor();
+  await button(editor, '복도로 연결된 두 전시실 불러오기').click();
+  await button(editor, '원본 도면에 맞추기').click();
+  assert.ok(await save.isDisabled());
+  await pick(10, 8);
+  await pick(90, 88);
+  await editor.getByText('이동 구조를 선택한 영역에 맞췄어요.').waitFor();
+  const bounds = await map.evaluate(svg => {
+    const room = svg.querySelector('rect.fm-room').getBBox();
+    const corridor = svg.querySelector('rect.fm-corridor').getBBox();
+    return { left: room.x, top: room.y * 100 / svg.viewBox.baseVal.height,
+      right: corridor.x + corridor.width, bottom: (corridor.y + corridor.height) * 100 / svg.viewBox.baseVal.height };
+  });
+  for (const [side, expected] of Object.entries({ left: 10, top: 8, right: 90, bottom: 88 })) {
+    assert.ok(Math.abs(bounds[side] - expected) < 0.5, side + ' follows the reference corners');
+  }
+  await preview.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+  await preview.getByLabel('출발', { exact: true }).selectOption('fixture-art03');
+  await checkWalkableSvg(map, 'two-rooms');
+  const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+  await category.selectOption('waypoints');
+  for (let count = 0; count < 6; count++) await button(editor, '마지막 입력 취소').click();
+  await preview.getByText(/이어지는 경로가 없어요/).waitFor();
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+  await button(editor, '제안 연결점 6개 추가').click();
+  assert.equal(await map.locator('.fm-waypoint').count(), 6);
+  await checkWalkableSvg(map, 'two-rooms');
+  assert.ok(await button(editor, '제안 연결점 0개 추가').isDisabled());
+  assert.deepEqual(await body(await admin.request.get(publicPath)), original);
+
+  await save.click();
+  await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+  const saved = await body(await admin.request.get(publicPath));
+  assert.deepEqual(saved.floorPlan, original.floorPlan);
+  assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
+  assert.equal(saved.navigationLayout.waypoints.length, 6);
+
+  const visitor = await openPage(browser);
+  try {
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+    await checkWalkableSvg(visitor.locator('.floor-map'), 'two-rooms');
+  } finally {
+    await visitor.close();
+  }
+  console.log('PASS original floor plan fit: draft overlay, suggested links reconnect corridor, saved revision visible to visitor');
+}
+
+async function reviewBentCorridor(browser, admin) {
+  const readExhibition = () => admin.request.get('/api' + exhibition).then(response => body(response));
+  const baseline = await readExhibition();
+  await admin.goto('/admin/map?exhibition=' + exhibitionId);
+  await admin.getByText('이동 구조 등록', { exact: true }).click();
+  const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+  const map = editor.locator('.floor-map');
+  const preview = editor.getByRole('group', { name: '경로 미리보기' });
+  const destination = preview.getByLabel('도착', { exact: true });
+  const markers = map.locator('.fm-marker.check');
+  await destination.selectOption('fixture-art01');
+  await preview.getByText(/지도에 표시된 A·B/).waitFor();
+  assert.equal(await markers.count(), 2);
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+
+  await editor.getByRole('button', { name: /제안 연결점 [1-9]\d*개 추가/ }).click();
+  await checkWalkableSvg(map, 'pillar');
+  assert.equal(await markers.count(), 0);
+  const passesDoors = await map.evaluate(svg => {
+    const line = svg.querySelector('.fm-route.active');
+    const doors = [...svg.querySelectorAll('.fm-door')].map(door => door.getBBox());
+    const length = line.getTotalLength();
+    const points = Array.from({ length: Math.ceil(length * 10) }, (_, index) => line.getPointAtLength(index / 10));
+    return doors.map(door => points.some(point => point.x > door.x && point.x < door.x + door.width &&
+      point.y > door.y && point.y < door.y + door.height));
+  });
+  assert.deepEqual(passesDoors, [true, true]);
+  assert.deepEqual(await readExhibition(), baseline);
+  await button(editor, '이동 구조 저장').click();
+  await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+  const saved = await readExhibition();
+  assert.ok(saved.navigationLayout.waypoints.length > 6);
+  const visitor = await openPage(browser);
+  try {
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+    await checkWalkableSvg(visitor.locator('.floor-map'), 'pillar');
+    assert.equal(await visitor.locator('.fm-marker.check').count(), 0);
+  } finally {
+    await visitor.close();
+  }
+
+  await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+  await button(editor, '마지막 입력 취소').click();
+  await preview.getByText(/지도에 표시된 A·B/).waitFor();
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+  const checkPositions = await markers.evaluateAll(nodes => nodes.map(node => {
+    const point = node.transform.baseVal.getItem(0).matrix;
+    return { label: node.querySelector('text').textContent, x: point.e, y: point.f };
+  }));
+  assert.deepEqual(checkPositions.map(point => point.label), ['A', 'B']);
+  assert.ok(checkPositions[0].y < 62 && checkPositions[1].y > 62);
+  assert.ok(checkPositions.every(point => Math.abs(point.x - 67) < 1 && Math.abs(point.y - 62) < 2));
+  await destination.selectOption('fixture-art05');
+  await preview.getByText(/도착점 B 위치가 관람 가능 공간에 있는지/).waitFor();
+  assert.equal(await markers.count(), 1);
+  assert.equal(await markers.locator('text').textContent(), 'B');
+  assert.deepEqual(await readExhibition(), saved);
+  console.log('PASS bent corridor: narrow doors and pillar detour, check markers near blocked door or invalid endpoint');
+}
+
+async function reviewMultiTurnCorridor(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const baseline = await readExhibition();
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const readVisitorMap = async (connected) => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      const map = visitor.locator('.floor-map');
+      await map.locator('.fm-marker.current').waitFor();
+      if (connected) await checkWalkableSvg(map, 'multi-turn');
+      else {
+        await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+        assert.equal(await map.locator('.fm-route.active').count(), 0);
+      }
+      assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    };
+    await readVisitorMap(false);
+    const reloadVisitor = async connected => {
+      await visitor.reload();
+      await readVisitorMap(connected);
+    };
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const map = editor.locator('.floor-map');
+    const preview = editor.getByRole('group', { name: '경로 미리보기' });
+    const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+    const undo = button(editor, '마지막 입력 취소');
+    const pick = async (x, y) => {
+      const box = await map.boundingBox();
+      await map.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+    };
+    const checkGap = async () => {
+      await preview.getByText(/지도에 표시된 A·B/).waitFor();
+      assert.equal(await map.locator('.fm-marker.check').count(), 2);
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    const checkConnected = async () => {
+      await checkWalkableSvg(map, 'multi-turn');
+      assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    };
+    const save = async () => {
+      const result = admin.waitForResponse(response => isResponse(response, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT'));
+      await button(editor, '이동 구조 저장').click();
+      await body(await result);
+      await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    };
+    await preview.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    await checkGap();
+    await editor.getByRole('button', { name: /제안 연결점 [1-9]\d*개 추가/ }).click();
+    await checkConnected();
+    const includesShortSeam = await map.locator('.fm-route.active').evaluate(line =>
+      [...line.points].some(point => point.x > 50.8 && point.x < 51 && Math.abs(point.y - 24) < 0.01));
+    assert.ok(includesShortSeam);
+
+    // The final bend must stay disconnected until its missing link is placed back.
+    await category.selectOption('waypoints');
+    await undo.click();
+    await checkGap();
+    await pick(83, 51.5);
+    await checkConnected();
+    assert.deepEqual(await readExhibition(), baseline);
+    await reloadVisitor(false);
+    await save();
+    await reloadVisitor(true);
+    const open = await readExhibition();
+    assert.equal(open.navigationLayout.doors.length, 2);
+
+    await category.selectOption('doors');
+    await undo.click();
+    await checkGap();
+    assert.deepEqual(await readExhibition(), open);
+    await reloadVisitor(true);
+    await save();
+    await reloadVisitor(false);
+    const closed = await readExhibition();
+    assert.equal(closed.navigationLayout.doors.length, 1);
+
+    await pick(82, 67.5);
+    await pick(83.4, 69.5);
+    await checkConnected();
+    assert.deepEqual(await readExhibition(), closed);
+    await reloadVisitor(false);
+    await save();
+    await reloadVisitor(true);
+    assert.equal((await readExhibition()).navigationLayout.doors.length, 2);
+    console.log('PASS multi-turn corridor: short seam, waypoint and door edits update A/B immediately, visitor changes only after each save');
+  } finally {
+    await visitor.close();
+  }
+}
+
+async function reviewBranchConflict(browser, admin) {
+  const visitor = await openPage(browser);
+  const other = await openPage(browser, admin.context());
+  const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+  const recommendAll = () => Promise.all(['30m', '60m', 'relaxed'].map(duration =>
+    visitor.request.post('/api/recommendations', {
+      data: { exhibitionId, duration, tastes: ['warm'],
+        tasteProfile: { version: 2, source: 'manual', selectedTags: ['warm'] } },
+    }).then(response => body(response))));
+  const byArtwork = items => Object.fromEntries(items.map(({ order, ...item }) => [item.artworkId, item]));
+  const openEditor = async page => {
+    await page.goto('/admin/map?exhibition=' + exhibitionId);
+    await page.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = page.getByRole('region', { name: '이동 구조 편집' });
+    await editor.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    return editor;
+  };
+  const verifyRoute = async (map, upper) => {
+    await checkWalkableSvg(map, 'branch');
+    const crossing = await map.locator('.fm-route.active').evaluate(line => {
+      const count = Math.ceil(line.getTotalLength() * 4);
+      return Array.from({ length: count + 1 }, (_, index) => line.getPointAtLength(index / 4))
+        .find(point => Math.abs(point.x - 50) < 0.5)?.y;
+    });
+    assert.ok(upper ? crossing >= 24 && crossing <= 30 : crossing >= 70 && crossing <= 78,
+      `Expected ${upper ? 'upper' : 'lower'} corridor, crossing y=${crossing}`);
+  };
+  const removeDoor = async editor => {
+    await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+    await button(editor, '마지막 입력 취소').click();
+  };
+  const save = async (page, editor, status) => {
+    const [response] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
+      button(editor, '이동 구조 저장').click(),
+    ]);
+    return body(response, status);
+  };
+
+  try {
+    const original = await readExhibition();
+    const recommendations = await recommendAll();
+    assert.deepEqual(recommendations.map(items => items.length), [3, 5, 7]);
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const openVisitorMap = async () => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      return visitor.locator('.floor-map');
+    };
+    const editor = await openEditor(admin);
+    const staleEditor = await openEditor(other);
+    const map = editor.locator('.floor-map');
+    const staleMap = staleEditor.locator('.floor-map');
+    await verifyRoute(await openVisitorMap(), true);
+    await verifyRoute(map, true);
+    await verifyRoute(staleMap, true);
+
+    await removeDoor(editor);
+    await verifyRoute(map, false);
+    assert.deepEqual(await readExhibition(), original);
+    await visitor.reload();
+    await verifyRoute(await openVisitorMap(), true);
+    const saved = await save(admin, editor, 200);
+    assert.equal(saved.navigationLayout.doors.length, 3);
+    const published = await readExhibition();
+    assert.equal(published.version, saved.version);
+    assert.deepEqual(published.navigationLayout, saved.navigationLayout);
+    await visitor.reload();
+    await verifyRoute(await openVisitorMap(), false);
+    const after = await recommendAll();
+    assert.deepEqual(after.map(byArtwork), recommendations.map(byArtwork));
+
+    await removeDoor(staleEditor);
+    await removeDoor(staleEditor);
+    await staleEditor.getByText(/이어지는 경로가 없어요/).waitFor();
+    const candidates = staleEditor.getByRole('group', { name: 'A 주변 구조' });
+    const candidate = candidates.getByRole('button', { name: /통로 \d+ 표시/ });
+    await candidate.click();
+    await staleMap.locator('.fm-check-focus').waitFor();
+    assert.equal(await candidate.getAttribute('aria-pressed'), 'true');
+    assert.equal(await visitor.locator('.fm-check-focus').count(), 0);
+    assert.equal((await save(other, staleEditor, 409)).code, 'VERSION_CONFLICT');
+    const reload = button(staleEditor, '최신 도면 다시 불러오기');
+    assert.equal(await button(staleEditor, '이동 구조 저장').isDisabled(), true);
+    await reload.click();
+    const dialog = other.getByRole('alertdialog');
+    await button(dialog, '취소').click();
+    assert.equal(await staleMap.locator('.fm-door').count(), 2);
+    await reload.click();
+    await button(dialog, '다시 불러오기').click();
+    await other.getByText('이동 구조 등록', { exact: true }).click();
+    await staleEditor.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    await verifyRoute(staleMap, false);
+    assert.equal(await staleMap.locator('.fm-door').count(), 3);
+    assert.deepEqual(await readExhibition(), published);
+    console.log('PASS branch corridor: saved detour, stable V2 choices, stale 409 and latest preview recovery');
+  } finally {
+    await Promise.all([visitor.close(), other.close()]);
+  }
+}
+
+async function reviewThreeRooms(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const published = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const original = await published();
+    const member = await newMember(visitor);
+    await visitor.goto('/login');
+    await login(visitor, member);
+    await visitor.waitForURL(base.href);
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const progress = async () => {
+      const { visitId, current, viewed, recommendations } = await visit(visitor);
+      return { visitId, current, viewed, order: recommendations.map(work => work.artworkId) };
+    };
+    const initialProgress = await progress();
+    assert.deepEqual(initialProgress.viewed, ['fixture-art03']);
+    const visitorMap = async () => {
+      const details = visitor.locator('.route-details');
+      const summary = details.locator('summary');
+      await summary.waitFor();
+      if (!await details.evaluate(element => element.open)) await summary.click();
+      return details.locator('.floor-map');
+    };
+    const expectBlocked = async () => {
+      const map = await visitorMap();
+      await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    await expectBlocked();
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const map = editor.locator('.floor-map');
+    const departure = editor.getByLabel('출발', { exact: true });
+    const destination = editor.getByLabel('도착', { exact: true });
+    await departure.selectOption('fixture-art02');
+    await destination.selectOption('fixture-art04');
+    await checkWalkableSvg(map, 'three-rooms');
+    assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    assert.equal(await map.locator('.fm-room').count(), 3);
+
+    await departure.selectOption('fixture-art03');
+    await destination.selectOption('fixture-art01');
+    await editor.getByText(/이어지는 경로가 없어요/).waitFor();
+    const left = editor.getByRole('group', { name: 'A 주변 구조' });
+    const right = editor.getByRole('group', { name: 'B 주변 구조' });
+    await button(left, '문 3 표시').waitFor();
+    await button(right, '문 4 표시').click();
+    assert.equal(await button(right, '문 5 표시').count(), 0);
+    await map.locator('.fm-check-focus').waitFor();
+    assert.equal(Number(await map.locator('.fm-check-focus').getAttribute('cy')), 33);
+
+    await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+    const bounds = await map.boundingBox();
+    for (const [x, y] of [[72.5, 25], [76, 29]]) {
+      await map.click({ position: { x: bounds.width * x / 100, y: bounds.height * y / 100 } });
+    }
+    await checkWalkableSvg(map, 'three-rooms');
+    assert.equal(await map.locator('.fm-check-focus, .fm-marker.check').count(), 0);
+    assert.deepEqual(await published(), original);
+    await visitor.reload();
+    await expectBlocked();
+
+    const save = async () => {
+      const [response] = await Promise.all([
+        admin.waitForResponse(r => isResponse(r, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT')),
+        button(editor, '이동 구조 저장').click(),
+      ]);
+      return body(response);
+    };
+    const saved = await save();
+    assert.deepEqual((await published()).navigationLayout, saved.navigationLayout);
+    await visitor.reload();
+    const savedMap = await visitorMap();
+    await checkWalkableSvg(savedMap, 'three-rooms');
+    assert.equal(await savedMap.locator('.fm-check-focus, .fm-marker.check').count(), 0);
+    assert.deepEqual(await progress(), initialProgress);
+
+    await button(editor, '마지막 입력 취소').click();
+    await editor.getByText(/이어지는 경로가 없어요/).waitFor();
+    assert.equal((await published()).navigationLayout.doors.length, original.navigationLayout.doors.length + 1);
+    await save();
+    await visitor.reload();
+    await expectBlocked();
+    assert.deepEqual(await progress(), initialProgress);
+    await button(visitor, '2번 작품 감상하기').click();
+    await visitor.waitForURL('**/artwork');
+    await visitor.goBack();
+    await expectBlocked();
+    assert.deepEqual(await progress(), initialProgress);
+
+    await button(visitor, '2번 작품 감상하기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await button(visitor, '3번 작품 감상하기').click();
+    const [posted] = await Promise.all([
+      visitor.waitForResponse(response => isResponse(response, '/api/visits', 'POST')),
+      button(visitor, '관람 마치기').click(),
+    ]);
+    const receipt = await body(posted, 201);
+    assert.equal(receipt.visitId, initialProgress.visitId);
+    assert.deepEqual(receipt.viewedArtworkIds, ['fixture-art03', 'fixture-art01', 'fixture-art05']);
+    await visitor.reload();
+    await visitor.getByText('관람기록에 저장되었어요', { exact: true }).waitFor();
+    const visits = await body(await visitor.request.get('/api/users/' + member.user.id + '/visits', {
+      headers: headersFor(await currentToken(visitor)),
+    }));
+    assert.deepEqual(visits.map(row => row.id), [receipt.id]);
+    console.log('PASS three rooms: door repair and closure, same visit after back, one member receipt');
+  } finally {
+    await visitor.close();
+  }
+}
+
+async function mapVariants(browser) {
+  const adminContext = await browser.newContext(pageOptions);
+  const setup = variant => fixtureCommand([
+    'from pathlib import Path',
+    'exec(Path("frontend/tests/fixtures/mapVariants.py").read_text(encoding="utf-8"))',
+  ], { ARTI_BROWSER_MAP_VARIANT: variant });
+  try {
+    const admin = await openAdmin(browser, adminContext);
+    for (const variant of ['native', 'pillar', 'two-rooms']) {
+      setup(variant);
+      await admin.goto('/admin/map?exhibition=' + exhibitionId);
+      const adminMap = admin.locator('.floor-map');
+      await adminMap.locator('.fm-marker').last().waitFor();
+      assert.equal(await adminMap.locator('.fm-marker').count(), 3);
+      if (variant === 'native') {
+        assert.equal(await adminMap.locator('.fm-room').count(), 1);
+      } else {
+        assert.equal(await adminMap.locator('image').count(), 0);
+        assert.equal(await adminMap.locator('.fm-wall').count(), variant === 'pillar' ? 1 : 5);
+        assert.equal(await adminMap.locator('.fm-door').count(), variant === 'pillar' ? 0 : 2);
+      }
+
+      const visitor = await openPage(browser);
+      try {
+        await visitor.setViewportSize({ width: 360, height: 760 });
+        await visitor.goto(exhibition);
+        await button(visitor, '전시 순서로 바로 보기').click();
+        await button(visitor, '다음 작품 안내').click();
+        await button(visitor, '2번 작품 감상하기').waitFor();
+        assert.equal(await visitor.locator('.floor-map').count(), 0);
+        await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+        const map = visitor.locator('.floor-map');
+        await map.locator('.fm-marker.current').waitFor();
+        assert.equal(await map.locator('.fm-marker').count(), 3);
+        assert.ok(await button(visitor, '2번 작품 감상하기').isVisible());
+        assert.equal(await visitor.evaluate(() => document.documentElement.scrollWidth), 360);
+        const planRatio = await map.evaluate(svg => 100 / svg.viewBox.baseVal.height);
+        if (variant !== 'native') {
+          const expectedRatio = variant === 'pillar' ? 360 / 640 : 640 / 360;
+          assert.ok(Math.abs(planRatio - expectedRatio) < 0.001);
+          await checkWalkableSvg(map, variant);
+          if (variant === 'pillar') {
+            await visitor.route('**/api/artworks?exhibitionId=fixture-ex01', async route => {
+              const result = await route.fetch();
+              const works = await result.json();
+              works.find(work => work.id === 'fixture-art01').position = { x: 50, y: 50 };
+              await route.fulfill({ response: result, json: works });
+            }, { times: 1 });
+            await visitor.reload();
+            await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+            await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+            assert.equal(await visitor.locator('.fm-route.active').count(), 0);
+            assert.ok(await button(visitor, '2번 작품 감상하기').isVisible());
+          }
+        } else {
+          assert.equal(await map.locator('.fm-route').count(), 0);
+          await visitor.route('**/api/artworks?exhibitionId=fixture-ex01', route => route.fulfill({
+            status: 502, json: { error: '합성 지도 요청 실패' },
+          }), { times: 1 });
+          await visitor.reload();
+          await button(visitor, '작품 열기').click();
+          await visitor.waitForURL('**' + exhibition + '/artwork');
+          assert.equal((await visit(visitor)).current, 1);
+          await visitor.locator('.art-title').waitFor();
+        }
+      } finally {
+        await visitor.close();
+      }
+
+      if (variant !== 'native') {
+        const legacy = await openPage(browser);
+        try {
+          const recs = await body(await legacy.request.post('/api/recommendations', {
+            data: { exhibitionId, tastes: [], duration: '30m' },
+          }));
+          assert.deepEqual(recs.map(rec => rec.artworkId), ['fixture-art03', 'fixture-art05', 'fixture-art01']);
+          await legacy.addInitScript(({ exhibitionId, recs }) => sessionStorage.setItem('arti.visit', JSON.stringify({
+            exhibitionId, recommendations: recs, current: 2, viewed: recs.slice(0, 2).map(rec => rec.artworkId),
+          })), { exhibitionId, recs });
+          await legacy.goto(exhibition + '/route');
+          await checkWalkableSvg(legacy.locator('.floor-map'), variant);
+        } finally {
+          await legacy.close();
+        }
+      }
+      if (variant === 'native') {
+        await admin.getByText('이동 구조 등록', { exact: true }).click();
+        const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+        const drawing = editor.locator('.floor-map');
+        const select = editor.getByRole('combobox', { name: '이동 구조 종류' });
+        const rect = async (category, a, b) => {
+          await select.selectOption(category);
+          const box = await drawing.boundingBox();
+          for (const [x, y] of [a, b]) {
+            await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+          }
+        };
+        await rect('walkable', [4, 4], [96, 96]);
+        await rect('pillars', [40, 35], [60, 65]);
+        await select.selectOption('waypoints');
+        for (const [x, y] of [[36, 31], [64, 31], [36, 69], [64, 69]]) {
+          const box = await drawing.boundingBox();
+          await drawing.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+        }
+        await button(editor, '이동 구조 저장').click();
+        await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+        const saved = await body(await admin.request.get('/api/exhibitions/' + exhibitionId));
+        assert.equal(saved.navigationLayout.floorPlanRevision, saved.floorPlanRevision);
+        assert.equal(saved.navigationLayout.pillars.length, 1);
+        assert.equal(saved.navigationLayout.waypoints.length, 4);
+        await admin.reload();
+        await admin.locator('.floor-map .fm-wall').waitFor();
+        const visitor = await openPage(browser);
+        try {
+          await visitor.goto(exhibition);
+          await button(visitor, '전시 순서로 바로 보기').click();
+          await button(visitor, '다음 작품 안내').click();
+          await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+          const svg = visitor.locator('.floor-map');
+          await svg.locator('.fm-route.active').waitFor();
+          assert.equal(await svg.locator('.fm-wall').count(), 1);
+          assert.ok((await svg.locator('.fm-route.active').getAttribute('points')).split(' ').length > 2);
+        } finally {
+          await visitor.close();
+        }
+      }
+      console.log('PASS map variant:', variant, 'native geometry, visitor routes and fallback checked');
+    }
+    setup('preview');
+    await navigationPreview(browser, admin);
+    setup('fit');
+    await fitNavigationToReference(browser, admin);
+    setup('bend');
+    await reviewBentCorridor(browser, admin);
+    setup('multi-turn');
+    await reviewMultiTurnCorridor(browser, admin);
+    setup('branch');
+    await reviewBranchConflict(browser, admin);
+    setup('three-rooms');
+    await reviewThreeRooms(browser, admin);
+  } finally {
+    try { setup('restore'); } finally { await adminContext.close(); }
+  }
+}
+
+async function operationsLog(browser) {
+  const page = await openAdmin(browser);
+  try {
+    const opsPath = '/api/admin/operations';
+    const forbidden = await page.request.get(opsPath);
+    assert.equal(forbidden.status(), 401);
+    const adminToken = await page.evaluate(() => JSON.parse(localStorage.getItem('arti.adminToken')));
+    const headers = { 'X-Admin-Token': adminToken };
+    const workPath = '/api/admin/artworks/fixture-art03';
+    const work = await body(await page.request.get(workPath, { headers }));
+    const saved = await page.request.put(workPath, { headers, data: work });
+    const savedWork = await body(saved);
+    const requestId = saved.headers()['x-request-id'];
+    const question = '합성 작품의 모양을 알려 주세요.';
+    const failed = await page.request.post('/api/artworks/fixture-art03/ask', { data: { question } });
+    assert.equal(failed.status(), 503);
+    const failedId = failed.headers()['x-request-id'];
+    const before = await body(await page.request.get(opsPath, { headers }));
+    const partial = await page.request.post(workPath + '/analyze', { headers, data: {
+      version: savedWork.version, regenerateFields: ['summary', 'guide', 'tag', 'emotion'],
+    } });
+    const partialId = partial.headers()['x-request-id'];
+    const partialResult = await body(partial);
+    assert.equal(partialResult.summary.made, true);
+    assert.equal(partialResult.guide.code, 'PROVIDER_ERROR');
+    for (const kind of ['tag', 'emotion']) assert.equal(partialResult[kind].code, 'AI_UNAVAILABLE');
+
+    const fullFailure = await page.request.post(workPath + '/analyze', { headers, data: {
+      version: partialResult.artwork.version, regenerateFields: ['guide'],
+    } });
+    const fullFailureId = fullFailure.headers()['x-request-id'];
+    assert.equal((await body(fullFailure, 502)).code, 'PROVIDER_ERROR');
+    const report = await body(await page.request.get(opsPath, { headers }));
+    assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
+    assert.equal(report.draftConfiguration, 'configured');
+    assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
+    assert.equal(report.today.analysisRequests, before.today.analysisRequests + 2);
+    assert.equal(report.today.analysisPartialFailures, before.today.analysisPartialFailures + 1);
+    assert.equal(report.today.aiErrors, before.today.aiErrors + 1);
+    const usage = {
+      attempts: before.textModelUsage.attempts + 3, missing: before.textModelUsage.missing + 2,
+      inputTokens: (before.textModelUsage.inputTokens ?? 0) + 120,
+      outputTokens: (before.textModelUsage.outputTokens ?? 0) + 30,
+    };
+    assert.deepEqual(report.textModelUsage, usage);
+    const storedEvent = report.recent.find(event => event.requestId === failedId);
+    assert.deepEqual(Object.keys(storedEvent).sort(), ['action', 'occurredAt', 'requestId', 'status']);
+    assert.equal(storedEvent.status, 503);
+    assert.equal(JSON.stringify(report).includes(question), false);
+    assert.equal(JSON.stringify(report).includes('합성 운영 로그 검수 세부 정보'), false);
+    assert.deepEqual(report.recent.find(event => event.requestId === partialId).analysisFailures,
+      [{ field: 'guide', code: 'PROVIDER_ERROR' }]);
+
+    await page.reload();
+    await page.getByText(/오늘 도슨트 요청/).waitFor();
+    await page.getByRole('link', { name: '운영 로그', exact: true }).click();
+    await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
+    const summaryGroup = report.textModelUsageByTaskModel.find(row => row.task === 'summary' && row.model === 'synthetic-operations');
+    const guideGroup = report.textModelUsageByTaskModel.find(row => row.task === 'guide' && row.model === 'synthetic-operations');
+    assert.equal(summaryGroup.cachedInputTokens, summaryGroup.attempts * 45);
+    assert.equal(guideGroup.cachedInputTokens, null);
+    const modelTable = page.getByRole('region', { name: '작업·모델별 토큰 사용량' });
+    await modelTable.getByRole('row').filter({ hasText: '쉬운 요약' }).getByText(String(summaryGroup.cachedInputTokens), { exact: true }).waitFor();
+    await modelTable.getByRole('row').filter({ hasText: '관람가이드' }).getByText(`토큰 ${guideGroup.missing}건 · 캐시 ${guideGroup.cacheMissing}건`, { exact: true }).waitFor();
+    await page.getByText(requestId, { exact: true }).waitFor();
+    await page.getByText(failedId, { exact: true }).waitFor();
+    fixtureCommand([
+      'from uuid import uuid4',
+      'from arti.models import OperationEvent',
+      'OperationEvent.objects.bulk_create([OperationEvent(action="artwork_save", status=200, request_id=uuid4()) for _ in range(51)])',
+    ]);
+    await button(page, '다시 조회').click();
+    await page.getByText(failedId, { exact: true }).waitFor({ state: 'hidden' });
+    await page.getByRole('checkbox', { name: '오류만 보기' }).check();
+    await page.getByText(failedId, { exact: true }).waitFor();
+    const partialRow = page.getByRole('row').filter({ hasText: partialId });
+    await partialRow.getByText('관람가이드 · PROVIDER_ERROR', { exact: true }).waitFor();
+    await partialRow.getByText('200', { exact: true }).waitFor();
+    await page.getByRole('row').filter({ hasText: fullFailureId }).getByText('502', { exact: true }).waitFor();
+    assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
+    assert.equal(await page.getByText(failedId, { exact: true }).count(), 1);
+    console.log('PASS admin operations: authorization, event IDs, dashboard counts, error filter and request-data exclusion');
+
+    const returnTo = exhibition + '/taste/saved';
+    await page.goto('/login?redirect=' + encodeURIComponent(returnTo));
+    await button(page, '로그인 도움').click();
+    await page.getByText('현재는 비밀번호 재설정 메일을 보낼 수 없어요.').waitFor();
+    await page.getByRole('link', { name: '로그인으로 돌아가기' }).click();
+    await page.waitForURL(url => url.pathname === '/login' && url.searchParams.get('redirect') === returnTo);
+    const disabled = await page.request.post('/api/auth/password-reset/request', { data: { email: 'reset@example.test' } });
+    assert.equal(disabled.status(), 501);
+    console.log('PASS login help: explicit disabled reset and original exhibition continuation');
+  } finally {
+    await page.close();
+  }
+}
+
+async function passwordReset(browser) {
+  const page = await openPage(browser);
+  const other = await openPage(browser);
+  try {
+    const member = await newMember(page);
+    const secondMember = await newMember(other);
+    const savedReceipt = await body(await page.request.post('/api/visits', {
+      headers: headersFor(member.token),
+      data: {
+        visitId: randomUUID(), exhibitionId: 'fixture-ex01', date: '2026-11-08T01:00:00Z',
+        durationMin: 10, recommendedCount: 3, selectedDuration: '30m', requestGeneration: 1,
+        tastes: ['landscape'], viewedArtworkIds: ['fixture-art01'], reactions: {}, reactionReasons: {}, dwell: {},
+      },
+    }), 201);
+    await page.goto('/login');
+    await button(page, '로그인 도움').click();
+    await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
+    await button(page, '재설정 링크 요청').click();
+    await page.getByRole('status').filter({ hasText: '등록된 이메일이라면' }).waitFor();
+    const missing = await page.request.post('/api/auth/password-reset/request', { data: { email: 'unknown-reset@example.test' } });
+    assert.equal(missing.status(), 204);
+    const inbox = await body(await page.request.post('/api/__test__/reset-inbox'));
+    assert.equal(inbox.length, 1);
+    const resetPath = inbox[0];
+    const newPassword = 'Replacement-42!';
+    const fill = async () => {
+      await page.getByLabel('새 비밀번호', { exact: true }).fill(newPassword);
+      await page.getByLabel('새 비밀번호 확인', { exact: true }).fill(newPassword);
+    };
+    await page.goto(resetPath);
+    await page.waitForURL(url => url.pathname === '/password/reset' && !url.hash);
+    await fill();
+    await button(page, '비밀번호 바꾸기').click();
+    await page.getByRole('heading', { name: '비밀번호를 바꿨어요' }).waitFor();
+    assert.equal((await page.request.get('/api/auth/me', { headers: headersFor(member.token) })).status(), 401);
+    assert.equal((await other.request.get('/api/auth/me', { headers: headersFor(secondMember.token) })).status(), 200);
+    const oldLogin = await page.request.post('/api/auth/login', { data: { email: member.user.email, password } });
+    assert.equal(oldLogin.status(), 401);
+    await page.goto(resetPath);
+    await fill();
+    await button(page, '비밀번호 바꾸기').click();
+    await page.getByRole('alert').filter({ hasText: '만료됐거나 이미 사용됐어요' }).waitFor();
+    await page.getByRole('link', { name: '로그인으로 돌아가기' }).click();
+    await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
+    await page.getByLabel('비밀번호', { exact: true }).fill(newPassword);
+    const [loginResult] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/auth/login', 'POST')),
+      button(page, '로그인').click(),
+    ]);
+    const restored = await body(loginResult);
+    assert.equal(restored.user.id, member.user.id);
+    const receiptPath = `/api/visits/${savedReceipt.id}`;
+    assert.equal((await other.request.get(receiptPath, { headers: headersFor(secondMember.token) })).status(), 403);
+    await page.waitForURL(base.href);
+    await page.goto('/mypage');
+    const receiptCard = page.getByRole('button', { name: /아트 영수증 보기/ });
+    await receiptCard.waitFor();
+    assert.equal(await receiptCard.count(), 1);
+    const [opened] = await Promise.all([
+      page.waitForResponse(response => isResponse(response, receiptPath, 'GET')),
+      receiptCard.click(),
+    ]);
+    assert.equal((await body(opened)).id, savedReceipt.id);
+    await page.waitForURL(`**/receipt/${savedReceipt.id}`);
+    console.log('PASS password reset: synthetic mailbox, one-use link, prior session revoked, same member and receipt, other member denied');
+  } finally {
+    await Promise.all([page.close(), other.close()]);
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
-  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2'].includes(suite), 'Unknown Chrome suite');
+  assert(['all', 'receipt-session', 'survey-map', 'recommendation-shortage', 'saved-v2', 'exhibition-order', 'map-variants', 'operations', 'password-reset'].includes(suite), 'Unknown Chrome suite');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
     if (suite === 'saved-v2') return await savedV2(browser);
+    if (suite === 'map-variants') return await mapVariants(browser);
+    if (suite === 'operations') return await operationsLog(browser);
+    if (suite === 'password-reset') return await passwordReset(browser);
+    if (suite === 'exhibition-order') {
+      await exhibitionOrder(browser, false);
+      await exhibitionOrder(browser, true);
+      return await exhibitionOrderV2(browser);
+    }
     if (suite !== 'survey-map') {
       await receiptSession(browser, false);
       await receiptSession(browser, true);

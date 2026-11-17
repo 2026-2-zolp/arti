@@ -106,6 +106,10 @@ jobs:
             name: Visit Chrome (boundaries)
             database: arti_visit_boundaries
             admin: visit-boundaries-admin
+          - suite: indoor-map
+            name: Visit Chrome (indoor map and direct visit)
+            database: arti_visit_boundaries_indoor_map
+            admin: visit-boundaries-admin
           - suite: narrow-visit
             name: Visit Chrome (narrow layout)
             database: arti_narrow_pc_ci
@@ -116,6 +120,13 @@ jobs:
             name: Admin Chrome (analysis conflict)
             database: arti_admin_analysis
             admin: admin-analysis-admin
+          - suite: operations
+            name: Admin Chrome (operations log)
+            database: arti_visit_boundaries_operations_ci
+            admin: visit-boundaries-admin
+          - suite: password-reset
+            name: Account Chrome (password reset)
+            database: arti_visit_boundaries_password_ci
           - suite: admin-concurrent
             name: Admin Chrome (concurrent editing)
             database: arti_admin_concurrent
@@ -150,6 +161,8 @@ jobs:
       ARTI_KAKAO_CLIENT_ID: ''
       ARTI_KAKAO_CLIENT_SECRET: ''
       ARTI_KAKAO_CALLBACK_URL: ''
+      ARTI_PASSWORD_RESET_ORIGIN: ''
+      ARTI_PASSWORD_RESET_FROM: ''
       ARTI_BOOTSTRAP_PASSWORD: ci-only-synthetic-docent-admin-42
       PGDATABASE: ${{ matrix.database || 'arti' }}
       PGUSER: arti
@@ -203,12 +216,22 @@ jobs:
       - name: Run V2 recommendation shortage Chrome
         if: matrix.suite == 'visit-boundaries'
         run: node frontend/tests/runVisitBoundaries.browser.mjs recommendation-shortage
+      - name: Run indoor map and direct visit Chrome
+        if: matrix.suite == 'indoor-map'
+        env:
+          ARTI_EXHIBITION_ORDER_DEMO_ENABLED: 'true'
+        run: |
+          node frontend/tests/runVisitBoundaries.browser.mjs map-variants
+          node frontend/tests/runVisitBoundaries.browser.mjs exhibition-order
       - name: Run saved V2 Chrome
         if: matrix.suite == 'saved-v2'
         run: node frontend/tests/runVisitBoundaries.browser.mjs saved-v2
       - name: Run administrator analysis Chrome
         if: matrix.suite == 'admin-analysis'
         run: node frontend/tests/adminAnalysis.browser.mjs
+      - name: Run operations log and password reset Chrome
+        if: matrix.suite == 'operations' || matrix.suite == 'password-reset'
+        run: node frontend/tests/runVisitBoundaries.browser.mjs "$ARTI_BROWSER_SUITE"
       - name: Run mock Kakao HTTPS Chrome
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs

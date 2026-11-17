@@ -88,8 +88,8 @@ export default function U03Login() {
       )}
 
       <div className="row-links">
-        <button className="link-btn" onClick={() => navigate('/password/forgot')}>
-          비밀번호 찾기
+        <button className="link-btn" onClick={() => navigate(redirect ? withRedirect('/password/forgot', redirect) : '/password/forgot')}>
+          로그인 도움
         </button>
         <span className="divider-dot" />
         <button className="link-btn" onClick={() => navigate(redirect ? withRedirect('/signup', redirect) : '/signup')}>

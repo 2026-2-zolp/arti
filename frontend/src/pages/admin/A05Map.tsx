@@ -15,6 +15,7 @@ import { useAsync } from '../../lib/useAsync';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import type { Artwork, Exhibition, MapPoint, Room } from '../../types';
 import { PageHead } from './AdminLayout';
+import NavigationEditor from './NavigationEditor';
 
 /** 기본 평면도(사각형)에서 좌표가 들어 있는 전시실 */
 const roomAt = (ex: Exhibition, p: MapPoint) =>
@@ -36,6 +37,7 @@ export default function A05Map() {
   const [draft, setDraft] = useState<MapPoint | null>(null);
   const [reloading, setReloading] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
+  const [editingNavigation, setEditingNavigation] = useState(false);
 
   useEffect(() => {
     setDraft(null);
@@ -125,7 +127,7 @@ export default function A05Map() {
     <>
       <PageHead
         title="위치·지도 관리"
-        desc="미술관 평면도 위에 작품 위치와 입구를 지정합니다. 이 위치로 사용자의 추천 관람 순서와 경로를 계산해요."
+        desc="도면에 작품 위치와 입구를 지정합니다. 이 위치는 관람 순서와 지도에 사용돼요. 출입문과 실제 통로는 도면에서 확인해 주세요."
         actions={
           <select
             value={exId}
@@ -159,6 +161,13 @@ export default function A05Map() {
             }}
             onError={fail}
           />
+          {ex.floorPlanRevision !== undefined && (
+            <details onToggle={event => setEditingNavigation(event.currentTarget.open)}>
+              <summary>이동 구조 등록</summary>
+              {editingNavigation && <NavigationEditor key={`${ex.id}:${ex.floorPlanRevision}`}
+                exhibition={ex} artworks={artworks} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
+            </details>
+          )}
 
           <section className="a-card pad">
             <FloorMap

@@ -334,6 +334,10 @@ a.history-card { text-decoration: none; }
 .fm-entrance text { font-size: 2.8px; fill: var(--ink-2); }
 .fm-route { fill: none; stroke: #e9b4bf; stroke-width: 0.9; stroke-dasharray: 1.6 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .fm-route.active { stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: none; }
+.fm-corridor { fill: #e6e2d7; }
+.fm-wall { fill: #9d978c; }
+.fm-door { fill: #faf8f2; }
+.fm-waypoint { fill: var(--accent, #ba526a); }
 .fm-marker circle { fill: var(--accent); }
 .fm-marker text { font-size: 3.4px; fill: #fff; font-weight: 600; pointer-events: none; }
 .fm-marker.upcoming circle, .fm-marker.plain circle { fill: #fff; stroke: var(--accent); stroke-width: 0.6; }
@@ -345,6 +349,12 @@ a.history-card { text-decoration: none; }
 /* 평면도 이미지 위: 마커·입구 글자가 그림에 묻히지 않게 흰 테두리, 끌기 가능한 요소는 손 모양 커서 */
 .floor-map.has-plan .fm-marker circle { stroke: #fff; stroke-width: 0.7; }
 .floor-map.has-plan .fm-marker.upcoming circle, .floor-map.has-plan .fm-marker.plain circle { stroke: var(--accent); }
+.floor-map .fm-marker.check circle { fill: #7a4516; stroke: #fff; stroke-width: 0.75; }
+.fm-marker.check { pointer-events: none; }
+.fm-marker.check line { stroke: #7a4516; stroke-width: 0.5; }
+.fm-marker.check text { fill: #7a4516; stroke: #fff; stroke-width: 0.85; paint-order: stroke; }
+.fm-check-focus { fill: none; stroke: #7a4516; stroke-width: 1.2; stroke-dasharray: 1.8 0.8; pointer-events: none; }
+.a-navigation-preview button[aria-pressed='true'] { border-color: #7a4516; color: #7a4516; }
 .floor-map.has-plan .fm-entrance text { paint-order: stroke; stroke: #fff; stroke-width: 0.8px; font-weight: 600; }
 .fm-marker.draggable, .fm-entrance.draggable { cursor: grab; touch-action: none; }
 .floor-map.dragging, .floor-map.dragging * { cursor: grabbing; }
@@ -608,6 +618,9 @@ a.history-card { text-decoration: none; }
 .a-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
 .a-map-layout .floor-map { background: #fff; }
 .a-map-layout .fm-room { fill: #f7f7f6; stroke: #cfcfcf; }
+.a-navigation-preview .a-inline { flex-wrap: wrap; }
+.a-navigation-preview .a-inline > div { display: grid; gap: 4px; flex: 1 1 10rem; min-width: 0; }
+.a-navigation-preview select { width: 100%; min-width: 0; }
 .a-map-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--a-line); font-size: 15px; }
 .a-pos-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow: auto; }
 .a-pos-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--a-line); background: #fafafa; text-align: left; font-size: 15px; }

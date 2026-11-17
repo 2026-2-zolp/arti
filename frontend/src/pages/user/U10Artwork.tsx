@@ -42,6 +42,7 @@ export default function U10Artwork() {
   const { state, dispatch } = useVisit();
   const to = useExhibitionPath();
   const { recommendations, current, reactions, reactionReasons, exhibitionId, visitId, requestGeneration } = state;
+  const isExhibitionOrder = state.visitMode === 'exhibition_order';
   const [ask, setAsk] = useState<Reaction | null>(null);
   const [customOn, setCustomOn] = useState(false);
   const [customText, setCustomText] = useState('');
@@ -188,6 +189,11 @@ export default function U10Artwork() {
   const skip = () => {
     if (advancing.current || loading || !unavailable) return;
     advancing.current = true;
+    if (isExhibitionOrder && isLast && !state.viewed.length) {
+      dispatch({ type: 'resetVisit' });
+      navigate(to(), { replace: true });
+      return;
+    }
     dispatch({ type: 'skipCurrent', visitId, generation: requestGeneration, artworkId: rec.artworkId });
     navigate(to(isLast ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
   };
@@ -320,13 +326,13 @@ export default function U10Artwork() {
             </div>
           )}
 
-          <div className="reason-box">
+          {!isExhibitionOrder && <div className="reason-box">
             <Icon name="bulb" />
             <div>
               <strong>이 작품이 추천된 이유</strong>
               <p>{reasonSentence(rec.matchedTags, rec.aiTags ?? false)}</p>
             </div>
-          </div>
+          </div>}
 
           <div className="tabs" role="tablist">
             {TABS.map((t) => (

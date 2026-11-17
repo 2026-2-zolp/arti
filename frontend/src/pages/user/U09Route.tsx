@@ -12,6 +12,8 @@ import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { api, ApiError } from '../../api/client';
 import { GALAXY_MAP_EXHIBITION, galaxyMapLeg } from '../../lib/galaxyMapFixture';
+import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
+import { indoorLeg, indoorSequence } from '../../lib/indoorRoute';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { hasAppHistory, useVisitHistory, visitEntry } from '../../lib/appHistory';
@@ -28,6 +30,7 @@ export default function U09Route() {
   const exhibitionId = useExhibitionId();
   const to = useExhibitionPath();
   const { recommendations, current, viewed, startedAt } = state;
+  const isExhibitionOrder = state.visitMode === 'exhibition_order';
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useAsync(
@@ -43,7 +46,7 @@ export default function U09Route() {
   );
   const returnToArtwork = entry?.returnToArtwork === true;
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
-  const title = isNextGuide ? '다음 작품 안내' : '추천 관람순서';
+  const title = isNextGuide ? '다음 작품 안내' : isExhibitionOrder ? '전시 관람순서' : '추천 관람순서';
   const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
   const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
   const openArtwork = () => {
@@ -58,7 +61,7 @@ export default function U09Route() {
   const back = () => {
     if (returnToArtwork) backToArtwork();
     else if (hasAppHistory()) navigate(-1);
-    else navigate(to('/recommend'), { replace: true });
+    else navigate(to(isExhibitionOrder ? '' : '/recommend'), { replace: true });
   };
 
   if (askFinished) return <FinishedVisitPrompt key={locationKey} />;
@@ -89,6 +92,7 @@ export default function U09Route() {
           <div className="notice-card is-err notice-center screen-center" role="alert">
             <p className="notice-body">지도 정보를 불러오지 못했어요.{errorDetail(error)}</p>
             <button className="btn primary block" onClick={reload}>다시 시도하기</button>
+            {isExhibitionOrder && <button className="btn ghost block" onClick={openArtwork}>작품 열기</button>}
           </div>
         ) : <Spinner />}
       </MobileShell>
@@ -102,13 +106,18 @@ export default function U09Route() {
   const target = byId.get(recommendations[current].artworkId);
   if (!target) {
     const skip = () => {
+      if (isExhibitionOrder && current + 1 === recommendations.length && !viewed.length) {
+        dispatch({ type: 'resetVisit' });
+        navigate(to(), { replace: true });
+        return;
+      }
       dispatch({ type: 'skipCurrent', visitId: state.visitId, generation: state.requestGeneration, artworkId: recommendations[current].artworkId });
       navigate(to(current + 1 === recommendations.length ? '/receipt' : '/route'), { replace: true, state: { visitEntry: visitEntry(state, current + 1) } });
     };
     return (
       <MobileShell screenId="U-09" title={title} back={back}>
         <div className="notice-card is-err notice-center screen-center" role="alert">
-          <p className="notice-body">추천 작품 정보를 불러올 수 없어요.</p>
+          <p className="notice-body">{isExhibitionOrder ? '이 작품을 현재 볼 수 없어요.' : '추천 작품 정보를 불러올 수 없어요.'}</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
           <button className="btn ghost block" onClick={skip}>이 작품 건너뛰기</button>
         </div>
@@ -132,22 +141,40 @@ export default function U09Route() {
 
   const focus = focusId ? byId.get(focusId) : null;
   const isFirst = current === 0 && !startedAt;
-  const locationLabel = (w: Artwork) => w.position ? roomName(w) || '전시실 미등록' : '위치 미등록';
+  const locationLabel = (w: Artwork) => {
+    const room = roomName(w);
+    if (w.position) return room || '전시실 미등록';
+    return isExhibitionOrder && room ? `${room} · 지도 위치 미등록` : '위치 미등록';
+  };
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
   const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
+  const indoor = exhibitionIndoorLayout(ex);
   const stops = recommendations.map((r) => byId.get(r.artworkId));
-  const route = mapOpen ? [ex.entrance, ...stops.flatMap((stop, i) => {
+  const hasRouteLines = !!indoor || !isExhibitionOrder || isMapFixture;
+  const baselineRoute = hasRouteLines && mapOpen && !indoor ? [ex.entrance, ...stops.flatMap((stop, i) => {
     if (i < current && !viewed.includes(recommendations[i].artworkId)) return [];
     if (!stop?.position) return [null];
     const prior = stops[i - 1];
     const start = i === 0 ? ex.entrance : prior?.position;
     return isMapFixture && start ? galaxyMapLeg(start, stop.position, prior?.roomId, stop.roomId).slice(1) : [stop.position];
   })] : undefined;
-  let activeLeg = from && target.position ? [from, target.position] : null;
-  if (isMapFixture && from && target.position) activeLeg = galaxyMapLeg(from, target.position, previous?.roomId, target.roomId);
+  const route = indoor && mapOpen ? indoorSequence(indoor, [ex.entrance, ...stops.flatMap((stop, i) => {
+    if (i < current && !viewed.includes(recommendations[i].artworkId)) return [];
+    return [stop?.position ?? null];
+  })]) : baselineRoute;
+  let activeLeg = null;
+  if (hasRouteLines && from && target.position) {
+    activeLeg = indoor ? indoorLeg(indoor, from, target.position)
+      : isMapFixture ? galaxyMapLeg(from, target.position, previous?.roomId, target.roomId)
+        : [from, target.position];
+  }
   let routeNote = '선은 작품 위치를 이은 거예요. 실제 통로와 다를 수 있어요.';
   if (isMapFixture) routeNote = '검증용 도면이에요. 출입문과 복도를 따라 이동하는 예시입니다.';
-  if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';
+  if (indoor) routeNote = activeLeg
+    ? '도면에 등록된 이동 가능 구간이에요.'
+    : '이어지는 통로를 확인할 수 없어요. 작품 번호와 전시실을 확인해 주세요.';
+  else if (!hasRouteLines) routeNote = '번호는 감상 순서를 나타내요. 이동할 때는 전시실 안내를 따라가 주세요.';
+  else if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';
   else if (!isMapFixture && route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
 
   const go = () => {
@@ -158,6 +185,33 @@ export default function U09Route() {
     dispatch({ type: 'startVisit', exhibition: { id: ex.id, title: ex.title, venue: ex.venue } });
     openArtwork();
   };
+
+  const mapCard = (
+    <div className={`map-card route-map${isNextGuide ? ' route-map-next' : ''}`}>
+      <p className="muted small route-note">{routeNote}</p>
+      <FloorMap
+        exhibition={ex}
+        markers={mapOpen ? markers : focusedMarkers}
+        route={route}
+        activeLeg={activeLeg}
+        showEntrance={mapOpen || !previousId}
+        showCompletedNumbers={!mapOpen}
+        aspect={0.95}
+        onMarkerClick={mapOpen ? (id) => setFocusId((f) => f === id ? null : id) : undefined}
+      />
+      {mapOpen && focus && focus.id !== target.id && (
+        <div className="next-card">
+          <span className="eyebrow">{orderOf(focus.id)}번 작품</span>
+          <div className="next-row">
+            <strong>{focus.title} · {locationLabel(focus)}</strong>
+            <button className="text-btn" onClick={() => setFocusId(null)}>
+              {current + 1}번 작품 정보 보기
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <MobileShell
@@ -172,7 +226,7 @@ export default function U09Route() {
     >
       <div className="route-head">
         <span className="muted">
-          추천 작품 {current + 1}/{recommendations.length}
+          {isExhibitionOrder ? '안내 작품' : '추천 작품'} {current + 1}/{recommendations.length}
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (
@@ -194,33 +248,11 @@ export default function U09Route() {
         </div>
       </div>
 
-      <div className={`map-card route-map${isNextGuide ? ' route-map-next' : ''}`}>
-        <p className="muted small route-note">{routeNote}</p>
-        <FloorMap
-          exhibition={ex}
-          markers={mapOpen ? markers : focusedMarkers}
-          route={route}
-          activeLeg={activeLeg}
-          showEntrance={mapOpen || !previousId}
-          showCompletedNumbers={!mapOpen}
-          aspect={0.95}
-          onMarkerClick={mapOpen ? (id) => setFocusId((f) => (f === id ? null : id)) : undefined}
-        />
-        {mapOpen && focus && focus.id !== target.id && (
-          <div className="next-card">
-            <span className="eyebrow">{orderOf(focus.id)}번 작품</span>
-            <div className="next-row">
-              <strong>{focus.title} · {locationLabel(focus)}</strong>
-              <button className="text-btn" onClick={() => setFocusId(null)}>
-                {current + 1}번 작품 정보 보기
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {(!isExhibitionOrder || !isNextGuide) && mapCard}
       <details className="route-details" open={mapOpen}
         onToggle={(event) => setMapChoice({ key: locationKey, open: event.currentTarget.open })}>
         <summary>전체 지도와 관람 순서</summary>
+        {isExhibitionOrder && isNextGuide && mapOpen && mapCard}
         <ol className="route-list">
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);

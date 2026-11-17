@@ -1,5 +1,5 @@
 /** 관람 선택·진행·대화·기록 상태를 전이시키는 순수 로직입니다. */
-import type { Reaction, ReceiptArtwork, ReceiptExhibition, Recommendation, TasteTag, User, VisitDuration, TasteProfile } from '../types';
+import type { Reaction, ReceiptArtwork, ReceiptExhibition, Recommendation, TasteTag, User, VisitDuration, TasteProfile, VisitMode } from '../types';
 import {load} from '../lib/storage';
 import {newVisitId} from '../lib/visitScope';
 import {TASTE_LABEL} from '../data/mock';
@@ -9,6 +9,7 @@ export interface VisitState {
   requestGeneration: number;
   tasteProfile?: TasteProfile;
   tasteEvidenceReceipt?: string;
+  visitMode?: VisitMode;
   /** 관람 중인 전시. 주소(/exhibitions/:exhibitionId)를 따라 맞춘다 — store/ExhibitionRoute.tsx. 아직 없으면 null */
   exhibitionId: string | null;
   user: User | null;
@@ -43,6 +44,7 @@ export type Action =
   | { type: 'setDuration'; duration: VisitDuration; newVisit?: boolean; scope?: string; proof?: {visitId: string; receipt: string} }
   | { type: 'setRecommendations'; recs: Recommendation[]; generation?: number }
   | { type: 'startVisit'; exhibition?: ReceiptExhibition }
+  | { type: 'startExhibitionOrder'; exhibition: ReceiptExhibition; artworkIds: string[] }
   | { type: 'finishVisit'; visitId: string; generation: number }
   | ({ type: 'addDwell' } & ArtworkDwell)
   | { type: 'react'; artworkId: string; reaction: Reaction | null; reason?: string }
@@ -58,6 +60,7 @@ const USER_KEY = 'arti.user';
 const emptyVisit = {
   tasteProfile: undefined as TasteProfile | undefined,
   tasteEvidenceReceipt: undefined as string | undefined,
+  visitMode: undefined as VisitMode | undefined,
   tastes: [] as TasteTag[],
   duration: null,
   recommendations: [] as Recommendation[],
@@ -124,7 +127,7 @@ export function reducer(s: VisitState, a: Action): VisitState {
     case 'setDuration':
       if ((a.scope && tasteScope(s) !== a.scope) || (a.duration === s.duration && !a.newVisit)) return s;
       if (s.tasteProfile?.version === 2 && s.startedAt && !a.proof) return s;
-      return { ...s, duration: a.duration, recommendations: [], current: 0, viewed: [], reactions: {}, reactionReasons: {},
+      return { ...s, visitMode: undefined, duration: a.duration, recommendations: [], current: 0, viewed: [], reactions: {}, reactionReasons: {},
         dwell: {}, startedAt: null, receiptArtworks: {}, receiptExhibition: undefined,
         visitId: a.proof?.visitId ?? (s.tasteEvidenceReceipt ? s.visitId : newVisitId()),
         tasteEvidenceReceipt: a.proof?.receipt ?? s.tasteEvidenceReceipt, requestGeneration: s.requestGeneration + 1 };
@@ -135,6 +138,12 @@ export function reducer(s: VisitState, a: Action): VisitState {
     case 'startVisit':
       if (s.startedAt && (s.receiptExhibition || !a.exhibition)) return s;
       return { ...s, startedAt: s.startedAt ?? Date.now(), receiptExhibition: a.exhibition };
+    case 'startExhibitionOrder':
+      if (s.startedAt || s.exhibitionId !== a.exhibition.id || !a.artworkIds.length) return s;
+      return { ...s, ...emptyVisit, visitMode: 'exhibition_order', startedAt: Date.now(), receiptExhibition: a.exhibition,
+        recommendations: a.artworkIds.map((artworkId, index) => ({
+          artworkId, order: index + 1, reason: '', matchedTags: [], matchedCard: null, score: 0, aiTags: false,
+        })) };
     case 'finishVisit':
       if (a.visitId !== s.visitId || a.generation !== s.requestGeneration || !s.viewed.length) return s;
       return { ...s, current: s.recommendations.length };

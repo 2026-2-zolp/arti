@@ -299,7 +299,7 @@ function Receipt({
           <dd>{record.viewedArtworkIds.length}점</dd>
         </div>
         <div>
-          <dt>추천 작품</dt>
+          <dt>{record.visitMode === 'exhibition_order' ? '전시 순서 안내' : '추천 작품'}</dt>
           <dd>{record.recommendedCount}점</dd>
         </div>
         <div>

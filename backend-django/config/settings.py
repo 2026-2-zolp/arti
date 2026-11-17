@@ -10,10 +10,12 @@ if len(SECRET_KEY) < 32 or SECRET_KEY.startswith('replace-'):
 ARTI_ENV = os.environ.get('ARTI_ENV', 'production')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true' and ARTI_ENV == 'development'
 ALLOW_TEST_FIXTURES = os.environ.get('ALLOW_TEST_FIXTURES', 'false').lower() == 'true'
+ARTI_EXHIBITION_ORDER_DEMO_ENABLED = os.environ.get('ARTI_EXHIBITION_ORDER_DEMO_ENABLED', 'false').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,api').split(',')
 CORS_ALLOWED_ORIGINS = tuple(v.strip() for v in os.environ.get('ARTI_ALLOWED_ORIGINS','').split(',') if v.strip())
 INSTALLED_APPS = ['django.contrib.contenttypes', 'rest_framework', 'arti']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'arti.http.RequestIdMiddleware',
+              'arti.operations.OperationEventMiddleware',
               'django.middleware.common.CommonMiddleware']
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -48,6 +50,16 @@ PASSWORD_HASHERS = ['django.contrib.auth.hashers.PBKDF2PasswordHasher']
 ARTI_KAKAO_CLIENT_ID = os.environ.get('ARTI_KAKAO_CLIENT_ID', '').strip()
 ARTI_KAKAO_CLIENT_SECRET = os.environ.get('ARTI_KAKAO_CLIENT_SECRET', '').strip()
 ARTI_KAKAO_CALLBACK_URL = os.environ.get('ARTI_KAKAO_CALLBACK_URL', '').strip()
+ARTI_PASSWORD_RESET_ORIGIN = os.environ.get('ARTI_PASSWORD_RESET_ORIGIN', '').strip().rstrip('/')
+ARTI_PASSWORD_RESET_FROM = os.environ.get('ARTI_PASSWORD_RESET_FROM', '').strip()
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'false').lower() == 'true'
+EMAIL_TIMEOUT = 10
 
 # Server only. No key/model is required to boot or run normal CI.
 ARTI_LLM_PROVIDER = os.environ.get('ARTI_LLM_PROVIDER', 'disabled')
@@ -58,6 +70,14 @@ ARTI_LLM_MODELS = {kind: os.environ.get('ARTI_LLM_MODEL_' + kind.upper(), '')
                    for kind in ('answer', 'explanation', 'summary', 'guide', 'interpret')}
 ARTI_LLM_JSON_MODE = os.environ.get('ARTI_LLM_JSON_MODE', 'true').lower() == 'true'
 ARTI_LLM_TOKEN_PARAMETER = os.environ.get('ARTI_LLM_TOKEN_PARAMETER', 'max_completion_tokens')
+ARTI_DRAFT_PROVIDER = os.environ.get('ARTI_DRAFT_PROVIDER', 'default')
+ARTI_DRAFT_BASE_URL = os.environ.get('ARTI_DRAFT_BASE_URL', '')
+ARTI_DRAFT_API_KEY = os.environ.get('ARTI_DRAFT_API_KEY', '')
+ARTI_DRAFT_MODEL = os.environ.get('ARTI_DRAFT_MODEL', '')
+ARTI_DRAFT_TOKEN_PARAMETER = os.environ.get('ARTI_DRAFT_TOKEN_PARAMETER', 'max_tokens')
+ARTI_DRAFT_JSON_MODE = os.environ.get('ARTI_DRAFT_JSON_MODE', 'true').lower() == 'true'
+ARTI_DRAFT_GUIDE_REVIEW = os.environ.get('ARTI_DRAFT_GUIDE_REVIEW', 'false').lower() == 'true'
+ARTI_LUNA_DRAFT_VISION = os.environ.get('ARTI_LUNA_DRAFT_VISION', 'false').lower() == 'true'
 
 # 내부 CLIP·mDeBERTa 서비스 주소. 빈 값이면 비활성, GPT와 독립입니다.
 ARTI_MODEL_SERVICE_URL = os.environ.get('ARTI_MODEL_SERVICE_URL', '')

@@ -99,6 +99,24 @@ class FoundationTests(TestCase):
             Exhibition.objects.filter(pk='fixture-draft').update(status=status)
             self.assertEqual(self.client.get('/api/exhibitions/fixture-draft').status_code, 404)
 
+    def test_exhibition_order_is_opt_in_for_one_synthetic_exhibition(self):
+        url = '/api/exhibitions/fixture-ex01'
+        with override_settings(ARTI_EXHIBITION_ORDER_DEMO_ENABLED=False):
+            self.assertNotIn('exhibitionOrder', self.client.get(url).json())
+        with override_settings(ARTI_EXHIBITION_ORDER_DEMO_ENABLED=True, ARTI_ENV='production'):
+            self.assertNotIn('exhibitionOrder', self.client.get(url).json())
+        with override_settings(ARTI_EXHIBITION_ORDER_DEMO_ENABLED=True, ALLOW_TEST_FIXTURES=False):
+            self.assertNotIn('exhibitionOrder', self.client.get(url).json())
+        with override_settings(ARTI_EXHIBITION_ORDER_DEMO_ENABLED=True):
+            other = Exhibition.objects.get(pk='fixture-draft')
+            other.status = 'running'
+            other.save(update_fields=['status'])
+            self.assertNotIn('exhibitionOrder', self.client.get('/api/exhibitions/fixture-draft').json())
+            self.assertEqual(self.client.get(url).json()['exhibitionOrder'], ['fixture-art03', 'fixture-art01', 'fixture-art05'])
+            Artwork.objects.filter(pk='fixture-art01').update(review_status='pending')
+            Artwork.objects.filter(pk='fixture-art05').update(position_x=None, position_y=None)
+            self.assertEqual(self.client.get(url).json()['exhibitionOrder'], ['fixture-art03', 'fixture-art05'])
+
     def test_pending_and_draft_artwork_hidden_in_all_public_reads(self):
         for work_id in ('fixture-art11', 'fixture-art13'):
             self.assertEqual(self.client.get('/api/artworks/'+work_id).status_code, 404)

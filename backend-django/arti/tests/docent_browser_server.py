@@ -111,7 +111,7 @@ def serve(host='0.0.0.0', port=8000):
 
     with override_settings(
         ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-browser-only',
-        OPENAI_MODEL='synthetic-browser-only', ARTI_LLM_MODELS={}, ARTI_MODEL_SERVICE_URL='',
+        OPENAI_MODEL='synthetic-browser-only', ARTI_LLM_MODELS={}, ARTI_DRAFT_PROVIDER='default', ARTI_MODEL_SERVICE_URL='',
     ), endpoint(respond=respond) as requests, patch('arti.llm.TIMEOUT_SECONDS', 22 if races else 1), make_server(
         host, port, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:

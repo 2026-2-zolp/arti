@@ -72,6 +72,7 @@ def profile_snapshot(tastes, profile, works, account=None, exhibition_id=None):
 
 
 def recommend(works, exhibition, tastes, duration, profile=None, account=None, *, resolution=None):
+    from .indoor import walking_order
     ordered_tags = [t for t in TAGS if t in tastes]
     if resolution is None:
         weights = weights_for(ordered_tags, profile, works, account)
@@ -96,13 +97,18 @@ def recommend(works, exhibition, tastes, duration, profile=None, account=None, *
             break
         if item not in picked:
             picked.append(item)
-    result = []
+    baseline = []
     x, y = exhibition.entrance_x, exhibition.entrance_y
     while picked:
         # Stable score/ID order resolves equal distances.
         index = min(range(len(picked)), key=lambda i: math.hypot(picked[i][0].position_x-x, picked[i][0].position_y-y))
         work, score = picked.pop(index)
+        baseline.append((work, score))
         x, y = work.position_x, work.position_y
+    order = walking_order(exhibition, [work for work, _ in baseline])
+    ordered = [baseline[index] for index in order] if order is not None else baseline
+    result = []
+    for work, score in ordered:
         by_strength = sorted(ordered_tags, key=lambda t: (-strength(work, t), TAGS.index(t)))
         matched = [t for t in by_strength if strength(work, t) >= .5]
         result.append({'artworkId': work.id, 'order': len(result)+1, 'score': round(score+1e-12, 3),

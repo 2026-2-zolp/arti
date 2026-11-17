@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "L01",
+      "fixtureId": "fixture-luna-l01",
+      "source": {
+        "version": 1,
+        "file": "L01-source-v1.txt",
+        "sha256": "bc94c61d4895e5c63f7f795fa1761cf8471770c87923db1e6ba25b3394f24ff1"
+      },
+      "image": {
+        "version": 1,
+        "width": 640,
+        "height": 480,
+        "file": "L01-v1.png",
+        "sha256": "6c9d5d318256835d0af4c05a9c4d0603168212f397a55ec399711eb54fcb4ef3"
+      }
+    },
+    {
+      "id": "L02",
+      "fixtureId": "fixture-luna-l02",
+      "source": {
+        "version": 1,
+        "file": "L02-source-v1.txt",
+        "sha256": "060e91310970f1b133f5d8d822dcc7798b47f6443bf5701e976165e06e698215"
+      },
+      "image": {
+        "version": 1,
+        "width": 640,
+        "height": 480,
+        "file": "L02-v1.png",
+        "sha256": "4982653320fe85531c260dc63d83e726a6c98c139ffb57617f5bcff44651980c"
+      }
+    },
+    {
+      "id": "L03",
+      "fixtureId": "fixture-luna-l03",
+      "source": {
+        "version": 1,
+        "file": "L03-source-v1.txt",
+        "sha256": "bc94c61d4895e5c63f7f795fa1761cf8471770c87923db1e6ba25b3394f24ff1"
+      },
+      "image": {
+        "version": 1,
+        "width": 640,
+        "height": 480,
+        "file": "L03-v1.png",
+        "sha256": "f899db89311c4b410080a0bf5e9b0ae2145f8ab87afe2f8f10cec92fadf898d3"
+      }
+    }
+  ]
+}
