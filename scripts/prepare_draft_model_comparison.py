@@ -92,18 +92,63 @@ def validate_review(plan, sheet):
     return scores
 
 
+def summarize_review(reference, private_plan, sheet):
+    if not isinstance(private_plan, dict) or any(private_plan.get(key) != reference[key] for key in (
+            'productRevision', 'fixtureVersion', 'inputMode', 'models')):
+        raise ValueError('Private plan revision, input or models do not match')
+    expected = {row['id']: {key: value for key, value in row.items() if key != 'labels'} for row in reference['trials']}
+    assignments = {}
+    if not isinstance(private_plan.get('trials'), list):
+        raise ValueError('Private plan trial rows are missing')
+    for row in private_plan['trials']:
+        if not isinstance(row, dict) or not isinstance(row.get('id'), str):
+            raise ValueError('Private plan trial needs an ID')
+        identifier = row['id']
+        fields = {key: value for key, value in row.items() if key != 'labels'}
+        labels = row.get('labels')
+        if (identifier in assignments or fields != expected.get(identifier) or not isinstance(labels, dict)
+                or set(labels) != {'X', 'Y'} or sorted(str(value) for value in labels.values()) != ['kanana', 'luna']):
+            raise ValueError(f'{identifier} has a duplicate or invalid private assignment')
+        assignments[identifier] = labels
+    if assignments.keys() != expected.keys():
+        raise ValueError('Private plan does not contain all trials')
+
+    validate_review(reference, sheet)
+    counts = {model: {task: dict.fromkeys(('pending', 'usable', 'revise', 'failed', 'failedWithoutDraft'), 0)
+                      for task in ('summary', 'guide')} for model in reference['models']}
+    reviewed = {}
+    for row in sheet['reviews']:
+        identifier = row['id']
+        result = counts[assignments[identifier][row['label']]][row['task']]
+        result[row['verdict']] += 1
+        if row['verdict'] == 'failed' and row.get('draft') is None:
+            result['failedWithoutDraft'] += 1
+        if row['verdict'] != 'pending':
+            reviewed[identifier] = reviewed.get(identifier, 0) + 1
+    return {'productRevision': reference['productRevision'], 'pairedReviews': sum(value == 2 for value in reviewed.values()),
+            'totalPairs': len(expected), 'byModelAndTask': counts}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--product-revision', required=True, help='Full ARTI Git commit SHA')
     output = parser.add_mutually_exclusive_group()
     output.add_argument('--review-template', action='store_true', help='Emit the blank X/Y scoring sheet without model IDs')
     output.add_argument('--validate-review', type=Path, help='Validate a completed or partial X/Y scoring sheet')
+    output.add_argument('--summarize-review', type=Path, help='Summarize reviewed trials by model with the original private plan')
+    parser.add_argument('--private-plan', type=Path, help='Original saved X/Y mapping for --summarize-review')
     args = parser.parse_args()
+    if bool(args.summarize_review) != bool(args.private_plan):
+        parser.error('--summarize-review and --private-plan are required together.')
     if not re.fullmatch(r'[a-f0-9]{40}', args.product_revision):
         parser.error('Provide a full 40-character Git SHA.')
     try:
         plan = prepare(args.product_revision)
-        if args.validate_review:
+        if args.summarize_review:
+            private_plan = json.loads(args.private_plan.read_text(encoding='utf-8-sig'))
+            sheet = json.loads(args.summarize_review.read_text(encoding='utf-8-sig'))
+            result = summarize_review(plan, private_plan, sheet)
+        elif args.validate_review:
             result = validate_review(plan, json.loads(args.validate_review.read_text(encoding='utf-8-sig')))
         else:
             result = review_template(plan) if args.review_template else plan
