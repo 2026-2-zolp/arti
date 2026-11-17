@@ -4,6 +4,7 @@ from math import hypot, inf, isfinite
 from .http import ContractError
 
 RECT_FIELDS = ('walkable', 'walls', 'pillars', 'doors', 'corridors')
+SEAM_TOLERANCE = 1e-9
 
 
 def invalid():
@@ -57,18 +58,42 @@ def inside_interval(origin, target, rect):
     return low, high
 
 
+def shares_passage(first, second):
+    width = min(first['x'] + first['w'], second['x'] + second['w']) - max(first['x'], second['x'])
+    height = min(first['y'] + first['h'], second['y'] + second['h']) - max(first['y'], second['y'])
+    return min(width, height) >= -SEAM_TOLERANCE and max(width, height) > SEAM_TOLERANCE
+
+
+def connected_spans(spans, start_index=0):
+    reached = [start_index]
+    remaining = set(range(len(spans))) - {start_index}
+    for index in reached:
+        start, end, rect = spans[index]
+        neighbors = [other for other in remaining
+                     if spans[other][0] <= end + SEAM_TOLERANCE
+                     and start <= spans[other][1] + SEAM_TOLERANCE
+                     and shares_passage(rect, spans[other][2])]
+        reached.extend(neighbors)
+        remaining.difference_update(neighbors)
+    return [spans[index] for index in reached]
+
+
 def can_walk(origin, target, walkable, barriers):
     if any(inside_interval(origin, target, rect) is not None for rect in barriers):
         return False
-    intervals = sorted(i for rect in walkable if (i := inside_interval(origin, target, rect)) is not None)
-    covered = 0
-    for start, end in intervals:
-        if start > covered:
-            return False
-        covered = max(covered, end)
-        if covered >= 1:
-            return True
-    return False
+    spans = [(*interval, rect) for rect in walkable if (interval := inside_interval(origin, target, rect)) is not None]
+    starts = [span for span in spans if span[0] == 0]
+    ends = [span for span in spans if span[1] == 1]
+    if not starts or not ends:
+        return False
+    # 모서리에 놓인 연결점도 폭이 없는 접촉을 통로로 바꿀 수 없습니다.
+    if len(starts) > 1 and len(connected_spans(starts)) != len(starts):
+        return False
+    if len(ends) > 1 and len(connected_spans(ends)) != len(ends):
+        return False
+    if any(end == 1 for _, end, _ in starts):
+        return True
+    return any(end == 1 for _, end, _ in connected_spans(spans, spans.index(starts[0])))
 
 
 def distances_from(graph, start, stop_count):

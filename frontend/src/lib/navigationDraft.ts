@@ -1,5 +1,5 @@
 import type { MapPoint, NavigationLayoutInput } from '../types';
-import { canWalkSegment, type IndoorLayout, type MapRect } from './indoorRoute';
+import { canWalkSegment, sharedPassage, type IndoorLayout, type MapRect } from './indoorRoute';
 
 export const navigationShapeLimit = 32;
 
@@ -39,14 +39,12 @@ export function fitNavigationDraft(layout: NavigationLayoutInput, first: MapPoin
   };
 }
 
-function overlapCenter(first: MapRect, second: MapRect, allowSharedEdge = false): MapPoint | null {
+function overlapCenter(first: MapRect, second: MapRect): MapPoint | null {
   const left = Math.max(first.x, second.x);
   const top = Math.max(first.y, second.y);
   const right = Math.min(first.x + first.w, second.x + second.w);
   const bottom = Math.min(first.y + first.h, second.y + second.h);
-  const hasArea = left < right && top < bottom;
-  const hasSharedEdge = (left === right && top < bottom) || (top === bottom && left < right);
-  return hasArea || (allowSharedEdge && hasSharedEdge) ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null;
+  return left < right && top < bottom ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null;
 }
 
 /** 문 양쪽, 복도의 접점과 기둥을 돌아가는 데 쓸 수 있는 점을 편집기에 제안합니다. */
@@ -69,7 +67,7 @@ export function suggestNavigationWaypoints(layout: NavigationLayoutInput, indoor
   }
   for (const [index, corridor] of layout.corridors.entries()) {
     for (const other of layout.corridors.slice(index + 1)) {
-      const joint = overlapCenter(corridor, other, true);
+      const joint = sharedPassage(corridor, other);
       if (joint) candidates.push(joint);
     }
   }

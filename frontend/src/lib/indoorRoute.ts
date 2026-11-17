@@ -8,6 +8,21 @@ export type IndoorLayout = {
   aspect: number;
 };
 
+const seamTolerance = 1e-9;
+type WalkSpan = { rect: MapRect; start: number; end: number };
+
+export function sharedPassage(first: MapRect, second: MapRect): MapPoint | null {
+  const left = Math.max(first.x, second.x);
+  const right = Math.min(first.x + first.w, second.x + second.w);
+  const top = Math.max(first.y, second.y);
+  const bottom = Math.min(first.y + first.h, second.y + second.h);
+  const width = right - left;
+  const height = bottom - top;
+  // Round-off at an edge is tolerated, but a point contact has no opening.
+  if (width < -seamTolerance || height < -seamTolerance || Math.max(width, height) <= seamTolerance) return null;
+  return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}
+
 // 구간이 사각형 안에 있는 매개변수 범위 [0, 1]을 계산합니다.
 function insideInterval(from: MapPoint, to: MapPoint, rect: MapRect): [number, number] | null {
   let start = 0;
@@ -29,21 +44,36 @@ function insideInterval(from: MapPoint, to: MapPoint, rect: MapRect): [number, n
   return [start, end];
 }
 
+function connectedSpans(start: WalkSpan, spans: WalkSpan[]): WalkSpan[] {
+  const reached = [start];
+  const remaining = new Set(spans);
+  remaining.delete(start);
+  for (const current of reached) {
+    for (const candidate of remaining) {
+      if (candidate.start > current.end + seamTolerance || current.start > candidate.end + seamTolerance ||
+          !sharedPassage(current.rect, candidate.rect)) continue;
+      reached.push(candidate);
+      remaining.delete(candidate);
+    }
+  }
+  return reached;
+}
+
 export function canWalkSegment(layout: IndoorLayout, from: MapPoint, to: MapPoint): boolean {
   if (![from.x, from.y, to.x, to.y].every(Number.isFinite)) return false;
   // 모서리 접촉도 차단합니다. 입력 도면에서 보행 여유를 둔 연결점을 사용합니다.
   if (layout.barriers.some(rect => insideInterval(from, to, rect))) return false;
-  const intervals = layout.walkable.flatMap(rect => {
+  const spans = layout.walkable.flatMap(rect => {
     const interval = insideInterval(from, to, rect);
-    return interval ? [interval] : [];
-  }).sort((a, b) => a[0] - b[0]);
-  let covered = 0;
-  for (const [start, end] of intervals) {
-    if (start > covered) return false;
-    covered = Math.max(covered, end);
-    if (covered >= 1) return true;
-  }
-  return false;
+    return interval ? [{ rect, start: interval[0], end: interval[1] }] : [];
+  });
+  const starts = spans.filter(span => span.start === 0);
+  const ends = spans.filter(span => span.end === 1);
+  if (!starts.length || !ends.length) return false;
+  // A waypoint at the corner cannot bridge spaces that have no shared opening.
+  if (starts.length > 1 && connectedSpans(starts[0], starts).length !== starts.length) return false;
+  if (ends.length > 1 && connectedSpans(ends[0], ends).length !== ends.length) return false;
+  return starts.some(span => span.end === 1) || connectedSpans(starts[0], spans).some(span => span.end === 1);
 }
 
 /** 등록된 공간과 연결점으로 갈 수 있는 경우에만 목표까지의 최단 구간을 반환합니다. */

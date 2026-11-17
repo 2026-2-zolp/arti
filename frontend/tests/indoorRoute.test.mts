@@ -107,3 +107,32 @@ test('suggestions cross narrow doors, turn the corridor and go around a pillar',
   assert.deepEqual(navigationCheckLocations(blocked, departure, outside),
     { departure: undefined, destination: outside, outside: true });
 });
+
+test('short shared edges allow passage but a corner-only contact cannot carry a route', () => {
+  const from = { x: 5, y: 5 };
+  const to = { x: 15, y: 15 };
+  const corner = { x: 10, y: 10 };
+  const base = { aspect: 1, barriers: [], waypoints: [corner] };
+  const first = { x: 0, y: 0, w: 10, h: 10 };
+  const second = { x: 10, y: 10, w: 10, h: 10 };
+  assert.ok(indoorLeg({ ...base, walkable: [first, { ...second, y: 9.8 }] }, from, to));
+  assert.equal(indoorLeg({ ...base, walkable: [first, second] }, from, to), null);
+  assert.equal(indoorLeg({ ...base, walkable: [first, { ...second, x: 10.1 }] }, from, to), null);
+});
+
+test('three corridor turns can connect through short seams and the final door', () => {
+  const layout: NavigationLayoutInput = JSON.parse(readFileSync(new URL('./fixtures/navigationMultiTurn.json', import.meta.url), 'utf-8'));
+  const from = { x: 17, y: 20 };
+  const to = { x: 87, y: 80 };
+  const withSuggestions = (draft: NavigationLayoutInput) => ({
+    ...navigationGeometry(draft), waypoints: suggestNavigationWaypoints(draft, navigationGeometry(draft)),
+  });
+  const connected = withSuggestions(layout);
+  const path = indoorLeg(connected, from, to);
+  assert.ok(path?.some(point => point.y === 24 && point.x > 50.8 && point.x < 51));
+  assert.ok(path?.some(point => point.x === 55.8 && point.y >= 46 && point.y <= 48));
+  assert.equal(indoorLeg({ ...connected, waypoints: connected.waypoints.slice(0, -1) }, from, to), null);
+  const [horizontal, vertical, ...remaining] = layout.corridors;
+  const touchingCorner = { ...layout, corridors: [horizontal, { ...vertical, x: 51, w: 4.8 }, ...remaining] };
+  assert.equal(indoorLeg(withSuggestions(touchingCorner), from, to), null);
+});

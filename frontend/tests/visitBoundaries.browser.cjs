@@ -1248,6 +1248,102 @@ async function reviewBentCorridor(browser, admin) {
   console.log('PASS bent corridor: narrow doors and pillar detour, check markers near blocked door or invalid endpoint');
 }
 
+async function reviewMultiTurnCorridor(browser, admin) {
+  const visitor = await openPage(browser);
+  try {
+    const readExhibition = () => visitor.request.get('/api' + exhibition).then(response => body(response));
+    const baseline = await readExhibition();
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    const readVisitorMap = async (connected) => {
+      await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+      const map = visitor.locator('.floor-map');
+      await map.locator('.fm-marker.current').waitFor();
+      if (connected) await checkWalkableSvg(map, 'multi-turn');
+      else {
+        await visitor.getByText(/이어지는 통로를 확인할 수 없어요/).waitFor();
+        assert.equal(await map.locator('.fm-route.active').count(), 0);
+      }
+      assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    };
+    await readVisitorMap(false);
+    const reloadVisitor = async connected => {
+      await visitor.reload();
+      await readVisitorMap(connected);
+    };
+
+    await admin.goto('/admin/map?exhibition=' + exhibitionId);
+    await admin.getByText('이동 구조 등록', { exact: true }).click();
+    const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+    const map = editor.locator('.floor-map');
+    const preview = editor.getByRole('group', { name: '경로 미리보기' });
+    const category = editor.getByRole('combobox', { name: '이동 구조 종류' });
+    const undo = button(editor, '마지막 입력 취소');
+    const pick = async (x, y) => {
+      const box = await map.boundingBox();
+      await map.click({ position: { x: box.width * x / 100, y: box.height * y / 100 } });
+    };
+    const checkGap = async () => {
+      await preview.getByText(/지도에 표시된 A·B/).waitFor();
+      assert.equal(await map.locator('.fm-marker.check').count(), 2);
+      assert.equal(await map.locator('.fm-route.active').count(), 0);
+    };
+    const checkConnected = async () => {
+      await checkWalkableSvg(map, 'multi-turn');
+      assert.equal(await map.locator('.fm-marker.check').count(), 0);
+    };
+    const save = async () => {
+      const result = admin.waitForResponse(response => isResponse(response, '/api/admin/exhibitions/' + exhibitionId + '/navigation', 'PUT'));
+      await button(editor, '이동 구조 저장').click();
+      await body(await result);
+      await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+    };
+    await preview.getByLabel('도착', { exact: true }).selectOption('fixture-art01');
+    await checkGap();
+    await editor.getByRole('button', { name: /제안 연결점 [1-9]\d*개 추가/ }).click();
+    await checkConnected();
+    const includesShortSeam = await map.locator('.fm-route.active').evaluate(line =>
+      [...line.points].some(point => point.x > 50.8 && point.x < 51 && Math.abs(point.y - 24) < 0.01));
+    assert.ok(includesShortSeam);
+
+    // The final bend must stay disconnected until its missing link is placed back.
+    await category.selectOption('waypoints');
+    await undo.click();
+    await checkGap();
+    await pick(83, 51.5);
+    await checkConnected();
+    assert.deepEqual(await readExhibition(), baseline);
+    await reloadVisitor(false);
+    await save();
+    await reloadVisitor(true);
+    const open = await readExhibition();
+    assert.equal(open.navigationLayout.doors.length, 2);
+
+    await category.selectOption('doors');
+    await undo.click();
+    await checkGap();
+    assert.deepEqual(await readExhibition(), open);
+    await reloadVisitor(true);
+    await save();
+    await reloadVisitor(false);
+    const closed = await readExhibition();
+    assert.equal(closed.navigationLayout.doors.length, 1);
+
+    await pick(82, 67.5);
+    await pick(83.4, 69.5);
+    await checkConnected();
+    assert.deepEqual(await readExhibition(), closed);
+    await reloadVisitor(false);
+    await save();
+    await reloadVisitor(true);
+    assert.equal((await readExhibition()).navigationLayout.doors.length, 2);
+    console.log('PASS multi-turn corridor: short seam, waypoint and door edits update A/B immediately, visitor changes only after each save');
+  } finally {
+    await visitor.close();
+  }
+}
+
 async function mapVariants(browser) {
   const admin = await openAdmin(browser);
   const setup = variant => fixtureCommand([
@@ -1381,6 +1477,8 @@ async function mapVariants(browser) {
     await fitNavigationToReference(browser, admin);
     setup('bend');
     await reviewBentCorridor(browser, admin);
+    setup('multi-turn');
+    await reviewMultiTurnCorridor(browser, admin);
   } finally {
     try { setup('restore'); } finally { await admin.close(); }
   }

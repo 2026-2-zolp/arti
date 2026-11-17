@@ -63,15 +63,17 @@ elif variant == 'fit':
     works.filter(pk='fixture-art03').update(position_x=24, position_y=26)
     works.filter(pk='fixture-art01').update(position_x=78, position_y=26)
     works.filter(pk='fixture-art05').update(position_x=25, position_y=61)
-elif variant == 'bend':
-    layout = json.loads(Path('frontend/tests/fixtures/navigationBend.json').read_text(encoding='utf-8'))
+elif variant in ('bend', 'multi-turn'):
+    filename = 'navigationBend.json' if variant == 'bend' else 'navigationMultiTurn.json'
+    layout = json.loads((Path('frontend/tests/fixtures') / filename).read_text(encoding='utf-8'))
+    origin, target = ((22, 27), (76, 76)) if variant == 'bend' else ((17, 20), (87, 80))
     exhibition.floor_plan = None
     exhibition.navigation_layout = {**layout, 'floorPlanRevision': exhibition.floor_plan_revision}
-    exhibition.entrance_x, exhibition.entrance_y = 22, 27
+    exhibition.entrance_x, exhibition.entrance_y = origin
     exhibition.save(update_fields=['floor_plan', 'navigation_layout', 'entrance_x', 'entrance_y'])
     works.update(position_x=None, position_y=None)
-    works.filter(pk='fixture-art03').update(position_x=22, position_y=27)
-    works.filter(pk='fixture-art01').update(position_x=76, position_y=76)
+    works.filter(pk='fixture-art03').update(position_x=origin[0], position_y=origin[1])
+    works.filter(pk='fixture-art01').update(position_x=target[0], position_y=target[1])
     works.filter(pk='fixture-art05').update(position_x=97, position_y=96)
 else:
     rooms = [{'id': 'room-1', 'name': '첫 전시실', 'rect': {'x': 4, 'y': 4, 'w': 92, 'h': 92}}]

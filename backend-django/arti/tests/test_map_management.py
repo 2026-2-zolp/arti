@@ -219,3 +219,12 @@ class MapManagementTests(Helpers, TestCase):
         self.assertFalse(can_walk((5, 5), (20, 5), [
             {'x': 4, 'y': 4, 'w': 5, 'h': 5}, {'x': 12, 'y': 4, 'w': 10, 'h': 5},
         ], []))
+
+    def test_walkable_seams_need_a_shared_edge_with_width(self):
+        first = {'x': 0, 'y': 0, 'w': 10, 'h': 10}
+        second = {'x': 10, 'y': 10, 'w': 10, 'h': 10}
+        self.assertTrue(can_walk((5, 5), (15, 15), [first, {**second, 'y': 9.8}], []))
+        self.assertFalse(can_walk((5, 5), (15, 15), [first, second], []))
+        self.assertFalse(can_walk((5, 5), (10, 10), [first, second], []))
+        self.assertFalse(can_walk((10, 10), (15, 15), [first, second], []))
+        self.assertFalse(can_walk((5, 5), (15, 15), [first, {**second, 'x': 10.1}], []))
