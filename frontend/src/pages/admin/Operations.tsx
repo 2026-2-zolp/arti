@@ -8,7 +8,8 @@ import { PageHead } from './AdminLayout';
 const configurationLabel = { configured: '설정됨', disabled: '꺼짐', invalid: '설정 확인 필요' };
 const analysisLabel = { summary: '쉬운 요약', guide: '관람가이드', tag: '취향 태그', emotion: '감정 분석' };
 const textTaskLabel: Record<string, string> = {
-  summary: '쉬운 요약', guide: '관람가이드', answer: '도슨트 질문', explanation: '쉬운 해설', interpret: '영수증 해석',
+  summary: '쉬운 요약', guide: '관람가이드', guide_review: '가이드 근거 검수',
+  answer: '도슨트 질문', explanation: '쉬운 해설', interpret: '영수증 해석',
 };
 const actionLabel: Record<string, string> = {
   exhibition_save: '전시 저장', artwork_save: '작품 저장', artwork_image: '도판 변경',

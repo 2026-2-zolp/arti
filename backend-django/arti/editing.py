@@ -313,6 +313,7 @@ def analyze(request,artwork_id):
         if not regenerate or not w.image_file or not all(kind in DRAFT_TASKS and luna_image_route(kind) for kind in regenerate):
             fail('업로드 도판은 Luna 요약·가이드 요청에서 사용할 수 있어요.')
     deadline=budget.monotonic()+budget.ANALYSIS_SECONDS
+    snapshot = artwork_dto(w, True)
     results={};updates={};model_cache={};retry_waits=[]
     with analysis_slot():
         for kind,field in STATES.items():
@@ -327,9 +328,11 @@ def analyze(request,artwork_id):
                     context.update(analysis_cache=model_cache, use_image=use_image)
                 if draft_image:
                     context['draft_image_file'] = w.image_file
-                value=providers.generate(kind,artwork_dto(w,True),**context)
+                value=providers.generate(kind,snapshot,**context)
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 providers.validate(kind,value)
+                if kind == 'guide' and settings.ARTI_DRAFT_GUIDE_REVIEW:
+                    providers.review_guide(snapshot, value, **context)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}
             except ContractError as e:
@@ -342,8 +345,11 @@ def analyze(request,artwork_id):
     if not updates:
         if any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
-            code=next((c for c in ['AI_TIMEOUT','PROVIDER_ERROR','RATE_LIMITED','AI_UNAVAILABLE'] if c in codes),'AI_UNAVAILABLE')
-            error=ContractError({'AI_TIMEOUT':504,'PROVIDER_ERROR':502,'RATE_LIMITED':429,'AI_UNAVAILABLE':503}[code],code,'분석 결과를 준비하지 못했어요.',retryable=True)
+            statuses = {'AI_TIMEOUT': 504, 'GUIDE_UNSUPPORTED': 502, 'PROVIDER_ERROR': 502,
+                        'RATE_LIMITED': 429, 'AI_UNAVAILABLE': 503}
+            code = next((code for code in statuses if code in codes), 'AI_UNAVAILABLE')
+            message = results['guide']['error'] if code == 'GUIDE_UNSUPPORTED' else '분석 결과를 준비하지 못했어요.'
+            error = ContractError(statuses[code], code, message, retryable=True)
             if code=='RATE_LIMITED':error.wait=min(30,max(1,int(max(retry_waits or [30]))))
             raise error
         return Response({'artwork':artwork_dto(w,True),**results})

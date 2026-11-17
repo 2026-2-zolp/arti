@@ -61,7 +61,8 @@ export function analysisOutcomes({artwork, summary, guide, tag, emotion}: Artwor
 
 /** 내부 오류 내용을 추가 노출하지 않고 상태별 다음 행동을 안내합니다. */
 export function analysisFailure(error:unknown):string {
-  const e=error as {status?:number;retryAfterSeconds?:number;message?:string};
+  const e=error as {status?:number;code?:string;retryAfterSeconds?:number;message?:string};
+  if (e?.code === 'GUIDE_UNSUPPORTED') return '가이드의 위치나 작가 의도를 작품 자료에서 확인하지 못했어요.';
   if (e?.status===429) return `다른 분석을 진행 중이거나 요청이 많아요. ${e.retryAfterSeconds ? `${e.retryAfterSeconds}초 후` : '잠시 후'} 다시 시도해 주세요. 입력한 내용은 유지돼요.`;
   if (e?.status===503) return '분석 서비스가 준비 중이거나 연결되지 않았어요. 잠시 후 다시 시도해 주세요. 입력한 내용은 유지돼요.';
   if (e?.status===504) return '분석 응답 시간이 초과됐어요. 잠시 후 다시 시도해 주세요. 입력한 내용은 유지돼요.';

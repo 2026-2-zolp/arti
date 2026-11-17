@@ -51,10 +51,14 @@ async function verifyRegeneration(page, request, base, gate, headers) {
   const adminPath = `/api/admin/artworks/${id}`;
   const publicPath = `/api/artworks/${id}`;
   const baseline = await json(await request.get(base + adminPath, { headers }));
+  const withSource = await json(await request.put(base + adminPath, {
+    headers, data: { ...baseline, description: '파란 바탕 왼쪽 위에 작은 노란 원이 있다.' },
+  }));
   const confirmed = await json(await request.put(base + adminPath, {
     headers,
     data: {
-      ...baseline, summaryStatus: 'confirmed', summary: '공개 중인 쉬운 요약입니다.',
+      ...withSource, reviewStatus: 'approved', summaryStatus: 'confirmed', summary: '공개 중인 쉬운 요약입니다.',
+      tagStatus: baseline.tagStatus,
       guideStatus: 'confirmed', guideIntro: '공개 중인 안내입니다.',
       guidedLooking: ['공개 중인 관찰 질문입니다.'], guidedHints: ['공개 중인 힌트입니다.'],
     },
@@ -133,6 +137,14 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
     await verifyOriginal();
     await draftImage.uncheck();
+    const { result: unsupported } = await start('분석 다시 시도');
+    const blocked = await unsupported;
+    assert.equal((await json(blocked, 502)).code, 'GUIDE_UNSUPPORTED');
+    assert.equal(blocked.request().postDataJSON().useDraftImage, true);
+    await page.getByRole('alert').filter({ hasText: '가이드의 위치나 작가 의도를 작품 자료에서 확인하지 못했어요.' }).waitFor();
+    assert.deepEqual(await json(await request.get(base + adminPath, { headers })), beforeInvalid);
+    await seeQuestion(live, confirmed.guidedLooking[0]);
+    await verifyOriginal();
     const { result: retry } = await start('분석 다시 시도');
     const recovered = await retry;
     assert.deepEqual(recovered.request().postDataJSON().regenerateFields, ['guide']);
@@ -143,8 +155,8 @@ async function verifyRegeneration(page, request, base, gate, headers) {
     await see(comparison, '공개본과 다른 항목 · 쉬운 요약 · 관람가이드');
     await seeQuestion(live, confirmed.guidedLooking[0]);
     await verifyOriginal();
-    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide']);
-    assert.deepEqual((await json(await request.get(gate))).draftImageRequests, [false, true, true]);
+    assert.deepEqual((await json(await request.get(gate))).textRequests, ['summary', 'guide', 'guide', 'guide']);
+    assert.deepEqual((await json(await request.get(gate))).draftImageRequests, [false, true, true, true]);
 
     const asked = await json(await request.post(base + publicPath + '/ask', {
       data: { question: '합성 질문', entryContext: { tab: 'guided', kind: 'guide', contentVersion: original.contentVersion, questionIndex: 0 } },

@@ -36,6 +36,7 @@ def serve():
     text_requests = []
     draft_image_requests = []
     original_generate = providers.generate
+    original_generate_text = providers.generate_text
 
     def generate(kind, snapshot, **context):
         if not regeneration.is_set() or kind not in ('summary', 'guide', 'answer'):
@@ -50,7 +51,16 @@ def serve():
             return {'summary': '새 요약 제안입니다.', 'keywords': ['합성']}
         if text_requests.count('guide') == 1:
             return {'intro': '힌트 개수 검수용 도입', 'questions': ['관찰 질문'], 'hints': []}
+        if text_requests.count('guide') == 2:
+            return {'intro': '노란 원을 살펴봐요.', 'questions': ['오른쪽 위의 노란 원이 보이나요?'],
+                    'hints': ['오른쪽 위를 봐요.']}
         return {'intro': '새 가이드 도입입니다.', 'questions': ['새 관찰 질문입니다.'], 'hints': ['새 힌트입니다.']}
+
+    def generate_text(kind, snapshot, **context):
+        if kind != 'guide_review':
+            return original_generate_text(kind, snapshot, **context)
+        candidate = context['guide_candidate']
+        return {'supported': candidate['questions'] == ['새 관찰 질문입니다.']}
 
     def respond(attempt):
         request = requests[attempt - 1]
@@ -99,7 +109,10 @@ def serve():
 
     with endpoint(respond=respond) as requests, override_settings(
         ARTI_MODEL_SERVICE_URL=settings.OPENAI_BASE_URL.removesuffix('/v1'),
+        ARTI_DRAFT_GUIDE_REVIEW=True,
     ), patch('arti.providers.generate', side_effect=generate), patch(
+        'arti.providers.generate_text', side_effect=generate_text,
+    ), patch(
         'arti.llm.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide'),
     ), patch('arti.operations.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide')), make_server(
         '127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler,

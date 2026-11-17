@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.utils import timezone
 from .http import ContractError
-from .llm import DRAFT_TASKS, generate_text, text_connection_settings
+from .llm import DRAFT_TASKS, GUIDE_REVIEW_TASK, generate_text, text_connection_settings
 
 
 def configuration_status():
@@ -67,6 +67,12 @@ def generate(kind, snapshot, **context):
     raise ContractError(503, 'AI_UNAVAILABLE', 'AI 연결을 준비 중이에요. 잠시 후 다시 시도해 주세요.', retryable=True)
 
 
+def review_guide(snapshot, candidate, **context):
+    verdict = generate_text(GUIDE_REVIEW_TASK, snapshot, guide_candidate=candidate, **context)
+    if not verdict['supported']:
+        raise ContractError(502, 'GUIDE_UNSUPPORTED', '가이드의 위치나 작가 의도를 작품 자료에서 확인하지 못했어요.', retryable=True)
+
+
 def validate(kind,value):
     import math
     from .constants import TAGS, EMOTIONS
@@ -84,6 +90,8 @@ def validate(kind,value):
                 and all(text(question) for question in questions)
                 and texts(hints, 3) and len(questions) == len(hints)
             )
+        elif kind == GUIDE_REVIEW_TASK:
+            valid = type(value.get('supported')) is bool
         elif kind=='tag':
             valid=scores(value.get('scores'),TAGS)
             if valid:
