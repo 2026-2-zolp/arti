@@ -2,7 +2,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
-import { TASTE_LABEL } from '../data/mock';
 import { load, remove, save } from '../lib/storage';
 import { errorDetail } from '../lib/errorText';
 import { authSession, sameTaste, saveConfirmedTaste, tasteScope, type TasteMutation, type TastePreview } from '../lib/tasteFlow';
@@ -78,60 +77,62 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
     }
   }
 
-  function preview() {
-    return run('preview', async current => {
-      persist({ visitId: review.visitId });
-      let expectedVersion = state.user?.tasteProfileVersion ?? 1;
-      if (profile.version === 2 && state.user) {
-        const actor = await api.me();
-        if (!current()) return;
-        if (actor.id !== state.user.id) throw new Error('현재 로그인 계정을 확인해 주세요.');
-        expectedVersion = actor.tasteProfileVersion ?? 1;
-      }
-      const result: TastePreview = profile.version === 2
-        ? await api.resolveTaste(profile, review.visitId, state.exhibitionId!)
-        : { tasteProfile: profile, tagOrder: profile.selectedTags, groups: [], userConfirmed: false };
-      if (!current()) return;
-      if (blockedNow.current) return;
-      if (profile.version === 2 && (!result.visitEvidenceReceipt || result.tasteProfile.version !== 2)) {
-        throw new Error('관람 취향 근거를 받지 못했어요. 다시 확인해 주세요.');
-      }
-      persist({ visitId: review.visitId, preview: result, expectedVersion });
-    });
-  }
-
   function apply(visitOnly: boolean) {
-    return run(!visitOnly && saveAccount && state.user ? 'save' : 'visit', async current => {
-      const confirmed = review.preview;
-      if (!confirmed || (blockedNow.current && !review.mutation)) return;
+    const applyStep: FailedStep = !visitOnly && saveAccount && state.user ? 'save' : 'visit';
+    return run(review.preview ? applyStep : 'preview', async current => {
+      let stored = review;
+      let confirmed = review.preview;
+      if (!confirmed) {
+        persist({ visitId: review.visitId });
+        let expectedVersion = state.user?.tasteProfileVersion ?? 1;
+        if (profile.version === 2 && state.user) {
+          const actor = await api.me();
+          if (!current()) return;
+          if (actor.id !== state.user.id) throw new Error('현재 로그인 계정을 확인해 주세요.');
+          expectedVersion = actor.tasteProfileVersion ?? 1;
+        }
+        const result: TastePreview = profile.version === 2
+          ? await api.resolveTaste(profile, review.visitId, state.exhibitionId!)
+          : { tasteProfile: profile, tagOrder: profile.selectedTags, groups: [], userConfirmed: false };
+        if (!current()) return;
+        if (blockedNow.current) return;
+        if (profile.version === 2 && (!result.visitEvidenceReceipt || result.tasteProfile.version !== 2)) {
+          throw new Error('관람 취향 근거를 받지 못했어요. 다시 확인해 주세요.');
+        }
+        stored = { visitId: review.visitId, preview: result, expectedVersion };
+        confirmed = result;
+        persist(stored);
+      }
+      setFailedStep(applyStep);
+      if (!confirmed || (blockedNow.current && !stored.mutation)) return;
       const resolved = confirmed.tasteProfile;
-      if (sameTaste(state.tasteProfile, resolved) && !review.mutation) {
+      if (sameTaste(state.tasteProfile, resolved) && !stored.mutation) {
         navigate(to(state.duration ? '/recommend' : '/time'));
         return;
       }
-      if (!review.mutation && state.startedAt &&
+      if (!stored.mutation && state.startedAt &&
           !(await confirm('새 취향으로 관람을 시작하면 현재 진행과 반응이 초기화됩니다. 계속할까요?'))) return;
       if (!current()) return;
-      if (blockedNow.current && !review.mutation) return;
+      if (blockedNow.current && !stored.mutation) return;
       let user: User | undefined;
       if (!visitOnly && saveAccount && state.user) {
         const account = state.user;
-        const mutation = review.mutation ?? {
-          clientMutationId: newVisitId(), expectedSavedProfileVersion: review.expectedVersion ?? account.tasteProfileVersion ?? 1,
+        const mutation = stored.mutation ?? {
+          clientMutationId: newVisitId(), expectedSavedProfileVersion: stored.expectedVersion ?? account.tasteProfileVersion ?? 1,
         };
-        const attempt = { ...review, mutation };
+        const attempt = { ...stored, mutation };
         persist(attempt);
         try {
           user = await saveConfirmedTaste({
-            account, profile: resolved, mutation, acknowledged: !!review.acknowledged, isCurrent: current,
+            account, profile: resolved, mutation, acknowledged: !!stored.acknowledged, isCurrent: current,
             put: () => api.updateTastes(account.id, resolved.selectedTags, resolved, state.exhibitionId!,
               mutation),
             getUser: api.me,
             onAcknowledged: () => persist({ ...attempt, acknowledged: true }),
           });
         } catch (e) {
-          if (e instanceof ApiError && e.status === 409 && !review.acknowledged && current()) {
-            persist({ ...review, mutation: undefined });
+          if (e instanceof ApiError && e.status === 409 && !stored.acknowledged && current()) {
+            persist({ ...stored, mutation: undefined });
           }
           throw e;
         }
@@ -220,32 +221,21 @@ export default function TasteReview({ profile, storageKey, saveAccount = true, b
     );
   }
 
-  const result = review.preview;
+  const needsTags = !profile.selectedTags.length;
   return (
     <section className="stack gap-12" aria-label="취향 확인" aria-busy={busy}>
       {error && <div className="notice-card is-err" role="alert"><p className="notice-body">{review.acknowledged ? '계정 저장 응답을 받았어요. ' : ''}{FAILED_TEXT[failedStep]}{errorDetail(error)}</p></div>}
-      {!result ? (
-        <button type="button" className="btn primary block" disabled={busy || blocked || !profile.selectedTags.length} onClick={preview}>
-          {busy ? '확인 중…' : '취향 미리 확인'}
+      <button type="button" className="btn primary block" disabled={busy || needsTags || (blocked && !review.mutation)} onClick={() => apply(false)}>
+        {busy ? '확인 중…' : review.acknowledged ? '계정 저장 결과 확인' : review.mutation ? '같은 요청으로 저장 재시도' :
+          saveAccount && state.user ? '확인하고 계정에 저장' : '이 취향으로 계속'}
+      </button>
+      {saveAccount && state.user && !blocked && (
+        <button type="button" className="btn outline block" disabled={busy || needsTags} onClick={() => apply(true)}>
+          이번 관람만 적용
         </button>
-      ) : (
-        <>
-          <div className="chips" aria-label="추천에 사용할 취향 순서">
-            {result.tagOrder.map(tag => <span key={tag} className="chip accent">{TASTE_LABEL[tag]}</span>)}
-          </div>
-          <button type="button" className="btn primary block" disabled={busy || (blocked && !review.mutation)} onClick={() => apply(false)}>
-            {busy ? '확인 중…' : review.acknowledged ? '계정 저장 결과 확인' : review.mutation ? '같은 요청으로 저장 재시도' :
-              saveAccount && state.user ? '확인하고 계정에 저장' : '이 취향으로 계속'}
-          </button>
-          {saveAccount && state.user && !blocked && (
-            <button type="button" className="btn outline block" disabled={busy} onClick={() => apply(true)}>
-              이번 관람만 적용
-            </button>
-          )}
-          {error && state.user && !review.mutation && (
-            <button type="button" className="btn outline block" disabled={busy} onClick={refreshAccountTaste}>계정 최신 취향 확인</button>
-          )}
-        </>
+      )}
+      {error && state.user && !review.mutation && (
+        <button type="button" className="btn outline block" disabled={busy} onClick={refreshAccountTaste}>계정 최신 취향 확인</button>
       )}
     </section>
   );
