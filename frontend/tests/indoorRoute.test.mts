@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { canWalkSegment, indoorLeg, indoorSequence, type IndoorLayout } from '../src/lib/indoorRoute';
 import { indoorMapFixture } from '../src/lib/indoorMapFixture';
-import { fitNavigationDraft, suggestNavigationWaypoints } from '../src/lib/navigationDraft';
+import { fitNavigationDraft, navigationCheckLocations, suggestNavigationWaypoints } from '../src/lib/navigationDraft';
 import { twoRoomNavigationPreset } from '../src/lib/navigationPresets';
 import type { NavigationLayoutInput } from '../src/types';
 
@@ -81,4 +82,28 @@ test('door suggestions connect open rooms and skip openings obstructed by a wall
   const suggestions = suggestNavigationWaypoints(obstructed, navigationGeometry(obstructed));
   assert.ok(suggestions.every(point => point.x < 46));
   assert.equal(indoorLeg({ ...navigationGeometry(obstructed), waypoints: suggestions }, left, right), null);
+});
+
+test('suggestions cross narrow doors, turn the corridor and go around a pillar', () => {
+  const layout: NavigationLayoutInput = JSON.parse(readFileSync(new URL('./fixtures/navigationBend.json', import.meta.url), 'utf-8'));
+  const departure = { x: 22, y: 27 };
+  const destination = { x: 76, y: 76 };
+  const geometry = navigationGeometry(layout);
+  assert.equal(indoorLeg(geometry, departure, destination), null);
+  const suggestions = suggestNavigationWaypoints(layout, geometry);
+  const path = indoorLeg({ ...geometry, waypoints: suggestions }, departure, destination);
+  assert.ok(path?.some(point => point.x >= 63 && point.y >= 33 && point.y <= 34));
+  assert.ok(path?.some(point => point.x >= 46.9 && point.x <= 55.1 && point.y > 31.5));
+
+  const closed = { ...layout, doors: layout.doors.slice(0, 1), waypoints: suggestions };
+  const blocked = navigationGeometry(closed);
+  assert.equal(indoorLeg(blocked, departure, destination), null);
+  const checks = navigationCheckLocations(blocked, departure, destination);
+  assert.equal(checks.outside, false);
+  assert.ok(checks.departure && checks.departure.y < 62);
+  assert.ok(checks.destination && checks.destination.y > 62);
+  assert.ok(Math.abs(checks.departure.x - checks.destination.x) < 1);
+  const outside = { x: 97, y: 96 };
+  assert.deepEqual(navigationCheckLocations(blocked, departure, outside),
+    { departure: undefined, destination: outside, outside: true });
 });

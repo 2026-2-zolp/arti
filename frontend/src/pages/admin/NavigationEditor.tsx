@@ -4,7 +4,7 @@ import { useConfirm } from '../../components/Confirmation';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
 import { exhibitionIndoorLayout } from '../../lib/indoorMapFixture';
 import { indoorLeg } from '../../lib/indoorRoute';
-import { fitNavigationDraft, navigationShapeLimit, suggestNavigationWaypoints } from '../../lib/navigationDraft';
+import { fitNavigationDraft, navigationCheckLocations, navigationShapeLimit, suggestNavigationWaypoints } from '../../lib/navigationDraft';
 import { twoRoomNavigationPreset } from '../../lib/navigationPresets';
 import type { Artwork, Exhibition, MapPoint, NavigationLayoutInput } from '../../types';
 
@@ -49,22 +49,34 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const destination = positioned.find(work => work.id === destinationId);
   const indoor = layout.walkable.length > 0 ? exhibitionIndoorLayout(draftExhibition) : undefined;
   const suggestions = indoor ? suggestNavigationWaypoints(layout, indoor) : [];
-  const preview = indoor && destination
-    ? indoorLeg(indoor, departure?.point ?? exhibition.entrance, destination.point)
+  const routeStart = departure?.point ?? exhibition.entrance;
+  const preview = indoor && destination ? indoorLeg(indoor, routeStart, destination.point) : null;
+  const checks = indoor && destination && !preview && !fitting
+    ? navigationCheckLocations(indoor, routeStart, destination.point)
     : null;
   const markers: MapMarker[] = [];
   if (destination) {
     if (departure) markers.push({ ...departure, state: 'plain' });
     markers.push({ ...destination, state: 'selected' });
   }
+  if (checks?.departure) markers.push({
+    id: 'check-departure', point: checks.departure, label: 'A', state: 'check', title: '출발 쪽 확인 위치',
+  });
+  if (checks?.destination) markers.push({
+    id: 'check-destination', point: checks.destination, label: 'B', state: 'check', title: '도착 쪽 확인 위치',
+  });
   if (corner) markers.push({ id: 'first-corner', label: '1', point: corner, state: 'selected' });
 
   let previewStatus = '위치가 등록된 작품을 도착점으로 선택해 주세요.';
   if (positioned.length === 0) previewStatus = '작품 위치를 저장하면 이동 경로를 확인할 수 있어요.';
   else if (destination) {
     if (!indoor) previewStatus = '관람 가능 공간을 먼저 등록해 주세요.';
-    else previewStatus = preview ? '현재 편집 내용으로 연결된 경로예요.' : '이어지는 경로가 없어요. 문·통로·연결점을 확인해 주세요.';
+    else if (preview) previewStatus = '현재 편집 내용으로 연결된 경로예요.';
+    else previewStatus = '이어지는 경로가 없어요.';
   }
+  const checkHint = checks?.outside
+    ? `지도에서 ${checks.departure && checks.destination ? '출발점 A와 도착점 B' : checks.departure ? '출발점 A' : '도착점 B'} 위치가 관람 가능 공간에 있는지 확인해 주세요.`
+    : '지도에 표시된 A·B 주변의 문·통로·연결점을 확인해 주세요.';
 
   const loadPreset = async () => {
     const hasGeometry = corner !== null || categoryKeys.some(key => layout[key].length > 0);
@@ -154,7 +166,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
       <p className="small" role="status">{corner ? '반대쪽 모서리를 선택해 주세요.' : fitting
         ? '원본 도면에서 이동 구조가 들어갈 영역의 첫 모서리를 선택해 주세요.'
         : `${categories[category]} 위치를 선택해 주세요.`}</p>
-      {layout.doors.length > 0 && layout.corridors.length > 0 && (
+      {(suggestions.length > 0 || (layout.doors.length > 0 && layout.corridors.length > 0)) && (
         <div>
           <button type="button" className="a-btn" disabled={fitting || busy || corner !== null || !!message?.conflict || suggestions.length === 0}
             onClick={() => {
@@ -162,7 +174,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
               setCategory('waypoints');
               setCorner(null);
               setReference(true);
-              setMessage({ text: `문과 복도에서 연결점 ${suggestions.length}개를 추가했어요. 경로를 확인해 주세요.` });
+              setMessage({ text: `연결점 ${suggestions.length}개를 추가했어요. 경로를 확인해 주세요.` });
             }}>제안 연결점 {suggestions.length}개 추가</button>
         </div>
       )}
@@ -190,7 +202,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
             </select>
           </div>
         </div>
-        <p className="small" role="status">{previewStatus}</p>
+        <p className="small" role="status">{previewStatus}{checks && ` ${checkHint}`}</p>
       </div>
       <FloorMap exhibition={draftExhibition} markers={markers} activeLeg={preview}
         onMapClick={addPoint} forAdmin showReference={reference} showEntrance={!!destination && !departure} />

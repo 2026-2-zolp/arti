@@ -1185,6 +1185,69 @@ async function fitNavigationToReference(browser, admin) {
   console.log('PASS original floor plan fit: draft overlay, suggested links reconnect corridor, saved revision visible to visitor');
 }
 
+async function reviewBentCorridor(browser, admin) {
+  const readExhibition = () => admin.request.get('/api' + exhibition).then(response => body(response));
+  const baseline = await readExhibition();
+  await admin.goto('/admin/map?exhibition=' + exhibitionId);
+  await admin.getByText('이동 구조 등록', { exact: true }).click();
+  const editor = admin.getByRole('region', { name: '이동 구조 편집' });
+  const map = editor.locator('.floor-map');
+  const preview = editor.getByRole('group', { name: '경로 미리보기' });
+  const destination = preview.getByLabel('도착', { exact: true });
+  const markers = map.locator('.fm-marker.check');
+  await destination.selectOption('fixture-art01');
+  await preview.getByText(/지도에 표시된 A·B/).waitFor();
+  assert.equal(await markers.count(), 2);
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+
+  await editor.getByRole('button', { name: /제안 연결점 [1-9]\d*개 추가/ }).click();
+  await checkWalkableSvg(map, 'pillar');
+  assert.equal(await markers.count(), 0);
+  const passesDoors = await map.evaluate(svg => {
+    const line = svg.querySelector('.fm-route.active');
+    const doors = [...svg.querySelectorAll('.fm-door')].map(door => door.getBBox());
+    const length = line.getTotalLength();
+    const points = Array.from({ length: Math.ceil(length * 10) }, (_, index) => line.getPointAtLength(index / 10));
+    return doors.map(door => points.some(point => point.x > door.x && point.x < door.x + door.width &&
+      point.y > door.y && point.y < door.y + door.height));
+  });
+  assert.deepEqual(passesDoors, [true, true]);
+  assert.deepEqual(await readExhibition(), baseline);
+  await button(editor, '이동 구조 저장').click();
+  await editor.getByText(/현재 도면 버전에 이동 구조를 저장했어요/).waitFor();
+  const saved = await readExhibition();
+  assert.ok(saved.navigationLayout.waypoints.length > 6);
+  const visitor = await openPage(browser);
+  try {
+    await visitor.goto(exhibition);
+    await button(visitor, '전시 순서로 바로 보기').click();
+    await button(visitor, '다음 작품 안내').click();
+    await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
+    await checkWalkableSvg(visitor.locator('.floor-map'), 'pillar');
+    assert.equal(await visitor.locator('.fm-marker.check').count(), 0);
+  } finally {
+    await visitor.close();
+  }
+
+  await editor.getByRole('combobox', { name: '이동 구조 종류' }).selectOption('doors');
+  await button(editor, '마지막 입력 취소').click();
+  await preview.getByText(/지도에 표시된 A·B/).waitFor();
+  assert.equal(await map.locator('.fm-route.active').count(), 0);
+  const checkPositions = await markers.evaluateAll(nodes => nodes.map(node => {
+    const point = node.transform.baseVal.getItem(0).matrix;
+    return { label: node.querySelector('text').textContent, x: point.e, y: point.f };
+  }));
+  assert.deepEqual(checkPositions.map(point => point.label), ['A', 'B']);
+  assert.ok(checkPositions[0].y < 62 && checkPositions[1].y > 62);
+  assert.ok(checkPositions.every(point => Math.abs(point.x - 67) < 1 && Math.abs(point.y - 62) < 2));
+  await destination.selectOption('fixture-art05');
+  await preview.getByText(/도착점 B 위치가 관람 가능 공간에 있는지/).waitFor();
+  assert.equal(await markers.count(), 1);
+  assert.equal(await markers.locator('text').textContent(), 'B');
+  assert.deepEqual(await readExhibition(), saved);
+  console.log('PASS bent corridor: narrow doors and pillar detour, check markers near blocked door or invalid endpoint');
+}
+
 async function mapVariants(browser) {
   const admin = await openAdmin(browser);
   const setup = variant => fixtureCommand([
@@ -1316,6 +1379,8 @@ async function mapVariants(browser) {
     await navigationPreview(browser, admin);
     setup('fit');
     await fitNavigationToReference(browser, admin);
+    setup('bend');
+    await reviewBentCorridor(browser, admin);
   } finally {
     try { setup('restore'); } finally { await admin.close(); }
   }

@@ -1,5 +1,6 @@
 """Administrator draft image isolation using the loopback Chat Completions fixture."""
 import base64
+import hashlib
 import json
 from pathlib import Path
 
@@ -94,3 +95,66 @@ class LunaDraftVisionTests(Helpers, TestCase):
             path.write_bytes(b'unknown format')
             self.assertEqual(self.analyze(['guide'], useDraftImage=True).status_code, 415)
             self.assertEqual(requests, [])
+
+    def test_pinned_v1_inputs_and_publication_survive_both_draft_modes(self):
+        folder = Path(__file__).resolve().parents[3] / 'docs/review/docent-2026-11-15/luna-fixtures'
+        cases = json.loads((folder / 'manifest.json').read_text(encoding='utf-8'))['cases']
+        answers = {
+            'summary': {'summary': '모의 요약 제안', 'keywords': ['모의']},
+            'guide': {'intro': '모의 관람가이드', 'questions': ['어떤 모양이 먼저 보이나요?'], 'hints': ['윗부분을 보세요.']},
+        }
+        public_fields = ('sourceVersion', 'contentVersion', 'summary', 'summaryKeywords', 'summaryStatus',
+                         'summaryRevision', 'guideIntro', 'guidedLooking', 'guidedHints', 'guideStatus', 'guideRevision')
+
+        def respond(attempt):
+            task = ('summary', 'summary', 'guide', 'guide')[(attempt - 1) % 4]
+            return 200, json.dumps({'choices': [{'finish_reason': 'stop',
+                'message': {'content': json.dumps(answers[task])}}]}).encode()
+
+        with endpoint(respond=respond) as requests:
+            for index, case in enumerate(cases, start=1):
+                with self.subTest(case=case['id']):
+                    source = (folder / case['source']['file']).read_bytes()
+                    image = (folder / case['image']['file']).read_bytes()
+                    self.assertEqual(hashlib.sha256(source).hexdigest(), case['source']['sha256'])
+                    self.assertEqual(hashlib.sha256(image).hexdigest(), case['image']['sha256'])
+                    self.work = Artwork.objects.get(pk=f'fixture-art{index:02}')
+                    self.assertEqual(self.put(self.work, description=source.decode('utf-8'), source=case['fixtureId']).status_code, 200)
+                    self.work.refresh_from_db()
+                    public_path = f'/api/artworks/{self.work.id}'
+                    uploaded = self.admin.post('/api/admin/artworks/' + self.work.id + '/image', image,
+                        content_type='image/png', HTTP_IF_MATCH=f'"{self.work.version}"')
+                    self.assertEqual(uploaded.status_code, 200, uploaded.content)
+                    self.work.refresh_from_db()
+                    approved = self.put(self.work, reviewStatus='approved', summary='공개 요약', summaryKeywords=['공개'],
+                        summaryStatus='confirmed', guideIntro='공개 도입', guidedLooking=['공개 질문'],
+                        guidedHints=['공개 힌트'], guideStatus='confirmed')
+                    self.assertEqual(approved.status_code, 200, approved.content)
+                    baseline = self.public.get(public_path).json()
+                    for task in ('summary', 'guide'):
+                        inputs = []
+                        for opt_in in (False, True):
+                            result = self.analyze([task], useDraftImage=opt_in)
+                            self.assertEqual(result.status_code, 200, result.content)
+                            self.assertEqual(result.json()['artwork'][task + 'Status'], 'suggested')
+                            wire = requests[-1]['body']
+                            self.assertEqual(wire['model'], 'gpt-6-luna')
+                            content = wire['messages'][1]['content']
+                            if opt_in:
+                                self.assertEqual([part['type'] for part in content], ['text', 'image_url'])
+                                mime, encoded = content[1]['image_url']['url'].split(',', 1)
+                                self.assertEqual(mime, 'data:image/png;base64')
+                                self.assertEqual(base64.b64decode(encoded, validate=True), image)
+                                content = content[0]['text'].split('\n', 1)[0]
+                            else:
+                                self.assertIsInstance(content, str)
+                            data = json.loads(content)
+                            self.assertEqual(data['artworkData']['id'], self.work.id)
+                            self.assertEqual(data['artworkData']['description'].encode('utf-8'), source)
+                            inputs.append(data)
+                            published = self.public.get(public_path)
+                            self.assertEqual(published.status_code, 200, published.content)
+                            for field in public_fields:
+                                self.assertEqual(published.json()[field], baseline[field], field)
+                        self.assertEqual(inputs[0], inputs[1])
+        self.assertEqual(len(requests), 12)

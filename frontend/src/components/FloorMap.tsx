@@ -13,7 +13,7 @@ import { useProtectedImage } from '../lib/useProtectedImage';
 import { exhibitionIndoorLayout } from '../lib/indoorMapFixture';
 import type { Exhibition, MapPoint } from '../types';
 
-export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected';
+export type MarkerState = 'done' | 'current' | 'upcoming' | 'plain' | 'selected' | 'check';
 
 export interface MapMarker {
   id: string;
@@ -174,6 +174,21 @@ export function FloorMap({
 
       {markers.map((m) => {
         const point = drag?.kind === 'marker' && drag.id === m.id ? drag.point : m.point;
+        if (m.state === 'check') {
+          const side = m.label === 'A' ? -1 : 1;
+          const y = sy(point.y);
+          const margin = Math.min(8, H / 2);
+          const labelX = Math.min(97, Math.max(3, point.x + side * 4)) - point.x;
+          const labelY = Math.min(H - margin, Math.max(margin, y)) + side * margin / 2 - y;
+          return (
+            <g key={m.id} className="fm-marker check" transform={`translate(${point.x} ${y})`}>
+              <title>{m.title}</title>
+              <line x2={labelX} y2={labelY} />
+              <circle r={1.25} />
+              <text x={labelX} y={labelY} textAnchor="middle" dy="1.25">{m.label}</text>
+            </g>
+          );
+        }
         return (
           <g
             key={m.id}

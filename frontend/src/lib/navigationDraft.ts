@@ -39,15 +39,17 @@ export function fitNavigationDraft(layout: NavigationLayoutInput, first: MapPoin
   };
 }
 
-function overlapCenter(first: MapRect, second: MapRect): MapPoint | null {
+function overlapCenter(first: MapRect, second: MapRect, allowSharedEdge = false): MapPoint | null {
   const left = Math.max(first.x, second.x);
   const top = Math.max(first.y, second.y);
   const right = Math.min(first.x + first.w, second.x + second.w);
   const bottom = Math.min(first.y + first.h, second.y + second.h);
-  return left < right && top < bottom ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null;
+  const hasArea = left < right && top < bottom;
+  const hasSharedEdge = (left === right && top < bottom) || (top === bottom && left < right);
+  return hasArea || (allowSharedEdge && hasSharedEdge) ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null;
 }
 
-/** 문을 통해 실제로 맞닿는 구역에서만 출입점과 복도 중앙의 후보를 만듭니다. */
+/** 문 양쪽, 복도의 접점과 기둥을 돌아가는 데 쓸 수 있는 점을 편집기에 제안합니다. */
 export function suggestNavigationWaypoints(layout: NavigationLayoutInput, indoor: IndoorLayout): MapPoint[] {
   const candidates: MapPoint[] = [];
   for (const door of layout.doors) {
@@ -65,13 +67,64 @@ export function suggestNavigationWaypoints(layout: NavigationLayoutInput, indoor
       }
     }
   }
+  for (const [index, corridor] of layout.corridors.entries()) {
+    for (const other of layout.corridors.slice(index + 1)) {
+      const joint = overlapCenter(corridor, other, true);
+      if (joint) candidates.push(joint);
+    }
+  }
+  for (const pillar of layout.pillars) {
+    // 벽·기둥 경계에 닿는 선을 피하도록 모서리 바깥에 좌표를 둡니다.
+    const offset = 0.1;
+    for (const x of [pillar.x - offset, pillar.x + pillar.w + offset]) {
+      for (const y of [pillar.y - offset, pillar.y + pillar.h + offset]) candidates.push({ x, y });
+    }
+  }
 
   const suggestions: MapPoint[] = [];
   for (const point of candidates) {
     if (layout.waypoints.length + suggestions.length >= navigationShapeLimit) break;
+    if (!canWalkSegment(indoor, point, point)) continue;
     const existing = [...layout.waypoints, ...suggestions];
     if (existing.some(peer => Math.hypot(point.x - peer.x, point.y - peer.y) < 0.05)) continue;
     suggestions.push(point);
   }
   return suggestions;
+}
+
+type RouteCheck = { departure?: MapPoint; destination?: MapPoint; outside: boolean };
+
+/** 경로가 없는 경우 출발 쪽과 도착 쪽에서 각각 닿을 수 있는 가장 가까운 두 점을 찾습니다. */
+export function navigationCheckLocations(layout: IndoorLayout, from: MapPoint, to: MapPoint): RouteCheck {
+  const fromValid = canWalkSegment(layout, from, from);
+  const toValid = canWalkSegment(layout, to, to);
+  if (!fromValid || !toValid) {
+    return { departure: fromValid ? undefined : from, destination: toValid ? undefined : to, outside: true };
+  }
+
+  const reachable = (start: MapPoint) => {
+    const reached = [start];
+    const unreached = new Set(layout.waypoints);
+    for (let index = 0; index < reached.length; index++) {
+      for (const candidate of unreached) {
+        if (!canWalkSegment(layout, reached[index], candidate)) continue;
+        reached.push(candidate);
+        unreached.delete(candidate);
+      }
+    }
+    return reached;
+  };
+  const departureSide = reachable(from);
+  const destinationSide = reachable(to);
+  let result: RouteCheck = { departure: from, destination: to, outside: false };
+  let bestDistance = Infinity;
+  for (const departure of departureSide) {
+    for (const destination of destinationSide) {
+      const distance = Math.hypot(departure.x - destination.x, (departure.y - destination.y) / layout.aspect);
+      if (distance >= bestDistance) continue;
+      bestDistance = distance;
+      result = { departure, destination, outside: false };
+    }
+  }
+  return result;
 }
