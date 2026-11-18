@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from zoneinfo import ZoneInfo
 
 from django.db import DatabaseError, transaction
@@ -115,7 +116,7 @@ def text_model_usage_groups(events):
 @permission_classes([IsAdmin])
 def dashboard(request):
     midnight = timezone.localtime(timezone.now(), ZoneInfo('Asia/Seoul')).replace(hour=0, minute=0, second=0, microsecond=0)
-    events = OperationEvent.objects.filter(occurred_at__gte=midnight)
+    events = OperationEvent.objects.filter(occurred_at__gte=midnight, occurred_at__lt=midnight + timedelta(days=1))
     counts = events.aggregate(
         docentRequests=Count('id', filter=Q(action='docent_question')),
         analysisRequests=Count('id', filter=Q(action='artwork_analysis')),

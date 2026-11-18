@@ -17,6 +17,23 @@ from arti.tests.test_provider import endpoint
 @override_settings(ARTI_ENV='test', ALLOW_TEST_FIXTURES=True, ARTI_LLM_PROVIDER='disabled',
                    ARTI_DRAFT_PROVIDER='default', ARTI_MODEL_SERVICE_URL='')
 class OperationsTests(Helpers, TestCase):
+    def test_dashboard_uses_the_seoul_calendar_day_for_counts_and_token_groups(self):
+        self.setup_clients()
+        midnight = datetime(2026, 1, 1, 15, tzinfo=timezone.utc)
+        for when, count in ((midnight - timedelta(seconds=1), 90), (midnight, 10), (midnight + timedelta(days=1), 80)):
+            event = OperationEvent.objects.create(
+                action='artwork_analysis', status=200, request_id=uuid4(), text_model_attempts=1,
+                text_model_measured=1, text_model_input_tokens=count, text_model_output_tokens=1)
+            OperationEvent.objects.filter(pk=event.pk).update(occurred_at=when)
+            OperationTextModelUsage.objects.create(
+                event=event, task='summary', model='fixture', attempts=1, measured=1,
+                input_tokens=count, output_tokens=1, cache_measured=1, cached_input_tokens=0)
+        with patch('arti.operations.timezone.now', return_value=midnight + timedelta(hours=1)):
+            report = self.admin.get('/api/admin/operations').json()
+        self.assertEqual(report['today']['analysisRequests'], 1)
+        self.assertEqual(report['textModelUsage']['inputTokens'], 10)
+        self.assertEqual(report['textModelUsageByTaskModel'][0]['inputTokens'], 10)
+
     def test_usage_export_is_half_open_and_marks_history_without_model_groups(self):
         start = datetime(2026, 1, 1, tzinfo=timezone.utc)
         end = start + timedelta(days=1)
