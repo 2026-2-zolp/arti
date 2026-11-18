@@ -13,6 +13,7 @@ COLUMNS = (
 )
 VERDICTS = {'초안 활용 가능': 'usable', '수정': 'revise', '실패': 'failed', '보류': 'hold'}
 POINTS = {'0', '1', '2'}
+PENDING_VERDICTS = ('unreviewed', 'hold')
 
 
 def grade(scores, decision, quote, evidence, row):
@@ -36,7 +37,7 @@ def grade(scores, decision, quote, evidence, row):
     return verdict
 
 
-def check_review(stream, manifest):
+def read_review(stream, manifest):
     trials = [f"{case['id']}-{task}-{repeat}" for case in manifest['cases']
               for task in TASKS for repeat in (1, 2)]
     scores = {trial: dict.fromkeys(('X', 'Y'), 'unreviewed') for trial in trials}
@@ -55,27 +56,56 @@ def check_review(stream, manifest):
             raise ValueError(f'Row {row}: unknown or duplicate trial ID and X/Y label.')
         seen.add((trial, side))
         scores[trial][side] = grade((grounding, fit), decision, quote, evidence, row)
+    return scores
 
+
+def summarize_review(scores):
     counts = dict.fromkeys((*VERDICTS.values(), 'unreviewed'), 0)
     pending = []
     for trial, answers in scores.items():
         for verdict in answers.values():
             counts[verdict] += 1
-        sides = [side for side, verdict in answers.items() if verdict in ('unreviewed', 'hold')]
+        sides = [side for side, verdict in answers.items() if verdict in PENDING_VERDICTS]
         if sides:
             pending.append({'trialId': trial, 'sides': sides})
-    return {'completePairs': len(trials) - len(pending), 'totalPairs': len(trials),
+    return {'completePairs': len(scores) - len(pending), 'totalPairs': len(scores),
             'byVerdict': counts, 'pendingPairs': pending}
+
+
+def check_review(stream, manifest):
+    return summarize_review(read_review(stream, manifest))
+
+
+def compare_reviews(first, second):
+    disagreements = []
+    agreed = pending = 0
+    for trial, answers in first.items():
+        for side, verdict in answers.items():
+            other = second[trial][side]
+            if verdict in PENDING_VERDICTS or other in PENDING_VERDICTS:
+                pending += 1
+            elif verdict == other:
+                agreed += 1
+            else:
+                disagreements.append({'trialId': trial, 'side': side, 'first': verdict, 'second': other})
+    return {'agreeingSides': agreed, 'pendingSides': pending, 'disagreements': disagreements}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('review', type=Path, help='One reviewer’s Luna_응답표.csv')
+    parser.add_argument('--against', type=Path, help='A second reviewer’s response to the same blinded answers')
     args = parser.parse_args()
+    if args.against is not None and args.review.resolve() == args.against.resolve():
+        parser.error('--against requires a separate reviewer file')
     try:
         manifest = json.loads((FIXTURES / 'manifest.json').read_text(encoding='utf-8'))
         with args.review.open(encoding='utf-8-sig', newline='') as stream:
-            result = check_review(stream, manifest)
+            review = read_review(stream, manifest)
+        result = summarize_review(review)
+        if args.against is not None:
+            with args.against.open(encoding='utf-8-sig', newline='') as stream:
+                result['comparison'] = compare_reviews(review, read_review(stream, manifest))
     except (OSError, ValueError, csv.Error) as error:
         parser.exit(2, f'{error}\n')
     print(json.dumps(result, ensure_ascii=False, indent=2))
