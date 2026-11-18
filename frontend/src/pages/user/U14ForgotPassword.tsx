@@ -14,18 +14,18 @@ export default function U14ForgotPassword() {
   const status = useAsync(api.passwordResetStatus, []);
   const [email, setEmail] = useState('');
   const [pending, setPending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [step, setStep] = useState<'entry' | 'sent' | 'edit'>('entry');
   const [error, setError] = useState('');
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (pending || sent) return;
+    if (pending || step === 'sent') return;
     if (!isEmail(email)) { setError('이메일 형식을 확인해 주세요.'); return; }
     setError('');
     setPending(true);
     try {
       await api.requestPasswordReset(email.trim());
-      setSent(true);
+      setStep('sent');
     } catch (err) {
       setError(err instanceof Error ? err.message : '링크를 요청하지 못했어요. 다시 시도해 주세요.');
     } finally {
@@ -39,10 +39,15 @@ export default function U14ForgotPassword() {
       <Lead title={enabled ? '비밀번호 재설정' : '로그인 도움'} desc={enabled
         ? '가입할 때 사용한 이메일로 재설정 링크를 보내요.'
         : status.loading ? '비밀번호 재설정 가능 여부를 확인하고 있어요.' : '현재는 비밀번호 재설정 메일을 보낼 수 없어요.'} />
-      {enabled && (sent ? <p role="status">등록된 이메일이라면 재설정 링크가 도착해요. 받은 편지함을 확인해 주세요.</p> : (
+      {enabled && (step === 'sent' ? (
+        <div className="stack gap-12">
+          <p role="status">등록된 이메일이라면 재설정 링크가 도착해요. 받은 편지함과 스팸함을 확인해 주세요.</p>
+          <button className="btn ghost block" type="button" onClick={() => setStep('edit')}>이메일 수정하기</button>
+        </div>
+      ) : (
         <form className="stack gap-16" onSubmit={submit} noValidate>
           <Field label="이메일" type="email" autoComplete="email" inputMode="email" maxLength={254}
-            value={email} onChange={event => setEmail(event.target.value)} />
+            autoFocus={step === 'edit'} value={email} onChange={event => setEmail(event.target.value)} />
           {error && <p className="error-text" role="alert">{error}</p>}
           <button className="btn primary block" type="submit" disabled={pending}>{pending ? '요청 중…' : '재설정 링크 요청'}</button>
         </form>
