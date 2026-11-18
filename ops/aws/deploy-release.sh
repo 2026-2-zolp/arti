@@ -54,21 +54,21 @@ verify_image() {
 }
 
 https_get() {
-    curl --fail --silent --show-error --noproxy '*' --resolve "$hostname:443:127.0.0.1" \
+    curl --silent --show-error --noproxy '*' --resolve "$hostname:443:127.0.0.1" \
         --connect-timeout 4 --max-time 8 "$@"
 }
 
 smoke() {
     local ready page asset bundle headers
-    ready="$(https_get "$origin/api/ready")" || return 1
+    ready="$(https_get --fail "$origin/api/ready")" || return 1
     [[ "$ready" =~ \"database\"[[:space:]]*:[[:space:]]*\"postgresql\" ]] || return 1
-    page="$(https_get "$origin/")" || return 1
+    page="$(https_get --fail "$origin/")" || return 1
     asset="$(printf '%s' "$page" | grep -oE 'src="/assets/[A-Za-z0-9_.-]+\.js"' | head -n 1)" || return 1
     asset="${asset#src=\"}"
     asset="${asset%\"}"
-    bundle="$(https_get -o /dev/null -w '%{http_code} %{content_type}' "$origin$asset")" || return 1
+    bundle="$(https_get --fail -o /dev/null -w '%{http_code} %{content_type}' "$origin$asset")" || return 1
     [[ "$bundle" =~ ^200\ (application|text)/javascript([[:space:]]|\;|$) ]] || return 1
-    headers="$(https_get -D - -o /dev/null "$origin/password/reset")" || return 1
+    headers="$(https_get --fail -D - -o /dev/null "$origin/password/reset")" || return 1
     grep -qiE '^cache-control:.*no-store' <<< "$headers" &&
         grep -qiE '^referrer-policy:[[:space:]]*no-referrer' <<< "$headers"
 }
@@ -103,6 +103,10 @@ else
     existing="$(compose ps -a -q api web)"
     [[ -z "$existing" ]] || die 'Existing application containers require an active release record.'
 fi
+
+# Check the certificate and listener before starting containers. First installation can return an upstream error here.
+https_get -o /dev/null "$origin/password/reset" ||
+    die 'The local HTTPS listener or certificate failed before deployment.'
 
 export DOCKER_CONFIG
 DOCKER_CONFIG="$(mktemp -d "$state/docker-auth.XXXXXX")"

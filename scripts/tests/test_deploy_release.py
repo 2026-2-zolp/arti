@@ -34,6 +34,8 @@ with (root / 'calls.jsonl').open('a') as log:
 if program == 'aws':
     print('mock')
 elif program == 'curl':
+    if '--fail' not in args:
+        sys.exit(60 if os.environ.get('FAIL_TLS') else 0)
     current = json.loads(active.read_text())
     if current['api'] != os.environ['OLD_API'] and os.environ.get('FAIL_SMOKE'):
         sys.exit(22)
@@ -147,6 +149,16 @@ class DeployReleaseTests(unittest.TestCase):
         self.assertEqual(retried.returncode, 0, retried.stderr)
         self.assertEqual(self.read_state('current'), self.candidate)
         self.assertEqual(sum(cmd[-1] == 'migrate' for cmd in self.compose_calls()), 1)
+
+    def test_failed_certificate_blocks_pulls_and_preserves_running_release(self):
+        self.set_previous()
+        result = self.run_release(FAIL_TLS='1')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('listener or certificate failed before deployment', result.stderr)
+        self.assertEqual(self.read_state('current'), self.previous)
+        self.assertEqual(self.compose_calls(), [['config', '--quiet']])
+        calls = map(json.loads, (self.root / 'calls.jsonl').read_text().splitlines())
+        self.assertEqual([name for name, *_ in calls], ['docker', 'curl'])
 
     def test_failed_https_probe_restores_previous_and_reports_failure(self):
         self.set_previous()
