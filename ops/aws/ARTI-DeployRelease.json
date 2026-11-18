@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "2.2",
+  "description": "Deploy immutable ARTI images on the authorized EC2 staging host.",
+  "parameters": {
+    "ReleaseSha": {
+      "type": "String",
+      "allowedPattern": "^[0-9a-f]{40}$",
+      "interpolationType": "ENV_VAR"
+    },
+    "ApiImage": {
+      "type": "String",
+      "allowedPattern": "^[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.amazonaws\\.com/arti-api@sha256:[0-9a-f]{64}$",
+      "interpolationType": "ENV_VAR"
+    },
+    "WebImage": {
+      "type": "String",
+      "allowedPattern": "^[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.amazonaws\\.com/arti-web@sha256:[0-9a-f]{64}$",
+      "interpolationType": "ENV_VAR"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "deployArtiRelease",
+      "precondition": { "StringEquals": ["platformType", "Linux"] },
+      "inputs": {
+        "timeoutSeconds": "600",
+        "runCommand": [
+          "set -eu",
+          "exec /opt/arti/bin/deploy-release.sh \"$SSM_ReleaseSha\" \"$SSM_ApiImage\" \"$SSM_WebImage\""
+        ]
+      }
+    }
+  ]
+}

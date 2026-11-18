@@ -1,0 +1,47 @@
+map $uri $arti_edge_access_log {
+    default 1;
+    /api/auth/kakao/callback 0;
+    /password/reset 0;
+}
+
+server {
+    listen 443 ssl;
+    server_name @ARTI_HTTPS_HOST@;
+    ssl_certificate @ARTI_TLS_CERT@;
+    ssl_certificate_key @ARTI_TLS_KEY@;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 12m;
+
+    access_log /var/log/nginx/access.log combined if=$arti_edge_access_log;
+    @ARTI_EDGE_RESOLVER@
+    set $arti_web @ARTI_WEB_UPSTREAM@;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_connect_timeout 3s;
+    proxy_read_timeout 75s;
+    proxy_send_timeout 10s;
+    proxy_next_upstream off;
+
+    location = /api/auth/kakao/callback {
+        error_log /dev/null;
+        proxy_hide_header Cache-Control;
+        proxy_hide_header Referrer-Policy;
+        add_header Cache-Control no-store always;
+        add_header Referrer-Policy no-referrer always;
+        proxy_pass $arti_web;
+    }
+
+    location = /password/reset {
+        error_log /dev/null;
+        proxy_hide_header Cache-Control;
+        proxy_hide_header Referrer-Policy;
+        add_header Cache-Control no-store always;
+        add_header Referrer-Policy no-referrer always;
+        proxy_pass $arti_web;
+    }
+
+    location / {
+        proxy_pass $arti_web;
+    }
+}
