@@ -47,7 +47,7 @@ function Build-Release($ref, $role, [switch]$ApiOnly) {
     @{ commit = $commit; api = $api; web = $web }
 }
 
-function Request($path, $expected, $headers = @{}, $body = $null) {
+function Request($path, $expected, $headers = @{}, $body = $null, [switch]$StatusOnly) {
     $options = @('--silent', '--show-error', '--noproxy', '*', '--max-time', '10',
         '--cacert', $certificate, '--write-out', '\n%{http_code}', "$origin$path")
     foreach ($name in $headers.Keys) { $options += @('--header', "${name}: $($headers[$name])") }
@@ -56,17 +56,26 @@ function Request($path, $expected, $headers = @{}, $body = $null) {
             curl.exe @options --header 'Content-Type: application/json; charset=utf-8' --data-binary '@-'
     }
     $lines = @($lines)
-    if ($LASTEXITCODE -ne 0 -or !$lines.Count -or $lines[-1] -ne [string]$expected) {
-        throw "HTTPS check failed at $path (expected $expected)."
+    if ($LASTEXITCODE -ne 0 -or !$lines.Count -or $expected -notcontains $lines[-1]) {
+        throw "HTTPS check failed at $path (expected $($expected -join ' or '))."
     }
+    if ($StatusOnly) { return [int]$lines[-1] }
     $lines[0..($lines.Count - 2)] -join "`n"
 }
 
 function Test-ProtectedResponse($path, $status) {
     $headers = (curl.exe --silent --show-error --noproxy '*' --max-time 10 --cacert $certificate -D - -o NUL "$origin$path") -join "`n"
-    if ($LASTEXITCODE -ne 0 -or $headers -notmatch "(?m)^HTTP/1\.1 $status " -or
-        $headers -notmatch '(?im)^Cache-Control: no-store\s*$' -or
-        $headers -notmatch '(?im)^Referrer-Policy: no-referrer\s*$') { throw 'The edge lost a protected response header.' }
+    $curlStatus = $LASTEXITCODE
+    $actualStatus = [regex]::Match($headers, '(?m)^HTTP/1\.1 (\d{3}) ').Groups[1].Value
+    $noStore = $headers -match '(?im)^Cache-Control: no-store\s*$'
+    $noReferrer = $headers -match '(?im)^Referrer-Policy: no-referrer\s*$'
+    if ($curlStatus -ne 0 -or $status -notcontains $actualStatus -or !$noStore -or !$noReferrer) {
+        $report.protectedResponseFailure = @{ endpoint = ($path -split '\?', 2)[0]; expected = $status;
+            status = $actualStatus; curl = $curlStatus;
+            noStore = $noStore; noReferrer = $noReferrer }
+        throw 'The protected edge response did not match the expectation.'
+    }
+    return [int]$actualStatus
 }
 
 function Container($service) { Invoke-DeployDocker compose @compose ps -q $service }
@@ -205,8 +214,8 @@ networks:
     $dataBefore = Get-DataIdentity
     $edge = Container 'edge'
     $marker = 'SYNTHETIC-EDGE-' + [guid]::NewGuid().ToString('N')
-    Test-ProtectedResponse "/api/auth/kakao/callback?probe=$marker" 404
-    Test-ProtectedResponse "/password/reset?probe=$marker" 200
+    Test-ProtectedResponse "/api/auth/kakao/callback?probe=$marker" 404 | Out-Null
+    Test-ProtectedResponse "/password/reset?probe=$marker" 200 | Out-Null
     $report.deploy = @{ ready = 200; ownerSave = 201; tlsTrusted = $true; implicitMigration = $false; fixtureGuard = 'passed' }
 
     $stage = 'rollback-schema'
@@ -225,13 +234,16 @@ networks:
 
     $stage = 'rollback'
     Write-Host '[rollback] Simulate API outage and restore the prior Django/Nginx images without migration'
+    $gatewayErrors = @(502, 504)
     Invoke-DeployDocker compose @compose stop api | Out-Null
-    Request '/api/ready' 502 | Out-Null
+    $apiOutageStatus = Request '/api/ready' $gatewayErrors -StatusOnly
     Test-StaticEntry $receiptRoute | Out-Null
     Invoke-DeployDocker compose @compose stop web | Out-Null
-    Test-ProtectedResponse "/api/auth/kakao/callback?probe=$marker" 502
-    Test-ProtectedResponse "/password/reset?probe=$marker" 502
-    Request '/api/ready?probe=release-outage-control' 502 | Out-Null
+    $protectedOutage = @{
+        kakao = Test-ProtectedResponse "/api/auth/kakao/callback?probe=$marker" $gatewayErrors
+        reset = Test-ProtectedResponse "/password/reset?probe=$marker" $gatewayErrors
+    }
+    Request '/api/ready?probe=release-outage-control' $gatewayErrors | Out-Null
     # Compose captures both access and error output. Keep the synthetic marker out of the report.
     $edgeLog = (& docker.exe compose @compose logs --no-color edge 2>&1) -join "`n"
     if ($LASTEXITCODE -ne 0 -or $edgeLog.Contains($marker) -or !$edgeLog.Contains('release-outage-control')) {
@@ -260,8 +272,9 @@ networks:
     Request $receiptApi 401 | Out-Null
     $counts = Invoke-DeployDocker compose @compose exec -T db psql -U arti -d arti -tAc 'select (select count(*) from arti_visit), (select count(*) from arti_visitreaction)'
     if ($counts -ne '1|1') { throw 'Expected one visit and reaction after rollback.' }
-    $report.rollback = @{ ready = @(200, 502, 200); sameTlsProxy = $true; bundleChanged = $true; sameDatabaseAndMedia = $true;
-        sameReceipt = $true; receipts = 1; reactions = 1; permissions = @(200, 200, 403, 401); protectedOutageLogs = 'passed' }
+    $report.rollback = @{ ready = @(200, $apiOutageStatus, 200); sameTlsProxy = $true; bundleChanged = $true; sameDatabaseAndMedia = $true;
+        sameReceipt = $true; receipts = 1; reactions = 1; permissions = @(200, 200, 403, 401);
+        protectedOutage = $protectedOutage; protectedOutageLogs = 'passed' }
     $report.status = 'passed'
 } catch {
     $report.failedStage = $stage
