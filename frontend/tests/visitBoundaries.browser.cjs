@@ -574,6 +574,37 @@ async function completeTasteVisit(page, taste, owner) {
   return record;
 }
 
+async function broadTasteTie(browser) {
+  const page = await openPage(browser);
+  try {
+    const tiedTags = [['warm', 'cool'], ['landscape', 'light'], ['people', 'soft'], ['abstract'], ['vivid']];
+    const pool = await body(await page.request.get('/api/taste-pool'));
+    for (const [index, pair] of pool.pairs.entries()) {
+      pool.artworks.find(work => work.id === pair.leftId).tags = tiedTags[index];
+    }
+    await page.route('**/api/taste-pool', route => route.fulfill({ json: pool }));
+    await page.goto(exhibition + '/taste');
+    await choosePairs(page);
+    const tags = page.locator('[aria-label="취향 태그"]');
+    await tags.waitFor();
+    assert.equal(await tags.getByRole('button').count(), 8);
+    assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
+    await page.getByText('이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.').waitFor();
+    assert.equal(await button(page, '이 취향으로 계속').count(), 0);
+    await button(tags, '빛').click();
+    await button(page, '이 취향으로 계속').waitFor();
+    await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/taste-pool', 'GET') && r.ok()),
+      page.reload(),
+    ]);
+    await button(tags, '빛').waitFor();
+    assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['빛']);
+    console.log('PASS U-05 starts a broad tie with no default, preserves the chosen tag on reload');
+  } finally {
+    await page.close();
+  }
+}
+
 async function savedV2(browser) {
   const context = await browser.newContext(pageOptions);
   const page = await openPage(browser, context);
@@ -622,6 +653,9 @@ async function savedV2(browser) {
     await page.waitForURL(base.href);
     await page.goto(exhibition + '/taste');
     await choosePairs(page, 1, [0, 0, 0, 1, 1]);
+    const pickedTags = page.locator('[aria-label="취향 태그"]');
+    await pickedTags.waitFor();
+    assert.deepEqual(await pickedTags.getByRole('button', { pressed: true }).allTextContents(), ['풍경', '따뜻한 색감']);
     const savePath = `/api/users/${member.user.id}/tastes`;
     let committedStatus;
     // Let Django commit the first PUT before dropping only its response to Chrome.
@@ -1942,7 +1976,10 @@ async function passwordReset(browser) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
-    if (suite === 'saved-v2') return await savedV2(browser);
+    if (suite === 'saved-v2') {
+      await broadTasteTie(browser);
+      return await savedV2(browser);
+    }
     if (suite === 'map-variants') return await mapVariants(browser);
     if (suite === 'operations') return await operationsLog(browser);
     if (suite === 'password-reset') return await passwordReset(browser);
