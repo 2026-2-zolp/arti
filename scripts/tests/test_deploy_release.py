@@ -46,6 +46,8 @@ elif program == 'curl':
     elif args[-1].endswith('/assets/index-release.js'):
         print('200 ' + ('text/html' if current['api'] != os.environ['OLD_API'] and os.environ.get('FAIL_BUNDLE')
                          else 'application/javascript'))
+    elif current['api'] != os.environ['OLD_API'] and os.environ.get('STALE_INDEX'):
+        print('<script src="/assets/index-stale.js"></script>')
     else:
         print('<script src="/assets/index-release.js"></script>')
 elif program == 'docker':
@@ -59,7 +61,10 @@ elif program == 'docker':
                 else:
                     print(current[cmd[-1]].split('@')[-1])
         elif cmd[0] == 'exec':
-            print(os.environ.get('TABLE_COUNT', '0'))
+            if cmd[2] == 'web':
+                print('<script src="/assets/index-release.js"></script>')
+            else:
+                print(os.environ.get('TABLE_COUNT', '0'))
         elif cmd[0] == 'run':
             if cmd[-1] == 'migrate':
                 (root / 'migrated').touch()
@@ -175,6 +180,16 @@ class DeployReleaseTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('is serving again', result.stderr)
         self.assertEqual(self.read_state('current'), self.previous)
+
+    def test_stale_https_index_halts_cutover_despite_successful_status(self):
+        self.set_previous()
+        result = self.run_release(STALE_INDEX='1')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('HTTPS page does not match the running web image', result.stderr)
+        self.assertIn('is serving again', result.stderr)
+        self.assertEqual(self.read_state('current'), self.previous)
+        running = json.loads((self.root / 'mock-running').read_text())
+        self.assertEqual(list(running.values()), self.previous[1:])
 
     def test_schema_or_nonempty_initial_database_blocks_cutover(self):
         for established in (False, True):

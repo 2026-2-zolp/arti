@@ -59,10 +59,15 @@ https_get() {
 }
 
 smoke() {
-    local ready page asset bundle headers
+    local ready page running_page asset bundle headers
     ready="$(https_get --fail "$origin/api/ready")" || return 1
     [[ "$ready" =~ \"database\"[[:space:]]*:[[:space:]]*\"postgresql\" ]] || return 1
     page="$(https_get --fail "$origin/")" || return 1
+    running_page="$(compose exec -T web cat /usr/share/nginx/html/index.html)" || return 1
+    if [[ -z "$page" || "$page" != "$running_page" ]]; then
+        printf 'The HTTPS page does not match the running web image.\n' >&2
+        return 1
+    fi
     asset="$(printf '%s' "$page" | grep -oE 'src="/assets/[A-Za-z0-9_.-]+\.js"' | head -n 1)" || return 1
     asset="${asset#src=\"}"
     asset="${asset%\"}"

@@ -90,6 +90,10 @@ function Test-ReleaseImages($release) {
 
 function Test-StaticEntry($receiptRoute) {
     $page = Request '/' 200
+    $runningPage = (Invoke-DeployDocker compose @compose exec -T web cat /usr/share/nginx/html/index.html) -join "`n"
+    if (!$page -or $page.TrimEnd("`n") -cne $runningPage.TrimEnd("`n")) {
+        throw 'Expected the HTTPS entry point to match the running web image.'
+    }
     if ((Request $receiptRoute 200) -cne $page) { throw 'Expected the same SPA at the direct receipt route.' }
     $asset = [regex]::Match($page, '<script[^>]*src="(?<url>/assets/[^"?]+\.js)"').Groups['url'].Value
     if (!$asset) { throw 'The release SPA does not reference a bundled script.' }
@@ -272,7 +276,7 @@ networks:
     Request $receiptApi 401 | Out-Null
     $counts = Invoke-DeployDocker compose @compose exec -T db psql -U arti -d arti -tAc 'select (select count(*) from arti_visit), (select count(*) from arti_visitreaction)'
     if ($counts -ne '1|1') { throw 'Expected one visit and reaction after rollback.' }
-    $report.rollback = @{ ready = @(200, $apiOutageStatus, 200); sameTlsProxy = $true; bundleChanged = $true; sameDatabaseAndMedia = $true;
+    $report.rollback = @{ ready = @(200, $apiOutageStatus, 200); sameTlsProxy = $true; bundleChanged = $true; httpsIndexMatchesWebBeforeAndAfter = $true; sameDatabaseAndMedia = $true;
         sameReceipt = $true; receipts = 1; reactions = 1; permissions = @(200, 200, 403, 401);
         protectedOutage = $protectedOutage; protectedOutageLogs = 'passed' }
     $report.status = 'passed'
