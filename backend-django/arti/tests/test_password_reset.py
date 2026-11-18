@@ -246,8 +246,29 @@ class PasswordResetTests(Helpers, TransactionTestCase):
             self.assertEqual(deliver_pending(), 1)
             self.assertEqual(len(messages), 2)
         self.assertTrue(all(str(message['To']) == self.member.email for message in messages))
-        token_pattern = r'/password/reset#token=([a-f0-9.]+)'
-        first, second = (re.search(token_pattern, message.get_content()).group(1) for message in messages)
+        link_pattern = r'^(http://127\.0\.0\.1:5277/password/reset#token=([a-f0-9.]+))\r?$'
+        tokens = []
+        for message in messages:
+            self.assertEqual(message['Subject'], '[ARTI] 비밀번호 재설정 링크')
+            self.assertEqual(message.get_content_type(), 'multipart/alternative')
+            plain, html = message.iter_parts()
+            self.assertEqual((plain.get_content_type(), html.get_content_type()), ('text/plain', 'text/html'))
+            text, markup = plain.get_content(), html.get_content()
+            reset_link = re.search(link_pattern, text, re.MULTILINE)
+            self.assertIsNotNone(reset_link)
+            link, token = reset_link.groups()
+            self.assertIn(f'href="{link}"', markup)
+            self.assertIn('연결 주소 127.0.0.1:5277', markup)
+            for sentence in (
+                '새 비밀번호 설정',
+                '요청한 시점부터 30분 동안 한 번만 사용할 수 있어요.',
+                '만료됐다면 ARTI 로그인 도움에서 새 링크를 요청해 주세요.',
+                '본인이 요청하지 않았다면 이 메일을 무시해 주세요.',
+            ):
+                self.assertIn(sentence, text)
+                self.assertIn(sentence, markup.replace('\u00a0', ' '))
+            tokens.append(token)
+        first, second = tokens
         self.assertEqual(first, second)
         self.assertEqual(self.confirm(first).status_code, 204)
         self.assertEqual(self.confirm(second).json()['code'], 'PASSWORD_RESET_INVALID')

@@ -14,6 +14,10 @@ ARTI_EXHIBITION_ORDER_DEMO_ENABLED = os.environ.get('ARTI_EXHIBITION_ORDER_DEMO_
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,api').split(',')
 CORS_ALLOWED_ORIGINS = tuple(v.strip() for v in os.environ.get('ARTI_ALLOWED_ORIGINS','').split(',') if v.strip())
 INSTALLED_APPS = ['django.contrib.contenttypes', 'rest_framework', 'arti']
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'APP_DIRS': True,
+}]
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'arti.http.RequestIdMiddleware',
               'arti.operations.OperationEventMiddleware',
               'django.middleware.common.CommonMiddleware']

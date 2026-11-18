@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.db import connection, transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.crypto import constant_time_compare, salted_hmac
 from rest_framework.decorators import api_view, authentication_classes, throttle_classes
@@ -129,6 +130,26 @@ def confirm_reset(request):
     return Response(status=204, headers=RESET_HEADERS)
 
 
+def send_reset_mail(email, link):
+    context = {
+        'introduction': 'ARTI 계정의 비밀번호 재설정 요청을 받았어요.',
+        'action': '새 비밀번호 설정',
+        'link': link,
+        'host': urlsplit(link).netloc,
+        'validity': (
+            f'이 링크는 요청한 시점부터 {LINK_TTL // timedelta(minutes=1)}분 동안 한\u00a0번만 사용할 수 있어요. '
+            '만료됐다면 ARTI 로그인 도움에서 새 링크를 요청해 주세요.'
+        ),
+        'ignore': '본인이 요청하지 않았다면 이 메일을 무시해 주세요.',
+    }
+    text = '\n\n'.join((context['introduction'], f"{context['action']}\n{link}",
+                        context['validity'].replace('\u00a0', ' '), context['ignore']))
+    return send_mail(
+        '[ARTI] 비밀번호 재설정 링크', text, settings.ARTI_PASSWORD_RESET_FROM, [email],
+        html_message=render_to_string('arti/email/password_reset.html', context),
+    )
+
+
 def deliver_pending(limit=20):
     if not reset_enabled():
         return 0
@@ -148,10 +169,7 @@ def deliver_pending(limit=20):
                 token = f'{token_id}.{keyed_digest("link", token_id)}'
                 link = f'{settings.ARTI_PASSWORD_RESET_ORIGIN}/password/reset#{urlencode({"token": token})}'
                 try:
-                    delivery.delivered = send_mail(
-                        'ARTI 비밀번호 재설정', f'아래 링크에서 새 비밀번호를 설정해 주세요.\n\n{link}',
-                        settings.ARTI_PASSWORD_RESET_FROM, [account.email],
-                    ) == 1
+                    delivery.delivered = send_reset_mail(account.email, link) == 1
                 except (SMTPException, OSError):
                     logger.warning('Password reset delivery failed')
                 if not delivery.delivered:
