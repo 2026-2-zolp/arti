@@ -302,8 +302,21 @@ class KakaoAuthTests(TestCase):
         self.assertEqual(result['returnTo'], '/mypage')
 
     def test_no_secrets_or_https_callback_disables_oauth(self):
-        for override in ({'ARTI_KAKAO_CLIENT_SECRET': ''}, {'ARTI_KAKAO_CALLBACK_URL': CALLBACK.replace('https:', 'http:')}):
+        for override in (
+            {'ARTI_KAKAO_CLIENT_SECRET': ''},
+            {'ARTI_KAKAO_CALLBACK_URL': CALLBACK.replace('https:', 'http:')},
+            {'ARTI_KAKAO_CALLBACK_URL': CALLBACK.replace('.test/', '.test:invalid/')},
+            {'ARTI_KAKAO_CALLBACK_URL': CALLBACK.replace('.test/', '.test:0/')},
+        ):
             with override_settings(**override):
                 self.assertEqual(self.client.get(BASE + '/status').data, {'enabled': False, 'linked': False})
                 self.assertEqual(self.client.post(BASE + '/start', {'mode': 'login'}, format='json').status_code, 404)
         self.assertFalse(KakaoOAuthFlow.objects.exists())
+
+    def test_default_https_callback_port_uses_the_browser_origin(self):
+        callback = CALLBACK.replace('.test/', '.test:443/')
+        with override_settings(ARTI_KAKAO_CALLBACK_URL=callback):
+            response = self.client.post(BASE + '/start', {'mode': 'login'}, format='json',
+                                        HTTP_ORIGIN='https://arti.example.test')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(parse_qs(urlsplit(response.data['authorizationUrl']).query)['redirect_uri'], [callback])

@@ -7,9 +7,20 @@ import { formatDateTime } from '../../lib/adminDate';
 import { apiTarget } from '../../lib/apiTarget';
 import { OperationsOverview } from './Operations';
 
+const dashboardDescription = '등록된 전시와 작품, 데이터 검수 상태를 한눈에 확인합니다.';
+
 /** 전시·작품 운영 현황을 요약하는 화면 */
 export default function A02Dashboard() {
-  const { data } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const { data, error, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  if (error) {
+    return (
+      <>
+        <PageHead title="대시보드" desc={dashboardDescription}
+          actions={<button className="a-btn" type="button" onClick={reload}>다시 조회</button>} />
+        <p role="alert">전시와 작품 목록을 불러오지 못했어요.</p>
+      </>
+    );
+  }
   if (!data) return <PageHead title="대시보드" desc="불러오는 중…" />;
   const [exs, works] = data;
 
@@ -27,7 +38,7 @@ export default function A02Dashboard() {
 
   return (
     <>
-      <PageHead title="대시보드" desc="등록된 전시와 작품, 데이터 검수 상태를 한눈에 확인합니다." />
+      <PageHead title="대시보드" desc={dashboardDescription} />
       <div className="stat-grid">
         <Stat label="운영 전시" value={running.length} sub={running[0] ? '현재 MVP 대상' : '운영 중인 전시 없음'} to="/admin/exhibitions" />
         <Stat label="등록 작품" value={works.length} sub={`검수 완료 ${approved}`} to="/admin/artworks" />

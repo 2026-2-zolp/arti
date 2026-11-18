@@ -15,18 +15,32 @@ TIMEOUT = 5
 MAX_RESPONSE = 64 * 1024
 
 
-def configured():
+def browser_origin(url):
+    hostname = url.hostname
+    host = f'[{hostname}]' if ':' in hostname else hostname
+    port = url.port
+    return f'https://{host}' if port in (None, 443) else f'https://{host}:{port}'
+
+
+def configured_origin():
     try:
         callback = urlsplit(settings.ARTI_KAKAO_CALLBACK_URL)
-        return bool(
+        port = callback.port
+        if not (
             0 < len(settings.ARTI_KAKAO_CLIENT_ID) <= 128 and settings.ARTI_KAKAO_CLIENT_SECRET
             and callback.scheme == 'https' and callback.hostname and not callback.username
             and not callback.password and not callback.query and not callback.fragment
             and settings.ARTI_KAKAO_CALLBACK_URL.endswith(CALLBACK_PATH)
-            and callback.path == CALLBACK_PATH
-        )
+            and callback.path == CALLBACK_PATH and port != 0
+        ):
+            return None
+        return browser_origin(callback)
     except ValueError:
-        return False
+        return None
+
+
+def configured():
+    return configured_origin() is not None
 
 
 def request_json(request):

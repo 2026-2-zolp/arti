@@ -1771,7 +1771,11 @@ async function operationsLog(browser) {
     assert.deepEqual(report.recent.find(event => event.requestId === partialId).analysisFailures,
       [{ field: 'guide', code: 'PROVIDER_ERROR' }]);
 
+    await page.route(url => url.pathname === '/api/admin/artworks',
+      route => route.fulfill({ status: 503, json: { error: '합성 목록 장애' } }), { times: 1 });
     await page.reload();
+    await page.getByRole('alert').filter({ hasText: '전시와 작품 목록을 불러오지 못했어요.' }).waitFor();
+    await button(page, '다시 조회').click();
     await page.getByText(/오늘 도슨트 요청/).waitFor();
     await page.getByRole('link', { name: '운영 로그', exact: true }).click();
     await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
@@ -1819,6 +1823,13 @@ async function passwordReset(browser) {
   const page = await openPage(browser);
   const other = await openPage(browser);
   try {
+    await page.goto(exhibition);
+    await button(page, '개인정보 처리방침 보기').click();
+    const visitorPolicy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await visitorPolicy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
+    await visitorPolicy.getByRole('heading', { name: '카카오 연결' }).waitFor();
+    await button(visitorPolicy, '닫기').click();
+
     await page.goto('/signup');
     const field = page.getByLabel('이메일', { exact: true });
     await field.fill('draft-review@example.test');

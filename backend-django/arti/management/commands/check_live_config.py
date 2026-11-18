@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.http.request import validate_host
 
 from arti.http import ContractError
-from arti.kakao import CALLBACK_PATH, configured as kakao_configured
+from arti import kakao
 from arti.llm import DRAFT_TASKS, text_connection_settings
 from arti.password_reset import reset_enabled
 
@@ -62,7 +62,7 @@ class Command(BaseCommand):
             valid = mail_ready(origin)
             action = 'Check the reset origin, sender, SMTP host, credentials and TLS mode.'
         else:
-            valid = kakao_configured() and settings.ARTI_KAKAO_CALLBACK_URL == origin + CALLBACK_PATH
+            valid = kakao.configured_origin() == kakao.browser_origin(urlsplit(origin))
             action = 'Check the Kakao REST key, client secret and exact callback URL.'
         if not valid:
             raise CommandError(action)

@@ -150,10 +150,15 @@ def send_reset_mail(email, link):
     )
 
 
+def purge_expired_deliveries():
+    deleted, _ = PasswordResetDelivery.objects.filter(expires_at__lte=timezone.now()).delete()
+    return deleted
+
+
 def deliver_pending(limit=20):
     if not reset_enabled():
         return 0
-    PasswordResetDelivery.objects.filter(expires_at__lte=timezone.now()).delete()
+    purge_expired_deliveries()
     sent = 0
     for _ in range(limit):
         with transaction.atomic():
