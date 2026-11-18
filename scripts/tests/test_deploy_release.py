@@ -53,6 +53,8 @@ elif program == 'curl':
 elif program == 'docker':
     if args[0] == 'compose':
         cmd = args[9:]
+        if cmd[0] == 'up' and os.environ.get('EXPECT_NO_AUTH_DIR') and list((root / 'state').glob('docker-auth.*')):
+            sys.exit(77)
         if cmd[0] == 'pull' and api == os.environ['OLD_API']:
             if os.environ.get('FAIL_PREVIOUS_PULL'):
                 sys.exit(1)
@@ -139,11 +141,12 @@ class DeployReleaseTests(unittest.TestCase):
                 if program == 'docker' and args[0] == 'compose']
 
     def test_first_release_runs_migration_once_and_records_digests(self):
-        result = self.run_release()
+        result = self.run_release(EXPECT_NO_AUTH_DIR='1')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.read_state('current'), self.candidate)
         self.assertEqual(sum(cmd[-1] == 'migrate' for cmd in self.compose_calls()), 1)
         self.assertTrue(any('--no-recreate' in cmd and cmd[-1] == 'db' for cmd in self.compose_calls()))
+        self.assertEqual(list((self.root / 'state').glob('docker-auth.*')), [])
 
     def test_same_schema_release_preserves_previous_pair(self):
         self.set_previous()

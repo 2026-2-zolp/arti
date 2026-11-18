@@ -197,7 +197,11 @@ networks:
     }
     Invoke-DeployDocker compose @compose exec -T -e ARTI_ENV=test -e ALLOW_TEST_FIXTURES=true api python manage.py load_test_fixture | Out-Null
     Invoke-DeployDocker compose @compose exec -T -e "ARTI_BOOTSTRAP_PASSWORD=$password" api python manage.py bootstrap_admin --login-id release-test --name 'Synthetic administrator' | Out-Null
-    $signup = @{ password = $password; termsAccepted = $true; termsVersion = '2026-11-14-draft.1' }
+    $termsVersion = @(Invoke-DeployDocker compose @compose exec -T api python manage.py shell --verbosity 0 -c 'from arti.member import SIGNUP_TERMS_VERSION; print(SIGNUP_TERMS_VERSION)')
+    if ($termsVersion.Count -ne 1 -or $termsVersion[0] -notmatch '^[a-zA-Z0-9._-]{1,64}$') {
+        throw 'Expected one signup terms version from the release image.'
+    }
+    $signup = @{ password = $password; termsAccepted = $true; termsVersion = $termsVersion[0] }
     $owner = (Request '/api/auth/signup' 200 @{} ($signup + @{ email = 'release-owner@example.test' })) | ConvertFrom-Json
     $other = (Request '/api/auth/signup' 200 @{} ($signup + @{ email = 'release-other@example.test' })) | ConvertFrom-Json
     $admin = (Request '/api/admin/login' 200 @{} @{ id = 'release-test'; password = $password }) | ConvertFrom-Json

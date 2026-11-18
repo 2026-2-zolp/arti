@@ -40,6 +40,15 @@ compose() {
     COMPOSE_PROFILES='' ARTI_API_IMAGE="$api" ARTI_WEB_IMAGE="$web" docker compose "${compose_args[@]}" "$@"
 }
 
+pull_release_images() (
+    export DOCKER_CONFIG
+    DOCKER_CONFIG="$(mktemp -d "$state/docker-auth.XXXXXX")" || exit 1
+    trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+    aws ecr get-login-password --region "$region" |
+        docker login --username AWS --password-stdin "$registry" >/dev/null || exit 1
+    compose pull api web
+)
+
 schema_matches() {
     compose run --rm --pull never --no-deps -T api python manage.py shell -c "$schema_check"
 }
@@ -132,12 +141,7 @@ https_get -o /dev/null "$origin/password/reset" ||
 if [[ "$resuming_first" == true ]] && images_match_release; then
     printf 'Resuming the first deployment with the recorded local images.\n'
 else
-    export DOCKER_CONFIG
-    DOCKER_CONFIG="$(mktemp -d "$state/docker-auth.XXXXXX")"
-    trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
-    aws ecr get-login-password --region "$region" |
-        docker login --username AWS --password-stdin "$registry" >/dev/null
-    compose pull api web
+    pull_release_images
     images_match_release || die 'The downloaded images do not match the requested release revision.'
 fi
 compose up -d --no-recreate --wait --wait-timeout 60 db
@@ -177,7 +181,7 @@ fi
 sha="${previous[0]}"
 api="${previous[1]}"
 web="${previous[2]}"
-if { images_match_release || { compose pull api web && images_match_release; }; } && schema_matches && start_release; then
+if { images_match_release || { pull_release_images && images_match_release; }; } && schema_matches && start_release; then
     die "Candidate failed. Previous release $sha is serving again."
 fi
 die 'Candidate and image rollback checks failed. Use the operational recovery procedure.'
