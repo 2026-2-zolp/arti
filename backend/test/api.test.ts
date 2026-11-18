@@ -128,11 +128,11 @@ describe('회원', () => {
     assert.equal(db.prepare('SELECT id FROM users WHERE email = ?').get(signup.email), undefined);
 
     const before = Date.now();
-    const accepted = await call('POST', '/auth/signup', { ...signup, termsVersion: '2026-11-14-draft.1' });
+    const accepted = await call('POST', '/auth/signup', { ...signup, termsVersion: '2026-11-18-draft.2' });
     assert.equal(accepted.status, 201);
     const row = db.prepare('SELECT version, accepted_at FROM signup_terms_acceptances WHERE user_id = ?')
       .get(accepted.body.user.id) as { version: string; accepted_at: string };
-    assert.equal(row.version, '2026-11-14-draft.1');
+    assert.equal(row.version, '2026-11-18-draft.2');
     assert.ok(Date.parse(row.accepted_at) >= before);
   });
 

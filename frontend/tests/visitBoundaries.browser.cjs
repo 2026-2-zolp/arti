@@ -53,7 +53,7 @@ const headersFor = token => ({ Authorization: `Bearer ${token}` });
 async function newMember(page) {
   return body(await page.request.post('/api/auth/signup', { data: {
     email: `visit-boundaries-${randomUUID()}@example.test`, password,
-    termsAccepted: true, termsVersion: '2026-11-14-draft.1',
+    termsAccepted: true, termsVersion: '2026-11-18-draft.2',
   } }));
 }
 
@@ -1819,6 +1819,20 @@ async function passwordReset(browser) {
   const page = await openPage(browser);
   const other = await openPage(browser);
   try {
+    await page.goto('/signup');
+    const field = page.getByLabel('이메일', { exact: true });
+    await field.fill('draft-review@example.test');
+    await button(page, '서비스 이용약관 보기').click();
+    const terms = page.getByRole('dialog', { name: '서비스 이용약관' });
+    await terms.getByText('버전 2026-11-18-draft.2').waitFor();
+    await terms.getByText(/비밀번호 재설정을 제공하는 환경/).waitFor();
+    await button(terms, '닫기').click();
+    await button(page, '개인정보 처리방침 보기').click();
+    const policy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await policy.getByText(/30분 동안 유효/).waitFor();
+    await button(policy, '닫기').click();
+    assert.equal(await field.inputValue(), 'draft-review@example.test');
+
     const member = await newMember(page);
     const secondMember = await newMember(other);
     const savedReceipt = await body(await page.request.post('/api/visits', {

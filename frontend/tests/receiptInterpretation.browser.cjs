@@ -24,7 +24,7 @@ const button = (page, name) => page.getByRole('button', { name, exact: true });
 async function signup(page) {
   return body(await page.request.post('/api/auth/signup', { data: {
     email: 'receipt-interpret-' + randomUUID() + '@example.test', password,
-    termsAccepted: true, termsVersion: '2026-11-14-draft.1',
+    termsAccepted: true, termsVersion: '2026-11-18-draft.2',
   } }));
 }
 

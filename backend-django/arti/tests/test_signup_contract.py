@@ -45,7 +45,7 @@ class SignupContractTests(TestCase):
         for accepted in (False, 1, 'true'):
             response = self.signup(termsAccepted=accepted)
             self.assertEqual((response.status_code, response.json()['code']), (400, 'TERMS_REQUIRED'))
-        for version in (None, 'older'):
+        for version in (None, '2026-11-14-draft.1'):
             response = self.signup(termsVersion=version)
             self.assertEqual((response.status_code, response.json()['code']), (409, 'TERMS_VERSION_CHANGED'))
         self.assertFalse(Account.objects.exists())
@@ -70,6 +70,18 @@ class SignupContractTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, 200, response.content)
         self.assertFalse(SignupTermsAcceptance.objects.exists())
+
+    def test_existing_agreement_retains_its_original_version_and_timestamp(self):
+        account = Account.objects.create(login_id='existing@example.test', email='existing@example.test',
+                                         role='user', password=make_password('valid-password123'))
+        previous = SignupTermsAcceptance.objects.create(account=account, version='2026-11-14-draft.1')
+        accepted_at = previous.accepted_at
+        response = self.client.post('/api/auth/login', {
+            'email': account.email, 'password': 'valid-password123',
+        }, format='json')
+        self.assertEqual(response.status_code, 200, response.content)
+        previous.refresh_from_db()
+        self.assertEqual((previous.version, previous.accepted_at), ('2026-11-14-draft.1', accepted_at))
 
     def test_missing_or_blank_nickname_can_signup_and_login(self):
         for index, nickname in enumerate((None, '', '   ')):

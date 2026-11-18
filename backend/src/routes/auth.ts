@@ -13,7 +13,7 @@ import { email, password, tasteTag } from '../schemas.js';
 
 /** 로그인 실패 시 이메일 존재 여부를 알 수 없도록 같은 메시지를 쓴다 */
 const LOGIN_FAILED = '이메일 또는 비밀번호가 올바르지 않아요.';
-const SIGNUP_TERMS_VERSION = '2026-11-14-draft.1';
+const SIGNUP_TERMS_VERSION = '2026-11-18-draft.2';
 /** 가입되지 않은 이메일로 로그인할 때도 해시 계산 시간을 맞추기 위한 더미 해시 */
 const DUMMY_HASH = hashPassword('dummy-password-0');
 

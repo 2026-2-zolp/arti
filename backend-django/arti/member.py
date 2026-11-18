@@ -20,7 +20,7 @@ from .taste_resolution import conflict, invalid, locked_actor, resolve, taste_tr
 from .constants import TAGS
 from .views import DUMMY_PASSWORD, LoginThrottle, public_exhibition
 
-SIGNUP_TERMS_VERSION = '2026-11-14-draft.1'
+SIGNUP_TERMS_VERSION = '2026-11-18-draft.2'
 
 
 def member(request, user_id=None):

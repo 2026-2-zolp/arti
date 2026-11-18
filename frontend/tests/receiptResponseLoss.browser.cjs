@@ -17,7 +17,7 @@ if (!['127.0.0.1', 'localhost'].includes(new URL(base).hostname)) throw new Erro
     const visitId = randomUUID();
     const account = await page.request.post(`${base}/api/auth/signup`, { data: {
       email: `lost-response-${visitId}@example.test`, password: 'Fixture-visit-2026!',
-      termsAccepted: true, termsVersion: '2026-11-14-draft.1',
+      termsAccepted: true, termsVersion: '2026-11-18-draft.2',
     } });
     assert(account.ok(), await account.text());
     const { user, token } = await account.json();
