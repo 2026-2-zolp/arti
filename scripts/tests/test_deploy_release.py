@@ -158,12 +158,37 @@ class DeployReleaseTests(unittest.TestCase):
         self.assertIn('database is retained', failed.stderr)
         self.assertNotEqual(failed.returncode, 0)
         self.assertFalse((self.root / 'state/current').exists())
+        self.assertFalse((self.root / 'state/first-pending').exists())
         self.assertIn(['rm', '-fs', 'api', 'web'], self.compose_calls())
 
         retried = self.run_release()
         self.assertEqual(retried.returncode, 0, retried.stderr)
         self.assertEqual(self.read_state('current'), self.candidate)
         self.assertEqual(sum(cmd[-1] == 'migrate' for cmd in self.compose_calls()), 1)
+
+    def test_interrupted_first_release_resumes_with_local_digests_and_same_database(self):
+        (self.root / 'migrated').touch()
+        (self.root / 'state/first-pending').write_text('\n'.join(self.candidate) + '\n')
+        (self.root / 'mock-running').write_text(json.dumps({'api': self.candidate[1]}))
+        result = self.run_release()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('recorded local images', result.stdout)
+        self.assertEqual(self.read_state('current'), self.candidate)
+        self.assertFalse((self.root / 'state/first-pending').exists())
+        self.assertFalse(any(cmd[-1] == 'migrate' or cmd[0] == 'pull' for cmd in self.compose_calls()))
+        calls = map(json.loads, (self.root / 'calls.jsonl').read_text().splitlines())
+        self.assertNotIn('aws', [name for name, *_ in calls])
+
+    def test_first_release_does_not_replace_unrecorded_or_different_images(self):
+        (self.root / 'mock-running').write_text(json.dumps({'api': self.candidate[1]}))
+        unmanaged = self.run_release()
+        self.assertIn('require an active release record', unmanaged.stderr)
+        (self.root / 'state/first-pending').write_text('\n'.join(self.candidate) + '\n')
+        different = self.run_release(release('c'))
+        self.assertNotEqual(different.returncode, 0)
+        self.assertIn('requires the same commit and image digests', different.stderr)
+        self.assertEqual(self.read_state('first-pending'), self.candidate)
+        self.assertFalse(any(cmd[0] in ('up', 'rm', 'pull') for cmd in self.compose_calls()))
 
     def test_failed_certificate_blocks_pulls_and_preserves_running_release(self):
         self.set_previous()

@@ -94,6 +94,8 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" == "$RELEASE_SHA" ]]
+          printf '### ARTI deployment candidate\n\n- Commit %s\n- API %s\n- Web %s\n' \
+            "$RELEASE_SHA" "$API_IMAGE" "$WEB_IMAGE" >> "$GITHUB_STEP_SUMMARY"
           parameters="$(jq -cn --arg sha "$RELEASE_SHA" --arg api "$API_IMAGE" --arg web "$WEB_IMAGE" \
             '{ReleaseSha:[$sha],ApiImage:[$api],WebImage:[$web]}')"
           command="$(aws ssm send-command --instance-ids "$INSTANCE_ID" --document-name ARTI-DeployRelease \
@@ -109,8 +111,7 @@ jobs:
             fi
             case "$status" in
               Success)
-                printf "### ARTI deployment\n\n- Commit \`%s\`\n- API \`%s\`\n- Web \`%s\`\n- SSM command \`%s\`\n" \
-                  "$RELEASE_SHA" "$API_IMAGE" "$WEB_IMAGE" "$command" >> "$GITHUB_STEP_SUMMARY"
+                printf '\n- Verified SSM command %s\n' "$command" >> "$GITHUB_STEP_SUMMARY"
                 exit 0 ;;
               Pending|InProgress|Delayed|Cancelling) sleep 5 ;;
               *) printf 'SSM command %s ended with %s\n' "$command" "$status" >&2; exit 1 ;;

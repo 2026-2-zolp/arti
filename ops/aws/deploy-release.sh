@@ -4,6 +4,7 @@ umask 077
 
 root="${ARTI_RELEASE_ROOT:-/opt/arti}"
 state="$root/state"
+first_pending="$state/first-pending"
 die() { printf '%s\n' "$*" >&2; exit 1; }
 [[ $# == 3 ]] || die 'Expected the release SHA, API digest ref and web digest ref.'
 sha="$1"
@@ -105,6 +106,7 @@ write_state() {
 }
 
 previous=()
+resuming_first=false
 compose config --quiet
 if [[ -f "$state/current" ]]; then
     mapfile -t previous < "$state/current"
@@ -113,20 +115,31 @@ if [[ -f "$state/current" ]]; then
     fi
 else
     existing="$(compose ps -a -q api web)"
-    [[ -z "$existing" ]] || die 'Existing application containers require an active release record.'
+    if [[ -f "$first_pending" ]]; then
+        mapfile -t pending < "$first_pending"
+        [[ ${#pending[@]} == 3 && "${pending[*]}" == "$sha $api $web" ]] ||
+            die 'An interrupted first deployment requires the same commit and image digests.'
+        resuming_first=true
+    else
+        [[ -z "$existing" ]] || die 'Existing application containers require an active release record.'
+    fi
 fi
 
 # Check the certificate and listener before starting containers. First installation can return an upstream error here.
 https_get -o /dev/null "$origin/password/reset" ||
     die 'The local HTTPS listener or certificate failed before deployment.'
 
-export DOCKER_CONFIG
-DOCKER_CONFIG="$(mktemp -d "$state/docker-auth.XXXXXX")"
-trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
-aws ecr get-login-password --region "$region" |
-    docker login --username AWS --password-stdin "$registry" >/dev/null
-compose pull api web
-images_match_release || die 'The downloaded images do not match the requested release revision.'
+if [[ "$resuming_first" == true ]] && images_match_release; then
+    printf 'Resuming the first deployment with the recorded local images.\n'
+else
+    export DOCKER_CONFIG
+    DOCKER_CONFIG="$(mktemp -d "$state/docker-auth.XXXXXX")"
+    trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+    aws ecr get-login-password --region "$region" |
+        docker login --username AWS --password-stdin "$registry" >/dev/null
+    compose pull api web
+    images_match_release || die 'The downloaded images do not match the requested release revision.'
+fi
 compose up -d --no-recreate --wait --wait-timeout 60 db
 schema_check="$(< "$root/bin/check_release_schema.py")"
 if schema_matches; then
@@ -141,11 +154,16 @@ else
     schema_matches
 fi
 
+if [[ ${#previous[@]} == 0 ]]; then
+    write_state "$first_pending" "$sha" "$api" "$web"
+fi
+
 if start_release; then
     if [[ ${#previous[@]} == 3 && "${previous[*]}" != "$sha $api $web" ]]; then
         write_state "$state/previous" "${previous[@]}"
     fi
     write_state "$state/current" "$sha" "$api" "$web"
+    rm -f -- "$first_pending"
     printf 'Release %s verified over HTTPS.\n' "$sha"
     exit 0
 fi
@@ -153,6 +171,7 @@ fi
 printf 'Candidate cutover checks failed.\n' >&2
 if [[ ${#previous[@]} == 0 ]]; then
     compose rm -fs api web
+    rm -f -- "$first_pending"
     die 'Initial deployment ended before activation. The database is retained for a retry.'
 fi
 sha="${previous[0]}"
