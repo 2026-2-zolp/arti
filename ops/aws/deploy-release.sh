@@ -43,14 +43,21 @@ schema_matches() {
     compose run --rm --pull never --no-deps -T api python manage.py shell -c "$schema_check"
 }
 
+images_match_release() {
+    local ref revision
+    for ref in "$api" "$web"; do
+        revision="$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$ref")" || return 1
+        [[ "$revision" == "$sha" ]] || return 1
+    done
+}
+
 verify_image() {
-    local service="$1" ref="$2" container expected actual revision
+    local service="$1" ref="$2" container expected actual
     expected="$(docker image inspect --format '{{.Id}}' "$ref")" || return 1
     container="$(compose ps -q "$service")" || return 1
     [[ -n "$container" ]] || return 1
     actual="$(docker inspect --format '{{.Image}}' "$container")" || return 1
-    revision="$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$ref")" || return 1
-    [[ "$actual" == "$expected" && "$revision" == "$sha" ]]
+    [[ "$actual" == "$expected" ]]
 }
 
 https_get() {
@@ -119,6 +126,7 @@ trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
 aws ecr get-login-password --region "$region" |
     docker login --username AWS --password-stdin "$registry" >/dev/null
 compose pull api web
+images_match_release || die 'The downloaded images do not match the requested release revision.'
 compose up -d --no-recreate --wait --wait-timeout 60 db
 schema_check="$(< "$root/bin/check_release_schema.py")"
 if schema_matches; then
@@ -150,7 +158,7 @@ fi
 sha="${previous[0]}"
 api="${previous[1]}"
 web="${previous[2]}"
-if compose pull api web && schema_matches && start_release; then
+if { images_match_release || { compose pull api web && images_match_release; }; } && schema_matches && start_release; then
     die "Candidate failed. Previous release $sha is serving again."
 fi
 die 'Candidate and image rollback checks failed. Use the operational recovery procedure.'

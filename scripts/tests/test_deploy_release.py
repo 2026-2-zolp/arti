@@ -53,6 +53,10 @@ elif program == 'curl':
 elif program == 'docker':
     if args[0] == 'compose':
         cmd = args[9:]
+        if cmd[0] == 'pull' and api == os.environ['OLD_API']:
+            if os.environ.get('FAIL_PREVIOUS_PULL'):
+                sys.exit(1)
+            (root / 'previous-image-pulled').touch()
         if cmd[0] == 'ps':
             if active.exists():
                 current = json.loads(active.read_text())
@@ -78,6 +82,12 @@ elif program == 'docker':
             active.unlink(missing_ok=True)
     elif args[0] == 'image' and args[1] == 'inspect':
         digest = args[-1].split('@')[-1]
+        if (args[-1] == os.environ['OLD_API'] and os.environ.get('OLD_IMAGE_MISSING')
+                and not (root / 'previous-image-pulled').exists()):
+            sys.exit(1)
+        if args[3] != '{{.Id}}' and args[-1] != os.environ['OLD_API'] and os.environ.get('WRONG_REVISION'):
+            print('f' * 40)
+            sys.exit(0)
         print(digest if args[3] == '{{.Id}}' else digest.split(':')[1][:40])
     elif args[0] == 'inspect':
         print(args[-1])
@@ -167,12 +177,28 @@ class DeployReleaseTests(unittest.TestCase):
 
     def test_failed_https_probe_restores_previous_and_reports_failure(self):
         self.set_previous()
-        result = self.run_release(FAIL_SMOKE='1')
+        result = self.run_release(FAIL_SMOKE='1', FAIL_PREVIOUS_PULL='1')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('is serving again', result.stderr)
         self.assertEqual(self.read_state('current'), self.previous)
         running = json.loads((self.root / 'mock-running').read_text())
         self.assertEqual(list(running.values()), self.previous[1:])
+        self.assertEqual(self.compose_calls().count(['pull', 'api', 'web']), 1)
+
+    def test_mismatched_image_revision_stops_before_database_start(self):
+        result = self.run_release(WRONG_REVISION='1')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('downloaded images do not match', result.stderr)
+        self.assertEqual(self.compose_calls(), [['config', '--quiet'], ['ps', '-a', '-q', 'api', 'web'], ['pull', 'api', 'web']])
+        self.assertFalse((self.root / 'migrated').exists())
+
+    def test_rollback_pulls_when_previous_digest_is_missing_locally(self):
+        self.set_previous()
+        result = self.run_release(FAIL_SMOKE='1', OLD_IMAGE_MISSING='1')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('is serving again', result.stderr)
+        self.assertEqual(self.compose_calls().count(['pull', 'api', 'web']), 2)
+        self.assertEqual(self.read_state('current'), self.previous)
 
     def test_rejects_html_fallback_for_a_missing_bundle(self):
         self.set_previous()
