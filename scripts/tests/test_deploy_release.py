@@ -74,6 +74,8 @@ elif program == 'docker':
         elif cmd[0] == 'run':
             if cmd[-1] == 'migrate':
                 (root / 'migrated').touch()
+                if os.environ.get('INTERRUPT_AFTER_MIGRATION'):
+                    sys.exit(130)
             elif (api != os.environ['OLD_API'] and os.environ.get('MISMATCH')) or not (root / 'migrated').exists():
                 sys.exit(3)
         elif cmd[0] == 'up' and cmd[-1] in ('api', 'web'):
@@ -181,6 +183,23 @@ class DeployReleaseTests(unittest.TestCase):
         self.assertFalse(any(cmd[-1] == 'migrate' or cmd[0] == 'pull' for cmd in self.compose_calls()))
         calls = map(json.loads, (self.root / 'calls.jsonl').read_text().splitlines())
         self.assertNotIn('aws', [name for name, *_ in calls])
+
+    def test_interruption_at_migration_completion_keeps_the_original_candidate(self):
+        interrupted = self.run_release(INTERRUPT_AFTER_MIGRATION='1')
+        self.assertEqual(interrupted.returncode, 130, interrupted.stderr)
+        self.assertTrue((self.root / 'migrated').exists())
+        self.assertFalse((self.root / 'mock-running').exists())
+        self.assertFalse((self.root / 'state/current').exists())
+        self.assertEqual(self.read_state('first-pending'), self.candidate)
+
+        different = self.run_release(release('c'))
+        self.assertNotEqual(different.returncode, 0)
+        self.assertIn('requires the same commit and image digests', different.stderr)
+        resumed = self.run_release()
+        self.assertEqual(resumed.returncode, 0, resumed.stderr)
+        self.assertEqual(self.read_state('current'), self.candidate)
+        self.assertEqual(sum(cmd[-1] == 'migrate' for cmd in self.compose_calls()), 1)
+        self.assertEqual(sum(cmd[0] == 'pull' for cmd in self.compose_calls()), 1)
 
     def test_first_release_does_not_replace_unrecorded_or_different_images(self):
         (self.root / 'mock-running').write_text(json.dumps({'api': self.candidate[1]}))

@@ -146,6 +146,7 @@ else
 fi
 compose up -d --no-recreate --wait --wait-timeout 60 db
 schema_check="$(< "$root/bin/check_release_schema.py")"
+needs_initial_migration=false
 if schema_matches; then
     printf 'Database schema matches the candidate.\n'
 else
@@ -154,12 +155,16 @@ else
         die 'Schema check failed before cutover. Review backup and migration through the operational procedure.'
     table_count="$(compose exec -T db psql -U arti -d arti -tAc "select count(*) from pg_tables where schemaname='public'")"
     [[ "$table_count" == 0 ]] || die 'Initial migration requires an empty database.'
-    compose run --rm --pull never --no-deps -T migrate
-    schema_matches
+    needs_initial_migration=true
 fi
 
-if [[ ${#previous[@]} == 0 ]]; then
+if [[ ${#previous[@]} == 0 && "$resuming_first" == false ]]; then
     write_state "$first_pending" "$sha" "$api" "$web"
+fi
+
+if [[ "$needs_initial_migration" == true ]]; then
+    compose run --rm --pull never --no-deps -T migrate
+    schema_matches
 fi
 
 if start_release; then
