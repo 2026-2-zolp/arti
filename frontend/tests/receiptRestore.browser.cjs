@@ -60,7 +60,6 @@ async function createReceipt(browser, config, base) {
 
     step = 'source-recommendation';
     await choosePairs(page);
-    await button(page, '취향 미리 확인').click();
     await button(page, '이번 관람만 적용').click();
     const recommendations = await recommend(page);
     const artworkIds = recommendations.map(item => item.artworkId);

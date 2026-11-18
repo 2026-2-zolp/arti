@@ -180,7 +180,6 @@ async function verifyVisitor(browser, { saved, floorPlan }) {
       await page.getByText(`${i}/5`, { exact: true }).waitFor();
       await page.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
     }
-    await button(page, '취향 미리 확인').click();
     await button(page, '이 취향으로 계속').click();
     await page.getByRole('radio', { name: /30분/ }).click();
     const recommendation = expectedResponse(page, 'POST', '/api/recommendations');

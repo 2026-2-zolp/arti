@@ -361,7 +361,6 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
       await visitor.getByText(`${pair}/5`, { exact: true }).waitFor();
       await visitor.locator('.duel-card').getByRole('button', { name: / 선택$/ }).first().click();
     }
-    await button(visitor, '취향 미리 확인').click();
     await button(visitor, '이 취향으로 계속').click();
     await visitor.getByRole('radio', { name: /30분/ }).click();
     const recommendation = pendingResponse(visitor, 'POST', '/api/recommendations');

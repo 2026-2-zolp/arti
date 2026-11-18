@@ -147,17 +147,17 @@ export default function U10Artwork() {
   };
 
   const setReaction = (r: Reaction) => {
-    // 이유 창이 열려 있을 때 같은 버튼을 다시 누르면 창만 닫는다 (반응은 그대로)
     if (ask === r) {
       setAsk(null);
       return;
     }
-    // 창이 닫혀 있고 이미 같은 반응이면 반응 취소
     if (reaction === r && !ask) {
       dispatch({ type: 'react', artworkId: rec.artworkId, reaction: null });
       return;
     }
-    openReason(r);
+    const keepReason = reaction === r ? (savedReason ?? '') : '';
+    dispatch({ type: 'react', artworkId: rec.artworkId, reaction: r, reason: keepReason });
+    openReason(r, keepReason || undefined);
   };
 
   const confirmReason = (reason: string) => {
@@ -307,6 +307,41 @@ export default function U10Artwork() {
             <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} onClose={() => setFullscreen(false)} />
           )}
 
+          <div className="reaction-block under-image">
+            <div className="reaction-row">
+              <span className="muted small">이 작품, 어땠나요? (선택)</span>
+              <button
+                className={`round-btn ${reaction === 'like' ? 'on' : ''}`}
+                aria-pressed={reaction === 'like'}
+                aria-label="좋아요"
+                onClick={() => setReaction('like')}
+              >
+                <Icon name="thumbUp" />
+              </button>
+              <button
+                className={`round-btn down ${reaction === 'dislike' ? 'on' : ''}`}
+                aria-pressed={reaction === 'dislike'}
+                aria-label="별로예요"
+                onClick={() => setReaction('dislike')}
+              >
+                <Icon name="thumbDown" />
+              </button>
+            </div>
+            {reaction && savedReason && (
+              <div ref={reasonRowRef} className="reaction-reason above-footer">
+                <span className="muted small">고른 이유</span>
+                <button
+                  type="button"
+                  className={`reason-chip saved ${reaction}`}
+                  aria-label={`${savedReason}, 이유 바꾸기`}
+                  onClick={() => openReason(reaction, savedReason)}
+                >
+                  {savedReason}
+                </button>
+              </div>
+            )}
+          </div>
+
           <h2 className="art-title">{w.title}</h2>
           <p className="art-meta">
             {w.artist}
@@ -415,41 +450,6 @@ export default function U10Artwork() {
             </button>
           </div>
 
-          <div className="reaction-block">
-            {/* 반응 버튼은 고정된 자리에 두고, 고른 이유는 아래 별도 줄에 표시한다 (1차 ③, 갤럭시 #14) */}
-            <div className="reaction-row">
-              <span className="muted small">이 작품, 어땠나요? (선택)</span>
-              <button
-                className={`round-btn ${reaction === 'like' ? 'on' : ''}`}
-                aria-pressed={reaction === 'like'}
-                aria-label="좋아요"
-                onClick={() => setReaction('like')}
-              >
-                <Icon name="thumbUp" />
-              </button>
-              <button
-                className={`round-btn down ${reaction === 'dislike' ? 'on' : ''}`}
-                aria-pressed={reaction === 'dislike'}
-                aria-label="별로예요"
-                onClick={() => setReaction('dislike')}
-              >
-                <Icon name="thumbDown" />
-              </button>
-            </div>
-            {reaction && savedReason && (
-              <div ref={reasonRowRef} className="reaction-reason above-footer">
-                <span className="muted small">고른 이유</span>
-                <button
-                  type="button"
-                  className={`reason-chip saved ${reaction}`}
-                  aria-label={`${savedReason}, 이유 바꾸기`}
-                  onClick={() => openReason(reaction, savedReason)}
-                >
-                  {savedReason}
-                </button>
-              </div>
-            )}
-          </div>
         </>
       )}
     </MobileShell>
@@ -472,7 +472,7 @@ function ReasonPicker({
   onPick: (reason: string) => void;
   onCustom: () => void;
   onText: (value: string) => void;
-  /** 이유를 고르지 않고 창만 닫기 (반응은 바뀌지 않음) */
+  /** 창만 닫기. 이미 저장된 좋아요·별로예요는 남고, 이유만 건너뛴다. */
   onClose: () => void;
 }) {
   const presets = kind === 'like' ? LIKE_REASONS : DISLIKE_REASONS;
