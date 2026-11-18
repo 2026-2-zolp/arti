@@ -1829,13 +1829,38 @@ async function passwordReset(browser) {
         tastes: ['landscape'], viewedArtworkIds: ['fixture-art01'], reactions: {}, reactionReasons: {}, dwell: {},
       },
     }), 201);
+    const recoveryPath = '/api/auth/password-reset/request';
+    const requestedEmails = [];
+    page.on('request', request => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === recoveryPath) {
+        requestedEmails.push(request.postDataJSON().email);
+      }
+    });
     await page.goto('/login');
     await button(page, '로그인 도움').click();
-    await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
-    await button(page, '재설정 링크 요청').click();
-    await page.getByRole('status').filter({ hasText: '등록된 이메일이라면' }).waitFor();
-    const missing = await page.request.post('/api/auth/password-reset/request', { data: { email: 'unknown-reset@example.test' } });
-    assert.equal(missing.status(), 204);
+    const emailInput = page.getByLabel('이메일', { exact: true });
+    const mailNotice = page.getByRole('status').filter({ hasText: '등록된 이메일이라면' });
+    const requestLink = async () => {
+      const [response] = await Promise.all([
+        page.waitForResponse(r => isResponse(r, recoveryPath, 'POST')),
+        button(page, '재설정 링크 요청').click(),
+      ]);
+      assert.equal(response.status(), 204);
+      await mailNotice.waitFor();
+      return mailNotice.textContent();
+    };
+    const mistyped = 'unknown-reset@example.test';
+    await emailInput.fill(mistyped);
+    const originalNotice = await requestLink();
+    assert.match(originalNotice, /스팸함/);
+    await button(page, '이메일 수정하기').click();
+    await emailInput.waitFor();
+    assert.equal(await emailInput.inputValue(), mistyped);
+    assert.equal(await emailInput.evaluate(input => input === document.activeElement), true);
+    assert.deepEqual(requestedEmails, [mistyped]);
+    await emailInput.fill(member.user.email);
+    assert.equal(await requestLink(), originalNotice);
+    assert.deepEqual(requestedEmails, [mistyped, member.user.email]);
     const inbox = await body(await page.request.post('/api/__test__/reset-inbox'));
     assert.equal(inbox.length, 1);
     const resetPath = inbox[0];
@@ -1879,7 +1904,7 @@ async function passwordReset(browser) {
     ]);
     assert.equal((await body(opened)).id, savedReceipt.id);
     await page.waitForURL(`**/receipt/${savedReceipt.id}`);
-    console.log('PASS password reset: synthetic mailbox, one-use link, prior session revoked, same member and receipt, other member denied');
+    console.log('PASS password reset: email correction, identical acknowledgement, one-use link, same receipt and permissions');
   } finally {
     await Promise.all([page.close(), other.close()]);
   }
