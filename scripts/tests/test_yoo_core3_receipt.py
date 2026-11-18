@@ -1,6 +1,7 @@
 import io
 import json
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -136,3 +137,19 @@ class Core3ReceiptTests(unittest.TestCase):
                 result = self.check(receipt)['handoff']
                 self.assertEqual(result['pendingContentFields'], list(FIELDS) if issue == 'old-wording' else ['hint'])
                 self.assertEqual(result['media']['campus_demo'], {'usageConfirmed': True, 'status': 'pending'})
+
+    def test_matching_declared_hash_cannot_override_different_attachment(self):
+        receipt = self.receipt('001')
+        receipt['content'] = [dict(receipt['content'][0], field=name) for name in FIELDS]
+        with tempfile.TemporaryDirectory() as private:
+            document = Path(private) / 'receipt.json'
+            document.write_text(json.dumps(receipt), encoding='utf-8')
+            attachment = Path(private) / 'different.png'
+            attachment.write_bytes(b'synthetic attachment')
+            output = io.StringIO()
+            with patch.object(sys, 'argv', ['yoo_core3_receipt.py', str(document), '--image', str(attachment)]), redirect_stdout(output):
+                main()
+        result = json.loads(output.getvalue())
+        self.assertEqual(result['imageAttachment'], 'mismatch')
+        self.assertEqual(result['content']['question']['issues'], ['imageAttachmentSha256-mismatch'])
+        self.assertEqual(result['handoff']['media']['campus_demo'], {'usageConfirmed': False, 'status': 'pending'})

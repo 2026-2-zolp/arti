@@ -85,7 +85,7 @@ def confirmed(row):
     return row['status'] == 'recordable' and row.get('decision') == 'confirmed'
 
 
-def check_receipt(receipt, expected_hashes, expected_wording_hash):
+def check_receipt(receipt, expected_hashes, expected_wording_hash, attachment_hash=None):
     if not isinstance(receipt, dict):
         raise ValueError('receipt must be an object')
     record_id = receipt.get('recordId')
@@ -93,14 +93,17 @@ def check_receipt(receipt, expected_hashes, expected_wording_hash):
         raise ValueError('unknown core3 recordId')
 
     image_issue = compare_hash(receipt.get('imageSha256'), expected_hashes[record_id], 'imageSha256')
+    attachment_issue = (compare_hash(attachment_hash, expected_hashes[record_id], 'imageAttachmentSha256')
+                        if attachment_hash is not None else None)
+    image_issues = [issue for issue in (image_issue, attachment_issue) if issue]
     wording_issue = compare_hash(receipt.get('wordingSha256'), expected_wording_hash, 'wordingSha256')
     content, unassigned_content = check_rows(
         receipt.get('content', []), 'field', FIELDS,
-        [issue for issue in (image_issue, wording_issue) if issue], ('judgedText', 'evidence'),
+        image_issues + ([wording_issue] if wording_issue else []), ('judgedText', 'evidence'),
     )
     usage, unassigned_usage = check_rows(
         receipt.get('usage', []), 'medium', MEDIA,
-        [image_issue] if image_issue else [], ('evidence', 'scope'),
+        image_issues, ('evidence', 'scope'),
     )
     pending_content_fields = [field for field, row in content.items() if not confirmed(row)]
     media_handoff = {}
@@ -112,6 +115,7 @@ def check_receipt(receipt, expected_hashes, expected_wording_hash):
         }
     return {
         'recordId': record_id,
+        **({'imageAttachment': 'mismatch' if attachment_issue else 'matched'} if attachment_hash is not None else {}),
         'content': content,
         'usage': usage,
         'unassignedContentEntries': unassigned_content,
@@ -126,7 +130,10 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('receipt', type=Path, nargs='?')
     mode.add_argument('--template', metavar='RECORD_ID', help='작품별 빈 회신 양식을 출력합니다.')
+    parser.add_argument('--image', type=Path, help='비공개 도판 파일의 실제 SHA-256을 비교합니다.')
     args = parser.parse_args()
+    if args.template is not None and args.image is not None:
+        parser.error('--image requires a receipt file')
     try:
         hashes, wording_hash = read_references()
         if args.template is not None:
@@ -142,7 +149,11 @@ def main():
             }
         else:
             receipt = json.loads(args.receipt.read_text(encoding='utf-8-sig'))
-            result = check_receipt(receipt, hashes, wording_hash)
+            attachment_hash = None
+            if args.image is not None:
+                with args.image.open('rb') as image_file:
+                    attachment_hash = hashlib.file_digest(image_file, 'sha256').hexdigest()
+            result = check_receipt(receipt, hashes, wording_hash, attachment_hash)
     except (OSError, ValueError) as error:
         parser.exit(2, f'{error}\n')
     print(json.dumps(result, ensure_ascii=False, indent=2))

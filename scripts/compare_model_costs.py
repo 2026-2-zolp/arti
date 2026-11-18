@@ -76,8 +76,15 @@ def compare(application, provider):
         totals = tuple(sum(values) if values and None not in values else None for values in columns)
         complete_app = bool(model and app_rows and None not in totals
                             and all(row.get('missing') == row.get('cacheMissing') == 0 for row in app_rows))
-        comparison = ('incomplete' if not complete_app or None in vendor_values else
-                      'matched' if totals == vendor_values else 'different')
+        incomplete = []
+        if app_rows and not model:
+            incomplete.append('application-model-unidentified')
+        elif not complete_app:
+            incomplete.append('application-token-usage-missing' if app_rows else 'application-model-missing')
+        if None in vendor_values:
+            incomplete.append('provider-token-usage-missing' if billed_row else 'provider-model-missing')
+        comparison = ('incomplete' if incomplete else 'matched' if totals == vendor_values else 'different')
+        delta = None if incomplete else dict(zip(TOKEN_FIELDS, (a - b for a, b in zip(totals, vendor_values))))
         rate = billed_row.get('ratesPerMillion')
         estimate = None
         if complete_app and rate:
@@ -88,6 +95,7 @@ def compare(application, provider):
             estimates.append(estimate)
         report.append({'model': model, 'status': comparison, 'application': dict(zip(TOKEN_FIELDS, totals)),
                        'provider': dict(zip(TOKEN_FIELDS, vendor_values)),
+                       'incompleteReasons': incomplete, 'applicationMinusProviderTokens': delta,
                        'estimatedCost': format(estimate, 'f') if estimate is not None else None})
     billed = amount(provider['billedCost']) if provider.get('billedCost') is not None else None
     project_estimate = sum(estimates, Decimal(0)) if not ungrouped and report and len(estimates) == len(report) else None
