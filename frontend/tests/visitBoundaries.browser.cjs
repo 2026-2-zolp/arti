@@ -1897,6 +1897,8 @@ async function passwordReset(browser) {
     });
     await page.goto('/login');
     await button(page, '로그인 도움').click();
+    // The login form has the same email label while the recovery screen is loading.
+    await page.getByRole('heading', { name: '비밀번호 재설정', exact: true }).waitFor();
     const emailInput = page.getByLabel('이메일', { exact: true });
     const mailNotice = page.getByRole('status').filter({ hasText: '등록된 이메일이라면' });
     const requestLink = async () => {
