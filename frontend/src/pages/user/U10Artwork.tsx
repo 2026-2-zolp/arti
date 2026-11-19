@@ -449,6 +449,7 @@ export default function U10Artwork() {
               <Icon name="chat" size={20} /> {tab === 'guided' ? '작품에 대해 질문하기' : '이 부분 더 알아보기'}
             </button>
           </div>
+          {tts.error && <p className="muted small" role="status">{tts.error}</p>}
 
         </>
       )}
