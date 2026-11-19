@@ -319,11 +319,16 @@ button.duel-title:disabled { cursor: default; }
 /* U-08·U-09·U-10: 헤더까지 포함한 화면 전체의 가운데에 둔다 — 아래 여백 = 본문 위 여백 + 실제 헤더 높이(MobileShell이 잼) */
 .m-body:has(> .notice-center.screen-center) { padding-bottom: calc(var(--m-body-pad-top) + var(--m-header-h, 60px)); }
 .missing-note { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: #fff7e6; color: #8a5a00; font-size: 14px; line-height: 1.5; }
+.rec-taste-summary { margin: 0 0 16px; }
+.rec-taste-summary h2 { margin: 0; font-size: 15px; }
+.rec-taste-summary ul { list-style: none; margin: 0; padding: 0; }
+.rec-taste-summary p { margin: 0; }
 .rec-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .rec-card { display: flex; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .rec-thumb { width: 96px !important; flex: none; border-radius: 6px; overflow: hidden; }
 .rec-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0; padding-top: 2px; }
 .rec-info strong { font-size: 17px; overflow-wrap: anywhere; }
+.rec-info .chip { max-width: 100%; overflow-wrap: anywhere; }
 
 /* ---------- 평면도 ---------- */
 .floor-map { width: 100%; height: auto; display: block; }

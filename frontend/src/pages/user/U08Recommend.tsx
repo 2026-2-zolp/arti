@@ -58,6 +58,8 @@ export default function U08Recommend() {
   const byId = new Map<string, Artwork>((artworks ?? []).map((w) => [w.id, w]));
   const ready = recommendations.length > 0 && artworks;
   const requestedCount = countForDuration(duration);
+  const matchCount = recommendations.filter((r) => r.matchedTags.length > 0).length;
+  const addedCount = recommendations.length - matchCount;
   const failureDetails = [...new Set(
     [issue?.kind === 'error' ? issue.message : null, artworkError, coverageError].map((m) => errorDetail(m).trim()).filter(Boolean),
   )];
@@ -117,6 +119,15 @@ export default function U08Recommend() {
       ) : (
         <>
           <Lead title={title} desc={desc} />
+          {ready && tastes.length > 0 && (
+            <section className="rec-taste-summary stack gap-10" aria-labelledby="rec-taste-heading">
+              <h2 id="rec-taste-heading">내가 고른 태그</h2>
+              <ul className="chips">
+                {tastes.map((tag) => <li key={tag} className="chip accent sm">{TASTE_LABEL[tag]}</li>)}
+              </ul>
+              {addedCount > 0 && <p className="muted small">취향 일치 {matchCount}점 · 추가 추천 {addedCount}점</p>}
+            </section>
+          )}
           {missingNote}
           {artworkError && (
             <div className="notice-card is-err" role="alert">
@@ -149,8 +160,8 @@ export default function U08Recommend() {
                   <span className="muted small">
                     {w.artist} · {w.year}
                   </span>
-                  <span className={r.matchedTags.length ? 'chip accent sm' : 'muted small'}>
-                    {r.matchedTags.length ? r.reason : '선택한 취향 태그와 일치하는 항목 없음'}
+                  <span className={r.matchedTags.length ? 'chip accent sm' : 'chip sm'}>
+                    {r.matchedTags.length ? `취향 일치 · ${r.reason}` : '추가 추천 · 일치 후보 부족'}
                   </span>
                 </div>
               </li>

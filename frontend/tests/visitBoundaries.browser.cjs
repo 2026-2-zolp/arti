@@ -428,6 +428,7 @@ function createShortageExhibition(requested) {
     'import json',
     'from django.db import transaction',
     'from arti.management.commands.load_test_fixture import FIXTURE_SOURCE',
+    'from arti.constants import TAGS',
     'from arti.models import Artwork, Exhibition',
     'data = json.loads(os.environ["ARTI_BROWSER_SHORTAGE"])',
     'template = Exhibition.objects.get(pk="fixture-ex01", subtitle=FIXTURE_SOURCE)',
@@ -441,6 +442,7 @@ function createShortageExhibition(requested) {
     '        Artwork.objects.update_or_create(pk=work["id"], exhibition=ex, defaults=dict(',
     '            title=work["title"], artist="Synthetic artist", source=FIXTURE_SOURCE,',
     '            position_x=None if unplaced else index * 10, position_y=None if unplaced else 10,',
+    '            tags=list(TAGS) if index == 1 else [],',
     '            review_status="source_check" if work["id"].endswith("-hidden") else "approved"))',
   ], { ARTI_BROWSER_SHORTAGE: JSON.stringify({ id, works: [...eligible, noPosition, hidden] }) });
   return { id, eligible, noPosition, hidden };
@@ -473,12 +475,22 @@ async function completeShortageVisit(browser, fixture, duration, requested, sign
     }
     await page.goto(`/exhibitions/${id}/taste`);
     await choosePairs(page);
-    await button(page, member ? '이번 관람만 적용' : '이 취향으로 계속').click();
+    const applyTaste = button(page, member ? '이번 관람만 적용' : '이 취향으로 계속');
+    await applyTaste.waitFor();
+    const pickedTags = await page.locator('[aria-label="취향 태그"]')
+      .getByRole('button', { pressed: true }).allTextContents();
+    assert(pickedTags.length > 0);
+    await applyTaste.click();
     const recs = await recommend(page, duration);
     assert.deepEqual(recs.map(item => item.artworkId), expectedIds);
     assert.deepEqual(recs.map(item => item.order), eligible.map((_, index) => index + 1));
     await page.getByText(`선택한 시간의 기준은 ${requested}점이에요. 지금 추천할 수 있는 작품만 안내해요.`, { exact: true }).waitFor();
     assert.deepEqual(await page.locator('.rec-list .rec-info strong').allTextContents(), numberedTitles);
+    const displayedTaste = page.getByRole('region', { name: '내가 고른 태그' });
+    assert.deepEqual(await displayedTaste.getByRole('listitem').allTextContents(), pickedTags);
+    await displayedTaste.getByText(`취향 일치 1점 · 추가 추천 ${eligible.length - 1}점`, { exact: true }).waitFor();
+    const reasons = await page.locator('.rec-card .chip').allTextContents();
+    assert.deepEqual(reasons, [`취향 일치 · ${recs[0].reason}`, ...eligible.slice(1).map(() => '추가 추천 · 일치 후보 부족')]);
 
     await button(page, '지도에서 관람순서 보기').click();
     const visitStart = await visit(page);
