@@ -6,17 +6,20 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from luna_review_intake import COLUMNS, check_review
+from luna_review_intake import COLUMNS, check_review, compare_reviews, read_review
 
 
 class LunaReviewIntakeTests(unittest.TestCase):
     manifest = {'cases': [{'id': case} for case in ('L01', 'L02', 'L03')]}
 
-    def check_rows(self, *rows):
+    def sheet(self, *rows):
         sheet = io.StringIO(newline='')
         csv.writer(sheet).writerows([COLUMNS, *rows])
         sheet.seek(0)
-        return check_review(sheet, self.manifest)
+        return sheet
+
+    def check_rows(self, *rows):
+        return check_review(self.sheet(*rows), self.manifest)
 
     def test_blank_template_keeps_all_pairs_pending(self):
         result = self.check_rows(('L01-summary-1', 'X', '', '', '', '', ''))
@@ -41,6 +44,23 @@ class LunaReviewIntakeTests(unittest.TestCase):
         for rows in [(row, row), (('L01-summary-1', 'Z', '', '', '', '', ''),)]:
             with self.subTest(rows=rows), self.assertRaisesRegex(ValueError, 'unknown or duplicate'):
                 self.check_rows(*rows)
+
+    def test_two_reviewers_keep_pending_separate_and_only_report_disagreement_labels(self):
+        first = self.sheet(
+            ('L01-summary-1', 'X', 2, 2, '초안 활용 가능', '', '비공개 근거'),
+            ('L01-summary-1', 'Y', 0, 2, '실패', '비공개 문장', '원문 근거'),
+            ('L02-guide-2', 'X', '', '', '보류', '', '자료 확인 대기'),
+        )
+        second = self.sheet(
+            ('L01-summary-1', 'X', 2, 1, '초안 활용 가능', '', '비공개 근거'),
+            ('L01-summary-1', 'Y', 1, 1, '수정', '', '도판 근거'),
+            ('L02-guide-2', 'X', 2, 2, '초안 활용 가능', '', '도판 근거'),
+        )
+        result = compare_reviews(read_review(first, self.manifest), read_review(second, self.manifest))
+        self.assertEqual(result, {'agreeingSides': 1, 'pendingSides': 22, 'disagreements': [
+            {'trialId': 'L01-summary-1', 'side': 'Y', 'first': 'failed', 'second': 'revise'},
+        ]})
+        self.assertNotIn('비공개', str(result))
 
     def test_missing_evidence_invalid_grade_and_threshold_are_rejected(self):
         for scores, verdict, quote, evidence in [

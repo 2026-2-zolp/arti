@@ -53,7 +53,7 @@ const headersFor = token => ({ Authorization: `Bearer ${token}` });
 async function newMember(page) {
   return body(await page.request.post('/api/auth/signup', { data: {
     email: `visit-boundaries-${randomUUID()}@example.test`, password,
-    termsAccepted: true, termsVersion: '2026-11-14-draft.1',
+    termsAccepted: true, termsVersion: '2026-11-18-draft.2',
   } }));
 }
 
@@ -574,6 +574,37 @@ async function completeTasteVisit(page, taste, owner) {
   return record;
 }
 
+async function broadTasteTie(browser) {
+  const page = await openPage(browser);
+  try {
+    const tiedTags = [['warm', 'cool'], ['landscape', 'light'], ['people', 'soft'], ['abstract'], ['vivid']];
+    const pool = await body(await page.request.get('/api/taste-pool'));
+    for (const [index, pair] of pool.pairs.entries()) {
+      pool.artworks.find(work => work.id === pair.leftId).tags = tiedTags[index];
+    }
+    await page.route('**/api/taste-pool', route => route.fulfill({ json: pool }));
+    await page.goto(exhibition + '/taste');
+    await choosePairs(page);
+    const tags = page.locator('[aria-label="취향 태그"]');
+    await tags.waitFor();
+    assert.equal(await tags.getByRole('button').count(), 8);
+    assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
+    await page.getByText('이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.').waitFor();
+    assert.equal(await button(page, '이 취향으로 계속').count(), 0);
+    await button(tags, '빛').click();
+    await button(page, '이 취향으로 계속').waitFor();
+    await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/taste-pool', 'GET') && r.ok()),
+      page.reload(),
+    ]);
+    await button(tags, '빛').waitFor();
+    assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['빛']);
+    console.log('PASS U-05 starts a broad tie with no default, preserves the chosen tag on reload');
+  } finally {
+    await page.close();
+  }
+}
+
 async function savedV2(browser) {
   const context = await browser.newContext(pageOptions);
   const page = await openPage(browser, context);
@@ -622,6 +653,9 @@ async function savedV2(browser) {
     await page.waitForURL(base.href);
     await page.goto(exhibition + '/taste');
     await choosePairs(page, 1, [0, 0, 0, 1, 1]);
+    const pickedTags = page.locator('[aria-label="취향 태그"]');
+    await pickedTags.waitFor();
+    assert.deepEqual(await pickedTags.getByRole('button', { pressed: true }).allTextContents(), ['풍경', '따뜻한 색감']);
     const savePath = `/api/users/${member.user.id}/tastes`;
     let committedStatus;
     // Let Django commit the first PUT before dropping only its response to Chrome.
@@ -1771,7 +1805,11 @@ async function operationsLog(browser) {
     assert.deepEqual(report.recent.find(event => event.requestId === partialId).analysisFailures,
       [{ field: 'guide', code: 'PROVIDER_ERROR' }]);
 
+    await page.route(url => url.pathname === '/api/admin/artworks',
+      route => route.fulfill({ status: 503, json: { error: '합성 목록 장애' } }), { times: 1 });
     await page.reload();
+    await page.getByRole('alert').filter({ hasText: '전시와 작품 목록을 불러오지 못했어요.' }).waitFor();
+    await button(page, '다시 조회').click();
     await page.getByText(/오늘 도슨트 요청/).waitFor();
     await page.getByRole('link', { name: '운영 로그', exact: true }).click();
     await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
@@ -1819,6 +1857,27 @@ async function passwordReset(browser) {
   const page = await openPage(browser);
   const other = await openPage(browser);
   try {
+    await page.goto(exhibition);
+    await button(page, '개인정보 처리방침 보기').click();
+    const visitorPolicy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await visitorPolicy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
+    await visitorPolicy.getByRole('heading', { name: '카카오 연결' }).waitFor();
+    await button(visitorPolicy, '닫기').click();
+
+    await page.goto('/signup');
+    const field = page.getByLabel('이메일', { exact: true });
+    await field.fill('draft-review@example.test');
+    await button(page, '서비스 이용약관 보기').click();
+    const terms = page.getByRole('dialog', { name: '서비스 이용약관' });
+    await terms.getByText('버전 2026-11-18-draft.2').waitFor();
+    await terms.getByText(/비밀번호 재설정을 제공하는 환경/).waitFor();
+    await button(terms, '닫기').click();
+    await button(page, '개인정보 처리방침 보기').click();
+    const policy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await policy.getByText(/30분 동안 유효/).waitFor();
+    await button(policy, '닫기').click();
+    assert.equal(await field.inputValue(), 'draft-review@example.test');
+
     const member = await newMember(page);
     const secondMember = await newMember(other);
     const savedReceipt = await body(await page.request.post('/api/visits', {
@@ -1838,6 +1897,8 @@ async function passwordReset(browser) {
     });
     await page.goto('/login');
     await button(page, '로그인 도움').click();
+    // The login form has the same email label while the recovery screen is loading.
+    await page.getByRole('heading', { name: '비밀번호 재설정', exact: true }).waitFor();
     const emailInput = page.getByLabel('이메일', { exact: true });
     const mailNotice = page.getByRole('status').filter({ hasText: '등록된 이메일이라면' });
     const requestLink = async () => {
@@ -1917,7 +1978,10 @@ async function passwordReset(browser) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     if (suite === 'recommendation-shortage') return await recommendationShortage(browser);
-    if (suite === 'saved-v2') return await savedV2(browser);
+    if (suite === 'saved-v2') {
+      await broadTasteTie(browser);
+      return await savedV2(browser);
+    }
     if (suite === 'map-variants') return await mapVariants(browser);
     if (suite === 'operations') return await operationsLog(browser);
     if (suite === 'password-reset') return await passwordReset(browser);

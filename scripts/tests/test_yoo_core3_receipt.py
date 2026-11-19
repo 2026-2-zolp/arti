@@ -1,6 +1,7 @@
 import io
 import json
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -8,7 +9,7 @@ from unittest.mock import patch
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from yoo_core3_receipt import FIELDS, MEDIA, check_receipt, main, read_references
+from yoo_core3_receipt import FIELDS, MEDIA, WORDING, check_receipt, main, read_references
 
 
 class Core3ReceiptTests(unittest.TestCase):
@@ -136,3 +137,42 @@ class Core3ReceiptTests(unittest.TestCase):
                 result = self.check(receipt)['handoff']
                 self.assertEqual(result['pendingContentFields'], list(FIELDS) if issue == 'old-wording' else ['hint'])
                 self.assertEqual(result['media']['campus_demo'], {'usageConfirmed': True, 'status': 'pending'})
+
+    def test_matching_declared_hash_cannot_override_different_attachment(self):
+        receipt = self.receipt('001')
+        receipt['content'] = [dict(receipt['content'][0], field=name) for name in FIELDS]
+        with tempfile.TemporaryDirectory() as private:
+            document = Path(private) / 'receipt.json'
+            document.write_text(json.dumps(receipt), encoding='utf-8')
+            attachment = Path(private) / 'different.png'
+            attachment.write_bytes(b'synthetic attachment')
+            output = io.StringIO()
+            with patch.object(sys, 'argv', ['yoo_core3_receipt.py', str(document), '--image', str(attachment)]), redirect_stdout(output):
+                main()
+        result = json.loads(output.getvalue())
+        self.assertEqual(result['imageAttachment'], 'mismatch')
+        self.assertEqual(result['content']['question']['issues'], ['imageAttachmentSha256-mismatch'])
+        self.assertEqual(result['handoff']['media']['campus_demo'], {'usageConfirmed': False, 'status': 'pending'})
+
+    def test_wording_attachment_matches_after_line_ending_normalization(self):
+        receipt = self.receipt('001')
+        receipt['content'] = [dict(receipt['content'][0], field=name) for name in FIELDS]
+        with tempfile.TemporaryDirectory() as private:
+            document = Path(private) / 'receipt.json'
+            document.write_text(json.dumps(receipt), encoding='utf-8')
+            attachment = Path(private) / 'wording.md'
+            original = WORDING.read_bytes().replace(b'\r\n', b'\n')
+            attachment.write_bytes(original.replace(b'\n', b'\r\n'))
+            results = []
+            for content_changed in (False, True):
+                if content_changed:
+                    attachment.write_bytes(original + b'\nA different version.\n')
+                output = io.StringIO()
+                with patch.object(sys, 'argv', ['yoo_core3_receipt.py', str(document), '--wording', str(attachment)]), redirect_stdout(output):
+                    main()
+                results.append(json.loads(output.getvalue()))
+        self.assertEqual(results[0]['wordingAttachment'], 'matched')
+        self.assertEqual(results[0]['handoff']['media']['campus_demo']['status'], 'ready-for-review')
+        self.assertEqual(results[1]['wordingAttachment'], 'mismatch')
+        self.assertEqual(results[1]['content']['question']['issues'], ['wordingAttachmentSha256-mismatch'])
+        self.assertEqual(results[1]['handoff']['media']['campus_demo'], {'usageConfirmed': True, 'status': 'pending'})

@@ -24,6 +24,7 @@ if (-not $UseImageContents) {
 $prefix = 'arti-kakao-https-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
 $scratch = Join-Path $repo "data/private/$prefix"
 $previousPort = $env:ARTI_KAKAO_BROWSER_PORT
+$previousTerms = $env:ARTI_TEST_SIGNUP_TERMS_VERSION
 $network = $db = $api = $web = $null
 
 function Invoke-ArtiDocker {
@@ -90,6 +91,9 @@ exec gunicorn 'arti.tests.kakao_browser_server:create_gunicorn_application()' --
     Invoke-ArtiDocker exec $web nginx -t
 
     $env:ARTI_KAKAO_BROWSER_PORT = "$HttpsPort"
+    $versionOutput = @(Invoke-ArtiDocker exec $api python manage.py shell --verbosity 0 -c 'from arti.member import SIGNUP_TERMS_VERSION; print(SIGNUP_TERMS_VERSION)')
+    if ($versionOutput.Count -ne 1 -or $versionOutput[0] -notmatch '^[a-zA-Z0-9._-]{1,64}$') { throw 'Expected one signup terms version from the mock API image.' }
+    $env:ARTI_TEST_SIGNUP_TERMS_VERSION = $versionOutput[0]
     node frontend/tests/kakaoAuth.browser.mjs --external-proxy
     if ($LASTEXITCODE -ne 0) { throw 'Nginx HTTPS Chrome scenarios failed.' }
 
@@ -129,6 +133,7 @@ exec gunicorn 'arti.tests.kakao_browser_server:create_gunicorn_application()' --
         }
         if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch }
         $env:ARTI_KAKAO_BROWSER_PORT = $previousPort
+        $env:ARTI_TEST_SIGNUP_TERMS_VERSION = $previousTerms
         Pop-Location
     }
 }

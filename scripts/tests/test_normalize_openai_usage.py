@@ -1,5 +1,6 @@
 import unittest
 
+from scripts.compare_model_costs import compare
 from scripts.normalize_openai_usage import normalize
 
 
@@ -33,3 +34,24 @@ class OpenAIUsageExportTests(unittest.TestCase):
             normalize('proj_test', export((0, 60, []), (50, 120, [])))
         with self.assertRaisesRegex(ValueError, 'grouped by'):
             normalize('proj_test', export((0, 60, [{'project_id': 'different', 'model': 'gpt-6-luna'}])))
+
+    def test_cost_comparison_distinguishes_token_delta_and_missing_models(self):
+        model = 'synthetic-text'
+        vendor = {'project_id': 'proj_test', 'model': model, 'input_tokens': 100, 'output_tokens': 30, 'input_cached_tokens': 0}
+        provider = normalize('proj_test', export((0, 60, [vendor])))
+        provider['rows'][0]['ratesPerMillion'] = {'input': '1', 'cachedInput': '0.5', 'output': '2'}
+        app_row = {'task': 'guide', 'model': model, 'inputTokens': 120, 'outputTokens': 30,
+                   'cachedInputTokens': 4, 'missing': 0, 'cacheMissing': 0}
+        app = {**provider, 'rows': [app_row]}
+        compared = compare(app, provider)
+        self.assertEqual(compared['models'][0]['status'], 'different')
+        self.assertEqual(compared['models'][0]['applicationMinusProviderTokens'],
+                         {'inputTokens': 20, 'outputTokens': 0, 'cachedInputTokens': 4})
+        self.assertIsNone(compared['comparableEstimatedCost'])
+
+        without_model = compare({**app, 'rows': []}, provider)['models'][0]
+        self.assertEqual(without_model['incompleteReasons'], ['application-model-missing'])
+        self.assertIsNone(without_model['applicationMinusProviderTokens'])
+        without_usage = compare(app, normalize('proj_test', export((0, 60, [{**vendor, 'input_cached_tokens': None}]))))['models'][0]
+        self.assertEqual(without_usage['incompleteReasons'], ['provider-token-usage-missing'])
+        self.assertIsNone(without_usage['applicationMinusProviderTokens'])

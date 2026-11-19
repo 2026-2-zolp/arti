@@ -203,6 +203,9 @@ networks:
     Write-Host '[source-receipt] Save and read a synthetic receipt on the source stack'
     Invoke-ProbeDocker compose @source exec -T -e ARTI_ENV=test -e ALLOW_TEST_FIXTURES=true api python manage.py load_test_fixture | Out-Null
     Invoke-ProbeDocker compose @source exec -T -e "ARTI_BOOTSTRAP_PASSWORD=$password" api python manage.py bootstrap_admin --login-id demo-admin --name 'Synthetic preflight' | Out-Null
+    $versionOutput = @(Invoke-ProbeDocker compose @source exec -T api python manage.py shell --verbosity 0 -c 'from arti.member import SIGNUP_TERMS_VERSION; print(SIGNUP_TERMS_VERSION)')
+    if ($versionOutput.Count -ne 1 -or $versionOutput[0] -notmatch '^[a-zA-Z0-9._-]{1,64}$') { throw 'Expected one signup terms version from the release image.' }
+    $termsVersion = $versionOutput[0]
     $ownerLogin = @{ email = 'preflight-owner@example.test'; password = $password }
     if ($ChromeReceipt) {
         $captured = Invoke-ProbeReceiptChrome 'source' @{ base = $sourceUrl; ownerEmail = $ownerLogin.email; password = $password }
@@ -214,7 +217,7 @@ networks:
         $order = @($original.artworkIds)
         $expectedVisit = $original.visitId
     } else {
-        $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/signup' 200 @{} ($ownerLogin + @{ termsAccepted = $true; termsVersion = '2026-11-14-draft.1' }))
+        $owner = Convert-ProbeJson (Invoke-ProbeHttp $sourceUrl '/api/auth/signup' 200 @{} ($ownerLogin + @{ termsAccepted = $true; termsVersion = $termsVersion }))
         $order = @('fixture-art01', 'fixture-art03', 'fixture-art05')
         $payload = @{
             visitId = [guid]::NewGuid().ToString(); exhibitionId = 'fixture-ex01'; viewedArtworkIds = $order
@@ -345,7 +348,7 @@ networks:
     $owner = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/login' 200 @{} $ownerLogin)
     $memberHeaders = @{ Authorization = "Bearer $($owner.token)" }
     $otherEmail = 'preflight-other@example.test'
-    $other = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/signup' 200 @{} @{ email = $otherEmail; password = $password; termsAccepted = $true; termsVersion = '2026-11-14-draft.1' })
+    $other = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/auth/signup' 200 @{} @{ email = $otherEmail; password = $password; termsAccepted = $true; termsVersion = $termsVersion })
     $admin = Convert-ProbeJson (Invoke-ProbeHttp $restoreUrl '/api/admin/login' 200 @{} @{ id = 'demo-admin'; password = $password })
     $adminHeaders = @{ 'X-Admin-Token' = $admin.token }
     $memberPath = "/api/users/$($owner.user.id)/visits"

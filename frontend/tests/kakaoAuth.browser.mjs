@@ -20,6 +20,7 @@ const authPath = '/api/auth/kakao';
 const callbackPath = authPath + '/callback';
 const completePath = '/auth/kakao/complete';
 const password = 'synthetic-password-1';
+const termsVersion = process.env.ARTI_TEST_SIGNUP_TERMS_VERSION || '2026-11-18-draft.2';
 
 function startApi(certificateDirectory) {
   const child = spawn(process.env.ARTI_TEST_PYTHON || 'python', [
@@ -49,7 +50,7 @@ async function json(response, status = 200) {
 async function seedAccount(request) {
   const email = 'kakao-' + randomUUID() + '@example.test';
   const { user, token } = await json(await request.post('/api/auth/signup', {
-    data: { email, password, nickname: '합성 카카오 회원', termsAccepted: true, termsVersion: '2026-11-14-draft.1' },
+    data: { email, password, nickname: '합성 카카오 회원', termsAccepted: true, termsVersion },
   }));
   const headers = { Authorization: 'Bearer ' + token };
   const pool = await json(await request.get('/api/taste-pool'));

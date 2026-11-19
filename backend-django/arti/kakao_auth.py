@@ -61,8 +61,7 @@ def require_configuration():
 
 def require_same_origin(request):
     origin = request.headers.get('Origin')
-    callback_url = urlsplit(settings.ARTI_KAKAO_CALLBACK_URL)
-    if origin is not None and origin != f'{callback_url.scheme}://{callback_url.netloc}':
+    if origin is not None and origin != kakao.configured_origin():
         raise ContractError(403, 'KAKAO_INVALID_ORIGIN', 'ARTI 로그인 화면에서 다시 시도해 주세요.')
 
 

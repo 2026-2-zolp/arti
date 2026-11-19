@@ -105,6 +105,20 @@ class PasswordResetTests(Helpers, TransactionTestCase):
         with self.settings(ARTI_PASSWORD_RESET_ORIGIN=''), self.assertRaisesMessage(CommandError, 'mail worker'):
             call_command('send_password_reset_mail', '--watch')
 
+    def test_purge_expired_removes_processed_rows_while_mail_is_disabled(self):
+        for email in ('a@example.test', 'b@example.test'):
+            self.assertEqual(self.request_link(email).status_code, 204)
+        processed, active = PasswordResetDelivery.objects.order_by('pk')
+        now = timezone.now()
+        PasswordResetDelivery.objects.filter(pk=processed.pk).update(
+            expires_at=now - timedelta(seconds=1), processed_at=now, delivered=True)
+        output = StringIO()
+        with self.settings(ARTI_PASSWORD_RESET_ORIGIN=''):
+            call_command('send_password_reset_mail', '--purge-expired', stdout=output)
+            self.assertIn('requests removed: 1', output.getvalue())
+        self.assertEqual(list(PasswordResetDelivery.objects.values_list('pk', flat=True)), [active.pk])
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_link_resets_the_same_member_and_preserves_kakao_and_receipt(self):
         KakaoIdentity.objects.create(account=self.member, client_id='fixture-app', subject='fixture-subject')
         self.assertEqual(self.a.post('/api/visits', self.payload(), format='json').status_code, 201)

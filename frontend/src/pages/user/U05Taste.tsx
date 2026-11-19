@@ -151,12 +151,13 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   function choose(id: string) {
     if (!pool?.ready || blocked || complete || pickTimer.current !== null) return;
     const picks = [...draft.picks, id];
-    const options = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
+    const suggested = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
     setPicked(id);
     pickTimer.current = window.setTimeout(() => {
       pickTimer.current = null;
       setPicked(null);
-      const next = { picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined, options, tags: options };
+      const next = { picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined,
+        options: suggested?.options, tags: suggested?.defaultTags };
       if (!entry) writeEntry(draft, 0, true);
       persist(next);
       writeEntry(next, (entry?.depth ?? 0) + 1, false);
@@ -218,7 +219,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
           {samePairs && (version === 1 || v2)
             ? <button type="button" className="btn outline" onClick={() => update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
                 tieContextVersion: v2 ? contextVersion : undefined,
-                options: complete ? tastesFromPicks(pool.artworks, draft.picks) : undefined })}>고른 작품을 최신 근거로 확인</button>
+                options: complete ? tastesFromPicks(pool.artworks, draft.picks).options : undefined })}>고른 작품을 최신 근거로 확인</button>
             : <button type="button" className="btn outline" onClick={restart}>작품을 처음부터 다시 고르기</button>}
         </div>
       )}
@@ -234,7 +235,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             ))}
           </div>
           {manual && <p>고른 작품에 없는 태그를 포함했어요. 선택한 태그를 같은 비중으로 추천에 사용합니다.</p>}
-          {!selected.length && <p>취향 태그를 하나 이상 골라 주세요.</p>}
+          {!selected.length && <p>이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.</p>}
           {selected.length > 0 && (version === 2 || pool?.ready) && (
             <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile} blocked={blocked} />
           )}

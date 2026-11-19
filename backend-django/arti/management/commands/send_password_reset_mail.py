@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from arti.models import PasswordResetDelivery
-from arti.password_reset import deliver_pending, reset_enabled
+from arti.password_reset import deliver_pending, purge_expired_deliveries, reset_enabled
 
 
 class Command(BaseCommand):
@@ -17,10 +17,13 @@ class Command(BaseCommand):
         mode = parser.add_mutually_exclusive_group()
         mode.add_argument('--status', action='store_true', help='Read anonymous queue counts without sending mail.')
         mode.add_argument('--watch', action='store_true', help='Run a batch every minute in a dedicated worker.')
+        mode.add_argument('--purge-expired', action='store_true', help='Remove expired requests without sending mail.')
 
     def handle(self, *args, **options):
         if options['status']:
             return self.queue_status()
+        if options['purge_expired']:
+            return f'Expired password reset requests removed: {purge_expired_deliveries()}'
         if not options['watch']:
             return f'Password reset messages sent: {deliver_pending()}'
         if not reset_enabled():

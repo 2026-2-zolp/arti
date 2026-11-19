@@ -38,7 +38,7 @@ async function verify(browser, closed) {
     const adminHeaders = { 'X-Admin-Token': admin.token };
     const { user, token } = await body(await page.request.post('/api/auth/signup', { data: {
       email: `receipt-visibility-${randomUUID()}@example.test`, password: 'Fixture-visit-2026!',
-      termsAccepted: true, termsVersion: '2026-11-14-draft.1',
+      termsAccepted: true, termsVersion: '2026-11-18-draft.2',
     } }));
     const memberHeaders = { Authorization: `Bearer ${token}` };
     await page.addInitScript(({ user, token }) => {

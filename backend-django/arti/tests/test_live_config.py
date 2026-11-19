@@ -19,6 +19,10 @@ class LiveConfigTests(SimpleTestCase):
             call_command('check_live_config', 'kakao', '--origin', 'https://other.example.test')
         with self.assertRaisesMessage(CommandError, 'exact callback'):
             call_command('check_live_config', 'kakao', '--origin', ORIGIN + ':8443')
+        with self.settings(ARTI_KAKAO_CALLBACK_URL=ORIGIN + ':443/api/auth/kakao/callback'):
+            output = StringIO()
+            call_command('check_live_config', 'kakao', '--origin', ORIGIN, stdout=output)
+            self.assertEqual(output.getvalue(), 'kakao: settings match (no external requests)\n')
 
     @override_settings(ARTI_PASSWORD_RESET_ORIGIN=ORIGIN, ARTI_PASSWORD_RESET_FROM='fixture@example.test',
                        EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend', EMAIL_HOST='smtp.example.test',
