@@ -40,14 +40,31 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          CI_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
           set -euo pipefail
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ && "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ && "$INSTANCE_ID" =~ ^i-([0-9a-f]{8}|[0-9a-f]{17})$ ]]
           [[ "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" == "$RELEASE_SHA" ]]
-          ci_run="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
-            -f branch=main -f event=push -f status=success -f head_sha="$RELEASE_SHA" \
-            --jq '.workflow_runs[0].id // empty')"
-          [[ "$ci_run" =~ ^[0-9]+$ ]]
+          if [[ "$GITHUB_EVENT_NAME" == workflow_run ]]; then
+            [[ "$CI_RUN_ID" =~ ^[0-9]+$ && "$CI_RUN_ATTEMPT" =~ ^[0-9]+$ ]]
+            ci_ref="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CI_RUN_ID/attempts/$CI_RUN_ATTEMPT" \
+              --jq 'select(.path == ".github/workflows/ci.yml" and .head_branch == "main" and .event == "push" and
+                .status == "completed" and .conclusion == "success") | [.head_repository.full_name, .head_sha, .id] | join(":")')"
+            ci_run=''
+            if [[ "$ci_ref" == "$GITHUB_REPOSITORY:$RELEASE_SHA:$CI_RUN_ID" ]]; then
+              ci_run="$CI_RUN_ID"
+            fi
+          else
+            # The server-side success filter can omit completed CI reruns.
+            ci_run="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+              -f branch=main -f event=push -f head_sha="$RELEASE_SHA" \
+              --jq '[.workflow_runs[] | select(.status == "completed" and .conclusion == "success")][0].id // empty')"
+          fi
+          if [[ ! "$ci_run" =~ ^[0-9]+$ ]]; then
+            printf '::error::No successful main push CI found for %s\n' "$RELEASE_SHA"
+            exit 1
+          fi
           printf 'CI run %s verified for %s\n' "$ci_run" "$RELEASE_SHA"
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
