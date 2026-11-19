@@ -1,0 +1,15 @@
+server {
+    listen 80;
+    server_name @ARTI_HTTPS_HOST@;
+    access_log off;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/lib/arti-acme;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 308 https://@ARTI_HTTPS_HOST@$request_uri;
+    }
+}
