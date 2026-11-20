@@ -483,8 +483,17 @@ button.duel-title:disabled { cursor: default; }
 .bubble.docent-error-card .link-btn { min-height: 44px; }
 .chat-log .bubble small { display: block; color: var(--ink-2); }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
-.docent-chat-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 12px; }
-.docent-chat-actions .link-btn { min-height: 44px; }
+/* 최신 대화로 내려가는 원형 화살표: 입력부 바로 위 가운데에 떠 있다. 새 답변이 있으면 강조 점 표시 */
+.m-shell[data-screen='U-11'] .m-footer { position: relative; }
+.docent-latest-btn {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%);
+  width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: var(--shadow); z-index: 2;
+}
+.docent-latest-btn.has-new::after {
+  content: ''; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--surface);
+}
 .chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
 .chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
 .chat-input input:focus { outline: 1px solid var(--ink); outline-offset: -1px; }

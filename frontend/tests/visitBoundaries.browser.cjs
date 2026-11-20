@@ -1869,13 +1869,7 @@ async function passwordReset(browser) {
   const page = await openPage(browser);
   const other = await openPage(browser);
   try {
-    await page.goto(exhibition);
-    await button(page, '개인정보 처리방침 보기').click();
-    const visitorPolicy = page.getByRole('dialog', { name: '개인정보 처리방침' });
-    await visitorPolicy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
-    await visitorPolicy.getByRole('heading', { name: '카카오 연결' }).waitFor();
-    await button(visitorPolicy, '닫기').click();
-
+    // 전시 첫 화면(U-01)의 개인정보 처리방침 링크는 사용자 결정으로 뺐다. 처리방침은 회원가입 화면에서 확인한다.
     await page.goto('/signup');
     const field = page.getByLabel('이메일', { exact: true });
     await field.fill('draft-review@example.test');
@@ -1886,6 +1880,8 @@ async function passwordReset(browser) {
     await button(terms, '닫기').click();
     await button(page, '개인정보 처리방침 보기').click();
     const policy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await policy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
+    await policy.getByRole('heading', { name: '카카오 연결' }).waitFor();
     await policy.getByText(/30분 동안 유효/).waitFor();
     await button(policy, '닫기').click();
     assert.equal(await field.inputValue(), 'draft-review@example.test');

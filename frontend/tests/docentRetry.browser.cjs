@@ -477,17 +477,23 @@ async function inspectReadingAndContinuing(browser) {
     const reply = await response.json();
     assert.deepEqual(reply.sourceRefs, sourceRefs);
     await chat.locator('.bubble.user').getByText(question, { exact: true }).waitFor();
-    const latest = button('최신 대화 보기');
-    await latest.waitFor();
-    assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'the new reply preserves reading position');
+    // 11-20 사용자 결정: 답변이 오면 위쪽 대화를 읽던 중이어도 방금 질문·답변 시작이 보이게 이동한다.
+    await conversation.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const answerBox = await chat.locator('.bubble.ai').last().boundingBox();
+    const areaBox = await conversation.boundingBox();
+    assert.ok(answerBox.y >= areaBox.y - 2 && answerBox.y < areaBox.y + areaBox.height, 'the new answer start is shown');
+    assert.ok(Math.abs((await position()).top - readingTop) > 2, 'the view moved from the old reading position to the new answer');
 
-    await latest.click();
-    await latest.waitFor({ state: 'hidden' });
-    assert.ok((await position()).remaining < 24);
-    assert.equal(await chat.evaluate(log => document.activeElement === log), true);
+    const latest = button('최신 대화 보기');
+    if (await latest.isVisible()) {
+      await latest.click();
+      await latest.waitFor({ state: 'hidden' });
+      assert.ok((await position()).remaining < 24);
+      assert.equal(await chat.evaluate(log => document.activeElement === log), true);
+    }
     assert.equal(await chat.locator('.bubble.user').count(), 5);
     assert.deepEqual(pageErrors, []);
-    console.log('PASS older reply stays in place while sending and receiving; artwork, visit and four prior exchanges stay aligned');
+    console.log('PASS older reply stays in place while sending; the new answer is shown on arrival; artwork, visit and four prior exchanges stay aligned');
   } finally {
     await page.close();
   }

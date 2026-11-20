@@ -230,7 +230,7 @@ export default function U09Route() {
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (
-            <span key={r.artworkId} className={i === current ? 'cur' : viewed.includes(r.artworkId) ? 'done' : ''} />
+            <span key={r.artworkId} className={i === current ? 'cur' : i < current && viewed.includes(r.artworkId) ? 'done' : ''} />
           ))}
         </div>
       </div>
@@ -257,7 +257,8 @@ export default function U09Route() {
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);
             // 되돌아온 작품은 이미 본 작품이어도 '현재 작품'으로 먼저 표시한다.
-            const completed = i !== current && viewed.includes(r.artworkId);
+            // 현재 작품보다 앞 순서만 완료(✓)로 표시한다. 뒤로가기로 돌아왔을 때 뒤 순서는 이미 봤어도 번호로 둔다(지도 표시와 같게).
+            const completed = i < current && viewed.includes(r.artworkId);
             return (
               <li key={r.artworkId} aria-current={i === current ? 'step' : undefined} className={completed ? 'done' : i === current ? 'cur' : ''}>
                 <span className="route-num" aria-hidden="true">{completed ? '✓' : i + 1}</span>

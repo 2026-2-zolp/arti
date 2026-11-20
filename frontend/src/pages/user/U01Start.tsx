@@ -9,8 +9,6 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
-import { SignupDocument } from '../../components/SignupDocument';
-import { signupPrivacy } from '../../data/signupDocuments';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
@@ -51,9 +49,6 @@ function StartShell({ back = false, footer, exhibitionOrder = false, children }:
 
       <GalleryIllustration />
       {children}
-      <div className="center">
-        <SignupDocument title="개인정보 처리방침" sections={signupPrivacy} />
-      </div>
     </MobileShell>
   );
 }
