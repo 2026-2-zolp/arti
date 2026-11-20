@@ -45,7 +45,7 @@ export default function U11AskAI() {
 }
 
 /** 맨 아래에서 이 거리 안이면 "최신 대화를 보는 중"으로 본다(새 답변 자동 따라가기·아래 화살표 숨김 기준) */
-const NEAR_BOTTOM_PX = 96;
+const NEAR_BOTTOM_PX = 180;
 
 /** 대화 속 관찰 질문 카드의 자리(그 앞까지의 대화 수)와 질문 */
 interface GuideMark { index: number; question: string }
@@ -84,6 +84,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const followLatest = useRef(true);
   const syncViewportRef = useRef<(() => void) | null>(null);
   const resyncTimers = useRef<number[]>([]);
@@ -98,7 +99,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     syncViewportRef.current = null;
   }, []);
   const [newOutput, setNewOutput] = useState(false);
-  // 위쪽 대화를 보고 있으면(맨 아래에서 NEAR_BOTTOM_PX(96px) 이상 떨어짐) 새 답변이 없어도 맨 아래로 돌아가는 버튼을 보여 준다.
+  // 위쪽 대화를 보고 있으면(맨 아래에서 NEAR_BOTTOM_PX(180px) 이상 떨어짐) 새 답변이 없어도 맨 아래로 돌아가는 버튼을 보여 준다.
   const [readingAbove, setReadingAbove] = useState(false);
   const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
 
@@ -147,6 +148,36 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     const conversation = shellRef.current?.querySelector('main');
     if (conversation && followLatest.current) conversation.scrollTop = conversation.scrollHeight;
   }, [guideAnchor, pastQuestions]);
+  // 글이 [보내기] 버튼 앞 한 줄에 들어가면 버튼과 같은 줄, 넘치거나 줄바꿈하면 버튼 윗줄부터 칸 전체 폭을 쓴다(여러 줄 모양).
+  const [multiline, setMultiline] = useState(false);
+  const inputBoxRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = inputBoxRef.current;
+    const text = inputRef.current;
+    if (!box || !text) return;
+    const measure = () => {
+      const boxStyle = getComputedStyle(box);
+      // 한 줄 모양에서 글이 쓸 수 있는 폭 = 칸 안쪽 폭 - 버튼(36px) - 버튼 앞 간격(8px)
+      const width = box.clientWidth - parseFloat(boxStyle.paddingLeft) - parseFloat(boxStyle.paddingRight) - 36 - 8;
+      const context = document.createElement('canvas').getContext('2d');
+      if (context) context.font = getComputedStyle(text).font;
+      const textWidth = context ? context.measureText(input).width : 0;
+      setMultiline(input.includes('\n') || textWidth > width - 2);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [input]);
+  // 글상자 높이를 글 줄 수에 맞춘다(최대 6줄은 CSS max-height, 넘으면 글상자 안에서 스크롤).
+  useLayoutEffect(() => {
+    const text = inputRef.current;
+    if (!text) return;
+    text.style.height = 'auto';
+    // 빈칸이면 안내 문구 길이와 상관없이 한 줄 높이(CSS min-height)로 둔다
+    if (!input) return;
+    text.style.height = `${text.scrollHeight + text.offsetHeight - text.clientHeight}px`;
+  }, [input, multiline]);
   const canAsk = chatReady && !pending && !retryWindow;
   const retry = failure?.retry;
   const sendError = retryWindow
@@ -179,6 +210,8 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       if (!viewport || viewport.scale !== 1) return;
       shell.style.setProperty('--docent-height', `${viewport.height}px`);
       shell.style.setProperty('--docent-top', `${viewport.offsetTop}px`);
+      // 키보드가 실제로 올라와 보이는 화면이 크게 줄었을 때만 입력창 아래 여유를 둔다(CSS data-keyboard). 키보드를 내리면 바로 원래 자리.
+      shell.dataset.keyboard = window.innerHeight - viewport.height > 150 ? 'open' : 'closed';
       if (followLatest.current) conversation.scrollTop = conversation.scrollHeight;
     };
     syncViewport();
@@ -360,13 +393,17 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
             </button>
           )}
           <form className="chat-input" onSubmit={onSubmit}>
-            {/* 자동 완성을 꺼서 크롬 키보드 위 열쇠·주소 바로가기 줄이 덜 붙게 한다(그 줄이 입력칸·보내기를 가리던 문제). 키보드가 올라온 뒤에는 onFocus에서 화면 높이를 다시 맞춘다 */}
-            <input
-              type="text"
+            {/* 한 줄 입력칸(input) 대신 글상자(textarea)를 쓴다. 크롬이 input에 붙이던 키보드 위 열쇠·카드·위치 아이콘 줄(입력칸·보내기를 가리던 문제)이
+                글상자에는 붙지 않는다. 엔터는 줄바꿈이고, 보내기는 [보내기](↑) 버튼으로만 한다(11-20 사용자 결정). 글이 길어지면 6줄까지 늘어난다.
+                둥근 테두리 칸(chat-input-box) 안에 글상자와 ↑ 버튼을 함께 둔다. 한 줄이면 같은 줄, 넘치거나 줄바꿈하면 글이 버튼 윗줄부터 전체 폭을 쓴다.
+                키보드가 올라온 뒤에는 onFocus에서 화면 높이를 다시 맞춘다 */}
+            <div ref={inputBoxRef} className={`chat-input-box${multiline ? ' is-multiline' : ''}`}>
+            <textarea
+              ref={inputRef}
+              rows={1}
               name="docent-question"
               autoComplete="off"
               autoCorrect="off"
-              enterKeyHint="send"
               disabled={Boolean(artworkIssue)}
               maxLength={500}
               value={input}
@@ -380,8 +417,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
               ].filter(Boolean).join(' ') || undefined}
             />
             <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
-              <Icon name="send" size={20} />
+              <Icon name="arrowUp" size={20} />
             </button>
+            </div>
           </form>
         </>
       }

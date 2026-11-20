@@ -170,7 +170,7 @@ async function inspectJourney(browser, status, code) {
         const shell = document.querySelector('[data-screen="U-11"]');
         const body = shell?.querySelector('main')?.getBoundingClientRect();
         const card = shell?.querySelector('.docent-error-card')?.getBoundingClientRect();
-        const controls = [...(shell?.querySelectorAll('.docent-error-card button, .chat-input input, .send-btn') ?? [])];
+        const controls = [...(shell?.querySelectorAll('.docent-error-card button, .chat-input textarea, .send-btn') ?? [])];
         return body && card && card.top >= body.top - 1 && card.bottom <= body.bottom + 1
           && controls.length === 3 && controls.every(control => {
             const rect = control.getBoundingClientRect();
@@ -185,7 +185,7 @@ async function inspectJourney(browser, status, code) {
       assert.equal(await retry.isDisabled(), true, 'Retry-After blocks retry');
       assert.equal(await send.isDisabled(), true, 'Retry-After blocks a new submission');
       assert.match(await error.textContent(), /30초/);
-      await input.press('Enter');
+      // 11-20 사용자 결정: 질문 글상자의 엔터는 줄바꿈이고 보내기는 [보내기] 버튼으로만 한다(엔터로 보내는지 따로 확인하지 않음).
       await page.clock.fastForward((seconds - 1) * 1000);
       assert.equal(await retry.isDisabled(), true);
       assert.equal(askRequests.length, 2);

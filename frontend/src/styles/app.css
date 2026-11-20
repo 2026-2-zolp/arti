@@ -462,8 +462,9 @@ button.duel-title:disabled { cursor: default; }
 .m-shell[data-screen='U-11'] .m-footer {
   position: static;
   flex: none;
-  padding: 10px 24px max(12px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
+  /* 위쪽 여백 0: 대화는 입력칸 테두리에 닿는 곳에서 바로 가려진다(입력부 둘레 칸이 따로 보이지 않게, 11-20 사용자 결정) */
+  padding: 0 24px max(12px, env(safe-area-inset-bottom));
+  border-top: 0; /* 채팅과 입력창 사이 경계선 없음(11-20 사용자 결정) */
   background: var(--bg);
 }
 .chat-artwork { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: var(--surface-2); }
@@ -485,6 +486,12 @@ button.duel-title:disabled { cursor: default; }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
 /* 최신 대화로 내려가는 원형 화살표: 입력부 바로 위 가운데에 떠 있다. 새 답변이 있으면 강조 점 표시 */
 .m-shell[data-screen='U-11'] .m-footer { position: relative; }
+/* 대화가 입력창에 닿는 곳: 입력창 위 16px 동안 대화가 배경색으로 서서히 사라지게 해 딱 잘려 보이지 않게 한다(11-20 사용자 결정).
+   맨 아래로 내리면 마지막 말풍선은 본문 아래 여백(24px) 덕분에 이 흐림 구간 위에 놓인다 */
+.m-shell[data-screen='U-11'] .m-footer::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; pointer-events: none;
+  background: linear-gradient(to bottom, rgb(253 252 249 / 0), var(--bg));
+}
 .docent-latest-btn {
   position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%);
   width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
@@ -494,11 +501,40 @@ button.duel-title:disabled { cursor: default; }
   content: ''; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%;
   background: var(--accent); border: 2px solid var(--surface);
 }
-.chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
-.chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
-.chat-input input:focus { outline: 1px solid var(--ink); outline-offset: -1px; }
-.send-btn { height: 50px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-.send-btn:disabled { background: #c9c6c0; }
+.chat-input { display: block; }
+/* 질문 입력칸: 둥근 테두리 칸 안에 글상자와 [보내기](↑) 버튼을 함께 둔다.
+   - 한 줄: 글과 버튼이 같은 줄(칸 높이 50px)
+   - 여러 줄(.is-multiline, 버튼 앞에서 넘치거나 줄바꿈): 글이 버튼 윗줄부터 칸 전체 폭을 쓰고 버튼은 맨 아래 줄 오른쪽
+   - 최대 6줄까지 늘어나고 그 뒤는 글상자 안에서 스크롤. 스크롤 막대는 위쪽 여백(11px) 안쪽에서만 움직인다 */
+.chat-input-box {
+  display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 8px; row-gap: 2px; min-width: 0;
+  padding: 6px 6px 6px 16px; border-radius: 25px; border: 1px solid var(--line); background: var(--surface);
+  box-shadow: var(--shadow); /* 대화 위에 살짝 떠 있는 느낌(다른 카드와 같은 옅은 그림자) */
+}
+.chat-input-box:focus-within { outline: 1px solid var(--ink); outline-offset: -1px; }
+.chat-input textarea {
+  flex: 1 1 0; width: 0; min-width: 0; min-height: 36px; max-height: 146px; padding: 7px 0; border: 0; border-radius: 0;
+  background: transparent; color: inherit; font: inherit; font-size: 16px; line-height: 22px; resize: none; overflow-y: auto; display: block;
+}
+.chat-input textarea:focus { outline: none; }
+/* 빈칸 안내 문구는 좁은 휴대폰(320px)에서도 한 줄로 둔다(안내 문구 때문에 칸이 두 줄로 커지지 않게). 넘치는 끝은 잘린다(글상자는 … 표시가 안 됨) */
+.chat-input textarea:placeholder-shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-input-box.is-multiline { padding-top: 10px; border-radius: 22px; }
+/* 최대 6줄(132px). 가로 화면에서 키보드가 올라와 보이는 높이가 아주 낮을 때는 보이는 높이의 30%까지만 늘어나 대화가 가려지지 않게 한다 */
+.chat-input-box.is-multiline textarea {
+  flex-basis: 100%; width: 100%; min-height: 22px; max-height: min(132px, calc(var(--docent-height, 100dvh) * 0.3)); padding: 0 10px 0 0;
+}
+.chat-input-box.is-multiline .send-btn { margin-left: auto; }
+/* [보내기]: 파란 원 + 흰 위쪽 화살표. 보낼 수 없을 때(글 없음·대기 중)는 흐리게 */
+.send-btn {
+  flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: #2563eb; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.send-btn:disabled { opacity: 0.35; }
+/* 휴대폰 키보드가 올라와 있을 때만 입력칸 아래에 여유를 둔다. 키보드 앱의 도구 줄(이모티콘·설정·번역 아이콘)이
+   보이는 화면 높이 계산에 빠지거나 늦게 붙으면 입력칸을 가리던 문제 대비(다른 서비스들도 입력창을 조금 띄워 둠).
+   data-keyboard는 U11AskAI의 화면 높이 맞춤(syncViewport)이 정한다. 키보드를 내리면 원래 자리로 돌아온다. */
+.m-shell[data-screen='U-11'][data-keyboard='open'] .m-footer { padding-bottom: 60px; }
 
 /* ---------- U-12 ---------- */
 .receipt { border: 1px solid #e4d9cc; background: #fdf9f3; border-radius: 12px; padding: 22px 24px; position: relative; }
