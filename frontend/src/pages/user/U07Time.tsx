@@ -71,6 +71,8 @@ export default function U07Time() {
   return (
     <MobileShell
       screenId="U-07"
+      // 앱 안에서 왔으면 직전 화면(취향 태그 확인 등)으로 꺼내고, 주소로 바로 들어왔으면 취향 화면(U-05)으로 덮어쓴다.
+      back={to('/taste')}
       footer={
         <button className="btn primary block" disabled={!value || busy} onClick={next}>
           추천 받기
