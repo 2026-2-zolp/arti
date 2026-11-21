@@ -49,7 +49,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     [entryStorageKey, location.key]);
   const entry = entryDraft ? storedEntry : undefined;
   const [storedDraft, setStoredDraft] = useState(() => load<Draft>(draftKey, { picks: [] }, 'session'));
-  const draft = entryDraft ?? storedDraft;
+  const [entryEdit, setEntryEdit] = useState<{ locationKey: string; draft: Draft }>();
+  const draft = entryEdit?.locationKey === location.key ? entryEdit.draft : entryDraft ?? storedDraft;
   const [picked, setPicked] = useState<string | null>(null);
   const [viewing, setViewing] = useState<string | null>(null); // 크게 보기로 연 작품 ID
   const pickTimer = useRef<number | null>(null);
@@ -133,8 +134,13 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   }, [entryDraft, persist, writeEntry]);
 
   function update(next: Draft) {
+    // Editing the current step must be visible before another tag is tapped.
+    // Keep its history key so back, forward and reload can still restore it.
+    if (entry && entryStorageKey) {
+      save(entryStorageKey, next, 'session');
+      setEntryEdit({ locationKey: location.key, draft: next });
+    }
     persist(next);
-    if (entry) writeEntry(next, entry.depth, true);
   }
   const stepBack = () => {
     if (picked !== null || !draft.picks.length) return;

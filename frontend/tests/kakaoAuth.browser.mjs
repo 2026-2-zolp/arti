@@ -151,6 +151,9 @@ async function verify() {
     const originalSession = await json(await emailLogin);
     await page.waitForURL(base + '/mypage');
     assert.deepEqual(originalSession.user, account);
+    const settingsPath = base + '/mypage?view=settings';
+    await page.getByRole('link', { name: '계정 설정' }).click();
+    await page.waitForURL(settingsPath);
 
     async function startAndWait(tab, startButton, index) {
       const callback = responseFor(tab, 'GET', callbackPath);
@@ -180,8 +183,8 @@ async function verify() {
     assert(cancelled.status === 'cancelled' && cancelled.returnTo === '/mypage' && Object.keys(cancelled).length === 2,
       'Cancellation must return to the member page without new credentials.');
     await page.getByText('카카오 인증을 취소했어요.').waitFor();
-    await page.getByRole('link', { name: '마이페이지로 돌아가기' }).click();
-    await page.waitForURL(base + '/mypage');
+    await page.getByRole('link', { name: '계정 설정으로 돌아가기' }).click();
+    await page.waitForURL(settingsPath);
     await page.getByText('카카오 계정 연결', { exact: true }).waitFor();
     assert(await page.evaluate(() => JSON.parse(localStorage.getItem('arti.token'))) === originalSession.token,
       'Cancellation must preserve the member session.');
@@ -191,8 +194,10 @@ async function verify() {
     const linked = await finish(page);
     assert(linked.status === 'linked' && linked.returnTo === '/mypage' && Object.keys(linked).length === 2,
       'Linking must return to the member page without new credentials.');
-    await page.waitForURL(base + '/mypage');
+    await page.waitForURL(settingsPath);
     await page.getByText('카카오 계정 연결됨').waitFor();
+    await page.getByRole('button', { name: '뒤로가기', exact: true }).click();
+    await page.waitForURL(base + '/mypage');
     const logout = responseFor(page, 'POST', '/api/auth/logout');
     await page.getByRole('button', { name: '로그아웃', exact: true }).click();
     assert.equal((await logout).status(), 204);
@@ -220,7 +225,10 @@ async function verify() {
     assert.equal(steps.length, 0);
     assert.equal((await context.cookies(base)).some(cookie => cookie.name === '__Host-arti-kakao-flow'), false);
     await newer.waitForURL(base + '/mypage');
+    await newer.getByRole('link', { name: '계정 설정' }).click();
+    await newer.waitForURL(settingsPath);
     await newer.getByText('카카오 계정 연결됨').waitFor();
+    await newer.getByRole('button', { name: '뒤로가기', exact: true }).click();
     await newer.getByRole('button', { name: /아트 영수증 보기/ }).click();
     await newer.waitForURL(base + '/receipt/' + receipt.id);
     await newer.locator('.receipt-works').getByText('1. ' + receipt.artworkSnapshots[0].title, { exact: true }).waitFor();

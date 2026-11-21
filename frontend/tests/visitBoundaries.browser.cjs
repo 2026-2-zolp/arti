@@ -603,8 +603,8 @@ async function broadTasteTie(browser) {
     assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['풍경', '인물']);
     await button(tags, '풍경').click();
     await button(tags, '인물').click();
-    assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
     await page.getByText('이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.').waitFor();
+    assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
     assert.equal(await button(page, '이 취향으로 계속').count(), 0);
     await button(tags, '빛').click();
     await button(page, '이 취향으로 계속').waitFor();
