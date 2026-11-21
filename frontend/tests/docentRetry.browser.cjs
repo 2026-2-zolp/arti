@@ -555,6 +555,12 @@ async function inspectReadingAndContinuing(browser) {
     const position = () => conversation.evaluate(el => ({
       top: el.scrollTop, remaining: el.scrollHeight - el.clientHeight - el.scrollTop,
     }));
+    const scrollTo = top => conversation.evaluate(async (el, top) => {
+      el.scrollTop = top;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }, top);
+    const latest = button('최신 대화 보기');
+    const control = state => page.locator(`.docent-latest-control[data-state="${state}"]`);
     const history = [];
     let sourceRefs;
     for (const question of [
@@ -575,18 +581,29 @@ async function inspectReadingAndContinuing(browser) {
     }
     assert.ok((await position()).top > 100, 'conversation must scroll');
     assert.ok((await position()).remaining < 24, 'latest conversation followed before manual scroll');
-    await conversation.evaluate(async el => {
-      el.scrollTop = 40;
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    });
+    await scrollTo(40);
     const readingTop = (await position()).top;
     assert.ok((await position()).remaining > 100, 'the visitor is reading an earlier reply');
+    await control('latest').waitFor();
+    assert.equal(await latest.locator('.docent-latest-arrow').evaluate(icon => getComputedStyle(icon).opacity), '1');
 
     const question = `[합성 대기 ${randomUUID()} 시험] 그러면 그 경계는 어디에서 다시 찾을 수 있나요?`;
     const delayed = await delayedQuestion(page, input, send, question);
     let response;
     try {
       assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'sending keeps the old reply in place');
+      await control('waiting').waitFor();
+      assert.equal(await latest.locator('.docent-latest-arrow').evaluate(icon => getComputedStyle(icon).opacity), '0');
+      const dots = latest.locator('.docent-thinking');
+      assert.equal(await dots.evaluate(icon => getComputedStyle(icon).opacity), '1');
+      assert.equal(await dots.locator('span').count(), 3);
+      await latest.click();
+      await control('hidden').waitFor();
+      await latest.waitFor({ state: 'hidden' });
+      assert.ok((await position()).remaining < 24, 'jumping while waiting hides the control at the bottom');
+      await chat.getByText('답변을 작성하고 있어요…', { exact: true }).waitFor();
+      await scrollTo(readingTop);
+      await control('waiting').waitFor();
     } finally {
       response = await delayed.finish();
     }
@@ -603,7 +620,7 @@ async function inspectReadingAndContinuing(browser) {
     await conversation.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'the new answer preserves the old reading position');
 
-    const latest = button('최신 대화 보기');
+    await control('latest').waitFor();
     await latest.waitFor({ state: 'visible' });
     assert.equal(await latest.getAttribute('title'), '새 답변이 있어요');
     await latest.click();
@@ -612,7 +629,7 @@ async function inspectReadingAndContinuing(browser) {
     assert.equal(await chat.evaluate(log => document.activeElement === log), true);
     assert.equal(await chat.locator('.bubble.user').count(), 5);
     assert.deepEqual(pageErrors, []);
-    console.log('PASS older reply stays in place while sending and receiving; latest arrow, artwork, visit and four prior exchanges stay aligned');
+    console.log('PASS reading position and four prior exchanges, pending dots above bottom, hidden control at bottom, latest arrow after response');
   } finally {
     await page.close();
   }

@@ -490,7 +490,6 @@ a.history-card { text-decoration: none; }
 .m-shell[data-screen='U-11'] .m-header { position: static; flex: none; }
 .m-shell[data-screen='U-11'] .m-body { min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .m-shell[data-screen='U-11'] .m-body:has(.docent-error-card) { padding-bottom: 16px; }
-.m-shell[data-screen='U-11']:has(.docent-latest-control[data-state='waiting']) .m-body { padding-bottom: 42px; }
 .m-shell[data-screen='U-11'] .m-footer {
   position: static;
   flex: none;
@@ -544,12 +543,13 @@ a.history-card { text-decoration: none; }
 }
 .docent-latest-control[data-state='hidden'] .docent-latest-surface { opacity: 0; transform: translateY(28px); visibility: hidden; }
 .docent-latest-control[data-state='waiting'] .docent-latest-surface { width: 58px; }
-.docent-latest-btn, .docent-thinking {
+.docent-latest-arrow, .docent-thinking {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0;
 }
-.docent-latest-btn { width: 100%; height: 100%; border: 0; border-radius: inherit; padding: 0; background: transparent; color: inherit; }
-.docent-latest-control[data-state='latest'] .docent-latest-btn { opacity: 1; pointer-events: auto; }
-.docent-latest-btn.has-new::after {
+.docent-latest-btn { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: inherit; padding: 0; background: transparent; color: inherit; }
+.docent-latest-control:not([data-state='hidden']) .docent-latest-btn { pointer-events: auto; }
+.docent-latest-control[data-state='latest'] .docent-latest-arrow { opacity: 1; }
+.docent-latest-control[data-state='latest'] .docent-latest-btn.has-new::after {
   content: ''; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%;
   background: var(--accent); border: 2px solid var(--surface);
 }
@@ -601,10 +601,10 @@ a.history-card { text-decoration: none; }
   .docent-follow-ups.is-arriving > button + button { animation-delay: calc(2 * var(--docent-arrival-duration)); }
   .docent-latest-surface { transition: opacity 400ms ease, transform 400ms ease, width 260ms ease, visibility 0s; }
   .docent-latest-control[data-state='hidden'] .docent-latest-surface { transition-delay: 0s, 0s, 0s, 400ms; }
-  .docent-latest-btn, .docent-thinking { transition: opacity 140ms ease; }
-  .docent-latest-control[data-state='latest'] .docent-latest-btn,
+  .docent-latest-arrow, .docent-thinking { transition: opacity 140ms ease; }
+  .docent-latest-control[data-state='latest'] .docent-latest-arrow,
   .docent-latest-control[data-state='waiting'] .docent-thinking { transition-delay: 60ms; }
-  .docent-latest-control[data-state='hidden'] :is(.docent-latest-btn, .docent-thinking) { transition-duration: 400ms; }
+  .docent-latest-control[data-state='hidden'] :is(.docent-latest-arrow, .docent-thinking) { transition-duration: 400ms; }
   .docent-latest-control[data-state='waiting'] .docent-thinking span { animation: docent-dot-bounce 1.2s ease-in-out infinite; }
   .docent-latest-control[data-state='waiting'] .docent-thinking span:nth-child(2) { animation-delay: .14s; }
   .docent-latest-control[data-state='waiting'] .docent-thinking span:nth-child(3) { animation-delay: .28s; }
