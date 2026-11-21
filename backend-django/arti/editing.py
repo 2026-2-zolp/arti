@@ -7,6 +7,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction, connection, OperationalError
+from django.db.models import Q
+from django.db.models.deletion import ProtectedError
 from contextlib import contextmanager
 from urllib.parse import urlsplit
 from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
@@ -14,7 +16,7 @@ from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
-from .models import Artwork, Exhibition
+from .models import Artwork, DocentTranscript, Exhibition, Visit, VisitReaction
 from .serializers import RETAINED_TEXT_FIELDS, artwork_dto, exhibition_dto
 from .taste_resolution import taste_transaction
 from .views import with_etag
@@ -49,6 +51,63 @@ def version(obj, value):
         fail('현재 version을 함께 보내 주세요.')
     if obj.version != value:
         raise ContractError(409, 'VERSION_CONFLICT', '다른 수정이 먼저 저장됐어요. 새로 조회해 주세요.')
+
+
+def match_version(request, obj):
+    match = re.fullmatch(r'"([1-9][0-9]{0,9})"', request.headers.get('If-Match', ''))
+    if not match:
+        fail('If-Match에 현재 version을 보내 주세요.')
+    version(obj, int(match[1]))
+
+
+def deletion_blocked(message):
+    raise ContractError(409, 'DELETE_BLOCKED', message)
+
+
+def delete_artwork(request, artwork_id):
+    with taste_transaction():
+        exhibition_id = Artwork.objects.filter(pk=artwork_id).values_list('exhibition_id', flat=True).first()
+        if exhibition_id is None:
+            raise ContractError(404, 'NOT_FOUND', '작품을 찾을 수 없어요.')
+        # Match floor-plan edits and direct-order changes by locking the exhibition first.
+        exhibition = get_locked(Exhibition, exhibition_id)
+        work = get_locked(Artwork, artwork_id)
+        match_version(request, work)
+        if work.review_status == 'approved':
+            deletion_blocked('검수 완료된 작품이에요. 검수 상태를 변경해 저장한 뒤 삭제해 주세요.')
+        if artwork_id in exhibition.direct_visit_order:
+            deletion_blocked('위치·지도 관리에서 이 작품을 전시 관람 순서에서 먼저 빼 주세요.')
+        if work.survey_entries.exists():
+            deletion_blocked('취향 조사에 연결된 작품이에요. 조사 작품 연결을 먼저 해제해 주세요.')
+        has_receipt = Visit.objects.filter(
+            Q(canonical_payload__viewedArtworkIds__contains=[artwork_id])
+            | Q(artwork_snapshots__contains=[{'id': artwork_id}]),
+        ).exists()
+        if (has_receipt or VisitReaction.objects.filter(artwork=work).exists()
+                or DocentTranscript.objects.filter(artwork=work).exists()):
+            deletion_blocked('연결된 관람 기록이나 도슨트 대화를 보존해야 해서 작품을 삭제할 수 없어요.')
+        try:
+            work.delete()
+        except ProtectedError:
+            deletion_blocked('연결된 자료가 생겼어요. 목록을 갱신해 다시 확인해 주세요.')
+    return Response(status=204)
+
+
+def delete_exhibition(request, ex_id):
+    with taste_transaction():
+        exhibition = get_locked(Exhibition, ex_id)
+        match_version(request, exhibition)
+        if exhibition.status == 'running':
+            deletion_blocked('운영 중인 전시예요. 운영 상태를 변경해 저장한 뒤 삭제해 주세요.')
+        if Visit.objects.filter(exhibition=exhibition).exists():
+            deletion_blocked('관람 기록이 남아 있어요. 전시를 종료 상태로 보관해 주세요.')
+        if exhibition.artworks.exists():
+            deletion_blocked('전시에 연결된 작품을 먼저 다른 전시로 옮기거나 삭제해 주세요.')
+        try:
+            exhibition.delete()
+        except ProtectedError:
+            deletion_blocked('연결된 작품이나 관람 기록이 생겼어요. 목록을 갱신해 다시 확인해 주세요.')
+    return Response(status=204)
 
 
 def validate_save(obj):
@@ -97,9 +156,13 @@ def before(w):
     return {f:copy.deepcopy(getattr(w,f)) for f in SOURCE | {'summary','summary_status','guide_intro','guided_looking','guided_hints','guide_status'}}
 
 
-@api_view(['GET','POST','PUT'])
+@api_view(['GET','POST','PUT','DELETE'])
 @permission_classes([IsAdmin])
 def artworks(request, artwork_id=None):
+    if request.method == 'DELETE':
+        if not artwork_id:
+            raise ContractError(405, 'METHOD_NOT_ALLOWED', '삭제할 작품을 지정해 주세요.')
+        return delete_artwork(request, artwork_id)
     if request.method == 'GET':
         # The original read DTO is shared; do not invoke a decorated view recursively.
         query = Artwork.objects.all()
@@ -201,9 +264,13 @@ def docent_collection(request, artwork_id):
         return Response(collection_review(work), headers=headers)
 
 
-@api_view(['GET','POST','PUT'])
+@api_view(['GET','POST','PUT','DELETE'])
 @permission_classes([IsAdmin])
 def exhibitions(request, ex_id=None):
+    if request.method == 'DELETE':
+        if not ex_id:
+            raise ContractError(405, 'METHOD_NOT_ALLOWED', '삭제할 전시를 지정해 주세요.')
+        return delete_exhibition(request, ex_id)
     if request.method=='GET':
         qs=Exhibition.objects.all()
         if ex_id:
@@ -279,9 +346,7 @@ def image_bytes(data, content_type):
 def image(request, artwork_id=None, ex_id=None, poster=False):
     with transaction.atomic():
         obj=get_locked(Artwork,artwork_id) if artwork_id else get_locked(Exhibition,ex_id)
-        match=re.fullmatch(r'"([1-9][0-9]*)"',request.headers.get('If-Match',''))
-        if not match:fail('If-Match에 현재 version을 보내 주세요.')
-        version(obj,int(match[1]))
+        match_version(request, obj)
         old=before(obj) if artwork_id else None
         filename=None
         if request.method=='POST':

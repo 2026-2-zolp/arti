@@ -38,6 +38,7 @@ VISITOR_ACTIONS = {
     'api/visits/interpret': 'receipt_interpretation',
 }
 AI_ACTIONS = (*VISITOR_ACTIONS.values(), 'artwork_analysis')
+CATALOG_DELETIONS = {'exhibition_save': 'exhibition_delete', 'artwork_save': 'artwork_delete'}
 PARTIAL_ANALYSIS = Q(action='artwork_analysis', status=200) & ~Q(analysis_failures=[])
 ANALYSIS_CODES = {'AI_UNAVAILABLE', 'AI_TIMEOUT', 'RATE_LIMITED', 'PROVIDER_ERROR', 'GUIDE_UNSUPPORTED',
                   'VALIDATION_ERROR', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA'}
@@ -73,6 +74,8 @@ class OperationEventMiddleware:
 
         route = getattr(request.resolver_match, 'route', None)
         action = ADMIN_ACTIONS.get(route)
+        if request.method == 'DELETE':
+            action = CATALOG_DELETIONS.get(action, action)
         if action and getattr(getattr(request, 'user', None), 'role', None) != 'admin':
             return response
         if request.method == 'POST' and (usage.attempts or usage.voice is not None

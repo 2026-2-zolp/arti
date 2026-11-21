@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { api, ApiError } from '../../api/client';
 import { useConfirm } from '../../components/Confirmation';
 import { FloorMap, type MapMarker } from '../../components/FloorMap';
@@ -24,6 +24,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
 }) {
   const revision = exhibition.floorPlanRevision!;
   const previewId = useId();
+  const structureSummary = useRef<HTMLElement>(null);
   const confirmAction = useConfirm();
   const [layout, setLayout] = useState<NavigationLayoutInput>(() => ({
     ...emptyLayout,
@@ -37,6 +38,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const [departureId, setDepartureId] = useState('');
   const [destinationId, setDestinationId] = useState('');
   const [selectedCheck, setSelectedCheck] = useState<string | null>(null);
+  const [structureIndex, setStructureIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean; conflict?: boolean } | null>(null);
   const draftExhibition: Exhibition = {
@@ -60,7 +62,16 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     { side: 'A', items: nearbyNavigationChecks(layout, checks.departure, checks.destination, indoor.aspect) },
     { side: 'B', items: nearbyNavigationChecks(layout, checks.destination, checks.departure, indoor.aspect) },
   ] : [];
-  const checkedPoint = nearby.flatMap(({ side, items }) => items.filter(item => `${side}-${item.kind}-${item.index}` === selectedCheck))[0]?.point;
+  let structurePoint: MapPoint | undefined;
+  if (structureIndex !== null) {
+    if (category === 'waypoints') structurePoint = layout.waypoints[structureIndex];
+    else {
+      const bounds = layout[category][structureIndex];
+      if (bounds) structurePoint = { x: bounds.x + bounds.w / 2, y: bounds.y + bounds.h / 2 };
+    }
+  }
+  const checkedPoint = structurePoint ??
+    nearby.flatMap(({ side, items }) => items.filter(item => `${side}-${item.kind}-${item.index}` === selectedCheck))[0]?.point;
   const markers: MapMarker[] = [];
   if (destination) {
     if (departure) markers.push({ ...departure, state: 'plain' });
@@ -92,6 +103,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     })) return;
     setLayout({ ...structuredClone(twoRoomNavigationPreset), example: true });
     setCategory('walkable');
+    setStructureIndex(null);
     setCorner(null);
     setFitting(false);
     setMessage(null);
@@ -165,14 +177,18 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
         <label>
           <strong>그릴 구조물</strong>
           <select aria-label="이동 구조 종류" value={category} disabled={fitting} onChange={event => {
-            setCategory(event.target.value as Category); setCorner(null);
+            setCategory(event.target.value as Category); setCorner(null); setStructureIndex(null);
           }}>
             {categoryKeys.map(key => <option key={key} value={key}>{categories[key]} ({layout[key].length})</option>)}
           </select>
         </label>
         <button type="button" className="a-btn" disabled={fitting || busy || (!corner && !layout[category].length)} onClick={() => {
           if (corner) setCorner(null);
-          else setLayout({ ...layout, [category]: layout[category].slice(0, -1) });
+          else {
+            setLayout({ ...layout, [category]: layout[category].slice(0, -1) });
+            setStructureIndex(null);
+            setSelectedCheck(null);
+          }
         }}>마지막 입력 취소</button>
       </div>
       <p className="small" role="status">{corner ? '반대쪽 모서리를 선택해 주세요.' : fitting
@@ -185,6 +201,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
             onClick={() => {
               setLayout({ ...layout, waypoints: [...layout.waypoints, ...suggestions] });
               setCategory('waypoints');
+              setStructureIndex(null);
               setCorner(null);
               setReference(true);
               setMessage({ text: `연결점 ${suggestions.length}개를 추가했어요. 경로를 확인해 주세요.` });
@@ -222,7 +239,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
             {items.length ? items.map(({ kind, index }) => {
               const id = `${side}-${kind}-${index}`;
               return <button key={id} type="button" className="a-btn sm" aria-pressed={selectedCheck === id}
-                onClick={() => setSelectedCheck(selectedCheck === id ? null : id)}>{categories[kind]} {index + 1} 표시</button>;
+                onClick={() => { setStructureIndex(null); setSelectedCheck(selectedCheck === id ? null : id); }}>{categories[kind]} {index + 1} 표시</button>;
             }) : <span className="small muted">가까이 등록된 구조가 없어요.</span>}
           </div>
         ))}
@@ -230,6 +247,30 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
       <FloorMap exhibition={draftExhibition} markers={markers} activeLeg={preview}
         onMapClick={addPoint} forAdmin showReference={reference} showEntrance={!!destination && !departure}
         checkFocus={checkedPoint} />
+      <details className="a-navigation-structures" aria-label="등록된 구조물">
+        <summary ref={structureSummary}>등록된 구조물 {layout[category].length}개</summary>
+        {layout[category].length === 0 && <p className="muted small">선택한 종류에 등록된 항목이 없어요.</p>}
+        {layout[category].map((shape, index) => {
+          const label = `${categories[category]} ${index + 1}번`;
+          return <div className="a-inline a-navigation-structure" key={`${shape.x}-${shape.y}-${index}`}>
+            <span>{label}</span>
+            <button type="button" className="a-btn sm" aria-label={`${label} 지도에 표시`}
+              aria-pressed={structureIndex === index} onClick={() => {
+                setSelectedCheck(null);
+                setStructureIndex(structureIndex === index ? null : index);
+              }}>지도에 표시</button>
+            <button type="button" className="a-btn sm" aria-label={`${label} 삭제`}
+              disabled={fitting || busy || corner !== null || !!message?.conflict}
+              onClick={() => {
+                setLayout({ ...layout, [category]: layout[category].filter((_, i) => i !== index) });
+                setStructureIndex(null);
+                setSelectedCheck(null);
+                setMessage({ text: `${label}을 편집본에서 삭제했어요. 저장하면 관람자 지도에 반영돼요.` });
+                structureSummary.current?.focus();
+              }}>삭제</button>
+          </div>;
+        })}
+      </details>
       <button className="a-btn primary" type="button" onClick={save} disabled={fitting || busy || corner !== null || !!message?.conflict}>이동 구조 저장</button>
       {message && <p role={message.error ? 'alert' : 'status'}>{message.text}</p>}
       {message?.conflict && <button type="button" className="a-btn" onClick={onConflict}>최신 도면 다시 불러오기</button>}

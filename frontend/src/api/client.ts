@@ -201,6 +201,9 @@ export const api = {
       ? request<Exhibition>('PUT', `/admin/exhibitions/${enc(ex.id)}`, ex)
       : request<Exhibition>('POST', '/admin/exhibitions', ex),
 
+  deleteExhibition: (id: string, version: number) =>
+    request<void>('DELETE', `/admin/exhibitions/${enc(id)}`, undefined, version),
+
   // ───────────────────────── 작품 ─────────────────────────
   listArtworks: (exhibitionId?: string) =>
     request<Artwork[]>('GET', exhibitionId ? `/artworks?exhibitionId=${enc(exhibitionId)}` : '/artworks'),
@@ -213,6 +216,9 @@ export const api = {
     w.id
       ? request<Artwork>('PUT', `/admin/artworks/${enc(w.id)}`, { ...w, mapVersion })
       : request<Artwork>('POST', '/admin/artworks', w),
+
+  deleteArtwork: (id: string, version: number) =>
+    request<void>('DELETE', `/admin/artworks/${enc(id)}`, undefined, version),
 
   // ───────────────────────── 회원 ─────────────────────────
   async login(email: string, password: string): Promise<User> {
@@ -379,9 +385,11 @@ export const api = {
     request<Artwork>('POST', `/admin/artworks/${enc(w.id)}/discard-ai`, { kind, version: w.version }),
 
   /** A-04 작품 이미지 파일 업로드 (캡처 이미지 등, PNG·JPG·WEBP 최대 10MB) */
-  uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
+  uploadArtworkImage: (id: string, file: File, version?: number) =>
+    request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file, version),
 
-  deleteArtworkImage: (id: string) => request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`),
+  deleteArtworkImage: (id: string, version?: number) =>
+    request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`, undefined, version),
 
   uploadExhibitionPoster: (id: string, file: File, version?: number) =>
     request<Exhibition>('POST', `/admin/exhibitions/${enc(id)}/poster`, file, version),
