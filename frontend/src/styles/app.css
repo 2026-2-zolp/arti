@@ -410,6 +410,10 @@ button.duel-title:disabled { cursor: default; }
 .progress-bars { display: flex; gap: 3px; width: 96px; }
 .progress-bars span { flex: 1; min-width: 6px; height: 3px; border-radius: 2px; background: var(--line); }
 .progress-bars span.on { background: var(--ink); }
+/* 전시 순서 전체를 볼 때도 모바일 화면 폭 안에 진행 표시를 유지한다. */
+:is(.progress-dots, .progress-bars):has(> span:nth-child(8)) { gap: 1px; }
+:is(.progress-dots, .progress-bars):has(> span:nth-child(8)) > span { min-width: 0; }
+:is(.progress-dots, .progress-bars):has(> span:nth-child(33)) { gap: 0; }
 .art-frame { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface-2); }
 /* 크게 보기 배경: 어두운 작품도 잘 보이게 U-05 카드 그림 배경과 같은 밝은 베이지 */
 .art-frame.fullscreen[open] {
