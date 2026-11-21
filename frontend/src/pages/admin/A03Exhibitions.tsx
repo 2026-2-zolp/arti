@@ -1,7 +1,7 @@
 /** A-03 전시 관리 — 전시 목록, 등록·수정 모달, 전시 행을 누르면 그 전시의 작품 관리로 이동 */
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api, uploadedImageUrl } from '../../api/client';
+import { ApiError, api, uploadedImageUrl } from '../../api/client';
 import { useConfirm } from '../../components/Confirmation';
 import { useAsync } from '../../lib/useAsync';
 import { useProtectedImage } from '../../lib/useProtectedImage';
@@ -28,12 +28,22 @@ const blank = (): Exhibition => ({
 export default function A03Exhibitions() {
   const navigate = useNavigate();
   const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const addButton = useRef<HTMLButtonElement>(null);
   const [editing, setEditing] = useState<Exhibition | null>(null);
   const [posterFor, setPosterFor] = useState<Exhibition | null>(null);
+  const [notice, setNotice] = useState('');
 
   const save = async (ex: Exhibition) => {
     await api.saveExhibition(ex);
     setEditing(null);
+    reload();
+  };
+
+  const remove = async (id: string, version: number) => {
+    await api.deleteExhibition(id, version);
+    setEditing(null);
+    setNotice('전시를 삭제했어요.');
+    addButton.current?.focus();
     reload();
   };
 
@@ -43,11 +53,12 @@ export default function A03Exhibitions() {
         title="전시 관리"
         desc="MVP 대상 전시의 기본 정보와 운영 상태, 전시별 작품 구성을 관리합니다."
         actions={
-          <button className="a-btn primary" onClick={() => setEditing(blank())}>
+          <button ref={addButton} className="a-btn primary" onClick={() => { setNotice(''); setEditing(blank()); }}>
             + 전시 등록
           </button>
         }
       />
+      {notice && <p role="status">{notice}</p>}
       <div className="a-card">
         <table className="a-table">
           <thead>
@@ -86,6 +97,7 @@ export default function A03Exhibitions() {
                         className="a-btn sm"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setNotice('');
                           setEditing(ex);
                         }}
                       >
@@ -104,7 +116,8 @@ export default function A03Exhibitions() {
         </table>
       </div>
 
-      {editing && <ExhibitionModal initial={editing} onClose={() => setEditing(null)} onSave={save} />}
+      {editing && <ExhibitionModal initial={editing} hasArtworks={data?.[1].some((work) => work.exhibitionId === editing.id) ?? false}
+        onClose={() => setEditing(null)} onSave={save} onDelete={remove} onRefresh={reload} />}
       {posterFor && <ExhibitionPosterModal initial={posterFor} onClose={() => setPosterFor(null)} onSaved={reload} />}
     </>
   );
@@ -167,31 +180,71 @@ function ExhibitionPosterModal({ initial: ex, onClose, onSaved }: { initial: Exh
 /** 전시 등록·수정 입력을 모아 저장합니다. */
 function ExhibitionModal({
   initial,
+  hasArtworks,
   onClose,
   onSave,
+  onDelete,
+  onRefresh,
 }: {
   initial: Exhibition;
+  hasArtworks: boolean;
   onClose: () => void;
-  onSave: (ex: Exhibition) => void;
+  onSave: (ex: Exhibition) => Promise<void>;
+  onDelete: (id: string, version: number) => Promise<void>;
+  onRefresh: () => void;
 }) {
+  const confirm = useConfirm();
   const [ex, setEx] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [stale, setStale] = useState(false);
   const set = <K extends keyof Exhibition>(k: K, v: Exhibition[K]) => setEx((e) => ({ ...e, [k]: v }));
+  const deletionBlock = initial.status === 'running' ? '전시를 종료하거나 준비 중으로 저장한 뒤 삭제할 수 있어요.'
+    : hasArtworks ? '등록된 작품을 다른 전시로 옮기거나 정리한 뒤 삭제할 수 있어요.' : '';
+
+  const mutate = async (operation: () => Promise<void>, fallback: string) => {
+    setBusy(true);
+    setError('');
+    try {
+      await operation();
+    } catch (e) {
+      if (e instanceof ApiError && (e.status === 404 || e.code === 'VERSION_CONFLICT')) {
+        setStale(true);
+        setError('전시가 변경됐어요. 창을 닫고 목록에서 최신 전시를 확인해 주세요.');
+        onRefresh();
+      } else {
+        setError(e instanceof Error ? e.message : fallback);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    if (busy || stale) return;
     if (!ex.title.trim() || !ex.startDate || !ex.endDate) return setError('전시명과 기간은 필수입니다.');
     if (ex.endDate < ex.startDate) return setError('종료일이 시작일보다 빠를 수 없어요.');
-    onSave(ex);
+    void mutate(() => onSave(ex), '전시를 저장하지 못했어요.');
+  };
+
+  const remove = async () => {
+    const { id, title, version } = initial;
+    if (!id || version === undefined || busy || stale || deletionBlock) return;
+    if (!await confirm(`「${title}」 전시를 삭제할까요? 삭제한 전시는 되돌릴 수 없어요.`, {
+      title: '전시 삭제', confirm: '전시 삭제', tone: 'danger',
+    })) return;
+    await mutate(() => onDelete(id, version), '전시를 삭제하지 못했어요.');
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{initial.id ? '전시 수정' : '전시 등록'}</h2>
+    <div className="modal-backdrop" onClick={busy ? undefined : onClose}>
+      <form className="modal" role="dialog" aria-modal="true" aria-labelledby="exhibition-editor-heading"
+        onClick={(e) => e.stopPropagation()} onKeyDown={(e) => { if (e.key === 'Escape' && !busy) onClose(); }} onSubmit={submit}>
+        <h2 id="exhibition-editor-heading">{initial.id ? '전시 수정' : '전시 등록'}</h2>
         <label className="a-field">
           <span>전시명</span>
-          <input value={ex.title} onChange={(e) => set('title', e.target.value)} />
+          <input autoFocus value={ex.title} onChange={(e) => set('title', e.target.value)} />
         </label>
         <label className="a-field">
           <span>부제</span>
@@ -221,12 +274,15 @@ function ExhibitionModal({
             ))}
           </select>
         </label>
-        {error && <p className="error-text">{error}</p>}
+        {initial.id && deletionBlock && <p className="muted small">{deletionBlock}</p>}
+        {error && <p className="error-text" role="alert">{error}</p>}
         <div className="modal-actions">
-          <button type="button" className="a-btn" onClick={onClose}>
+          {initial.id && <button type="button" className="a-btn" disabled={busy || stale || !!deletionBlock || initial.version === undefined}
+            onClick={() => void remove()}>전시 삭제</button>}
+          <button type="button" className="a-btn" disabled={busy} onClick={onClose}>
             취소
           </button>
-          <button className="a-btn primary">저장</button>
+          <button className="a-btn primary" disabled={busy || stale}>저장</button>
         </div>
       </form>
     </div>

@@ -8,6 +8,7 @@ const analysisLabel = { summary: '쉬운 요약', guide: '관람가이드', tag:
 const actionLabel: Record<string, string> = {
   ai_settings_save: 'OpenAI 연결 설정 저장',
   exhibition_save: '전시 저장', artwork_save: '작품 저장', artwork_image: '도판 변경', docent_source_review: '도슨트 소장처 근거 검수',
+  exhibition_delete: '전시 삭제', artwork_delete: '작품 삭제',
   floor_plan: '도면 변경', exhibition_poster: '전시 포스터 변경', navigation_layout: '지도 이동 구조 저장',
   artwork_analysis: '작품 AI 분석', discard_proposal: 'AI 제안 폐기',
   confirm_proposals: 'AI 제안 일괄 확정', docent_question: '도슨트 질문',

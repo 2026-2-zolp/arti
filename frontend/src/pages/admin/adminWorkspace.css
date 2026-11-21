@@ -64,4 +64,8 @@
 .a-map-editor-tools select { max-width: 100%; }
 .a-map-editor .a-navigation-preview { border: 1px solid var(--a-line); border-radius: 10px; padding: 12px; }
 .a-map-editor .a-navigation-preview h4 { margin: 0; }
+.a-navigation-structures summary { cursor: pointer; }
+.a-navigation-structure { flex-wrap: wrap; padding-block: 6px; }
+.a-navigation-structure > span { margin-right: auto; }
+.a-navigation-structure button[aria-pressed='true'] { border-color: #7a4516; color: #7a4516; }
 .a-map-editor > .a-btn { align-self: flex-start; }

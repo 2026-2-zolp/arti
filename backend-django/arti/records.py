@@ -29,7 +29,11 @@ def bad(message='관람 기록 입력을 확인해 주세요.'):
 
 def receipt_sources(data, account, visit_id, ids):
     ex_id = data.get('exhibitionId')
-    ex = Exhibition.objects.filter(pk=ex_id, status__in=('running', 'closed')).first()
+    exhibitions = Exhibition.objects.filter(pk=ex_id, status__in=('running', 'closed'))
+    if account:
+        # Catalog deletion takes this lock before checking for receipt snapshots.
+        exhibitions = exhibitions.select_for_update(no_key=True)
+    ex = exhibitions.first()
     proofs = data.get('artworkReceiptEvidence', {})
     if (not isinstance(proofs, dict) or any(
         key not in ids or not isinstance(value, str) or len(value) > ARTWORK_EVIDENCE_MAX_BYTES

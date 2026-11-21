@@ -15,6 +15,8 @@ import { useAsync } from '../../lib/useAsync';
 import { BASIC_LOOKING_TIPS } from '../../lib/visitScope';
 import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../data/mock';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import { ArtworkViewer } from '../../components/ArtworkViewer';
+import { Icon } from '../../components/Icon';
 import { useProtectedImage } from '../../lib/useProtectedImage';
 import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, DocentCollectionDraft, DocentCollectionReview, ReviewStatus, TasteTag } from '../../types';
@@ -250,6 +252,7 @@ export function ArtworkEdit() {
   );
   const [w, setW] = useState<Artwork | null>(null);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err' | 'conflict'; text: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!data) return;
@@ -280,6 +283,7 @@ export function ArtworkEdit() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (deleting) return;
     if (!w.title.trim() || !w.artist.trim()) return setMsg({ type: 'err', text: '작품명과 작가는 필수입니다.' });
     if (w.reviewStatus === 'approved') {
       const missing = [!w.description.trim() && '작품 해설', !w.source.trim() && '출처'].filter(Boolean);
@@ -301,6 +305,23 @@ export function ArtworkEdit() {
           : '저장했습니다.',
     });
     if (isNew) navigate(`/admin/artworks/${saved.id}`, { replace: true });
+  };
+
+  const deleteWork = async () => {
+    if (!w.id || w.version == null || w.reviewStatus === 'approved' || deleting) return;
+    if (!await confirmAction(`〈${data[1]?.title ?? w.title}〉 작품을 삭제할까요? 삭제한 작품은 되돌릴 수 없어요.`,
+      { title: '작품 삭제', confirm: '삭제', tone: 'danger' })) return;
+    setDeleting(true);
+    setMsg(null);
+    try {
+      await api.deleteArtwork(w.id, w.version);
+      navigate(`/admin/artworks?exhibition=${encodeURIComponent(data[1]?.exhibitionId ?? w.exhibitionId)}`, { replace: true });
+    } catch (err) {
+      setMsg({ type: isVersionConflict(err) || (err instanceof ApiError && err.status === 404) ? 'conflict' : 'err',
+        text: err instanceof Error ? err.message : '작품을 삭제하지 못했어요.' });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -353,7 +374,7 @@ export function ArtworkEdit() {
               </select>
             </label>
           </div>
-          <ImageField w={w} setW={setW} set={set} />
+          <ImageField w={w} setW={setW} set={set} reloadArtwork={reloadAfterConflict} />
           <TagField w={w} toggleTag={toggleTag} setW={setW} save={saveWith} />
           <div className="a-field">
             <span>평면도 위치</span>
@@ -398,7 +419,7 @@ export function ArtworkEdit() {
                 ))}
               </select>
             </label>
-            <button className="a-btn primary save">저장</button>
+            <button className="a-btn primary save" disabled={deleting}>저장</button>
           </div>
           {msg && (
             <p role={msg.type === 'ok' ? 'status' : 'alert'} className={msg.type === 'ok' ? 'ok-text' : 'error-text'}>
@@ -407,6 +428,18 @@ export function ArtworkEdit() {
             </p>
           )}
           <p className="muted small">검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.</p>
+          {w.id && (
+            <div className="stack gap-10">
+              <p className="muted small" id="artwork-delete-note">
+                {w.reviewStatus === 'approved'
+                  ? '삭제하려면 검수 상태를 변경한 뒤 먼저 저장해 주세요.'
+                  : '관람 기록, 도슨트 대화, 취향 조사 또는 관람 순서와 연결된 작품은 삭제할 수 없어요.'}
+              </p>
+              <div><button type="button" className="a-btn" aria-describedby="artwork-delete-note"
+                disabled={deleting || w.reviewStatus === 'approved' || msg?.type === 'conflict' || w.version == null}
+                onClick={() => void deleteWork()}>{deleting ? '삭제 중…' : '작품 삭제'}</button></div>
+            </div>
+          )}
         </section>
       </div>
     </form>
@@ -602,47 +635,66 @@ function ImageField({
   w,
   setW,
   set,
+  reloadArtwork,
 }: {
   w: Artwork;
   setW: (f: (cur: Artwork | null) => Artwork | null) => void;
   set: <K extends keyof Artwork>(k: K, v: Artwork[K]) => void;
+  reloadArtwork: () => Promise<void>;
 }) {
   const confirmAction = useConfirm();
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<{ text: string; conflict?: boolean } | null>(null);
   const [drag, setDrag] = useState(false);
   const { src } = useProtectedImage(artworkImageSrc(w, true));
+  const [loadedSrc, setLoadedSrc] = useState<string>();
+  const [viewingSrc, setViewingSrc] = useState<string>();
+  const previewButton = useRef<HTMLButtonElement>(null);
 
   // 서버가 바꾼 필드만 반영하고, 화면에서 수정 중인 다른 입력값은 그대로 둔다
   const applyServer = (saved: Artwork) =>
     setW((cur) =>
-      cur && {
+      cur?.id === saved.id ? {
         ...cur,
         imageFile: saved.imageFile,
+        reviewStatus: saved.reviewStatus,
         emotionStatus: saved.emotionStatus,
         summaryStatus: saved.summaryStatus,
+        guideStatus: saved.guideStatus,
+        tagStatus: saved.tagStatus,
+        savedTextProposals: saved.savedTextProposals,
+        version: saved.version,
+        sourceVersion: saved.sourceVersion,
+        contentVersion: saved.contentVersion,
+        summaryRevision: saved.summaryRevision,
+        guideRevision: saved.guideRevision,
         updatedAt: saved.updatedAt,
-      },
+      } : cur,
     );
 
-  const uploadFile = async (file: File | undefined) => {
-    if (!file) return;
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return setErr('PNG, JPG, WEBP 이미지만 올릴 수 있어요.');
-    if (file.size > 10 * 1024 * 1024) return setErr('이미지는 10MB 이하로 올려 주세요.');
+  const saveImage = async (request: () => Promise<Artwork>, fallback: string) => {
+    if (busy) return;
     setBusy(true);
     setErr(null);
     try {
-      applyServer(await api.uploadArtworkImage(w.id, file));
+      applyServer(await request());
     } catch (e) {
-      setErr(e instanceof Error ? e.message : '업로드에 실패했어요.');
+      setErr({ text: e instanceof Error ? e.message : fallback, conflict: isVersionConflict(e) });
     } finally {
       setBusy(false);
     }
   };
 
+  const uploadFile = async (file: File | undefined) => {
+    if (!file || busy) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) return setErr({ text: 'PNG, JPG, WEBP 이미지만 올릴 수 있어요.' });
+    if (file.size > 10 * 1024 * 1024) return setErr({ text: '이미지는 10MB 이하로 올려 주세요.' });
+    await saveImage(() => api.uploadArtworkImage(w.id, file, w.version), '업로드에 실패했어요.');
+  };
+
   const removeFile = async () => {
-    if (!(await confirmAction('올린 이미지 파일을 삭제할까요?'))) return;
-    applyServer(await api.deleteArtworkImage(w.id));
+    if (busy || !(await confirmAction('올린 이미지 파일을 삭제할까요?'))) return;
+    await saveImage(() => api.deleteArtworkImage(w.id, w.version), '파일을 삭제하지 못했어요.');
   };
 
   return (
@@ -662,10 +714,16 @@ function ImageField({
             uploadFile(e.dataTransfer.files[0]);
           }}
         >
-          {src ? <img src={src} alt="작품 이미지 미리보기" /> : <div className="img-empty">이미지 없음</div>}
+          {src ? (
+            <button ref={previewButton} type="button" className="img-preview" aria-label="작품 이미지 크게 보기"
+              aria-haspopup="dialog" disabled={loadedSrc !== src} onClick={() => setViewingSrc(src)}>
+              <img key={src} src={src} alt="" onLoad={() => setLoadedSrc(src)} onError={() => setLoadedSrc(undefined)} />
+              {loadedSrc === src && <Icon name="expand" size={16} />}
+            </button>
+          ) : <div className="img-empty">이미지 없음</div>}
           <div className="img-drop-actions">
             <label className="a-btn sm">
-              {busy ? '올리는 중…' : w.imageFile ? '다른 이미지로 바꾸기' : '이미지 파일 올리기'}
+              {busy ? '처리 중…' : w.imageFile ? '다른 이미지로 바꾸기' : '이미지 파일 올리기'}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -678,7 +736,7 @@ function ImageField({
               />
             </label>
             {w.imageFile && (
-              <button type="button" className="a-btn sm" onClick={removeFile}>
+              <button type="button" className="a-btn sm" onClick={removeFile} disabled={busy}>
                 파일 삭제
               </button>
             )}
@@ -688,7 +746,16 @@ function ImageField({
       ) : (
         <p className="muted small">작품을 먼저 저장하면 이미지 파일을 올릴 수 있어요.</p>
       )}
-      {err && <p className="error-text">{err}</p>}
+      {viewingSrc && viewingSrc === src && (
+        <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={viewingSrc} alt={w.title || '작품 이미지'}
+          onClose={() => { setViewingSrc(undefined); previewButton.current?.focus(); }} />
+      )}
+      {err && (
+        <p className="error-text" role="alert">
+          {err.text}
+          {err.conflict && <button type="button" onClick={reloadArtwork}>최신 작품 다시 불러오기</button>}
+        </p>
+      )}
       <input
         value={w.imageUrl ?? ''}
         onChange={(e) => set('imageUrl', e.target.value || undefined)}
