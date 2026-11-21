@@ -271,6 +271,12 @@ export function ArtworkEdit() {
 
   const exhibitions = data[0];
   const rooms = exhibitions.find((e) => e.id === w.exhibitionId)?.rooms ?? [];
+  const receiptProtected = w.receiptProtectedUntil !== undefined && Date.parse(w.receiptProtectedUntil) > Date.now();
+  let deleteNote = '관람 기록, 도슨트 대화, 취향 조사 또는 관람 순서와 연결된 작품은 삭제할 수 없어요.';
+  if (w.reviewStatus === 'approved') deleteNote = '삭제하려면 검수 상태를 변경한 뒤 먼저 저장해 주세요.';
+  else if (receiptProtected) {
+    deleteNote = `진행 중인 관람의 영수증 저장을 위해 ${formatDateTime(w.receiptProtectedUntil)}까지 삭제를 보류해요.`;
+  }
   const set = <K extends keyof Artwork>(k: K, v: Artwork[K]) => setW((cur) => (cur ? { ...cur, [k]: v } : cur));
   const toggleTag = (t: TasteTag) => set('tags', w.tags.includes(t) ? w.tags.filter((x) => x !== t) : [...w.tags, t]);
 
@@ -308,7 +314,7 @@ export function ArtworkEdit() {
   };
 
   const deleteWork = async () => {
-    if (!w.id || w.version == null || w.reviewStatus === 'approved' || deleting) return;
+    if (!w.id || w.version == null || w.reviewStatus === 'approved' || receiptProtected || deleting) return;
     if (!await confirmAction(`〈${data[1]?.title ?? w.title}〉 작품을 삭제할까요? 삭제한 작품은 되돌릴 수 없어요.`,
       { title: '작품 삭제', confirm: '삭제', tone: 'danger' })) return;
     setDeleting(true);
@@ -431,12 +437,10 @@ export function ArtworkEdit() {
           {w.id && (
             <div className="stack gap-10">
               <p className="muted small" id="artwork-delete-note">
-                {w.reviewStatus === 'approved'
-                  ? '삭제하려면 검수 상태를 변경한 뒤 먼저 저장해 주세요.'
-                  : '관람 기록, 도슨트 대화, 취향 조사 또는 관람 순서와 연결된 작품은 삭제할 수 없어요.'}
+                {deleteNote}
               </p>
               <div><button type="button" className="a-btn" aria-describedby="artwork-delete-note"
-                disabled={deleting || w.reviewStatus === 'approved' || msg?.type === 'conflict' || w.version == null}
+                disabled={deleting || w.reviewStatus === 'approved' || receiptProtected || msg?.type === 'conflict' || w.version == null}
                 onClick={() => void deleteWork()}>{deleting ? '삭제 중…' : '작품 삭제'}</button></div>
             </div>
           )}
@@ -658,6 +662,7 @@ function ImageField({
         ...cur,
         imageFile: saved.imageFile,
         reviewStatus: saved.reviewStatus,
+        receiptProtectedUntil: saved.receiptProtectedUntil,
         emotionStatus: saved.emotionStatus,
         summaryStatus: saved.summaryStatus,
         guideStatus: saved.guideStatus,
