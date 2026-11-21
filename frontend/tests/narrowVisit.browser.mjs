@@ -29,6 +29,35 @@ async function checkText(locator, label, container) {
   if (clipped) layoutFailures.push(`${label}: text extends beyond its visible container`);
 }
 
+async function verifyImageRetry(page, imageFile) {
+  const imagePath = '/api/uploads/' + encodeURIComponent(imageFile);
+  const matchesImage = url => url.pathname === imagePath;
+  const choices = page.getByRole('button', { name: / 선택$/ });
+  let release;
+  const delay = new Promise(resolve => { release = resolve; });
+  await page.route(matchesImage, async route => {
+    if (new URL(route.request().url()).searchParams.has('retry')) return route.continue();
+    await delay;
+    await route.fulfill({ status: 503, body: 'synthetic image failure' });
+  });
+  try {
+    await page.goto(fixturePath + '/taste', { waitUntil: 'domcontentloaded' });
+    await page.getByText('도판을 불러오는 중…', { exact: true }).first().waitFor();
+    assert.deepEqual(await choices.evaluateAll(buttons => buttons.map(button => button.disabled)), [true, true]);
+  } finally {
+    release();
+  }
+  await page.getByRole('alert').filter({ hasText: '도판을 불러오지 못했어요.' }).waitFor();
+  assert.deepEqual(await choices.evaluateAll(buttons => buttons.map(button => button.disabled)), [true, true]);
+  const [retried] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === imagePath && response.ok()),
+    page.getByRole('button', { name: `${longTitle} 도판 다시 시도` }).click(),
+  ]);
+  assert(new URL(retried.url()).searchParams.has('retry'));
+  await page.waitForFunction(() => document.querySelectorAll('.duel-card-hit:enabled').length === 2);
+  await page.unroute(matchesImage);
+}
+
 async function verify(browser, width) {
   const page = await browser.newPage({ baseURL: base.href, viewport: { width, height: 740 }, reducedMotion: 'reduce' });
   page.setDefaultTimeout(12000);
@@ -57,7 +86,8 @@ async function verify(browser, width) {
     const works = new Map((await json(await page.request.get(`/api/artworks?exhibitionId=${exhibition.id}`))).map(work => [work.id, work]));
     assert.equal(works.get('fixture-art01').title, longTitle);
 
-    await page.goto(fixturePath + '/taste');
+    if (width === 320) await verifyImageRetry(page, works.get('fixture-art01').imageFile);
+    else await page.goto(fixturePath + '/taste');
     const portrait = button(`${longTitle} 크게 보기`);
     await portrait.waitFor();
     const portraitImage = page.locator('.duel-card').filter({ has: portrait }).locator('img');

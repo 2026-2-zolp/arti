@@ -1,10 +1,9 @@
 /** 다섯 작품 쌍의 선택 초안에서 취향 확인 화면으로 이어집니다. */
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Lead, MobileShell, Spinner } from '../../components/MobileShell';
-import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
-import { ArtworkViewer } from '../../components/ArtworkViewer';
-import { Icon } from '../../components/Icon';
+import { artworkImageSrc } from '../../components/ArtImage';
+import TastePair from '../../components/TastePair';
 import TasteReview from '../../components/TasteReview';
 import { api } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -54,7 +53,6 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const [entryEdit, setEntryEdit] = useState<{ locationKey: string; draft: Draft }>();
   const draft = entryEdit?.locationKey === location.key ? entryEdit.draft : entryDraft ?? storedDraft;
   const [picked, setPicked] = useState<string | null>(null);
-  const [viewing, setViewing] = useState<string | null>(null); // 크게 보기로 연 작품 ID
   const pickTimer = useRef<number | null>(null);
   // 다시 불러오는 동안에도 직전 오류 카드를 그대로 보여 주기 위해 마지막 상태를 기억한다.
   const lastLoadIssue = useRef<LoadIssue>(null);
@@ -278,35 +276,9 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
             <span aria-hidden="true">{draft.picks.length + 1}/{pairs.length}</span>
             <span className="sr-only">{draft.picks.length + 1}번째, 모두 {pairs.length}번</span>
           </div>
-          <div className="duel duel-compact">
-            {works.map((work, index) => (
-              <Fragment key={work.id}>
-                {index > 0 && <p className="duel-separator" aria-hidden="true">또는</p>}
-                {/* 확대 아이콘만 크게 보기. 그림과 제목은 이 작품을 고르고 다음 쌍으로 넘긴다. */}
-                <div className={`duel-card${picked === work.id ? ' picked' : ''}`}>
-                  <div className="duel-visual">
-                    <ArtImage seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt="" ratio={5 / 2} fit="contain" />
-                    <button type="button" className="duel-zoom" aria-label={`${work.title} 크게 보기`} onClick={() => setViewing(work.id)}>
-                      <Icon name="expand" size={16} />
-                    </button>
-                  </div>
-                  <button type="button" className="duel-card-hit" aria-label={`${work.title} 선택`} aria-pressed={picked === work.id}
-                    disabled={blocked || picked !== null} onClick={() => choose(work.id)} />
-                  <button type="button" className="duel-title" aria-pressed={picked === work.id}
-                    disabled={blocked || picked !== null} onClick={() => choose(work.id)}>
-                    {work.title}
-                  </button>
-                  {picked === work.id && <span className="duel-picked" aria-hidden="true">선택함</span>}
-                </div>
-              </Fragment>
-            ))}
-          </div>
-          {(() => {
-            const work = works.find((w) => w.id === viewing);
-            return work && (
-              <ArtworkViewer seed={work.id} palette={work.palette} imageUrl={artworkImageSrc(work)} alt={work.title} onClose={() => setViewing(null)} />
-            );
-          })()}
+          {draft.picks.length === 0 && <p className="duel-instruction">카드를 누르면 다음 비교로 넘어가요.</p>}
+          <TastePair key={JSON.stringify([draft.picks.length, works.map(work => [work.id, artworkImageSrc(work)])])}
+            works={works} blocked={blocked} picked={picked} onSelect={choose} onReloadPool={reload} />
           <details key={draft.picks.length} className="duel-metadata">
             <summary>작가·연도</summary>
             <dl>
