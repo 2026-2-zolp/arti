@@ -2,6 +2,8 @@
 API·점수 계산 테스트 — 실제 모델 대신 가짜 모델로 실행 (torch·모델 다운로드 불필요)
 실행: pytest
 """
+import base64
+from io import BytesIO
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
@@ -33,6 +35,7 @@ class FakeScorer:
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(main, "scorer", FakeScorer())
+    monkeypatch.setattr(main, "emotion_cache", main.CompletedEmotionCache())
     monkeypatch.setattr(main, "tag_thresholds", {})  # 실제 기준값 파일과 무관하게 테스트
     return TestClient(main.app)
 
@@ -45,6 +48,46 @@ def test_scale_and_combine():
     mixed = combine(img, txt, 0.6)
     assert mixed["joy"] == 1.0 and mixed["calm"] == pytest.approx(0.667, abs=0.001)
     assert combine(None, txt, 0.6)["calm"] == 1.0
+
+
+def test_split_results_match_combined_and_image_tags_can_run_during_emotion(client):
+    image = BytesIO()
+    Image.new("RGB", (4, 4)).save(image, format="PNG")
+    payload = {"description": "고요한 산", "imageBase64": base64.b64encode(image.getvalue()).decode()}
+    combined = client.post("/analyze", json=payload).json()
+    with main.runtime.slot(main.scorer):
+        tags = client.post("/analyze-tags", json=payload)
+        assert tags.status_code == 200
+        assert client.post("/analyze-tags", json={"description": "고요한 산"}).status_code == 429
+    emotion = client.post("/analyze-emotion", json=payload)
+    assert emotion.status_code == 200
+    assert tags.json()["tags"] == combined["tags"] and tags.json()["tagSource"] == "image"
+    assert emotion.json()["emotions"] == combined["emotions"]
+    assert "emotions" not in tags.json() and "tags" not in emotion.json()
+
+
+def test_emotion_cache_only_reuses_completed_identical_requests(client, monkeypatch):
+    real = main.scorer.text_scores
+    inputs = []
+    clock = [0]
+    monkeypatch.setattr(main, 'emotion_cache', main.CompletedEmotionCache(ttl=2, clock=lambda: clock[0]))
+
+    def counted(text):
+        inputs.append(text)
+        return real(text)
+
+    monkeypatch.setattr(main.scorer, 'text_scores', counted)
+    def ask(text):
+        response = client.post('/analyze-emotion', json={'description': text})
+        assert response.status_code == 200
+        return response.json()
+
+    assert ask('고요한 산') == ask('고요한 산')
+    assert inputs == ['고요한 산']
+    ask('다른 해설')
+    clock[0] = 2
+    ask('고요한 산')
+    assert inputs == ['고요한 산', '다른 해설', '고요한 산']
 
 
 def test_text_only(client):

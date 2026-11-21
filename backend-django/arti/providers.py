@@ -59,8 +59,9 @@ def generate(kind, snapshot, **context):
             raise cache['error']
         if 'result' not in cache:
             try:
+                options = {'stage': 'tag'} if context.get('split_tag') else {}
                 cache['result'] = analyze(
-                    snapshot, deadline=context.get('deadline'), use_image=context.get('use_image', True),
+                    snapshot, deadline=context.get('deadline'), use_image=context.get('use_image', True), **options,
                 )
             except ContractError as exc:
                 cache['error'] = exc
@@ -68,7 +69,9 @@ def generate(kind, snapshot, **context):
         result = cache['result']
         # 태그에만 선택적 근거를 전달하고 감정 JSON에는 섞지 않습니다.
         if kind == 'tag':
-            return {'scores': result['tags']} | ({'tagEvidence': result['tagEvidence']} if result.get('tagEvidence') is not None else {})
+            source = {'scoreSource': result['tagSource']} if context.get('split_tag') else {}
+            evidence = {'tagEvidence': result['tagEvidence']} if result.get('tagEvidence') is not None else {}
+            return {'scores': result['tags'], **source, **evidence}
         return {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
     if (kind in DRAFT_TASKS and settings.ARTI_DRAFT_PROVIDER != 'default') or text_runtime(kind).provider == 'openai_compatible':
         return generate_text(kind, snapshot, **context)

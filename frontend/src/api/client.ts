@@ -25,7 +25,7 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
 import { limitReceiptDuration } from '../lib/receiptPayload';
-import type { ArtworkAnalysisField, ArtworkAnalysisResult } from '../lib/adminAnalysis';
+import type { ArtworkAnalysisField, ArtworkAnalysisResult, EmotionJob } from '../lib/adminAnalysis';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -378,11 +378,13 @@ export const api = {
   },
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
-  analyzeArtwork: (id: string, useImage = true, regenerateFields: ArtworkAnalysisField[] = [], useDraftImage = false) =>
+  analyzeArtwork: (id: string, useImage = true, regenerateFields: ArtworkAnalysisField[] = [], useDraftImage = false,
+    expectedVersion?: number) =>
     request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, {
-      useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
+      useImage, version: expectedVersion ?? versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
       ...(useDraftImage && { useDraftImage: true }),
     }),
+  artworkEmotionJob: (id: string) => request<{job: EmotionJob | null}>('GET', `/admin/artworks/${enc(id)}/emotion-job`),
 
   discardArtworkProposal: (w: Artwork, kind: 'summary' | 'guide') =>
     request<Artwork>('POST', `/admin/artworks/${enc(w.id)}/discard-ai`, { kind, version: w.version }),

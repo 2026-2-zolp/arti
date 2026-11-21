@@ -71,6 +71,7 @@ class Artwork(models.Model):
     show_image = models.BooleanField(default=True)
     tags = models.JSONField(default=list, blank=True)
     tag_scores = models.JSONField(null=True, default=None, blank=True)
+    tag_score_source = models.CharField(max_length=5, blank=True, default='', db_default='')
     tag_score_evidence = models.JSONField(null=True, default=None, blank=True)
     tag_score_revision = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True)
@@ -140,6 +141,25 @@ class Artwork(models.Model):
 
 
 # 전시와 독립적인 조사 작품군과 명시적 선정 순서를 저장합니다.
+class EmotionJob(models.Model):
+    artwork = models.OneToOneField(Artwork, primary_key=True, on_delete=models.CASCADE)
+    job_id = models.UUIDField()
+    source_version = models.PositiveIntegerField()
+    fingerprint = models.CharField(max_length=64)
+    emotion_before = models.CharField(max_length=64)
+    use_image = models.BooleanField()
+    state = models.CharField(max_length=12)
+    due_at = models.DateTimeField()
+    claim_id = models.UUIDField(null=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    error_code = models.CharField(max_length=32, blank=True)
+    previous_version = models.PositiveIntegerField(null=True)
+    result_version = models.PositiveIntegerField(null=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['state', 'due_at'], name='arti_emotion_due')]
+
+
 class SurveyPool(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     name = models.CharField(max_length=100)

@@ -1,16 +1,42 @@
-# 모델 로딩과 추론을 단일 슬롯으로 제한하고 대기열 없이 상태를 알립니다.
+# 감정·텍스트 추론과 도판 태그 슬롯의 상태를 대기열 없이 알립니다.
 import logging
 import threading
 import time
+from collections import OrderedDict
 from contextlib import contextmanager
 from fastapi import HTTPException
 
 log=logging.getLogger('arti.ai')
 
 
+class CompletedEmotionCache:
+    """A bounded cache for completed calculations under the emotion slot."""
+
+    def __init__(self, *, capacity=32, ttl=300, clock=time.monotonic):
+        self._entries = OrderedDict()
+        self._capacity = capacity
+        self._ttl = ttl
+        self._clock = clock
+
+    def score(self, key, compute):
+        cutoff = self._clock() - self._ttl
+        for saved, (finished_at, _) in tuple(self._entries.items()):
+            if finished_at <= cutoff:
+                del self._entries[saved]
+        if key in self._entries:
+            self._entries.move_to_end(key)
+            return self._entries[key][1]
+        value = compute()
+        self._entries[key] = (self._clock(), value)
+        if len(self._entries) > self._capacity:
+            self._entries.popitem(last=False)
+        return value
+
+
 class ModelRuntime:
     def __init__(self):
         self._gate=threading.Lock()
+        self._image_tags=threading.Lock()
         self._state='not_loaded'
         self._retry_at=0.
         self._started_at=None
@@ -19,7 +45,7 @@ class ModelRuntime:
         return 'ready' if scorer.loaded else self._state
 
     def busy(self, scorer):
-        return bool(scorer.loaded and self._gate.locked())
+        return bool(scorer.loaded and (self._gate.locked() or self._image_tags.locked()))
 
     def busy_seconds(self):
         return round(time.monotonic()-self._started_at,3) if self._started_at is not None else 0.
@@ -50,16 +76,19 @@ class ModelRuntime:
             log.exception('모델 로딩 스레드를 시작하지 못했습니다')
 
     @contextmanager
-    def slot(self, scorer):
+    def slot(self, scorer, *, image_tags=False):
         if not scorer.loaded:
             self.warmup(scorer)
             raise HTTPException(503,detail='분석 모델을 준비 중이에요. 잠시 후 다시 시도해 주세요.',headers={'Retry-After':'5'})
-        if not self._gate.acquire(blocking=False):
+        gate = self._image_tags if image_tags else self._gate
+        if not gate.acquire(blocking=False):
             raise HTTPException(429,detail='다른 분석을 진행 중이에요. 잠시 후 다시 시도해 주세요.',headers={'Retry-After':'1'})
-        self._started_at=time.monotonic()
+        if not image_tags:
+            self._started_at=time.monotonic()
         try:
             yield
         finally:
             # 클라이언트가 timeout이어도 실제 추론이 끝날 때까지 슬롯을 유지합니다.
-            self._started_at=None
-            self._gate.release()
+            if not image_tags:
+                self._started_at=None
+            gate.release()

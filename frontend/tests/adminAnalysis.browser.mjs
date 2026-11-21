@@ -428,6 +428,44 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
   }
 }
 
+async function verifyBackgroundEmotion(page, request, base, gate, headers, initial, imageBytes) {
+  await json(await request.post(gate + '?emotion=enable'));
+  const catalog = `${base}/api/admin/artworks`;
+  const created = await json(await request.post(catalog, {
+    headers, data: { ...initial, title: '합성 감정 분석', reviewStatus: 'approved',
+      emotionStatus: 'none', tagStatus: 'none', summaryStatus: 'none', guideStatus: 'none',
+      summary: '', guideIntro: '', guidedLooking: [], guidedHints: [] },
+  }));
+  const api = `${catalog}/${created.id}`;
+  const uploaded = await json(await request.post(api + '/image', {
+    headers: { ...headers, 'If-Match': `"${created.version}"`, 'Content-Type': 'image/png' }, data: imageBytes,
+  }));
+  await json(await request.put(api, { headers, data: { ...uploaded, reviewStatus: 'approved' } }));
+  await page.goto(`${base}/admin/artworks/${created.id}`);
+  const response = pendingResponse(page, 'POST', `/api/admin/artworks/${created.id}/analyze`);
+  await page.getByRole('button', { name: 'AI 분석 실행', exact: true }).click();
+  const early = await json(await response);
+  assert.equal(early.emotionJob.state, 'queued');
+  assert.ok(['tag', 'summary', 'guide'].every(kind => early[kind].made));
+  assert.equal(early.artwork.tagScoreSource, 'image');
+  await page.getByText('분석 대기 중이에요.', { exact: true }).waitFor();
+  const confirm = pendingResponse(page, 'PUT', `/api/admin/artworks/${created.id}`);
+  await page.getByRole('button', { name: '요약 확정 (수정 내용 포함 저장)', exact: true }).click();
+  assert.equal((await json(await confirm)).summaryStatus, 'confirmed');
+  await summary(page).fill('감정 분석 중 관리자 작성 내용');
+  await json(await request.post(gate + '?emotion=complete'));
+  await page.getByText('감정 제안이 준비됐어요.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '감정 분석 확정', exact: true }).waitFor();
+  assert.equal(await summary(page).inputValue(), '감정 분석 중 관리자 작성 내용');
+  const saved = await json(await request.get(api, { headers }));
+  assert.equal(saved.summaryStatus, 'confirmed');
+  assert.equal(saved.emotionStatus, 'suggested');
+  assert.equal(saved.tagStatus, 'suggested');
+  await page.reload();
+  await page.getByText('감정 제안이 준비됐어요.', { exact: true }).waitFor();
+  console.log('PASS admin background emotion: proposals visible first, summary confirmation and draft retained, emotion recovered on reload');
+}
+
 async function verify(base) {
   const gate = `${base}/api/__admin_analysis_test__/gate`;
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -591,6 +629,7 @@ async function verify(base) {
     await verifyRegeneration(a, context.request, base, gate, headers);
     await verifyProposalDiscard(a, context.request, base, headers);
     await verifyPublicLifecycle(a, base, headers, template, imageBytes);
+    await verifyBackgroundEmotion(a, context.request, base, gate, headers, template, imageBytes);
     assert.deepEqual(errors, []);
   } finally {
     await context.request.post(gate).catch(() => {});

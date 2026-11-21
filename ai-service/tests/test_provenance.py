@@ -90,6 +90,11 @@ def fake_transformers(fail_nli=False, mutate=None):
                            pipeline=Mock(side_effect=RuntimeError('NLI synthetic failure')) if fail_nli else Mock(return_value='nli'))
 
 
+@pytest.fixture(autouse=True)
+def mock_torch_loader(monkeypatch):
+    monkeypatch.setitem(sys.modules, 'torch', SimpleNamespace(set_num_threads=Mock(), float16='synthetic-fp16'))
+
+
 def test_model_processor_pin_same_cached_artifact_and_publish_once(tmp_path, monkeypatch):
     root = make_snapshot(tmp_path)
     before = provenance.snapshot_manifest(root, MODEL, REVISION)
@@ -136,6 +141,28 @@ def test_uncached_model_still_passes_revision_to_both_loaders(monkeypatch):
     module.CLIPModel.from_pretrained.assert_called_once_with(MODEL, revision=REVISION)
     module.CLIPProcessor.from_pretrained.assert_called_once_with(MODEL, revision=REVISION)
     assert scorer.loaded and scorer.tag_model_provenance is None
+
+
+def test_fp16_analysis_uses_two_threads_and_batches_of_six(monkeypatch):
+    from app import config
+    from app.emotions import EMOTIONS
+    from app.tags import TAGS
+
+    monkeypatch.setattr(config, 'NLI_DTYPE', 'float16')
+    emotion_labels = [item['nli'] for item in EMOTIONS]
+    tag_labels = [item['nli'] for item in TAGS]
+    nli = Mock(side_effect=[{'labels': labels, 'scores': [.1] * len(labels)}
+                            for labels in (emotion_labels, tag_labels)])
+    module = fake_transformers()
+    module.pipeline.return_value = nli
+    scorer = HuggingFaceScorer('fixture-clip', 'fixture-nli')
+    with patch.dict(sys.modules, transformers=module):
+        scorer.text_scores('합성 원문')
+        scorer.text_tag_scores('합성 원문')
+    sys.modules['torch'].set_num_threads.assert_called_once_with(2)
+    module.pipeline.assert_called_once_with('zero-shot-classification', model='fixture-nli', device=-1,
+                                            model_kwargs={'torch_dtype': 'synthetic-fp16'})
+    assert [call.kwargs['batch_size'] for call in nli.call_args_list] == [6, 6]
 
 
 def test_api_binds_original_bytes_scores_and_actual_thresholds(monkeypatch):

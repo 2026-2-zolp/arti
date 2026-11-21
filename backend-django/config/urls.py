@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/admin/exhibitions/<str:ex_id>/poster', editing.image, {'poster': True}),
     path('api/admin/exhibitions/<str:ex_id>/navigation', editing.navigation_layout),
     path('api/admin/artworks/<str:artwork_id>/analyze', editing.analyze),
+    path('api/admin/artworks/<str:artwork_id>/emotion-job', editing.artwork_emotion_job),
     path('api/admin/artworks/<str:artwork_id>/discard-ai', editing.discard_ai),
     path('api/admin/exhibitions/<str:ex_id>/confirm-ai', editing.confirm_ai),
     path('api/admin/members', records.members), path('api/admin/reactions', records.reactions),
