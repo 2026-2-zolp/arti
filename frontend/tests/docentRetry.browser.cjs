@@ -1013,6 +1013,39 @@ async function inspectEntryContexts(browser) {
   }
 }
 
+async function inspectSafetyNotice(browser) {
+  const page = await newPage(browser);
+  const risk = '합성 안전 알림 검증 질문';
+  const notice = '그 요청은 도와드릴 수 없어요. 작품에서 궁금한 점은 같이 살펴볼 수 있어요.';
+  try {
+    const flow = await journey(page);
+    const asks = [];
+    await page.route('**/api/artworks/*/ask', async route => {
+      const data = route.request().postDataJSON();
+      asks.push(data);
+      const json = data.question === risk
+        ? { answer: notice, safetyNotice: true, mode: 'refusal', sourceRefs: [] }
+        : { answer: '다음 정상 감상 답변', mode: 'llm', sourceRefs: [] };
+      await route.fulfill({ status: 200, json });
+    });
+    await flow.input.fill(risk);
+    await flow.send.click();
+    await flow.chat.getByText(notice, { exact: false }).waitFor();
+    assert.equal(await flow.chat.getByText(risk, { exact: true }).count(), 0);
+    assert.equal(await flow.chat.getByRole('button', { name: '답변 듣기' }).count(), 0);
+    assert.equal(await flow.input.inputValue(), '');
+    assert.equal(await page.evaluate(text => Object.values(sessionStorage).some(value => value.includes(text)), risk), false);
+    await flow.input.fill('색을 어떻게 비교하나요?');
+    await flow.send.click();
+    await flow.chat.getByText('다음 정상 감상 답변', { exact: false }).waitFor();
+    assert.deepEqual(asks[1].history, []);
+    assert.equal(await flow.chat.getByText(notice, { exact: false }).count(), 0);
+    console.log('PASS safety notice: transient, no playback or saved context, next regular question works');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   assert.equal(new URL(baseURL).hostname, '127.0.0.1', 'use a local preview');
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -1032,6 +1065,7 @@ async function inspectEntryContexts(browser) {
           ['근거 부족과 혼합 출처', inspectEvidenceLimits],
           ['첫 키보드와 여러 줄 입력', inspectFirstKeyboardAndMultiline],
           ['첫 키보드와 재열기 경계', inspectKeyboardGeometry],
+          ['안전 안내와 다음 질문', inspectSafetyNotice],
         ];
     for (const [, check] of checks) {
       failureDetails = [];

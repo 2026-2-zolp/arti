@@ -288,6 +288,7 @@ export interface EntryContext {
 }
 export interface DocentAnswer {
   answer: string;
+  safetyNotice?: boolean;
   audioGrant?: string;
   mode: 'llm' | 'fallback' | 'refusal';
   sourceRefs: DocentSourceRef[];

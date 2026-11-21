@@ -3,8 +3,14 @@
 from django.conf import settings
 from django.utils import timezone
 from .http import ContractError
-from .llm import DRAFT_TASKS, GUIDE_REVIEW_TASK, generate_text, text_connection_settings
+from .llm import DRAFT_TASKS, GUIDE_REVIEW_TASK, generate_text, text_connection_settings, uses_luna_safety
 from .openai_settings import text_runtime
+
+
+def safety_routed_docent():
+    runtime = text_runtime('answer')
+    return (runtime.provider == 'openai_compatible' and bool(runtime.api_key)
+            and uses_luna_safety('answer', settings.OPENAI_BASE_URL.rstrip('/'), runtime.model))
 
 
 def configuration_status():

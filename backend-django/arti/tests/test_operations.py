@@ -19,7 +19,9 @@ from arti.tests.test_provider import endpoint
 class OperationsTests(Helpers, TestCase):
     def test_official_text_estimate_records_only_completely_measured_requests(self):
         self.setup_clients()
-        answer = {'choices': [{'finish_reason': 'stop', 'message': {'content': '{"answer":"합성 응답"}'}}],
+        answer = {'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps({
+            'answer': '합성 응답', 'safetyRoute': 'answer',
+        })}}],
                   'usage': {'prompt_tokens': 100, 'completion_tokens': 40,
                             'prompt_tokens_details': {'cached_tokens': 20, 'cache_write_tokens': 10}}}
         incomplete = {**answer, 'usage': {'prompt_tokens': 100, 'completion_tokens': 40}}

@@ -28,6 +28,7 @@ export default function U09Route() {
   const { pending, finished, askFinished, currentEntry } = useVisitHistory();
   const { state, dispatch } = useVisit();
   const exhibitionId = useExhibitionId();
+  const isSpain = exhibitionId === 'spain500-sac-2026';
   const to = useExhibitionPath();
   const { recommendations, current, viewed, startedAt } = state;
   const isExhibitionOrder = state.visitMode === 'exhibition_order';
@@ -48,7 +49,7 @@ export default function U09Route() {
   const isNextGuide = current > 0 && !returnToArtwork && entry?.showMap !== true;
   const title = isNextGuide ? '다음 작품 안내' : isExhibitionOrder ? '전시 관람순서' : '추천 관람순서';
   const [mapChoice, setMapChoice] = useState<{ key: string; open: boolean } | null>(null);
-  const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isNextGuide;
+  const mapOpen = mapChoice?.key === locationKey ? mapChoice.open : !isSpain && !isNextGuide;
   const openArtwork = () => {
     const navigation = { visitEntry: visitEntry(state) };
     // 직접 연 지도도 앞으로 오갈 수 있도록 이 기록이 가리키는 작품을 먼저 기록한다.
@@ -141,16 +142,18 @@ export default function U09Route() {
 
   const focus = focusId ? byId.get(focusId) : null;
   const isFirst = current === 0 && !startedAt;
+  const indoor = exhibitionIndoorLayout(ex);
+  const verifiedSpainMap = !!(ex.floorPlan && ex.navigationLayout?.example === false && indoor);
   const locationLabel = (w: Artwork) => {
     const room = roomName(w);
+    if (isSpain) return verifiedSpainMap && room ? room : '';
     if (w.position) return room || '전시실 미등록';
     return isExhibitionOrder && room ? `${room} · 지도 위치 미등록` : '위치 미등록';
   };
   const focusedMarkers = markers.filter((marker) => marker.id === previousId || marker.id === target.id);
   const isMapFixture = import.meta.env.VITE_GALAXY_MAP_FIXTURE === '1' && ex.id === GALAXY_MAP_EXHIBITION;
-  const indoor = exhibitionIndoorLayout(ex);
   const stops = recommendations.map((r) => byId.get(r.artworkId));
-  const hasRouteLines = !!indoor || !isExhibitionOrder || isMapFixture;
+  const hasRouteLines = isSpain ? verifiedSpainMap : !!indoor || !isExhibitionOrder || isMapFixture;
   const baselineRoute = hasRouteLines && mapOpen && !indoor ? [ex.entrance, ...stops.flatMap((stop, i) => {
     if (i < current && !viewed.includes(recommendations[i].artworkId)) return [];
     if (!stop?.position) return [null];
@@ -158,7 +161,7 @@ export default function U09Route() {
     const start = i === 0 ? ex.entrance : prior?.position;
     return isMapFixture && start ? galaxyMapLeg(start, stop.position, prior?.roomId, stop.roomId).slice(1) : [stop.position];
   })] : undefined;
-  const route = indoor && mapOpen ? indoorSequence(indoor, [ex.entrance, ...stops.flatMap((stop, i) => {
+  const route = !isSpain && indoor && mapOpen ? indoorSequence(indoor, [ex.entrance, ...stops.flatMap((stop, i) => {
     if (i < current && !viewed.includes(recommendations[i].artworkId)) return [];
     return [stop?.position ?? null];
   })]) : baselineRoute;
@@ -180,6 +183,10 @@ export default function U09Route() {
     const exampleNote = '검수용 예시 배치예요. 실제 이동은 전시실 안내를 따라가 주세요.';
     routeNote = activeLeg ? exampleNote : `${exampleNote} ${routeNote}`;
   }
+  const spainRouteNote = activeLeg ? '확인된 다음 작품까지의 구간이에요.'
+    : '이동 경로는 현장 안내를 따라가 주세요.';
+  const showMap = isSpain ? verifiedSpainMap && (!!activeLeg || mapOpen) : !isExhibitionOrder || !isNextGuide;
+  const thumbnail = artworkImageSrc(target);
 
   const go = () => {
     if (returnToArtwork) {
@@ -192,7 +199,7 @@ export default function U09Route() {
 
   const mapCard = (
     <div className={`map-card route-map${isNextGuide ? ' route-map-next' : ''}`}>
-      <p className="muted small route-note">{routeNote}</p>
+      <p className="muted small route-note">{isSpain ? spainRouteNote : routeNote}</p>
       <FloorMap
         exhibition={ex}
         markers={mapOpen ? markers : focusedMarkers}
@@ -242,21 +249,22 @@ export default function U09Route() {
       {/* 위쪽 박스는 다음 작품만 보여 준다(출발 작품 줄은 사용자 결정으로 뺌, 출발 위치는 지도 경로에 그대로 표시) */}
       <div className="next-card">
         <div className="next-artwork">
-          <ArtImage key={target.id} className="next-thumb" seed={target.id} palette={target.palette}
-            imageUrl={artworkImageSrc(target)} alt="" ratio={1} fit="contain" />
+          {(!isSpain || (target.showImage && thumbnail)) && <ArtImage key={target.id} className="next-thumb" seed={target.id} palette={target.palette}
+            imageUrl={thumbnail} alt="" ratio={1} fit="contain" />}
           <div className="next-artwork-info">
             <span className="eyebrow">{current > 0 ? '다음 · ' : ''}{current + 1}번 작품</span>
             <h2>{target.title}{target.year ? ` (${target.year})` : ''}</h2>
-            <span className="muted small">{locationLabel(target)}</span>
+            {locationLabel(target) && <span className="muted small">{locationLabel(target)}</span>}
           </div>
         </div>
       </div>
 
-      {(!isExhibitionOrder || !isNextGuide) && mapCard}
+      {showMap && mapCard}
+      {isSpain && !showMap && <p className="muted small route-note">{spainRouteNote}</p>}
       <details className="route-details" open={mapOpen}
         onToggle={(event) => setMapChoice({ key: locationKey, open: event.currentTarget.open })}>
-        <summary>전체 지도와 관람 순서</summary>
-        {isExhibitionOrder && isNextGuide && mapOpen && mapCard}
+        <summary>{isSpain && !verifiedSpainMap ? '전체 관람 순서' : '전체 지도와 관람 순서'}</summary>
+        {!isSpain && isExhibitionOrder && isNextGuide && mapOpen && mapCard}
         <ol className="route-list">
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);

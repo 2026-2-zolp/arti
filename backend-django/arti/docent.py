@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from .http import ContractError
+from .docent_safety import SafetyNotice
 from .docent_memory import interest_signal, previous_memory_is_current, visit_context_enabled, visitor_context
 from .docent_tools import ToolObservation, collection_tool_for, demo_tool_for
 from .docent_transcript import consent_revision, save_successful_turn, transcript_storage_enabled, turn_uuid
@@ -197,7 +198,7 @@ def ask(request,artwork_id):
             approved_guide = (matching_hint, guide_ref)
             if guide_ref not in refs:
                 refs.append(guide_ref)
-    if not refs and not collection:
+    if not refs and not collection and not providers.safety_routed_docent():
         return insufficient_evidence(request, question, data)
     if visitor:
         evidence_context['visitor'] = visitor
@@ -205,6 +206,10 @@ def ask(request,artwork_id):
     if tool:
         evidence_context['docent_tool'] = tool
     result=providers.generate('answer',data,entry=context,history=history,question=question,**evidence_context)
+    if isinstance(result, SafetyNotice):
+        require_current_public_work(w, check_collection=False)
+        return Response({'answer': result.text, 'mode': 'refusal', 'sourceRefs': [],
+                         'safetyNotice': True, 'requestId': request.request_id})
     if visitor.get('previousVisit') and (not previous_memory_is_current(request.user, request.auth)
             or visitor['previousVisit'] != visitor_context(w, request.user, memory, exhibition_works,
                                                            question, context).get('previousVisit')):

@@ -70,6 +70,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
 
   // 대화 내용은 작품별로 sessionStorage에 보관 → U-10에 갔다 와도 유지
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [safetyReply, setSafetyReply] = useState<string | null>(null);
   const [loadedChatKey, setLoadedChatKey] = useState('');
   const [failure, setFailure] = useState<AskFailure | null>(null);
   const [retryWindow, setRetryWindow] = useState<RetryWindow | null>(() => {
@@ -314,13 +315,14 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     setNewOutput(false);
     setReadingAbove(false);
     setShowArtwork(false);
+    setSafetyReply(null);
     preparedReply.current = undefined;
     setMessages(chatKey ? load<ChatMessage[]>(chatKey + '.chat', [], 'session') : []);
     setLoadedChatKey(chatKey);
     return () => { generation.current += 1; };
   }, [chatKey]);
   useLayoutEffect(() => {
-    if (!messages.length && !pending && !sendError) return;
+    if (!messages.length && !pending && !sendError && !safetyReply) return;
     const conversation = shellRef.current?.querySelector('main');
     if (!conversation) return;
     if (followLatest.current || artworkIssue) {
@@ -328,7 +330,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     } else if (!pending) {
       setNewOutput(true);
     }
-  }, [messages, pending, sendError, artworkIssue]);
+  }, [messages, pending, sendError, artworkIssue, safetyReply]);
   const showLatest = () => {
     const conversation = shellRef.current?.querySelector('main');
     if (!conversation) return;
@@ -354,6 +356,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     if (sent !== oldAttempt) setArrival(animateArrival() ? { questionId: sent.id } : {});
     setPendingQuestion(sent);
     setFailure(null);
+    setSafetyReply(null);
     const memory = w.visitorMemoryEnabled ? retryMemory ?? visitorMemory(state) : undefined;
     const { history, earlierObservations, reference } = docentHistory(messages, q);
     const earlierConversation = (earlierObservations.length || reference) && w.contentVersion !== undefined
@@ -362,6 +365,11 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       const result = await api.askAI(artworkId, q, state.visitId, entry, history, evidenceRevision,
         memory, earlierConversation, canStoreTranscript ? sent.id : undefined);
       if (generation.current !== active) return;
+      if (result.safetyNotice && result.mode === 'refusal') {
+        setSafetyReply(result.answer);
+        if (fromInput) setInput(draft => draft === question ? '' : draft);
+        return;
+      }
       if (result.interestSignal && w.visitorMemoryEnabled) {
         recordDocentInterest(state, artworkId, w.contentVersion ?? 1, result.interestSignal, w.visitRecapEnabled === true);
       }
@@ -433,7 +441,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
   const anchorIndex = !selectedQuestion ? -1 : chatReady && guideAnchor === null ? -1 : Math.min(guideAnchor ?? 0, messages.length);
   // 질문 카드 뒤로 아직 대화가 없을 때만 "그림에서 본 것을 적어 보세요" 안내를 쓴다.
   const guidedStart = !!selectedQuestion && messages.length <= Math.max(anchorIndex, 0);
-  const followUps = w && canAsk && !sendError && !guidedStart ? docentFollowUps(w, messages, selectedQuestion) : [];
+  const followUps = w && canAsk && !sendError && !guidedStart && !safetyReply ? docentFollowUps(w, messages, selectedQuestion) : [];
   // Keep the question in the same DOM slot while waiting, retrying, and saving the turn.
   const visibleMessages = attemptedQuestion ? [...messages, attemptedQuestion] : messages;
   const starters = narration?.openingQuestion ? [narration.openingQuestion, ...SUGGESTED.slice(0, 3)] : SUGGESTED;
@@ -600,6 +608,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         {/* 대화를 다 불러오기 전이거나 질문 카드 뒤에 대화가 없으면 카드는 목록 끝(또는 처음)에 둔다 */}
         {chatReady && pastQuestions.filter((h) => h.index >= visibleMessages.length).map((h) => pastCard(h))}
         {(!chatReady || anchorIndex >= visibleMessages.length) && questionCard}
+        {chatReady && safetyReply && <div className="docent-message is-ai"><div className="bubble ai">
+          <small>안내</small>{safetyReply}
+        </div></div>}
         {pending && <p className="bubble ai muted small" role="status">답변을 작성하고 있어요…</p>}
         {sendError && (
           <div className="bubble docent-error-card" role="alert">
@@ -615,7 +626,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         )}
       </div>
 
-      {chatReady && !selectedQuestion && messages.length === 0 && !pending && !sendError && <div className="suggested">
+      {chatReady && !selectedQuestion && messages.length === 0 && !pending && !sendError && !safetyReply && <div className="suggested">
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
           {starters.map((q) => (

@@ -2109,6 +2109,61 @@ async function passwordReset(browser) {
   }
 }
 
+async function spainNextArtwork(browser) {
+  const slug = 'spain500-sac-2026';
+  const exhibitionPath = '/exhibitions/' + slug;
+  const old = 'spain-map-fixture-old';
+  const recent = 'spain-map-fixture-recent';
+  const page = await openPage(browser);
+  const setLayout = (example, blocked) => fixtureCommand([
+    'import json',
+    'from arti.models import Artwork, Exhibition',
+    'slug, old, recent, example, blocked = json.loads(os.environ["ARTI_SPAIN_MAP_FIXTURE"])',
+    'assert not Exhibition.objects.filter(pk=slug).exclude(subtitle="Synthetic Spain map QA").exists()',
+    'wall = [{"x":45,"y":4,"w":10,"h":92}] if blocked else []',
+    'plan = {"file":"fixture-public.png","width":360,"height":360}',
+    'region = {"x":4,"y":4,"w":92,"h":92}',
+    'layout = {"floorPlanRevision":1,"example":example,"walkable":[region],"walls":wall,"pillars":[],"doors":[],"corridors":[],"waypoints":[]}',
+    'Exhibition.objects.update_or_create(pk=slug, defaults={"title":"스페인 지도 합성 검수","subtitle":"Synthetic Spain map QA","start_date":"2020-01-01","end_date":"2099-12-31","status":"running","entrance_x":10,"entrance_y":20,"floor_plan":plan,"navigation_layout":layout,"direct_visit_order":[old,recent],"rooms":[{"id":"room","name":"검수 전시실",**region}]})',
+    'for pk, x, year in ((old,20,"1549"),(recent,80,"1931")):',
+    '    Artwork.objects.update_or_create(pk=pk, defaults={"exhibition_id":slug,"title":year+"년 합성 작품","year":year,"room_id":"room","position_x":x,"position_y":20,"review_status":"approved","description":"합성 근거"})',
+  ], { ARTI_SPAIN_MAP_FIXTURE: JSON.stringify([slug, old, recent, example, blocked]) });
+  try {
+    setLayout(true, false);
+    await page.setViewportSize({ width: 360, height: 760 });
+    await page.goto(exhibitionPath);
+    await button(page, '전시 순서로 바로 보기').click();
+    await page.getByRole('heading', { name: '1549년 합성 작품', exact: true }).waitFor();
+    await button(page, '다음 작품 안내').click();
+    await button(page, '2번 작품 감상하기').waitFor();
+    const heading = page.getByRole('heading', { name: /1931년 합성 작품/ });
+    await heading.waitFor();
+    assert.equal(await page.locator('.floor-map, .fm-route').count(), 0);
+    await page.getByText('전체 관람 순서', { exact: true }).click();
+    assert.equal(await page.locator('.floor-map, .fm-route').count(), 0);
+
+    setLayout(false, false);
+    await page.reload();
+    await heading.waitFor();
+    await page.locator('.floor-map').waitFor();
+    await page.locator('.fm-route.active').waitFor({ state: 'attached' });
+    assert.equal(await page.locator('.fm-route').count(), 1);
+
+    setLayout(false, true);
+    await page.reload();
+    await heading.waitFor();
+    await page.getByText('이동 경로는 현장 안내를 따라가 주세요.', { exact: true }).waitFor();
+    await page.getByText('전체 지도와 관람 순서', { exact: true }).click();
+    await page.locator('.floor-map').waitFor();
+    assert.equal(await page.locator('.fm-route').count(), 0);
+    await button(page, '2번 작품 감상하기').click();
+    await page.getByRole('heading', { name: '1931년 합성 작품', exact: true }).waitFor();
+    console.log('PASS Spain next artwork: example hidden, verified leg only, blocked path omitted, visit continues');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   assert(['127.0.0.1', 'localhost'].includes(base.hostname), 'Use a dedicated local synthetic environment.');
   const suite = process.argv[2] || 'all';
@@ -2120,7 +2175,10 @@ async function passwordReset(browser) {
       await broadTasteTie(browser);
       return await savedV2(browser);
     }
-    if (suite === 'map-variants') return await mapVariants(browser);
+    if (suite === 'map-variants') {
+      await mapVariants(browser);
+      return await spainNextArtwork(browser);
+    }
     if (suite === 'operations') return await operationsLog(browser);
     if (suite === 'password-reset') return await passwordReset(browser);
     if (suite === 'exhibition-order') {

@@ -138,19 +138,24 @@ class DocentToolTests(TestCase):
     def test_luna_uses_no_reasoning_for_catalog_tool_exchange_only(self):
         self.approve_collection()
         call = tool_call(MUSEUM_TOOL, topic='collection')
-        opted_out = model_answer('일반 답변', collectionEvidenceUsed=False)
+        opted_out = model_answer('일반 답변', collectionEvidenceUsed=False, safetyRoute='answer')
+        gate = model_answer('', safetyRoute='answer')
         lookup_reply = response('tool_calls', {'tool_calls': [call]})
         accession = COLLECTION['accession']
-        replies = (opted_out, lookup_reply, model_answer(f'소장번호는 {accession}으로 기록돼요.', collectionEvidenceUsed=False),
-                   lookup_reply, model_answer(f'소장번호는 {accession}0으로 기록돼요.', collectionEvidenceUsed=False))
+        replies = (opted_out, gate, lookup_reply,
+                   model_answer(f'소장번호는 {accession}으로 기록돼요.', collectionEvidenceUsed=False, safetyRoute='answer'),
+                   gate, lookup_reply,
+                   model_answer(f'소장번호는 {accession}0으로 기록돼요.', collectionEvidenceUsed=False, safetyRoute='answer'))
         with patch('arti.llm.request_choice', side_effect=[json.loads(reply)['choices'][0] for reply in replies]) as sent:
             self.assertEqual(self.ask('색을 먼저 볼까요?').status_code, 200)
             result = self.ask('소장처 기록에서 확인할 수 있는 제작 배경은 뭔가요?')
             self.assertEqual(result.status_code, 200)
             similar = self.ask('소장번호는 무엇인가요?')
             self.assertEqual(similar.status_code, 200)
-        plain, lookup, answer = (json.loads(request.args[4]) for request in sent.call_args_list[:3])
+        plain, check, lookup, answer = (json.loads(request.args[4]) for request in sent.call_args_list[:4])
         self.assertNotIn('reasoning_effort', plain)
+        self.assertNotIn('tools', check)
+        self.assertEqual(set(json.loads(check['messages'][1]['content'])), {'artworkTitle', 'question', 'history'})
         self.assertEqual(lookup['reasoning_effort'], 'none')
         self.assertEqual(answer['reasoning_effort'], 'none')
         self.assertEqual(result.json()['sourceRefs'][-1]['url'], COLLECTION['url'])
