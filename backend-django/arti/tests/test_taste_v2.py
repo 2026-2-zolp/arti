@@ -18,7 +18,7 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
 from arti import taste_resolution as resolution
-from arti.constants import TAGS
+from arti.constants import PAIR_DIFFERENCE, TAGS
 from arti.http import ContractError
 from arti.model_service import evidence_digest
 from arti.models import Account, Artwork, Exhibition, SurveyPool, Visit
@@ -28,6 +28,26 @@ from arti.tests.test_tag_evidence import packet
 
 @override_settings(ARTI_TASTE_PROFILE_V2_ENABLED=True)
 class ParityTests(SimpleTestCase):
+    def test_pair_difference_limits_model_tiebreak_to_distinguishing_tags(self):
+        tags = [['warm', 'people'], ['cool', 'people'], ['people'], ['landscape'], *([['light']] * 6)]
+        works = [SimpleNamespace(id=str(index), tags=work_tags) for index, work_tags in enumerate(tags)]
+        approved = 'a' * 64
+        rows = [{
+            'id': work.id, 'tags': work.tags, 'signature': approved if index < 4 else None,
+            'tagSource': 'image', 'scoreRevision': 1, 'imageSha256': 'b' * 64,
+            'scoresUnits': dict.fromkeys(TAGS, 0) | ({'warm': 700_000, 'people': 990_000} if index == 0 else {'people': 600_000}),
+        } for index, work in enumerate(works)]
+        profile = {'version': 2, 'source': 'picks', 'pickEvidence': PAIR_DIFFERENCE,
+                   'poolVersion': 'pool', 'tieContextVersion': 'context', 'selectedTags': ['people', 'warm'],
+                   'picks': [{'pairIndex': index, 'artworkId': str(2 * index)} for index in range(5)]}
+        pool = (SimpleNamespace(id='fixture', revision=1), works, 'pool')
+        with patch.object(resolution, 'current_pool', return_value=pool), patch.object(
+                resolution, 'pool_context', return_value=(rows, approved, 'context')):
+            _, counts, groups = resolution.resolve(profile, profile['selectedTags'])
+        self.assertEqual(counts, dict.fromkeys(TAGS, 0) | {'people': 1, 'warm': 1})
+        self.assertEqual(groups[0]['rule'], 'ai_secondary')
+        self.assertEqual(groups[0]['tags'], ['warm', 'people'])
+
     def test_contract_cases(self):
         root = Path(__file__).resolve().parents[3]
         spec = importlib.util.spec_from_file_location('oracle', root/'scripts/taste_tie_contract.py')
@@ -121,6 +141,27 @@ class TasteV2Tests(Helpers, TransactionTestCase):
         self.assertFalse(any(query['sql'].lstrip().split()[0].upper() in ('INSERT', 'UPDATE', 'DELETE') for query in sql))
         provider.assert_not_called()
         self.assertEqual((state(), media()), (before, files))
+
+    def test_pair_evidence_counts_only_the_chosen_differences_and_preserves_legacy(self):
+        pool = self.public.get('/api/taste-pool').json()
+        self.assertEqual(pool['tieContext']['pickEvidence'], PAIR_DIFFERENCE)
+        for index, pair in enumerate(pool['pairs']):
+            left_tags = ['people', 'warm'] if index == 0 else ['people', 'light']
+            right_tags = ['people', 'cool'] if index == 0 else ['people', 'light']
+            Artwork.objects.filter(pk=pair['leftId']).update(tags=left_tags)
+            Artwork.objects.filter(pk=pair['rightId']).update(tags=right_tags)
+        profile = self.profile() | {'selectedTags': ['warm'], 'pickEvidence': PAIR_DIFFERENCE}
+        response = self.public.post(self.resolve_url, {'tasteProfile': profile}, format='json')
+        self.assertEqual(response.status_code, 200, response.content)
+        actual = response.json()['tasteProfile']
+        self.assertEqual(actual['pickEvidence'], PAIR_DIFFERENCE)
+        self.assertEqual(actual['counts'], dict.fromkeys(TAGS, 0) | {'warm': 1})
+        invalid = profile | {'selectedTags': ['people']}
+        self.assertEqual(self.public.post(self.resolve_url, {'tasteProfile': invalid}, format='json').status_code, 400)
+        invalid.pop('pickEvidence')
+        legacy = self.public.post(self.resolve_url, {'tasteProfile': invalid}, format='json')
+        self.assertEqual(legacy.status_code, 200, legacy.content)
+        self.assertEqual(legacy.json()['tasteProfile']['counts']['people'], 5)
 
     def test_approved_scores_drive_ties_and_unselected_revision_invalidates_preview(self):
         Artwork.objects.filter(pk__in=[f'fixture-art{i:02}' for i in range(1, 11)]).update(tags=['landscape', 'warm'])

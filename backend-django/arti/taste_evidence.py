@@ -23,7 +23,7 @@ def uuid_value(value, *, visit=False):
 
 
 def profile_input(profile):
-    result = {key: profile[key] for key in ('version', 'source', 'poolVersion', 'tieContextVersion',
+    result = {key: profile[key] for key in ('version', 'source', 'poolVersion', 'tieContextVersion', 'pickEvidence',
                                            'savedProfileVersion') if key in profile and profile[key] is not None}
     result['selectedTags'] = sorted(profile['selectedTags'])
     result['picks'] = sorted(profile.get('picks', []), key=lambda pick: pick['pairIndex'])

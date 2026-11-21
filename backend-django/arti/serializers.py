@@ -1,7 +1,7 @@
 # API 입력 검증과 공개·관리자 응답 변환을 정의합니다.
 from rest_framework import serializers
 from .docent_audio import listening_available
-from .constants import DURATION_COUNTS, EMOTIONS, TAGS
+from .constants import DURATION_COUNTS, EMOTIONS, PAIR_DIFFERENCE, TAGS
 
 
 # 작품 쌍 선택 한 건의 입력을 검증합니다.
@@ -20,6 +20,7 @@ class TasteProfileInput(serializers.Serializer):
     selectedTags = serializers.ListField(child=serializers.ChoiceField(choices=TAGS), max_length=8)
     savedProfileVersion = serializers.IntegerField(min_value=1, required=False)
     tieContextVersion = serializers.RegexField(r'\A[0-9a-f]{64}\Z', required=False)
+    pickEvidence = serializers.ChoiceField(choices=(PAIR_DIFFERENCE,), required=False)
 
     def to_internal_value(self, data):
         if isinstance(data, dict) and ('tieEvidence' in data or 'tagOrder' in data):
@@ -42,6 +43,8 @@ class TasteProfileInput(serializers.Serializer):
             raise serializers.ValidationError('savedProfileVersion is required.')
         if value['version'] == 2 and value['source'] == 'picks' and not value.get('tieContextVersion'):
             raise serializers.ValidationError('취향 조사 근거 버전이 필요해요.')
+        if 'pickEvidence' in value and (value['version'] != 2 or value['source'] != 'picks'):
+            raise serializers.ValidationError('새 취향 조사의 작품 선택에만 비교 근거를 쓸 수 있어요.')
         return value
 
 

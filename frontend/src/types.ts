@@ -268,6 +268,7 @@ export interface DocentInterest extends DocentInterestSignal {
 export interface TasteProfile {
   version: 1 | 2;
   tieContextVersion?: string;
+  pickEvidence?: 'pair-difference-v1';
   source: 'picks' | 'saved' | 'manual';
   poolVersion: string | null;
   picks: { pairIndex: number; artworkId: string }[];

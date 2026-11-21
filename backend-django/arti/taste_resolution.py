@@ -8,7 +8,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.conf import settings
 from django.db import OperationalError, connection, transaction
 
-from .constants import TAGS
+from .constants import PAIR_DIFFERENCE, TAGS
 from .http import ContractError
 from .model_service import evidence_digest
 from .models import Account, Session
@@ -188,11 +188,26 @@ def resolve(profile, tags, account=None, exhibition_id=None):
             conflict()
         counts, _ = selected_counts(profile, tags, pool=pool)
         picks = sorted(profile['picks'], key=lambda pick: pick['pairIndex'])
-        chosen_ids = {pick['artworkId'] for pick in picks}
-        groups = groups_for(counts, tags, rows=[row for row in rows if row['id'] in chosen_ids], approved=approved)
+        chosen_rows = []
+        for pick in picks:
+            index = pick['pairIndex'] * 2
+            chosen, other = rows[index:index + 2]
+            if other['id'] == pick['artworkId']:
+                chosen, other = other, chosen
+            if profile.get('pickEvidence') == PAIR_DIFFERENCE:
+                differences = set(chosen['tags']) - set(other['tags'])
+                if not differences:
+                    continue
+                # Model scores may break a tie only on the tags this comparison supported.
+                chosen = {**chosen, 'scoresUnits': {tag: value if tag in differences else 0
+                                                   for tag, value in chosen['scoresUnits'].items()}}
+            chosen_rows.append(chosen)
+        groups = groups_for(counts, tags, rows=chosen_rows, approved=approved)
         snapshot.update(picks=picks, poolVersion=pool_version, tieContextVersion=context_version,
                         originalPicks=picks, originalPoolVersion=pool_version, originExhibitionId=exhibition_id,
                         originSurveyId=survey.id, originSurveyRevision=survey.revision)
+        if 'pickEvidence' in profile:
+            snapshot['pickEvidence'] = profile['pickEvidence']
     else:
         if profile['picks'] or profile['poolVersion'] is not None or profile.get('tieContextVersion') is not None:
             invalid('수동 취향에 선택 이력을 넣을 수 없어요.')

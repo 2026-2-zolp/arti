@@ -37,3 +37,19 @@ test('a wide tie at the highest frequency skips a lower-frequency tag', () => {
 test('no tags are suggested without tagged picks', () => {
   assert.deepEqual(suggest([]), { options: [], defaultTags: [] });
 });
+
+test('the new survey keeps every picked difference and skips a shared feature in its own pair', () => {
+  const works: { id: string; tags: TasteTag[] }[] = [
+    { id: 'a', tags: ['people', 'warm'] }, { id: 'b', tags: ['people', 'cool'] },
+    { id: 'c', tags: ['people', 'soft'] }, { id: 'd', tags: ['landscape', 'soft'] },
+    { id: 'e', tags: ['light'] }, { id: 'f', tags: ['light'] },
+  ];
+  const pairs = [{ leftId: 'a', rightId: 'b' }, { leftId: 'c', rightId: 'd' }, { leftId: 'e', rightId: 'f' }];
+  assert.deepEqual(tastesFromPicks(works, ['a', 'c', 'e'], pairs), {
+    options: ['people', 'warm'], defaultTags: ['people', 'warm'],
+  });
+  assert.deepEqual(tastesFromPicks(works, ['b', 'd', 'f'], pairs), {
+    options: ['cool', 'landscape'], defaultTags: ['cool', 'landscape'],
+  });
+  assert.deepEqual(tastesFromPicks(works, ['e'], [pairs[2]]), { options: [], defaultTags: [] });
+});
