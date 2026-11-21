@@ -572,9 +572,15 @@ button.duel-title:disabled { cursor: default; }
 }
 .send-btn:disabled { opacity: 0.35; }
 @media (prefers-reduced-motion: no-preference) {
+  .m-shell[data-screen='U-11'] { --docent-arrival-duration: 400ms; }
   .docent-listen-spinner { animation: docent-listen-spin 750ms linear infinite; }
   .send-btn { transition: opacity 180ms ease; }
-  .docent-message.is-arriving { animation: docent-message-in 400ms ease; }
+  .docent-message.is-arriving { animation: docent-message-in var(--docent-arrival-duration) ease; }
+  .docent-follow-ups.is-arriving > button {
+    visibility: hidden;
+    animation: docent-follow-up-in var(--docent-arrival-duration) ease var(--docent-arrival-duration) forwards;
+  }
+  .docent-follow-ups.is-arriving > button + button { animation-delay: calc(2 * var(--docent-arrival-duration)); }
   .docent-latest-surface { transition: opacity 400ms ease, transform 400ms ease, width 260ms ease, visibility 0s; }
   .docent-latest-control[data-state='hidden'] .docent-latest-surface { transition-delay: 0s, 0s, 0s, 400ms; }
   .docent-latest-btn, .docent-thinking { transition: opacity 140ms ease; }
@@ -587,6 +593,10 @@ button.duel-title:disabled { cursor: default; }
   @keyframes docent-message-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes docent-follow-up-in {
+    from { visibility: visible; opacity: 0; transform: translateY(8px); }
+    to { visibility: visible; opacity: 1; transform: translateY(0); }
   }
   @keyframes docent-listen-spin {
     to { transform: rotate(360deg); }

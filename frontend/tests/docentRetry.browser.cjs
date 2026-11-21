@@ -1046,6 +1046,79 @@ async function inspectSafetyNotice(browser) {
   }
 }
 
+async function inspectFollowUpArrival(browser) {
+  const context = await browser.newContext({ ...pageOptions, reducedMotion: 'no-preference' });
+  const page = await newPage(browser, context);
+  try {
+    const flow = await journey(page, { enterDocent: false });
+    const workPath = '/api/artworks/' + flow.recommendations[0];
+    await page.route(url => url.pathname === workPath, async route => {
+      const response = await route.fetch({ maxRedirects: 0 });
+      const json = await response.json();
+      await route.fulfill({ response, json: {
+        ...json, guideStatus: 'confirmed',
+        guidedLooking: ['밝은 부분이 어디에서 먼저 눈에 들어오나요?', '어두운 부분은 어디까지 이어지나요?'],
+        guidedHints: ['밝은 부분의 가장자리를 보세요.', '어두운 부분과 밝은 부분을 나란히 보세요.'],
+        narrationVersions: { description: 'synthetic-description-narration', guide: 'synthetic-guide-narration' },
+      } });
+    });
+    const [narrationResponse] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === workPath),
+      page.reload(),
+    ]);
+    assert.equal((await narrationResponse.json()).narrationVersions.description, 'synthetic-description-narration');
+    await flow.artwork(flow.titles[0]).waitFor();
+    await flow.button('음성 설명 듣기').waitFor();
+    assert.equal(await page.getByText('AI 음성', { exact: true }).count(), 0);
+    await page.getByRole('tab', { name: '관람가이드' }).click();
+    await flow.button('음성 설명 듣기').waitFor();
+    assert.equal(await page.getByText('AI 음성', { exact: true }).count(), 0);
+    await flow.button('작품에 대해 질문하기').click();
+    await flow.input.waitFor();
+    await page.evaluate(() => {
+      const arrivals = [];
+      window.artworkFollowUpArrivals = arrivals;
+      const record = event => {
+        const target = event.target;
+        const element = event.animationName === 'docent-message-in' && target.matches('.docent-message.is-ai')
+          ? 'answer' : event.animationName === 'docent-follow-up-in'
+            ? `question-${[...target.parentElement.children].indexOf(target) + 1}` : null;
+        if (element) arrivals.push({ element, type: event.type, timestamp: event.timeStamp });
+      };
+      document.addEventListener('animationstart', record);
+      document.addEventListener('animationend', record);
+    });
+    await flow.input.fill('밝은 부분을 어떻게 볼까요?');
+    const response = await flow.respondTo(() => flow.send.click());
+    assert.equal(response.status(), 200);
+    const questions = page.getByRole('group', { name: '이어서 볼 질문' }).getByRole('button');
+    await page.waitForFunction(() => window.artworkFollowUpArrivals.some(
+      ({ element, type }) => element === 'question-2' && type === 'animationend',
+    ));
+    assert.equal(await questions.count(), 2);
+    const times = await page.evaluate(() => Object.fromEntries(window.artworkFollowUpArrivals.map(
+      ({ element, type, timestamp }) => [element + '-' + type, timestamp],
+    )));
+    assert.ok(times['question-1-animationstart'] >= times['answer-animationend']);
+    assert.ok(times['question-2-animationstart'] >= times['question-1-animationend']);
+
+    const animationNames = () => questions.evaluateAll(buttons => buttons.map(el => getComputedStyle(el).animationName));
+    await page.reload();
+    await questions.last().waitFor();
+    assert.deepEqual(await animationNames(), ['none', 'none']);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await flow.input.fill('밝고 어두운 부분을 어떻게 비교하나요?');
+    assert.equal((await flow.respondTo(() => flow.send.click())).status(), 200);
+    await flow.chat.getByText('밝고 어두운 부분을 어떻게 비교하나요?', { exact: true }).waitFor();
+    await questions.last().waitFor();
+    assert.deepEqual(await animationNames(), ['none', 'none']);
+    assert.deepEqual(flow.pageErrors, []);
+    console.log('PASS 작품 음성 유지와 AI 음성 문구 제거 · 답변 뒤 추천 질문 순차 전환 · 대화 복구와 모션 감소');
+  } finally {
+    await context.close();
+  }
+}
+
 (async () => {
   assert.equal(new URL(baseURL).hostname, '127.0.0.1', 'use a local preview');
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -1066,6 +1139,7 @@ async function inspectSafetyNotice(browser) {
           ['첫 키보드와 여러 줄 입력', inspectFirstKeyboardAndMultiline],
           ['첫 키보드와 재열기 경계', inspectKeyboardGeometry],
           ['안전 안내와 다음 질문', inspectSafetyNotice],
+          ['작품 음성과 추천 질문 순차 표시', inspectFollowUpArrival],
         ];
     for (const [, check] of checks) {
       failureDetails = [];

@@ -93,7 +93,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     else remove(draftKey, 'session');
   }, [draftKey, input]);
   const [pendingQuestion, setPendingQuestion] = useState<ChatMessage | null>(null);
-  const [arrival, setArrival] = useState<{ questionId?: string; answerId?: string }>({});
+  const [arrival, setArrival] = useState<{ questionId?: string; answerId?: string; followUpsId?: string }>({});
   const pending = pendingQuestion !== null;
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
@@ -378,7 +378,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         usedPreviousVisitMemory: result.usedPreviousVisitMemory, audioGrant: result.audioGrant,
       };
       const next = [...messages, sent, answer];
-      if (animateArrival()) setArrival(current => ({ ...current, answerId: answer.id }));
+      if (animateArrival()) setArrival(current => ({ ...current, answerId: answer.id, followUpsId: answer.id }));
       setMessages(next); save(chatKey + '.chat', next, 'session');
       if (visitListening(state) === 'on') prepareReply(answer);
       if (fromInput) setInput((draft) => draft === question ? '' : draft);
@@ -561,6 +561,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
           const preparing = active && tts.preparing;
           const playbackLabel = preparing ? '음성 준비 중' : active ? '재생 중지' : '답변 듣기';
           const isFresh = m.id === arrival.questionId || m.id === arrival.answerId;
+          const animateFollowUps = m.id === arrival.followUpsId;
           const isAttempt = m.id === attemptedQuestion?.id;
           return (
             <Fragment key={m.id}>
@@ -570,6 +571,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                 onAnimationEnd={isFresh ? event => {
                   if (event.target !== event.currentTarget) return;
                   setArrival(current => ({
+                    ...current,
                     questionId: current.questionId === m.id ? undefined : current.questionId,
                     answerId: current.answerId === m.id ? undefined : current.answerId,
                   }));
@@ -598,7 +600,12 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                   </span>
                 </div>}
               </div>
-              {i === messages.length - 1 && followUps.length > 0 && <div className="docent-follow-ups" role="group" aria-label="이어서 볼 질문">
+              {i === messages.length - 1 && followUps.length > 0 && <div
+                className={`docent-follow-ups${animateFollowUps ? ' is-arriving' : ''}`} role="group" aria-label="이어서 볼 질문"
+                onAnimationEnd={animateFollowUps ? event => {
+                  if (event.target !== event.currentTarget.lastElementChild) return;
+                  setArrival(current => current.followUpsId === m.id ? { ...current, followUpsId: undefined } : current);
+                } : undefined}>
                 {followUps.map(text => <button key={text} type="button" className="chip outline" onClick={() => ask(text)}>{text}</button>)}
               </div>}
             </Fragment>

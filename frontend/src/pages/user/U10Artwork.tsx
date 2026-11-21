@@ -249,6 +249,7 @@ export default function U10Artwork() {
   const version = showSummary && tab === 'desc' ? undefined : w?.narrationVersions?.[narrationKind];
   const clip = w && version ? artworkNarrationUrl(w.id, narrationKind, version)
     : recording?.text === tabText() ? narrationClip(recording) : undefined;
+  const speechLabel = !tts.speaking ? '음성 설명 듣기' : version ? 'AI 음성 재생 중지' : '재생 중지';
   const listening = w?.docentListeningAvailable ? visitListening(state) : null;
   const offerListening = w?.docentListeningAvailable && listening === null;
   const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`, clip, undefined, undefined,
@@ -471,15 +472,14 @@ export default function U10Artwork() {
 
           <div className="action-row">
             <button className="btn outline" onClick={toggleSpeech} disabled={!tts.supported && !clip}
-              aria-describedby={version ? 'artwork-narration-notice' : offerListening ? 'docent-guide-listening-notice' : undefined}>
+              aria-describedby={offerListening ? 'docent-guide-listening-notice' : undefined}>
               <Icon name={tts.speaking ? 'stop' : 'speaker'} size={20} />
-              {tts.speaking ? '재생 중지' : '음성 설명 듣기'}
+              {speechLabel}
             </button>
             <button className="btn outline" onClick={() => goDocent()}>
               <Icon name="chat" size={20} /> {tab === 'guided' ? '작품에 대해 질문하기' : '이 부분 더 알아보기'}
             </button>
           </div>
-          {version && <p id="artwork-narration-notice" className="muted small">AI 음성</p>}
           {offerListening && <p id="docent-guide-listening-notice" className="muted small">음성 설명을 재생하면 새 도슨트 답변을 OpenAI 음성 서비스로 보내 미리 준비해요.</p>}
           {listening === 'on' && <button className="text-btn small" onClick={turnOffListening}>답변 음성 미리 준비 끄기</button>}
           {listening === 'off' && <p className="muted small" role="status">답변 음성을 미리 준비하지 않아요. 필요할 때 들을 수 있어요.</p>}
