@@ -2,6 +2,7 @@
 import type {AiStatus, Artwork} from '../types';
 
 type AnalysisPart = {ok?: boolean; made?: boolean; source?: string; error?: string; code?: string};
+export type ArtworkAnalysisField = 'summary' | 'guide' | 'tag' | 'emotion';
 export type ArtworkAnalysisResult = {
   artwork: Artwork;
   summary: AnalysisPart & {ok: boolean};
@@ -31,10 +32,15 @@ export function mergeAnalysis(current:Artwork, started:Artwork, result:ArtworkAn
   return next;
 }
 
-type AnalysisOutcome = {status: 'created' | 'kept' | 'skipped' | 'unavailable' | 'failed' | 'empty' | 'fallback'; text: string};
+type AnalysisOutcome = {
+  status: 'created' | 'kept' | 'skipped' | 'unavailable' | 'failed' | 'empty' | 'fallback';
+  text: string;
+};
 
 function outcome(part: AnalysisPart | undefined, saved: AiStatus): AnalysisOutcome {
   if (part?.ok === false) {
+    if (part.code === 'AI_TIMEOUT') return {status: 'failed', text: '분석 응답 시간 초과'};
+    if (part.code === 'RATE_LIMITED') return {status: 'failed', text: '요청이 많아요. 잠시 후 다시 시도해 주세요.'};
     const unavailable = part.code === 'AI_UNAVAILABLE';
     const label = unavailable ? '연결 확인 필요' : '처리 실패';
     return {status: unavailable ? 'unavailable' : 'failed', text: part.error ? `${label} · ${part.error}` : label};
@@ -46,6 +52,11 @@ function outcome(part: AnalysisPart | undefined, saved: AiStatus): AnalysisOutco
   if (part?.source === 'fallback') return {status: 'fallback', text: '원문으로 제안 작성'};
   if (part?.made ?? part?.ok) return {status: 'created', text: '제안 생성 완료'};
   return {status: 'empty', text: '제안 없음'};
+}
+
+export function failedAnalysisFields(result: ArtworkAnalysisResult): ArtworkAnalysisField[] {
+  const fields = ['summary', 'guide', 'tag', 'emotion'] as const;
+  return fields.filter(field => result[field]?.ok === false && result[field].code !== 'AI_UNAVAILABLE');
 }
 
 /** 태그 결과를 따로 보내지 않는 기존 API도 감정 분석에 포함된 태그를 표시합니다. */

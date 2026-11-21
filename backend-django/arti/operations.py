@@ -1,7 +1,8 @@
 import logging
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from django.core.paginator import Paginator
 from django.db import DatabaseError, transaction
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
@@ -9,6 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from .authentication import IsAdmin
+from .http import ContractError
 from .models import OperationEvent, OperationTextModelUsage, OperationVoiceModelUsage
 from .model_usage import collect_model_usage
 from .providers import configuration_status, draft_configuration_status
@@ -42,6 +44,8 @@ CATALOG_DELETIONS = {'exhibition_save': 'exhibition_delete', 'artwork_save': 'ar
 PARTIAL_ANALYSIS = Q(action='artwork_analysis', status=200) & ~Q(analysis_failures=[])
 ANALYSIS_CODES = {'AI_UNAVAILABLE', 'AI_TIMEOUT', 'RATE_LIMITED', 'PROVIDER_ERROR', 'GUIDE_UNSUPPORTED',
                   'VALIDATION_ERROR', 'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA'}
+LOG_ACTIONS = {*ADMIN_ACTIONS.values(), *VISITOR_ACTIONS.values(), *CATALOG_DELETIONS.values()}
+SEOUL = ZoneInfo('Asia/Seoul')
 
 
 def partial_analysis_failures(response):
@@ -147,10 +151,57 @@ def voice_model_usage_groups(events):
     return rows
 
 
+def log_event(event):
+    return {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
+            'action': event.action, 'status': event.status,
+            **({'analysisFailures': event.analysis_failures} if event.analysis_failures else {})}
+
+
+def log_time(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M').replace(tzinfo=SEOUL).astimezone(UTC)
+    except (OverflowError, ValueError):
+        raise ContractError(400, 'VALIDATION_ERROR', '조회 시각을 확인해 주세요.') from None
+
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def events(request):
+    params = request.query_params
+    filtered = OperationEvent.objects.order_by('-occurred_at', '-pk')
+    if params.get('errors') == '1':
+        filtered = filtered.filter(Q(status__gte=400) | PARTIAL_ANALYSIS)
+    if action := params.get('action'):
+        if action not in LOG_ACTIONS:
+            raise ContractError(400, 'VALIDATION_ERROR', '조회할 작업을 확인해 주세요.')
+        filtered = filtered.filter(action=action)
+    if status := params.get('status'):
+        if len(status) != 3 or not status.isascii() or not status.isdecimal() or not 100 <= int(status) <= 599:
+            raise ContractError(400, 'VALIDATION_ERROR', '응답 코드는 100~599 사이여야 해요.')
+        filtered = filtered.filter(status=int(status))
+    start, end = log_time(params.get('start')), log_time(params.get('end'))
+    if start and end and end < start:
+        raise ContractError(400, 'VALIDATION_ERROR', '종료 시각은 시작 시각보다 빠를 수 없어요.')
+    if start:
+        filtered = filtered.filter(occurred_at__gte=start)
+    if end:
+        try:
+            filtered = filtered.filter(occurred_at__lt=end + timedelta(minutes=1))
+        except OverflowError:
+            raise ContractError(400, 'VALIDATION_ERROR', '조회 시각을 확인해 주세요.') from None
+    paginator = Paginator(filtered, 10)
+    page = paginator.get_page(params.get('page', '1'))
+    return Response({'rows': [log_event(event) for event in page], 'page': page.number,
+                     'pages': paginator.num_pages, 'total': paginator.count},
+                    headers={'Cache-Control': 'private, no-store'})
+
+
 @api_view(['GET'])
 @permission_classes([IsAdmin])
 def dashboard(request):
-    midnight = timezone.localtime(timezone.now(), ZoneInfo('Asia/Seoul')).replace(hour=0, minute=0, second=0, microsecond=0)
+    midnight = timezone.localtime(timezone.now(), SEOUL).replace(hour=0, minute=0, second=0, microsecond=0)
     events = OperationEvent.objects.filter(occurred_at__gte=midnight, occurred_at__lt=midnight + timedelta(days=1))
     counts = events.aggregate(
         docentRequests=Count('id', filter=Q(action='docent_question')),
@@ -181,10 +232,5 @@ def dashboard(request):
             'textModelUsageByTaskModel': text_model_usage_groups(events),
             'voiceModelUsageByIntent': voice_model_usage_groups(events),
         }),
-        'recent': [
-            {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
-             'action': event.action, 'status': event.status,
-             **({'analysisFailures': event.analysis_failures} if event.analysis_failures else {})}
-            for event in rows
-        ],
+        'recent': [log_event(event) for event in rows],
     }, headers={'Cache-Control': 'private, no-store'})

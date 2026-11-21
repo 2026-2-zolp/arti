@@ -6,6 +6,7 @@ import { useConfirm } from '../../components/Confirmation';
 import { useAsync } from '../../lib/useAsync';
 import { useProtectedImage } from '../../lib/useProtectedImage';
 import type { Exhibition, ExhibitionStatus } from '../../types';
+import { ADMIN_PAGE_SIZE, AdminPagination, adminPage } from './AdminPagination';
 import { EX_STATUS_LABEL, PageHead } from './AdminLayout';
 
 const blank = (): Exhibition => ({
@@ -27,11 +28,16 @@ const blank = (): Exhibition => ({
 /** 전시를 등록·조회·수정하는 화면 */
 export default function A03Exhibitions() {
   const navigate = useNavigate();
-  const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const { data, reload, error, loading } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), [], true);
   const addButton = useRef<HTMLButtonElement>(null);
   const [editing, setEditing] = useState<Exhibition | null>(null);
   const [posterFor, setPosterFor] = useState<Exhibition | null>(null);
   const [notice, setNotice] = useState('');
+  const [requestedPage, setRequestedPage] = useState(1);
+  const exhibits = data?.[0] ?? [];
+  const artworkCounts = new Map<string, number>();
+  for (const work of data?.[1] ?? []) artworkCounts.set(work.exhibitionId, (artworkCounts.get(work.exhibitionId) ?? 0) + 1);
+  const { page, pages, offset } = adminPage(exhibits.length, requestedPage);
 
   const save = async (ex: Exhibition) => {
     await api.saveExhibition(ex);
@@ -59,7 +65,8 @@ export default function A03Exhibitions() {
         }
       />
       {notice && <p role="status">{notice}</p>}
-      <div className="a-card">
+      {error && <p role="alert" className="error-text">{error} <button type="button" onClick={reload}>다시 조회</button></p>}
+      <div className="a-card" aria-busy={loading}>
         <table className="a-table">
           <thead>
             <tr>
@@ -72,7 +79,7 @@ export default function A03Exhibitions() {
             </tr>
           </thead>
           <tbody>
-            {data?.[0].map((ex) => {
+            {exhibits.slice(offset, offset + ADMIN_PAGE_SIZE).map((ex) => {
               const openArtworks = () => navigate(`/admin/artworks?exhibition=${ex.id}`);
               return (
                 // 행을 누르면 그 전시의 작품 관리로 이동한다(예전 [작품 관리] 버튼과 같은 이동). 키보드는 전시명 링크로 이동.
@@ -87,7 +94,7 @@ export default function A03Exhibitions() {
                     {ex.startDate} ~ {ex.endDate}
                   </td>
                   <td>{ex.venue}</td>
-                  <td className="a-center">{data[1].filter((w) => w.exhibitionId === ex.id).length}</td>
+                  <td className="a-center">{artworkCounts.get(ex.id) ?? 0}</td>
                   <td className="a-center">
                     <span className={`badge ${ex.status}`}>{EX_STATUS_LABEL[ex.status]}</span>
                   </td>
@@ -112,11 +119,13 @@ export default function A03Exhibitions() {
                 </tr>
               );
             })}
+            {!loading && !error && !exhibits.length && <tr><td colSpan={6}>등록된 전시가 없어요.</td></tr>}
           </tbody>
         </table>
       </div>
+      <AdminPagination page={page} pages={pages} total={exhibits.length} onChange={setRequestedPage} />
 
-      {editing && <ExhibitionModal initial={editing} hasArtworks={data?.[1].some((work) => work.exhibitionId === editing.id) ?? false}
+      {editing && <ExhibitionModal initial={editing} hasArtworks={artworkCounts.has(editing.id)}
         onClose={() => setEditing(null)} onSave={save} onDelete={remove} onRefresh={reload} />}
       {posterFor && <ExhibitionPosterModal initial={posterFor} onClose={() => setPosterFor(null)} onSaved={reload} />}
     </>

@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/recommendations', views.recommendations),
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
     path('api/admin/operations', operations.dashboard),
+    path('api/admin/operations/events', operations.events),
     path('api/admin/ai-settings', openai_settings.admin_openai_settings),
     path('api/admin/exhibitions', editing.exhibitions),
     path('api/admin/exhibitions/<str:ex_id>', editing.exhibitions),

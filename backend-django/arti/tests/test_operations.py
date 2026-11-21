@@ -17,6 +17,37 @@ from arti.tests.test_provider import endpoint
 @override_settings(ARTI_ENV='test', ALLOW_TEST_FIXTURES=True, ARTI_LLM_PROVIDER='disabled',
                    ARTI_DRAFT_PROVIDER='default', ARTI_MODEL_SERVICE_URL='')
 class OperationsTests(Helpers, TestCase):
+    def test_event_filters_apply_before_pagination_and_use_seoul_time(self):
+        self.setup_clients()
+        minute = datetime(2026, 11, 21, 19, 30, tzinfo=timezone.utc)
+        partial_ids = []
+        for offset in range(14):
+            partial = OperationEvent.objects.create(
+                action='artwork_analysis', status=200, request_id=uuid4(),
+                analysis_failures=[{'field': 'tag', 'code': 'AI_TIMEOUT'}],
+            )
+            OperationEvent.objects.filter(pk=partial.pk).update(occurred_at=minute + timedelta(seconds=offset - 1))
+            partial_ids.append(str(partial.request_id))
+        OperationEvent.objects.filter(request_id=partial_ids[-1]).update(occurred_at=minute + timedelta(minutes=1))
+        clean = OperationEvent.objects.create(action='artwork_analysis', status=200, request_id=uuid4())
+        OperationEvent.objects.filter(pk=clean.pk).update(occurred_at=minute)
+        OperationEvent.objects.bulk_create([
+            OperationEvent(action='artwork_save', status=200, request_id=uuid4()) for _ in range(51)
+        ])
+
+        url = '/api/admin/operations/events'
+        filters = {'action': 'artwork_analysis', 'status': '200', 'errors': '1',
+                   'start': '2026-11-22T04:30', 'end': '2026-11-22T04:30'}
+        for page, expected in ((1, partial_ids[-2:-12:-1]), (2, partial_ids[2:0:-1])):
+            response = self.admin.get(url, {**filters, 'page': page})
+            self.assertEqual(response.status_code, 200)
+            result = response.json()
+            self.assertEqual((result['total'], result['page'], result['pages']), (12, page, 2))
+            self.assertEqual([row['requestId'] for row in result['rows']], expected)
+        self.assertIn(self.public.get(url).status_code, (401, 403))
+        for invalid in ({'status': '700'}, {'start': 'invalid'}, {'end': '2026-11-22T04:29'}):
+            self.assertEqual(self.admin.get(url, {**filters, **invalid}).status_code, 400)
+
     def test_official_text_estimate_records_only_completely_measured_requests(self):
         self.setup_clients()
         answer = {'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps({

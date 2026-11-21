@@ -25,7 +25,7 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
 import { limitReceiptDuration } from '../lib/receiptPayload';
-import type { ArtworkAnalysisResult } from '../lib/adminAnalysis';
+import type { ArtworkAnalysisField, ArtworkAnalysisResult } from '../lib/adminAnalysis';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -177,6 +177,9 @@ const enc = encodeURIComponent;
 
 export const api = {
   adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
+  adminOperationEvents: (query: URLSearchParams) => request<{
+    rows: OperationsReport['recent']; page: number; pages: number; total: number;
+  }>('GET', `/admin/operations/events?${query}`),
   adminOpenAISettings: () => request<AdminOpenAISettings>('GET', '/admin/ai-settings'),
   saveAdminOpenAISettings: (input: Pick<AdminOpenAISettings, 'enabled' | 'model' | 'revision'> & { apiKey?: string }) =>
     request<AdminOpenAISettings>('PUT', '/admin/ai-settings', input),
@@ -375,7 +378,7 @@ export const api = {
   },
 
   /** 저장된 원문으로 분석하고 새로 만든 산출물만 AI 제안으로 반영합니다. */
-  analyzeArtwork: (id: string, useImage = true, regenerateFields: ('summary' | 'guide')[] = [], useDraftImage = false) =>
+  analyzeArtwork: (id: string, useImage = true, regenerateFields: ArtworkAnalysisField[] = [], useDraftImage = false) =>
     request<ArtworkAnalysisResult>('POST', `/admin/artworks/${enc(id)}/analyze`, {
       useImage, version: versions.get(`/admin/artworks/${enc(id)}`), ...(regenerateFields.length && { regenerateFields }),
       ...(useDraftImage && { useDraftImage: true }),
