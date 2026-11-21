@@ -425,9 +425,13 @@ export const api = {
   listReactions: () => request<{total: number; items: {artworkId: string; reaction: Reaction; reason: string; date: string; visitId: string}[]}>('GET', '/admin/reactions'),
   listMemberVisits: (userId: string) => request<VisitRecord[]>('GET',
     ADMIN_READ === '/admin' ? `/admin/members/${enc(userId)}/visits` : `/users/${enc(userId)}/visits`),
-  listMembers: (query = '') =>
-    request<(User & { visitCount: number; lastVisit: string | null })[]>(
-      'GET',
-      `/admin/members${query.trim() ? `?q=${enc(query.trim())}` : ''}`,
-    ),
+  listMembers: (filters: {q: string; status: string; visits: string; offset: number; limit: number}) => {
+    const search = new URLSearchParams({
+      q: filters.q, status: filters.status, visits: filters.visits,
+      offset: String(filters.offset), limit: String(filters.limit),
+    });
+    return request<{total: number; items: AdminMember[]}>('GET', `/admin/members?${search}`);
+  },
 };
+
+export type AdminMember = User & {visitCount: number; lastVisit: string | null};

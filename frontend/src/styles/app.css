@@ -812,6 +812,48 @@ aside.a-card h2 { overflow-wrap: anywhere; }
 .a-visit-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
 .a-visit-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 10px 12px; background: #fafafa; border-radius: 8px; }
 
+.a-member-filters { align-items: flex-end; }
+.a-member-filters label { display: grid; gap: 6px; min-width: 0; font-size: 14px; font-weight: 600; }
+.a-member-filters label:first-child { flex: 1 1 240px; max-width: 360px; }
+.a-member-filters input { width: 100%; }
+.a-members-card { container-type: inline-size; }
+.a-members-table { table-layout: fixed; }
+.a-members-table th, .a-members-table td { padding-inline: clamp(8px, 1.5vw, 18px); }
+.a-members-table th { white-space: normal; overflow-wrap: anywhere; }
+.a-members-table th:first-child { width: 29%; }
+.a-members-table td, .a-member-email button { overflow-wrap: anywhere; }
+.a-member-email button { text-align: left; color: var(--ink); }
+.a-member-email button:hover { text-decoration: underline; }
+.a-member-cell-label { display: none; }
+
+@container (max-width: 620px) {
+  .a-members-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .a-members-table, .a-members-table tbody { display: block; }
+  .a-members-table .a-member-row {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px; padding: 14px; border-bottom: 1px solid var(--a-line);
+  }
+  .a-members-table .a-member-row:last-child { border-bottom: 0; }
+  .a-members-table .a-member-row td { padding: 0; border: 0; text-align: left; }
+  .a-member-cell-label { display: block; margin-bottom: 2px; color: var(--muted); font-size: 12px; }
+  .a-member-email { grid-column: 1 / -1; }
+}
+
+.a-member-dialog {
+  margin: auto; padding: 0; width: min(540px, calc(100% - 32px)); max-width: none;
+  max-height: min(720px, calc(100dvh - 32px)); border: 0; border-radius: 16px;
+  color: var(--ink); background: transparent;
+}
+.a-member-dialog::backdrop { background: rgb(20 24 28 / 48%); }
+.a-member-dialog-card { display: flex; flex-direction: column; max-height: inherit; background: #fff; }
+.a-member-dialog-card header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 20px 22px; border-bottom: 1px solid var(--a-line);
+}
+.a-member-dialog-card h2 { margin: 4px 0 0; font-size: 20px; overflow-wrap: anywhere; min-width: 0; }
+.a-member-dialog-body { padding: 20px 22px; overflow-y: auto; overscroll-behavior: contain; }
+.a-member-dialog-body h3 { font-size: 16px; margin: 0 0 8px; }
+
 .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 18, 20, 0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
 .modal { width: 520px; max-width: 100%; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
 .poster-modal { max-height: 100%; overflow: auto; }

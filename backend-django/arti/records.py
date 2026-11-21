@@ -292,9 +292,33 @@ def reactions(request):
 def members(request):
     qs=Account.objects.filter(role='user');q=request.query_params.get('q','')[:100]
     if q:qs=qs.filter(Q(email__icontains=q)|Q(nickname__icontains=q))
+    status = request.query_params.get('status', '')
+    visits = request.query_params.get('visits', '')
+    if status not in ('', 'active', 'dormant') or visits not in ('', 'with', 'without'):
+        raise ContractError(400, 'VALIDATION_ERROR', '회원 조회 필터를 확인해 주세요.')
+    if status:
+        qs = qs.filter(status=status)
     qs=qs.annotate(visit_count=Count('visit'),last_visit=Max('visit__created_at')).order_by('-created_at','id')
-    return Response([{**user_dto(a),'visitCount':a.visit_count,
-                     'lastVisit':a.last_visit.isoformat() if a.last_visit else None} for a in qs[:100]])
+    if visits == 'with':
+        qs = qs.filter(visit_count__gt=0)
+    elif visits == 'without':
+        qs = qs.filter(visit_count=0)
+
+    def rows(accounts):
+        return [{**user_dto(account), 'visitCount': account.visit_count,
+                 'lastVisit': account.last_visit.isoformat() if account.last_visit else None}
+                for account in accounts]
+
+    if 'offset' not in request.query_params and 'limit' not in request.query_params:
+        return Response(rows(qs[:100]))
+    try:
+        limit = int(request.query_params.get('limit', 10))
+        offset = int(request.query_params.get('offset', 0))
+    except ValueError:
+        raise ContractError(400, 'VALIDATION_ERROR', '목록 페이지를 확인해 주세요.')
+    if not 1 <= limit <= 100 or not 0 <= offset <= 2_147_483_647:
+        raise ContractError(400, 'VALIDATION_ERROR', '목록 페이지를 확인해 주세요.')
+    return Response({'total': qs.count(), 'items': rows(qs[offset:offset + limit])})
 
 
 @api_view(['GET'])
