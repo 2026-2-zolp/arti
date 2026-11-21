@@ -616,6 +616,8 @@ async function broadTasteTie(browser) {
     ]);
     await button(tags, '빛').waitFor();
     assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['빛']);
+    await button(tags, '인물').click();
+    await page.getByText('비교에서 나온 태그 외에 직접 더한 태그가 있어요.', { exact: false }).waitFor();
     console.log('PASS U-05 applies all picked differences without tapping tags, ignores shared evidence and keeps edits on reload');
   } finally {
     await page.close();

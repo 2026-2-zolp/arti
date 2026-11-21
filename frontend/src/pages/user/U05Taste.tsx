@@ -257,7 +257,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
               </button>
             ))}
           </div>
-          {manual && <p>고른 작품에 없는 태그를 포함했어요. 선택한 태그를 같은 비중으로 추천에 사용합니다.</p>}
+          {manual && <p>비교에서 나온 태그 외에 직접 더한 태그가 있어요. 선택한 태그는 같은 비중으로 반영해요.</p>}
           {!selected.length && <p>이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.</p>}
           {selected.length > 0 && (version === 2 || pool?.ready) && (
             <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile} blocked={blocked} />
