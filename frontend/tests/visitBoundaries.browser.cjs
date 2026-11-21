@@ -852,6 +852,62 @@ async function savedV2(browser) {
   }
 }
 
+async function compactExhibitionPoster(browser) {
+  const venue = '예술의전당 한가람디자인미술관 제1~3전시실';
+  const actions = [
+    ['전시 순서로 바로 보기', '/artwork'],
+    ['내 취향으로 추천', '/entry'],
+  ];
+  for (const [label, destination] of actions) {
+    const context = await browser.newContext({
+      ...pageOptions, viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true,
+    });
+    try {
+      const page = await openPage(browser, context);
+      await page.route(`**/api${exhibition}`, async route => {
+        const response = await route.fetch();
+        const detail = await body(response);
+        await route.fulfill({ response, json: {
+          ...detail, venue, startDate: '2026-09-22', endDate: '2027-01-20', posterFile: 'portrait.svg',
+        } });
+      });
+      await page.route('**/api/uploads/portrait.svg', route => route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1000"><rect width="750" height="1000" fill="#501627"/></svg>',
+      }));
+      await page.goto(exhibition);
+      for (const [name] of actions) await button(page, name).waitFor();
+      await page.waitForFunction(() => document.querySelector('.exhibition-poster')?.naturalHeight === 1000);
+      await page.evaluate(() => document.fonts.ready);
+
+      const info = page.locator('.current-ex-meta > span');
+      assert.deepEqual(await info.allTextContents(), [venue, '2026.09.22 – 2027.01.20']);
+      const [venueBox, dateBox] = await Promise.all([info.first().boundingBox(), info.last().boundingBox()]);
+      assert(dateBox.y >= venueBox.y + venueBox.height, 'dates appear below the venue');
+      const layout = await page.evaluate(() => {
+        const poster = document.querySelector('.exhibition-poster');
+        const footer = document.querySelector('.m-footer');
+        const image = poster.getBoundingClientRect();
+        const visible = [...footer.querySelectorAll('button')].filter(control => {
+          const rect = control.getBoundingClientRect();
+          const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+          return !control.disabled && rect.top >= 0 && rect.bottom <= window.innerHeight && control.contains(hit);
+        });
+        return { scroll: window.scrollY, fit: getComputedStyle(poster).objectFit,
+          posterClear: image.top >= 0 && image.bottom <= footer.getBoundingClientRect().top,
+          visible: visible.map(control => control.textContent) };
+      });
+      assert.deepEqual(layout, { scroll: 0, fit: 'contain', posterClear: true, visible: actions.map(([name]) => name) });
+      const target = await button(page, label).boundingBox();
+      await page.touchscreen.tap(target.x + target.width / 2, target.y + target.height / 2);
+      await page.waitForURL('**' + exhibition + destination);
+    } finally {
+      await context.close();
+    }
+  }
+  console.log('PASS QR poster at 320×568: venue/period separate, full portrait, both actions tappable without scrolling');
+}
+
 async function exhibitionOrder(browser, memberVisit) {
   const page = await openPage(browser);
   const errors = [];
@@ -2182,6 +2238,7 @@ async function spainNextArtwork(browser) {
     if (suite === 'operations') return await operationsLog(browser);
     if (suite === 'password-reset') return await passwordReset(browser);
     if (suite === 'exhibition-order') {
+      await compactExhibitionPoster(browser);
       await exhibitionOrder(browser, false);
       await exhibitionOrder(browser, true);
       await exhibitionOrderV2(browser);

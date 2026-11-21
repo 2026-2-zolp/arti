@@ -183,8 +183,14 @@ h1, h2, h3, p { margin: 0; }
 /* ---------- U-01 ---------- */
 .hero-illust { width: 100%; height: auto; display: block; margin: 4px 0 28px; }
 .exhibition-poster { max-height: min(46svh, 24rem); object-fit: contain; background: var(--surface-2); border-radius: 18px; }
+@media (max-height: 600px) {
+  .m-shell[data-screen='U-01'] .m-body:has(> .exhibition-poster) > .lead { margin-block: 8px 12px; }
+  .m-shell[data-screen='U-01'] .exhibition-poster { max-height: 36svh; margin-bottom: 16px; }
+}
 .current-ex { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; }
 .current-ex strong { font-size: 20px; }
+.current-ex-meta { display: grid; }
+.current-ex-period { white-space: nowrap; }
 .resume-card { margin-top: 20px; padding: 16px; border-radius: var(--radius); background: var(--accent-soft); display: flex; flex-direction: column; gap: 6px; }
 .resume-card strong { color: var(--accent); }
 .ex-list-head { margin: 0 6px 10px; }
