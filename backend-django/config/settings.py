@@ -67,9 +67,33 @@ EMAIL_TIMEOUT = 10
 
 # Server only. No key/model is required to boot or run normal CI.
 ARTI_LLM_PROVIDER = os.environ.get('ARTI_LLM_PROVIDER', 'disabled')
+ARTI_DOCENT_TRANSCRIPTS_ENABLED = os.environ.get('ARTI_DOCENT_TRANSCRIPTS_ENABLED', 'false').lower() == 'true'
+ARTI_DOCENT_COLLECTION_TOOL_EXHIBITIONS = frozenset(
+    item.strip() for item in os.environ.get('ARTI_DOCENT_COLLECTION_TOOL_EXHIBITIONS', '').split(',') if item.strip()
+)
+ARTI_DOCENT_LIVE_COLLECTION_EXHIBITIONS = frozenset(
+    item.strip() for item in os.environ.get('ARTI_DOCENT_LIVE_COLLECTION_EXHIBITIONS', '').split(',') if item.strip()
+)
+ARTI_DOCENT_VISIT_CONTEXT_EXHIBITIONS = frozenset(
+    item.strip() for item in os.environ.get('ARTI_DOCENT_VISIT_CONTEXT_EXHIBITIONS', '').split(',') if item.strip()
+)
+ARTI_DOCENT_AUDIO_EXHIBITIONS = frozenset(
+    item.strip() for item in os.environ.get('ARTI_DOCENT_AUDIO_EXHIBITIONS', '').split(',') if item.strip()
+)
+ARTI_DOCENT_LISTENING_EXHIBITIONS = frozenset(
+    item.strip() for item in os.environ.get('ARTI_DOCENT_LISTENING_EXHIBITIONS', '').split(',') if item.strip()
+)
+if ARTI_ENV == 'test' and ARTI_DOCENT_LISTENING_EXHIBITIONS:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {'voice_trial': {'class': 'logging.StreamHandler'}},
+        'loggers': {'arti.docent_audio.trial': {'handlers': ['voice_trial'], 'level': 'INFO', 'propagate': False}},
+    }
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')
 OPENAI_MODEL = os.environ.get('OPENAI_MODEL', '')
+ARTI_AI_SETTINGS_ENCRYPTION_KEY = os.environ.get('ARTI_AI_SETTINGS_ENCRYPTION_KEY', '').strip()
 ARTI_LLM_MODELS = {kind: os.environ.get('ARTI_LLM_MODEL_' + kind.upper(), '')
                    for kind in ('answer', 'explanation', 'summary', 'guide', 'interpret')}
 ARTI_LLM_JSON_MODE = os.environ.get('ARTI_LLM_JSON_MODE', 'true').lower() == 'true'

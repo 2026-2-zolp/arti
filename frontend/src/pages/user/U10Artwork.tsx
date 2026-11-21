@@ -9,11 +9,13 @@ import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
-import { api, ApiError } from '../../api/client';
+import { api, ApiError, artworkNarrationUrl } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
 import { hasAppHistory, useCloseWatcher, useVisitHistory, visitEntry } from '../../lib/appHistory';
 import { useSpeech } from '../../lib/useSpeech';
+import { disableVisitListening, noteArtworkAudioStarted, visitListening } from '../../lib/visitListening';
+import { narrationClip, useDemoNarration } from '../../lib/demoNarration';
 import { reasonSentence } from '../../lib/recommend';
 import { topEmotionLabels } from '../../components/EmotionBars';
 import { useVisit } from '../../store/VisitContext';
@@ -54,6 +56,7 @@ export default function U10Artwork() {
   const [summaryOn, setSummaryOn] = useState(false); // 원문 자리에 AI 요약을 보여 주는 중
   const [openHints, setOpenHints] = useState<number[]>([]); // 관람가이드에서 힌트를 펼친 질문 번호
   const [fullscreen, setFullscreen] = useState(false);
+  const [, refreshListening] = useState(0);
   const descRef = useRef<HTMLParagraphElement>(null);
   const advancing = useRef(false);
   const tts = useSpeech();
@@ -73,6 +76,7 @@ export default function U10Artwork() {
     [rec?.artworkId, exhibitionId, visitId, requestGeneration, state.user?.id],
   );
   const w = data?.visitId === visitId && data.generation === requestGeneration ? data.artwork : null;
+  const narration = useDemoNarration(w);
   const unavailable = !!rec && data?.unavailableId === rec.artworkId;
 
   const readingKey = w ? scopeKey(state, w.id, w.contentVersion ?? 1) + '.reading' : '';
@@ -103,6 +107,7 @@ export default function U10Artwork() {
   }, [w?.description, tab, summaryOn, expanded]);
 
   const recId = rec?.artworkId;
+  useLayoutEffect(() => tts.stop, [tts.stop, recId, w?.contentVersion]);
   const viewingId = !loading && !error && w?.id === recId ? recId : undefined;
   const enteredAt = useRef<number | null>(null);
 
@@ -219,7 +224,7 @@ export default function U10Artwork() {
   const tabText = (): string => {
     if (!w) return '';
     if (tab === 'desc') return showSummary ? w.summary : w.description;
-    return [guideIntro, ...questions.map((q, i) => `${i + 1}. ${q}`)].filter(Boolean).join(' ');
+    return [guideIntro, ...questions].filter(Boolean).join(' ');
   };
 
   const toggleHint = (i: number) => setOpenHints((o) => (o.includes(i) ? o.filter((x) => x !== i) : [...o, i]));
@@ -239,7 +244,22 @@ export default function U10Artwork() {
     save(readingKey, {tab, summaryOn, expanded, openHints, scroll: document.querySelector('.m-body')?.scrollTop ?? 0, entry}, 'session');
     navigate(to('/artwork/ask'), { state: { fromArtwork: true, visitEntry: visitEntry(state) } });
   };
-  const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`));
+  const recording = tab === 'guided' ? narration?.guide : showSummary ? undefined : narration?.original;
+  const narrationKind = tab === 'guided' ? 'guide' : 'description';
+  const version = showSummary && tab === 'desc' ? undefined : w?.narrationVersions?.[narrationKind];
+  const clip = w && version ? artworkNarrationUrl(w.id, narrationKind, version)
+    : recording?.text === tabText() ? narrationClip(recording) : undefined;
+  const listening = w?.docentListeningAvailable ? visitListening(state) : null;
+  const offerListening = w?.docentListeningAvailable && listening === null;
+  const toggleSpeech = () => (tts.speaking ? tts.stop() : tts.speak(`${w?.title}. ${tabText()}`, clip, undefined, undefined,
+    offerListening ? () => {
+      noteArtworkAudioStarted(state);
+      refreshListening(version => version + 1);
+    } : undefined));
+  const turnOffListening = () => {
+    disableVisitListening(state);
+    refreshListening(version => version + 1);
+  };
 
   return (
     <MobileShell
@@ -296,14 +316,23 @@ export default function U10Artwork() {
         <Spinner />
       ) : (
         <>
-          <div className="art-frame">
-            <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={3 / 2} />
-            <button className="frame-btn" aria-label="전체 화면" onClick={() => setFullscreen(true)}>
-              <Icon name="expand" size={18} />
-            </button>
-          </div>
+          {/* 작품이 잘리지 않게 전체를 보여 준다(U-05 취향 조사 카드와 같은 방식). 비율이 다른 작품은 틀 안에 여백이 생긴다. */}
+          {!w.showImage ? (
+            w.referenceUrl?.startsWith('https://') ? (
+              <a className="btn outline block" href={w.referenceUrl} target="_blank" rel="noreferrer">작품 출처 보기</a>
+            ) : (
+              <p className="muted small">표시할 도판이 없어요.</p>
+            )
+          ) : (
+            <div className="art-frame">
+              <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={3 / 2} fit="contain" />
+              <button className="frame-btn" aria-label="전체 화면" onClick={() => setFullscreen(true)}>
+                <Icon name="expand" size={18} />
+              </button>
+            </div>
+          )}
           {/* 크게 보기: 작품 전체를 보여 주고 확대·축소·이동할 수 있다(U-05 비교 카드와 공통 화면). */}
-          {fullscreen && (
+          {fullscreen && w.showImage && (
             <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} onClose={() => setFullscreen(false)} />
           )}
 
@@ -441,7 +470,8 @@ export default function U10Artwork() {
           </div>
 
           <div className="action-row">
-            <button className="btn outline" onClick={toggleSpeech} disabled={!tts.supported}>
+            <button className="btn outline" onClick={toggleSpeech} disabled={!tts.supported && !clip}
+              aria-describedby={version ? 'artwork-narration-notice' : offerListening ? 'docent-guide-listening-notice' : undefined}>
               <Icon name={tts.speaking ? 'stop' : 'speaker'} size={20} />
               {tts.speaking ? '재생 중지' : '음성 설명 듣기'}
             </button>
@@ -449,6 +479,10 @@ export default function U10Artwork() {
               <Icon name="chat" size={20} /> {tab === 'guided' ? '작품에 대해 질문하기' : '이 부분 더 알아보기'}
             </button>
           </div>
+          {version && <p id="artwork-narration-notice" className="muted small">AI 음성</p>}
+          {offerListening && <p id="docent-guide-listening-notice" className="muted small">음성 설명을 재생하면 새 도슨트 답변을 OpenAI 음성 서비스로 보내 미리 준비해요.</p>}
+          {listening === 'on' && <button className="text-btn small" onClick={turnOffListening}>답변 음성 미리 준비 끄기</button>}
+          {listening === 'off' && <p className="muted small" role="status">답변 음성을 미리 준비하지 않아요. 필요할 때 들을 수 있어요.</p>}
           {tts.error && <p className="muted small" role="status">{tts.error}</p>}
 
         </>

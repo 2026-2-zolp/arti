@@ -28,6 +28,7 @@ def serve(suite=None):
     if suite == 'password-reset':
         with override_settings(ARTI_PASSWORD_RESET_ORIGIN='http://127.0.0.1:1',
                                ARTI_PASSWORD_RESET_FROM='reset@example.test',
+                               ARTI_DOCENT_TRANSCRIPTS_ENABLED=True,
                                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             return run_loopback(reset_mail_application())
     if suite == 'operations':

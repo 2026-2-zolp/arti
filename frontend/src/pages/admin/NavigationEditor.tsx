@@ -28,6 +28,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   const [layout, setLayout] = useState<NavigationLayoutInput>(() => ({
     ...emptyLayout,
     ...Object.fromEntries(categoryKeys.map(key => [key, exhibition.navigationLayout?.[key] ?? []])),
+    example: exhibition.navigationLayout?.example,
   }));
   const [category, setCategory] = useState<Category>('walkable');
   const [corner, setCorner] = useState<MapPoint | null>(null);
@@ -89,7 +90,7 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
     if (hasGeometry && !await confirmAction('편집 중인 이동 구조를 두 전시실 프리셋으로 바꿀까요?', {
       confirm: '프리셋으로 바꾸기',
     })) return;
-    setLayout(structuredClone(twoRoomNavigationPreset));
+    setLayout({ ...structuredClone(twoRoomNavigationPreset), example: true });
     setCategory('walkable');
     setCorner(null);
     setFitting(false);
@@ -139,39 +140,45 @@ export default function NavigationEditor({ exhibition, artworks, onSaved, onConf
   };
 
   return (
-    <section className="a-card pad stack gap-10" aria-label="이동 구조 편집">
-      <h3>이동 구조 편집</h3>
-      <p className="muted small">도면 버전 {revision} · 사각형은 마주 보는 모서리 두 곳, 연결점은 한 곳을 누르세요. 벽은 문이 있는 곳에서 나눠 그리세요.</p>
-      <div>
+    <section className="a-map-editor stack gap-12" aria-label="이동 구조 편집">
+      <div className="a-map-editor-heading">
+        <h3>이동 구조 편집</h3>
+        <span className="muted small">도면 버전 {revision}</span>
+      </div>
+      <div className="a-map-editor-tools" role="group" aria-label="예시 배치와 원본 도면">
         <button type="button" className="a-btn" disabled={busy || !!message?.conflict}
           onClick={() => void loadPreset()}>복도로 연결된 두 전시실 불러오기</button>
-      </div>
-      {exhibition.floorPlan && layout.walkable.length > 0 && (
-        <div>
+        <label><input type="checkbox" checked={layout.example === true} disabled={busy || !!message?.conflict}
+          onChange={event => setLayout({ ...layout, example: event.target.checked })} /> 검수용 예시 배치</label>
+        {exhibition.floorPlan && layout.walkable.length > 0 && (
           <button type="button" className="a-btn" disabled={busy || !!message?.conflict || (!fitting && corner !== null)} onClick={() => {
             setFitting(!fitting);
             if (!fitting) setReference(true);
             setCorner(null);
             setMessage(null);
           }}>{fitting ? '맞추기 취소' : '원본 도면에 맞추기'}</button>
-        </div>
-      )}
-      <div className="a-inline">
-        <select aria-label="이동 구조 종류" value={category} disabled={fitting} onChange={event => {
-          setCategory(event.target.value as Category); setCorner(null);
-        }}>
-          {categoryKeys.map(key => <option key={key} value={key}>{categories[key]} ({layout[key].length})</option>)}
-        </select>
+        )}
+        {exhibition.floorPlan && <label><input type="checkbox" checked={reference} disabled={fitting}
+          onChange={event => setReference(event.target.checked)} /> 원본 도면 겹쳐 보기</label>}
+      </div>
+      <div className="a-map-editor-tools" role="group" aria-label="도면에 구조물 그리기">
+        <label>
+          <strong>그릴 구조물</strong>
+          <select aria-label="이동 구조 종류" value={category} disabled={fitting} onChange={event => {
+            setCategory(event.target.value as Category); setCorner(null);
+          }}>
+            {categoryKeys.map(key => <option key={key} value={key}>{categories[key]} ({layout[key].length})</option>)}
+          </select>
+        </label>
         <button type="button" className="a-btn" disabled={fitting || busy || (!corner && !layout[category].length)} onClick={() => {
           if (corner) setCorner(null);
           else setLayout({ ...layout, [category]: layout[category].slice(0, -1) });
         }}>마지막 입력 취소</button>
-        {exhibition.floorPlan && <label><input type="checkbox" checked={reference} disabled={fitting}
-          onChange={event => setReference(event.target.checked)} /> 원본 도면 겹쳐 보기</label>}
       </div>
       <p className="small" role="status">{corner ? '반대쪽 모서리를 선택해 주세요.' : fitting
         ? '원본 도면에서 이동 구조가 들어갈 영역의 첫 모서리를 선택해 주세요.'
         : `${categories[category]} 위치를 선택해 주세요.`}</p>
+      <p className="muted small">사각형은 마주 보는 모서리 두 곳을 선택하세요. 연결점은 한 곳만 선택하고, 벽은 문이 있는 곳에서 나눠 그리세요.</p>
       {(suggestions.length > 0 || (layout.doors.length > 0 && layout.corridors.length > 0)) && (
         <div>
           <button type="button" className="a-btn" disabled={fitting || busy || corner !== null || !!message?.conflict || suggestions.length === 0}

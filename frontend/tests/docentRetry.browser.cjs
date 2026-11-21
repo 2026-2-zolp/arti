@@ -63,7 +63,7 @@ async function journey(page, { useClock = false, enterDocent = true, checkViewer
   });
   if (useClock) await page.clock.install();
   await page.goto(exhibition, { waitUntil: 'domcontentloaded' });
-  await button('관람 시작하기').click();
+  await button('관람 시작하기').or(button('내 취향으로 추천')).click();
   await button('비회원으로 계속').click();
   for (let i = 1; i <= 5; i++) {
     await page.getByText(i + '/5', { exact: true }).waitFor();
@@ -132,6 +132,113 @@ async function newPage(browser, context) {
   return page;
 }
 
+async function inspectFirstKeyboardAndMultiline(browser) {
+  const context = await browser.newContext({ ...pageOptions, isMobile: true, hasTouch: true });
+  const page = await newPage(browser, context);
+  try {
+    // Emulate the browser's geometry events separately from the initial touch focus.
+    await page.addInitScript(() => {
+      const viewport = window.visualViewport;
+      const normalHeight = Object.getOwnPropertyDescriptor(VisualViewport.prototype, 'height').get;
+      let testHeight;
+      Object.defineProperty(viewport, 'height', { get: () => testHeight ?? normalHeight.call(viewport) });
+      window.setDocentTestViewportHeight = height => {
+        testHeight = height;
+        viewport.dispatchEvent(new Event('resize'));
+      };
+    });
+    const { button, input, send, chat, askRequests, respondTo, pageErrors } = await journey(page);
+    const shell = page.locator('[data-screen="U-11"]');
+    const setHeight = height => page.evaluate(height => window.setDocentTestViewportHeight(height), height);
+    const focusWithoutResize = () => input.evaluate(el => {
+      el.focus({ preventScroll: true });
+      return el.closest('[data-screen]').dataset.keyboard;
+    });
+    assert.equal(await focusWithoutResize(), 'opening', 'initial touch focus reserves space before resize');
+    await page.waitForTimeout(675);
+    assert.equal(await shell.getAttribute('data-keyboard'), 'opening', 'late resize keeps the first-open clearance');
+    await setHeight(430);
+    assert.equal(await shell.getAttribute('data-keyboard'), 'open');
+    assert.equal(await shell.locator('footer').evaluate(el => getComputedStyle(el).paddingBottom), '40px');
+    assert.ok((await send.boundingBox()).y + (await send.boundingBox()).height <= 430 - 36);
+    await setHeight(null);
+    await page.waitForFunction(() => document.querySelector('[data-screen="U-11"]')?.dataset.keyboard === 'closed');
+    const firstLine = '화면 왼쪽의 밝은 부분은';
+    const secondLine = '어디에서 볼 수 있나요?';
+    await input.fill(firstLine);
+    await input.press('End');
+    await input.press('Enter');
+    await input.press('End');
+    await page.keyboard.insertText(secondLine);
+    const question = firstLine + '\n' + secondLine;
+    assert.equal(await input.inputValue(), question, 'Enter inserts a newline');
+    assert.equal(askRequests.length, 0);
+    assert.equal(await page.locator('.chat-input-box').evaluate(el => el.classList.contains('is-multiline')), true);
+    await input.evaluate(el => el.blur());
+    assert.equal(await focusWithoutResize(), 'opening');
+    assert.equal((await respondTo(() => send.tap())).status(), 200, 'touch sends before the first keyboard resize');
+    assert.equal(askRequests.length, 1);
+    assert.equal(askRequests[0].postDataJSON().question, question);
+    await chat.locator('.bubble.user').waitFor();
+    await button('뒤로가기').click();
+    await button('이 부분 더 알아보기').click();
+    await input.waitFor();
+    assert.equal(await focusWithoutResize(), 'opening', 'the first focus works after leaving and re-entering');
+    await setHeight(430);
+    assert.equal(await shell.getAttribute('data-keyboard'), 'open');
+    assert.deepEqual(pageErrors, []);
+    console.log('PASS touch focus before viewport resize, keyboard close, re-entry, and multiline submission');
+  } finally {
+    await context.close();
+  }
+}
+
+async function inspectKeyboardGeometry(browser) {
+  const context = await browser.newContext({ ...pageOptions, isMobile: true, hasTouch: true });
+  const page = await newPage(browser, context);
+  try {
+    await page.addInitScript(() => {
+      const keyboard = Object.assign(new EventTarget(), { overlaysContent: false, boundingRect: new DOMRect() });
+      Object.defineProperty(navigator, 'virtualKeyboard', { value: keyboard });
+      window.setDocentKeyboardTop = top => {
+        keyboard.boundingRect = top === null ? new DOMRect() : new DOMRect(0, top, innerWidth, innerHeight - top);
+        keyboard.dispatchEvent(new Event('geometrychange'));
+      };
+    });
+    const { input, send, button, artwork, titles } = await journey(page);
+    const shell = page.locator('[data-screen="U-11"]');
+    const setTop = top => page.evaluate(top => window.setDocentKeyboardTop(top), top);
+    assert.equal(await page.evaluate(() => navigator.virtualKeyboard.overlaysContent), true);
+
+    const assertClearance = async top => {
+      await setTop(top);
+      assert.equal(await shell.getAttribute('data-keyboard'), 'open');
+      assert.equal(await shell.getAttribute('data-keyboard-geometry'), 'virtual-keyboard');
+      const box = await page.locator('.chat-input-box').boundingBox();
+      const sendBox = await send.boundingBox();
+      assert.ok(top - box.y - box.height >= 11 && top - box.y - box.height <= 20);
+      assert.ok(sendBox.y + sendBox.height < top);
+      assert.ok(await page.evaluate(() => window.visualViewport.height) > top);
+    };
+
+    await input.tap();
+    assert.equal(await shell.getAttribute('data-keyboard'), 'opening');
+    await assertClearance(431);
+    await setTop(null);
+    assert.equal(await input.evaluate(node => document.activeElement === node), true, 'IME can close without blur');
+    assert.equal(await shell.getAttribute('data-keyboard'), 'closed');
+    await input.tap();
+    assert.equal(await shell.getAttribute('data-keyboard'), 'opening');
+    await assertClearance(395);
+    await button('뒤로가기').tap();
+    await artwork(titles[0]).waitFor();
+    assert.equal(await page.evaluate(() => navigator.virtualKeyboard.overlaysContent), false);
+    console.log('PASS first and reopened keyboard geometry · composer and send above the boundary');
+  } finally {
+    await context.close();
+  }
+}
+
 async function inspectJourney(browser, status, code) {
   const page = await newPage(browser);
   try {
@@ -170,7 +277,7 @@ async function inspectJourney(browser, status, code) {
         const shell = document.querySelector('[data-screen="U-11"]');
         const body = shell?.querySelector('main')?.getBoundingClientRect();
         const card = shell?.querySelector('.docent-error-card')?.getBoundingClientRect();
-        const controls = [...(shell?.querySelectorAll('.docent-error-card button, .chat-input input, .send-btn') ?? [])];
+        const controls = [...(shell?.querySelectorAll('.docent-error-card button, .chat-input textarea, .send-btn') ?? [])];
         return body && card && card.top >= body.top - 1 && card.bottom <= body.bottom + 1
           && controls.length === 3 && controls.every(control => {
             const rect = control.getBoundingClientRect();
@@ -185,7 +292,7 @@ async function inspectJourney(browser, status, code) {
       assert.equal(await retry.isDisabled(), true, 'Retry-After blocks retry');
       assert.equal(await send.isDisabled(), true, 'Retry-After blocks a new submission');
       assert.match(await error.textContent(), /30초/);
-      await input.press('Enter');
+      // 11-20 사용자 결정: 질문 글상자의 엔터는 줄바꿈이고 보내기는 [보내기] 버튼으로만 한다(엔터로 보내는지 따로 확인하지 않음).
       await page.clock.fastForward((seconds - 1) * 1000);
       assert.equal(await retry.isDisabled(), true);
       assert.equal(askRequests.length, 2);
@@ -321,6 +428,22 @@ async function inspectEvidenceLimits(browser) {
     assert.equal(await button('다시 시도').count(), 0);
     assert.equal(await input.inputValue(), '');
 
+    await input.fill('[합성 근거 부족] 색의 차이는 어디에서 살펴볼까요?');
+    const observationResponse = await respondTo(() => send.click());
+    assert.equal(observationResponse.status(), 200);
+    const observation = await observationResponse.json();
+    assert.equal(observation.mode, 'fallback');
+    assert.deepEqual(observation.sourceRefs, []);
+    const guidance = chat.locator('.bubble.ai').filter({ hasText: observation.answer });
+    await guidance.getByText('일반 관찰 안내 (AI 생성 아님)', { exact: true }).waitFor();
+    const openArtwork = guidance.getByRole('button', { name: '도판 크게 보기', exact: true });
+    await openArtwork.click();
+    const viewer = page.getByRole('dialog', { name: titles[0] + ' 크게 보기', exact: true });
+    await viewer.locator('img').waitFor();
+    await page.keyboard.press('Escape');
+    await viewer.waitFor({ state: 'hidden' });
+    assert.equal(await openArtwork.evaluate(element => element === document.activeElement), true);
+
     await input.fill('이 작품은 어디부터 보면 좋을까요?');
     const recovered = await respondTo(() => send.click());
     assert.equal(recovered.status(), 200);
@@ -337,7 +460,7 @@ async function inspectEvidenceLimits(browser) {
     await button('뒤로가기').click();
     await artwork(titles[0]).waitFor();
     assert.deepEqual(pageErrors, []);
-    console.log('PASS 근거 부족 안내와 다른 작품 출처 배제');
+    console.log('PASS 근거 부족 안내, 도판 크게 보기와 포커스 복귀, 다른 작품 출처 배제');
   } finally {
     await page.close();
   }
@@ -477,17 +600,19 @@ async function inspectReadingAndContinuing(browser) {
     const reply = await response.json();
     assert.deepEqual(reply.sourceRefs, sourceRefs);
     await chat.locator('.bubble.user').getByText(question, { exact: true }).waitFor();
-    const latest = button('최신 대화 보기');
-    await latest.waitFor();
-    assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'the new reply preserves reading position');
+    await conversation.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.ok(Math.abs((await position()).top - readingTop) <= 2, 'the new answer preserves the old reading position');
 
+    const latest = button('최신 대화 보기');
+    await latest.waitFor({ state: 'visible' });
+    assert.equal(await latest.getAttribute('title'), '새 답변이 있어요');
     await latest.click();
     await latest.waitFor({ state: 'hidden' });
     assert.ok((await position()).remaining < 24);
     assert.equal(await chat.evaluate(log => document.activeElement === log), true);
     assert.equal(await chat.locator('.bubble.user').count(), 5);
     assert.deepEqual(pageErrors, []);
-    console.log('PASS older reply stays in place while sending and receiving; artwork, visit and four prior exchanges stay aligned');
+    console.log('PASS older reply stays in place while sending and receiving; latest arrow, artwork, visit and four prior exchanges stay aligned');
   } finally {
     await page.close();
   }
@@ -635,6 +760,7 @@ async function inspectTwoTabs(browser, secondArtworkIndex = 1) {
       question: nextQuestionB,
       visitId: b.before.visitId,
       entryContext: replyB.request().postDataJSON().entryContext,
+      docentEvidenceRevision: 0,
       history: [{ role: 'user', text: questionB }, { role: 'assistant', text: bodyB.answer }],
     });
     assert.deepEqual((await continued.json()).sourceRefs, bodyB.sourceRefs);
@@ -712,7 +838,7 @@ async function inspectEntryContexts(browser) {
       assert.equal(new URL(recovered.url()).pathname, `/api/artworks/${artworkId}/ask`);
       const payload = failed.request().postDataJSON();
       assert.deepEqual(payload, {
-        question, entryContext: entry, visitId: before.visitId, history: expectedHistory,
+        question, entryContext: entry, visitId: before.visitId, history: expectedHistory, docentEvidenceRevision: 0,
       });
       assert.deepEqual(recovered.request().postDataJSON(), payload);
       const reply = await recovered.json();
@@ -754,6 +880,25 @@ async function inspectEntryContexts(browser) {
     await artwork(titles[0]).waitFor();
     await selected.getByText(confirmedHint, { exact: false }).waitFor();
     console.log('PASS AI 힌트 · 동일 질문과 가이드 리비전 · 별도 입력 초안 보존');
+
+    const firstGuide = '합성 첫 관찰 질문';
+    await button('1번 질문으로 대화하기').click();
+    const activeGuide = chat.locator('section[aria-labelledby="docent-question-heading"]');
+    await activeGuide.getByText(firstGuide, { exact: true }).waitFor();
+    const guideOrder = () => chat.locator('.bubble').evaluateAll(nodes => ({
+      latestAnswer: nodes.map(node => node.textContent ?? '').findLastIndex(text => text.includes('합성 근거 · ')),
+      activeGuide: nodes.findIndex(node => node.getAttribute('aria-labelledby') === 'docent-question-heading'),
+    }));
+    const beforeReload = await guideOrder();
+    assert.ok(beforeReload.latestAnswer >= 0 && beforeReload.activeGuide > beforeReload.latestAnswer);
+    await chat.getByRole('region', { name: '지난 관찰 질문' }).getByText(selectedQuestion, { exact: true }).waitFor();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await activeGuide.getByText(firstGuide, { exact: true }).waitFor();
+    assert.deepEqual(await guideOrder(), beforeReload);
+    assert.equal(await input.inputValue(), hintDraft);
+    await button('뒤로가기').click();
+    await artwork(titles[0]).waitFor();
+    console.log('PASS 새 관찰 질문이 기존 답변 아래에 붙고 새로고침 후 위치와 미전송 초안 보존');
 
     await page.getByRole('tab', { name: '작품 해설' }).click();
     await button('AI 요약 보기').click();
@@ -840,7 +985,7 @@ async function inspectEntryContexts(browser) {
       assert.equal(fresh.status(), 200);
       assert.deepEqual(fresh.request().postDataJSON(), {
         question, entryContext: { ...entry, contentVersion: work.contentVersion },
-        visitId: before.visitId, history: [],
+        visitId: before.visitId, history: [], docentEvidenceRevision: 0,
       });
       const reply = await fresh.json();
       assert.equal(reply.answer, '합성 근거 · ' + newEvidence);
@@ -868,6 +1013,39 @@ async function inspectEntryContexts(browser) {
   }
 }
 
+async function inspectSafetyNotice(browser) {
+  const page = await newPage(browser);
+  const risk = '합성 안전 알림 검증 질문';
+  const notice = '그 요청은 도와드릴 수 없어요. 작품에서 궁금한 점은 같이 살펴볼 수 있어요.';
+  try {
+    const flow = await journey(page);
+    const asks = [];
+    await page.route('**/api/artworks/*/ask', async route => {
+      const data = route.request().postDataJSON();
+      asks.push(data);
+      const json = data.question === risk
+        ? { answer: notice, safetyNotice: true, mode: 'refusal', sourceRefs: [] }
+        : { answer: '다음 정상 감상 답변', mode: 'llm', sourceRefs: [] };
+      await route.fulfill({ status: 200, json });
+    });
+    await flow.input.fill(risk);
+    await flow.send.click();
+    await flow.chat.getByText(notice, { exact: false }).waitFor();
+    assert.equal(await flow.chat.getByText(risk, { exact: true }).count(), 0);
+    assert.equal(await flow.chat.getByRole('button', { name: '답변 듣기' }).count(), 0);
+    assert.equal(await flow.input.inputValue(), '');
+    assert.equal(await page.evaluate(text => Object.values(sessionStorage).some(value => value.includes(text)), risk), false);
+    await flow.input.fill('색을 어떻게 비교하나요?');
+    await flow.send.click();
+    await flow.chat.getByText('다음 정상 감상 답변', { exact: false }).waitFor();
+    assert.deepEqual(asks[1].history, []);
+    assert.equal(await flow.chat.getByText(notice, { exact: false }).count(), 0);
+    console.log('PASS safety notice: transient, no playback or saved context, next regular question works');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   assert.equal(new URL(baseURL).hostname, '127.0.0.1', 'use a local preview');
   const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -885,6 +1063,9 @@ async function inspectEntryContexts(browser) {
           ...[[502, 'PROVIDER_ERROR'], [429, 'RATE_LIMITED'], [504, 'AI_TIMEOUT']]
             .map(([status, code]) => [status, browser => inspectJourney(browser, status, code)]),
           ['근거 부족과 혼합 출처', inspectEvidenceLimits],
+          ['첫 키보드와 여러 줄 입력', inspectFirstKeyboardAndMultiline],
+          ['첫 키보드와 재열기 경계', inspectKeyboardGeometry],
+          ['안전 안내와 다음 질문', inspectSafetyNotice],
         ];
     for (const [, check] of checks) {
       failureDetails = [];

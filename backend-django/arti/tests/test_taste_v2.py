@@ -371,8 +371,10 @@ class TasteReceiptMigrationTests(TransactionTestCase):
             profile = {'version': 1, 'counts': {'warm': 2}, 'selectedTags': ['warm']}
             old.objects.create(id='legacy-tp2', login_id='legacy-tp2', role='user', password='fixture',
                                tastes=['warm'], taste_profile=profile, taste_profile_version=4)
-            MigrationExecutor(connection).migrate(after)
-            account = Account.objects.get(pk='legacy-tp2')
+            executor = MigrationExecutor(connection)
+            executor.migrate(after)
+            migrated = executor.loader.project_state(after).apps.get_model('arti', 'Account')
+            account = migrated.objects.get(pk='legacy-tp2')
             self.assertEqual((account.tastes, account.taste_profile, account.taste_profile_version, account.taste_write_receipt),
                              (['warm'], profile, 4, None))
         finally:

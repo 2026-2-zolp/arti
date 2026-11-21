@@ -17,7 +17,7 @@ import { AI_STATUS_LABEL, TAG_KEYS, TAG_THRESHOLD, TASTE_LABEL } from '../../dat
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
 import { useProtectedImage } from '../../lib/useProtectedImage';
 import { EmotionBars } from '../../components/EmotionBars';
-import type { AiStatus, Artwork, ReviewStatus, TasteTag } from '../../types';
+import type { AiStatus, Artwork, DocentCollectionDraft, DocentCollectionReview, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
 
@@ -304,6 +304,7 @@ export function ArtworkEdit() {
   };
 
   return (
+    <>
     <form onSubmit={submit}>
       <PageHead
         title="작품 등록·수정"
@@ -408,13 +409,107 @@ export function ArtworkEdit() {
           <p className="muted small">검수 완료 + 위치 등록된 작품만 사용자 추천에 노출됩니다.</p>
         </section>
       </div>
+    </form>
+      {w.id && <DocentCollectionPanel key={`${w.id}:${w.sourceVersion}:${w.reviewStatus}`} artworkId={w.id} />}
       <ArtworkContentPreview work={w} />
       {w.id ? (
         <AiPanel w={w} setW={setW} reloadArtwork={reloadAfterConflict} />
       ) : (
         <p className="muted small mt-24">작품을 먼저 저장하면 AI 감정 분석·해설 요약을 실행할 수 있어요.</p>
       )}
-    </form>
+    </>
+  );
+}
+
+const EMPTY_COLLECTION = { url: '', accession: '', excerpt: '' };
+
+function DocentCollectionPanel({ artworkId }: { artworkId: string }) {
+  const { data, loading, error, reload } = useAsync(() => api.getDocentCollection(artworkId), [artworkId]);
+  const [saved, setSaved] = useState<DocentCollectionReview | null>(null);
+  const [edits, setEdits] = useState<DocentCollectionDraft | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<{ text: string; error?: boolean; conflict?: boolean } | null>(null);
+  const review = saved ?? data;
+  const stored = review?.draft ?? review?.approved ?? EMPTY_COLLECTION;
+  const draft = edits ?? stored;
+  const { url, accession, excerpt } = draft;
+  const dirty = url !== stored.url || accession !== stored.accession || excerpt !== stored.excerpt;
+  const stale = !!review?.draft && review.draft.sourceVersion !== review.sourceVersion;
+  const canApprove = review?.canApprove && !!review.draft?.url && !!review.draft.accession && !!review.draft.excerpt && !stale && !dirty;
+  const update = (field: keyof DocentCollectionDraft, value: string) => setEdits({ url, accession, excerpt, [field]: value });
+
+  const restart = () => {
+    setSaved(null);
+    setEdits(null);
+    setNotice(null);
+    reload();
+  };
+  const submit = async (approve: boolean) => {
+    if (!review || busy) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const { version, sourceVersion } = review;
+      const next = await (approve
+        ? api.approveDocentCollection(artworkId, version, sourceVersion)
+        : api.saveDocentCollection(artworkId, { url, accession, excerpt }, version, sourceVersion));
+      setSaved(next);
+      setEdits(null);
+      setNotice({ text: approve ? '소장처 근거를 승인했어요.' : '보강 초안을 저장했어요.' });
+    } catch (err) {
+      setNotice({ text: err instanceof Error ? err.message : '보강 자료를 저장하지 못했어요.',
+        error: true, conflict: err instanceof ApiError && err.status === 409 });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="a-card pad ai-panel" aria-labelledby="docent-collection-title">
+      <h2 id="docent-collection-title">도슨트 소장처 근거</h2>
+      {error ? (
+        <p role="alert">{error} <button type="button" className="a-btn sm" onClick={restart}>다시 불러오기</button></p>
+      ) : loading || !review ? <p role="status">보강 자료를 불러오는 중이에요.</p> : (
+        <>
+          {review.approved && (
+            <div>
+              <h3>승인된 근거</h3>
+              <a href={review.approved.url} target="_blank" rel="noreferrer">소장처 자료 · {review.approved.accession}</a>
+              <p className="artwork-prose">{review.approved.excerpt}</p>
+            </div>
+          )}
+          <form onSubmit={event => { event.preventDefault(); void submit(false); }}>
+            <h3>보강 초안</h3>
+            <label className="a-field">
+              <span>소장처 URL</span>
+              <input type="url" value={url} maxLength={2000} disabled={busy} onChange={e => update('url', e.target.value)} />
+            </label>
+            <label className="a-field">
+              <span>소장번호</span>
+              <input value={accession} maxLength={100} disabled={busy} onChange={e => update('accession', e.target.value)} />
+            </label>
+            <label className="a-field">
+              <span id="docent-collection-excerpt">근거 문장</span>
+              <textarea aria-labelledby="docent-collection-excerpt" rows={3} value={excerpt} maxLength={1000} disabled={busy}
+                onChange={e => update('excerpt', e.target.value)} />
+            </label>
+            {stale && <p className="small">작품 원문이 바뀌었어요. 소장처 근거를 확인하고 초안을 다시 저장해 주세요.</p>}
+            {!review.canApprove && <p className="small">작품의 검수가 완료되면 보강 초안을 승인할 수 있어요.</p>}
+            <div className="a-row end">
+              <button type="submit" className="a-btn" disabled={busy || !(url.trim() || accession.trim() || excerpt.trim()) ||
+                (!dirty && !stale && Boolean(review.draft ?? review.approved))}>보강 초안 저장</button>
+              <button type="button" className="a-btn primary" disabled={busy || !canApprove} onClick={() => void submit(true)}>소장처 근거 승인</button>
+            </div>
+          </form>
+          {notice && (
+            <p role={notice.error ? 'alert' : 'status'} className={notice.error ? 'error-text' : 'ok-text'}>
+              {notice.text}
+              {notice.conflict && <button type="button" className="a-btn sm" onClick={restart}>최신 보강 자료 불러오기</button>}
+            </p>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

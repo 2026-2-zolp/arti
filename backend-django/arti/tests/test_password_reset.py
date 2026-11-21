@@ -130,8 +130,9 @@ class PasswordResetTests(Helpers, TransactionTestCase):
         self.assertEqual(deliver_pending(), 2)
         self.assertEqual([m.to for m in mail.outbox], [['a@example.test'], ['a@example.test']])
         self.assertEqual(deliver_pending(), 0)
-        self.assertEqual(self.confirm(self.token(), 'invalid').status_code, 400)
-        self.assertEqual(self.confirm(self.token()).status_code, 204)
+        self.assertEqual(self.confirm(self.token()).json()['code'], 'PASSWORD_RESET_INVALID')
+        self.assertEqual(self.confirm(self.token(1), 'invalid').status_code, 400)
+        self.assertEqual(self.confirm(self.token(1)).status_code, 204)
         for token in [self.token(), self.token(1)]:
             self.assertEqual(self.confirm(token).json()['code'], 'PASSWORD_RESET_INVALID')
         self.assertFalse(Session.objects.filter(account=self.member).exists())
@@ -142,6 +143,31 @@ class PasswordResetTests(Helpers, TransactionTestCase):
         self.assertEqual(self.public.post('/api/auth/login', {'email': self.member.email, 'password': 'test-password-strong'}, format='json').status_code, 401)
         logged_in = self.public.post('/api/auth/login', {'email': self.member.email, 'password': self.password}, format='json')
         self.assertEqual(logged_in.json()['user']['id'], self.member.id)
+
+    def test_failed_resend_leaves_previously_delivered_link_usable(self):
+        self.assertEqual(self.request_link().status_code, 204)
+        self.assertEqual(deliver_pending(), 1)
+        self.assertEqual(self.request_link().status_code, 204)
+        with patch('arti.password_reset.send_mail', side_effect=OSError('synthetic')):
+            self.assertEqual(deliver_pending(), 0)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(self.confirm(self.token()).status_code, 204)
+        self.assertFalse(PasswordResetDelivery.objects.exists())
+
+    def test_new_delivery_supersedes_an_older_queued_retry(self):
+        self.assertEqual(self.request_link().status_code, 204)
+        with patch('arti.password_reset.send_mail', side_effect=OSError('synthetic')):
+            self.assertEqual(deliver_pending(), 0)
+        old = PasswordResetDelivery.objects.get()
+        self.assertEqual(self.request_link().status_code, 204)
+        self.assertEqual(deliver_pending(), 1)
+        PasswordResetDelivery.objects.filter(pk=old.pk).update(next_attempt_at=timezone.now())
+        self.assertEqual(deliver_pending(), 0)
+        old.refresh_from_db()
+        self.assertIsNotNone(old.processed_at)
+        self.assertFalse(old.delivered)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(self.confirm(self.token()).status_code, 204)
 
     def test_expiry_forged_signature_and_request_limits(self):
         for _ in range(4):

@@ -4,6 +4,7 @@ import { twoRoomNavigationPreset } from './navigationPresets';
 
 type FixtureLayout = IndoorLayout & {
   corridors: readonly MapRect[]; doors: readonly MapRect[]; rooms?: readonly MapRect[];
+  example?: boolean;
 };
 
 const pillarLayout: FixtureLayout = {

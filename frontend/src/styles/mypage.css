@@ -1,0 +1,42 @@
+.mypage-header-actions { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.mypage-header-actions .text-btn { min-height: 44px; display: inline-flex; align-items: center; }
+.account-settings { display: grid; gap: 24px; padding-top: 12px; }
+.account-setting-section { display: grid; gap: 8px; }
+.account-setting-section h2 { margin: 0 0 4px; font-size: 18px; }
+
+.account-disclosure { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0; }
+.account-disclosure > summary { display: flex; align-items: center; min-height: 48px; padding: 9px 14px; gap: 10px; font-weight: 600; cursor: pointer; list-style: none; }
+.account-disclosure > summary::-webkit-details-marker { display: none; }
+.account-disclosure > summary > :first-child { flex: 1; min-width: 0; }
+.account-disclosure > summary small { color: var(--muted); font-weight: 400; }
+.account-disclosure > summary > svg { color: var(--muted); flex: 0 0 auto; }
+.account-disclosure[open] > summary > svg { transform: rotate(90deg); }
+.account-disclosure > summary:focus-visible { outline-offset: -4px; border-radius: 12px; }
+.account-disclosure-body { display: grid; gap: 10px; border-top: 1px solid var(--line); padding: 14px; }
+.account-disclosure-body p { margin: 0; line-height: 1.55; overflow-wrap: anywhere; }
+.account-disclosure-body > .btn { justify-self: start; }
+.account-danger-link { border: 0; background: none; color: var(--danger); align-self: start; justify-self: start; font-size: 14px; padding: 0; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; text-align: left; }
+.account-danger-link:disabled { color: var(--muted); }
+.confirm-card .btn.primary.is-danger { background: var(--danger); border-color: var(--danger); }
+
+.liked-review { display: grid; gap: 20px; padding: 4px 0 24px; }
+.liked-review :is(h2, h3, h4, p) { margin: 0; }
+.liked-review h2 { font-size: clamp(23px, 6vw, 30px); line-height: 1.2; overflow-wrap: anywhere; }
+.liked-review header p { margin-top: 6px; }
+.liked-review h3 { font-size: 18px; }
+.liked-review h4 { font-size: 15px; }
+.liked-review-media { background: var(--surface-2); border-radius: 12px; overflow: hidden; position: relative; }
+.liked-review-media img { max-height: min(40svh, 340px); }
+.liked-review-expand { display: block; position: relative; width: 100%; padding: 0; border: 0; background: none; }
+.liked-review-expand:focus-visible { outline-offset: -3px; }
+.liked-review-expand > span { display: grid; place-items: center; position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+.liked-review .liked-artwork-description { margin-top: 8px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.liked-record { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 12px; }
+.liked-recap { background: var(--surface-2); border-radius: 12px; padding: 14px; display: grid; gap: 4px; line-height: 1.5; overflow-wrap: anywhere; }
+.liked-transcripts { display: grid; gap: 8px; min-width: 0; }
+.liked-conversation time { display: block; margin-top: 3px; font-weight: 400; }
+.liked-turns { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.liked-turns > li { display: grid; gap: 10px; }
+.liked-turns > li + li { border-top: 1px solid var(--line); padding-top: 14px; }
+.liked-turns strong { font-size: 13px; }
+.liked-turns p { margin-top: 2px; white-space: pre-wrap; }

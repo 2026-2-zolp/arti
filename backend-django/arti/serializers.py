@@ -1,5 +1,6 @@
 # API 입력 검증과 공개·관리자 응답 변환을 정의합니다.
 from rest_framework import serializers
+from .docent_audio import listening_available
 from .constants import DURATION_COUNTS, EMOTIONS, TAGS
 
 
@@ -63,13 +64,14 @@ class AdminLoginInput(serializers.Serializer):
     password = serializers.CharField(max_length=128, trim_whitespace=False)
 
 
-def exhibition_dto(ex):
+def exhibition_dto(ex, admin=False):
     from .indoor import current_layout
     return {'id': ex.id, 'title': ex.title, 'subtitle': ex.subtitle, 'venue': ex.venue,
             'startDate': ex.start_date.isoformat(), 'endDate': ex.end_date.isoformat(), 'status': ex.status,
             'rooms': ex.rooms, 'entrance': {'x': ex.entrance_x, 'y': ex.entrance_y},
-            'floorPlan': ex.floor_plan, 'floorPlanRevision': ex.floor_plan_revision,
-            'navigationLayout': current_layout(ex), 'version': ex.version}
+            'floorPlan': ex.floor_plan, 'floorPlanRevision': ex.floor_plan_revision, 'posterFile': ex.poster_file,
+            'navigationLayout': current_layout(ex), 'version': ex.version,
+            **({'directVisitOrder': ex.direct_visit_order} if admin else {})}
 
 
 RETAINED_TEXT_FIELDS = {
@@ -96,6 +98,8 @@ def artwork_dto(w, admin=False):
     if admin:
         data['savedTextProposals'] = [kind for kind in RETAINED_TEXT_FIELDS if data[f'{kind}Status'] == 'suggested']
         return data
+    if listening_available(w):
+        data['docentListeningAvailable'] = True
     if not w.show_image:
         data.update(imageUrl='', imageFile=None)
     for kind, empty_text in (

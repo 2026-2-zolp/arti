@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
 from .constants import LABELS
+from .docent_memory import artwork_recap, cross_visit_storage_enabled, memory_demo_enabled, visit_recap
+from .docent_transcript import liked_conversations, transcript_available_for
 from .member import member, user_dto
 from .models import Account, Artwork, Exhibition, Visit, VisitReaction
 from .receipt_evidence import MAX_BYTES as ARTWORK_EVIDENCE_MAX_BYTES, read_artwork_evidence
@@ -150,8 +152,14 @@ def save_visit(request):
         if existing:
             check_retry(existing,request.data);return Response(dto(existing))
         payload,snapshots=canonical(request.data,actor)
+        memory = {}
+        if memory_demo_enabled(payload['exhibitionId']):
+            works = public_works(payload['exhibitionId']).select_related(None)
+            memory = visit_recap(payload, snapshots, works, request.data.get('docentInterests'))
+            if not cross_visit_storage_enabled(actor, payload['date']):
+                memory.pop('visit', None)
         v=Visit.objects.create(user=actor,visit_id=payload['visitId'],exhibition_id=payload['exhibitionId'],
-                               canonical_payload=payload,artwork_snapshots=snapshots)
+                               canonical_payload=payload,artwork_snapshots=snapshots,docent_memory=memory)
         VisitReaction.objects.bulk_create([VisitReaction(visit=v,artwork_id=k,reaction=value,
             reason=payload['reactionReasons'].get(k,''),dwell_seconds=payload['dwell'].get(k,0)) for k,value in payload['reactions'].items()])
     return Response(dto(v),status=201)
@@ -187,6 +195,24 @@ def visits(request,visit_id=None,user_id=None):
         if v.user_id!=a.id:raise ContractError(403,'FORBIDDEN','본인 기록만 볼 수 있어요.')
         return Response(dto(v))
     return Response([dto(v) for v in Visit.objects.filter(user=a).order_by('-created_at')])
+
+
+@api_view(['GET'])
+def liked_artwork_recap(request, artwork_id):
+    actor = member(request)
+    work = public_works().filter(pk=artwork_id).first()
+    transcript_available = transcript_available_for(actor)
+    if not work or not (memory_demo_enabled(work.exhibition_id) or transcript_available):
+        raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
+    reaction = (VisitReaction.objects.filter(artwork=work, visit__user=actor).select_related('visit')
+                .order_by('-visit__canonical_payload__date', '-visit__created_at', '-visit_id').first())
+    if not reaction or reaction.reaction != 'like':
+        raise ContractError(404, 'NOT_FOUND', '좋아요한 작품 기록이 없어요.')
+    data = {'artwork': artwork_dto(work), 'recap': artwork_recap(reaction.visit, work.id),
+            'likedAt': reaction.visit.canonical_payload['date']}
+    if transcript_available:
+        data['conversations'] = liked_conversations(actor, work)
+    return Response(data, headers={'Cache-Control': 'private, no-store'})
 
 
 @api_view(['POST'])

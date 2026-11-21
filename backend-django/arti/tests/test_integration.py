@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import io
+import json
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +19,7 @@ from arti.http import ContractError
 from arti.member import SIGNUP_TERMS_VERSION
 from arti.models import Account, Artwork, Exhibition, Session, Visit, VisitReaction
 from arti.serializers import artwork_dto, exhibition_dto
+from arti.tests.test_provider import endpoint
 
 
 class Helpers:
@@ -51,6 +53,130 @@ class IntegrationTests(Helpers,TestCase):
     def setUp(self):self.setup_clients()
 
     def test_postgres_is_real(self):self.assertEqual(connection.vendor,'postgresql')
+
+    @override_settings(ARTI_LLM_PROVIDER='openai_compatible', OPENAI_API_KEY='synthetic-source-review',
+                       OPENAI_MODEL='synthetic-source-review', ARTI_LLM_MODELS={})
+    def test_docent_reads_collection_text_only_after_artwork_review(self):
+        work = Artwork.objects.get(pk='fixture-art03')
+        path = f'/api/artworks/{work.id}/ask'
+        question = '어떤 배경에서 제작됐나요?'
+        fact = '합성 소장처 목록에는 색면 연구를 위해 제작했다고 적혀 있어요.'
+        url = 'https://museum.example.test/works/fixture-art03'
+        approved_answer = fact + ' 작가의 구체적 의도는 확인되지 않아요.'
+        observed = []
+
+        def museum_mock(attempt):
+            prompt = json.loads(calls[attempt - 1]['body']['messages'][1]['content'])
+            data = prompt['artworkData']
+            observed.append(data)
+            supported = data['referenceUrl'] == url and fact in data['description']
+            answer = {'answer': approved_answer, 'insufficientEvidence': not supported}
+            return 200, json.dumps({'choices': [{
+                'finish_reason': 'stop', 'message': {'content': json.dumps(answer, ensure_ascii=False)},
+            }]}).encode()
+
+        with endpoint(respond=museum_mock) as calls:
+            initial = self.public.post(path, {'question': question}, format='json')
+            self.assertEqual(initial.json()['mode'], 'refusal')
+            self.assertNotIn(fact, initial.json()['answer'])
+            saved = self.put(work, description=fact, source='합성 소장처', referenceUrl=url, reviewStatus='source_check')
+            self.assertEqual(saved.status_code, 200, saved.content)
+            self.assertEqual(saved.json()['reviewStatus'], 'source_check')
+            self.assertEqual(self.public.post(path, {'question': question}, format='json').status_code, 404)
+            self.assertEqual(len(calls), 1)
+            work.refresh_from_db()
+            approved = self.put(work, reviewStatus='approved')
+            self.assertEqual(approved.status_code, 200, approved.content)
+            result = self.public.post(path, {'question': question}, format='json')
+            self.assertEqual(result.status_code, 200, result.content)
+            self.assertEqual(result.json()['answer'], approved_answer)
+            updated_version = approved.json()['sourceVersion']
+            self.assertGreater(updated_version, 1)
+            self.assertEqual(result.json()['sourceRefs'], [{
+                'artworkId': work.id, 'kind': 'original', 'sourceVersion': updated_version, 'revision': updated_version,
+            }])
+            self.assertEqual(len(calls), 2)
+            self.assertEqual(observed[-1]['referenceUrl'], url)
+            self.assertIn(fact, observed[-1]['description'])
+            self.assertNotIn('imageFile', observed[-1])
+
+    @override_settings(ARTI_TASTE_PROFILE_V2_ENABLED=True, ARTI_LLM_PROVIDER='openai_compatible',
+                       OPENAI_API_KEY='synthetic-collection', OPENAI_MODEL='synthetic-collection', ARTI_LLM_MODELS={})
+    def test_docent_collection_draft_and_approval_keep_public_work_and_taste_unchanged(self):
+        work = Artwork.objects.get(pk='fixture-art03')
+        admin_path = f'/api/admin/artworks/{work.id}/docent-collection'
+        work_path = f'/api/artworks/{work.id}'
+        ask_path = work_path + '/ask'
+        artwork_before = self.public.get(work_path).json()
+        taste_before = self.public.get('/api/taste-pool').json()
+        self.assertEqual(len(taste_before['artworks']), 10)
+        self.assertEqual(self.public.get(admin_path).status_code, 401)
+        base = self.admin.get(admin_path).json()
+        source = {'url': 'https://museum.example.test/works/03', 'accession': 'SYN-03',
+                  'excerpt': '합성 제작 목적은 색면 연구였어요.'}
+
+        def write(method, state, fields=None):
+            return getattr(self.admin, method)(admin_path, {
+                **(fields or {}), 'version': state['version'], 'sourceVersion': state['sourceVersion'],
+            }, format='json')
+
+        def ask(revision, question='어떤 배경에서 제작됐나요?'):
+            return self.public.post(ask_path, {'question': question, 'docentEvidenceRevision': revision}, format='json')
+
+        def collection_mock(attempt):
+            prompt = json.loads(calls[attempt - 1]['body']['messages'][1]['content'])
+            collection = prompt.get('collectionEvidence')
+            use_collection = bool(collection) and prompt['question'] != '원문을 쉽게 설명해 주세요.'
+            answer = {'answer': collection['excerpt'] if use_collection else '합성 원문 응답',
+                      'insufficientEvidence': not collection, 'collectionEvidenceUsed': use_collection,
+                      'sourceRefs': [{'kind': 'collection', 'url': 'https://unverified.example.test/'}]}
+            return 200, json.dumps({'choices': [{
+                'finish_reason': 'stop', 'message': {'content': json.dumps(answer, ensure_ascii=False)},
+            }]}).encode()
+
+        invalid = write('put', base, {**source, 'url': 'http://museum.example.test/works/03'})
+        self.assertEqual(invalid.status_code, 400)
+        partial = write('put', base, {**source, 'excerpt': ''}).json()
+        self.assertEqual(write('post', partial).status_code, 400)
+        draft = write('put', partial, source).json()
+        self.assertIsNone(draft['approved'])
+        self.assertEqual(write('post', partial).status_code, 409)
+
+        with endpoint(respond=collection_mock) as calls:
+            before = ask(0).json()
+            self.assertEqual(before['mode'], 'refusal')
+            self.assertEqual(before['sourceRefs'], [])
+            self.assertNotIn('collectionEvidence', json.loads(calls[-1]['body']['messages'][1]['content']))
+            self.assertEqual(self.public.get(work_path + '?docent=true').json()['docentEvidenceRevision'], 0)
+            approved = write('post', draft).json()
+            revision = approved['approved']['revision']
+            self.assertEqual(ask(0).status_code, 409)
+            answered = ask(revision).json()
+            self.assertEqual(answered['answer'], source['excerpt'])
+            ref = {'artworkId': work.id, 'sourceVersion': work.source_version, 'kind': 'collection',
+                   'revision': revision, 'url': source['url'], 'accession': source['accession']}
+            self.assertEqual(answered['sourceRefs'][-1], ref)
+            self.assertNotIn('unverified.example.test', str(answered))
+            self.assertEqual(ask(revision, '원문을 쉽게 설명해 주세요.').json()['sourceRefs'][-1]['kind'], 'original')
+            replacement = write('put', approved, {**source, 'excerpt': '새 합성 초안', 'accession': 'NEW-03'}).json()
+            self.assertEqual(ask(revision).json()['sourceRefs'][-1], ref)
+
+        def approve_while_waiting(*args, **kwargs):
+            self.assertEqual(write('post', replacement).status_code, 200)
+            return {'answer': '이전 승인 근거를 사용한 늦은 답변', 'collectionEvidenceUsed': True}
+
+        with patch('arti.providers.generate', side_effect=approve_while_waiting):
+            self.assertEqual(ask(revision).json()['code'], 'CONTENT_CHANGED')
+        self.assertEqual(self.public.get(work_path).json(), artwork_before)
+        self.assertEqual(self.public.get('/api/taste-pool').json(), taste_before)
+
+        latest = self.admin.get(admin_path).json()
+        stale_draft = write('put', latest, source).json()
+        self.assertEqual(self.put(work, description='원문이 바뀐 새 판본').status_code, 200)
+        work.refresh_from_db()
+        self.assertEqual(self.put(work, reviewStatus='approved').status_code, 200)
+        self.assertEqual(self.public.get(work_path + '?docent=true').json()['docentEvidenceRevision'], 0)
+        self.assertEqual(write('post', {**stale_draft, 'sourceVersion': work.source_version}).status_code, 409)
 
     def test_exhibition_order_receipt_uses_actual_duration_without_a_selected_duration(self):
         payload = {**self.payload(), 'visitMode': 'exhibition_order', 'tastes': [], 'selectedDuration': None}

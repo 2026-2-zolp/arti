@@ -12,7 +12,9 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from .authentication import IsAdmin
+from .artwork_narration import recording
 from .constants import TAGS
+from .docent_memory import memory_demo_enabled, visit_context_enabled
 from .http import ContractError
 from .models import Account, Artwork, Exhibition, Session
 from .providers import configuration_status
@@ -67,11 +69,21 @@ def exhibitions(request, ex_id=None):
     if ex_id:
         ex = public_exhibition(ex_id)
         data = exhibition_dto(ex)
+        if ex.direct_visit_order:
+            # Recompute when artwork approval changes without changing the exhibition version.
+            eligible = set(public_works(ex.id).filter(pk__in=ex.direct_visit_order).values_list('pk', flat=True))
+            order = [work_id for work_id in ex.direct_visit_order if work_id in eligible]
+            if order:
+                data['exhibitionOrder'] = order
+            return Response(data, headers={'Cache-Control': 'no-store'})
         if (settings.ARTI_EXHIBITION_ORDER_DEMO_ENABLED and settings.ARTI_ENV in ('development', 'test')
                 and settings.ALLOW_TEST_FIXTURES and ex.id == 'fixture-ex01'):
             eligible = set(public_works(ex.id).filter(id__in=FIXTURE_EXHIBITION_ORDER).values_list('id', flat=True))
             data['exhibitionOrder'] = [artwork_id for artwork_id in FIXTURE_EXHIBITION_ORDER if artwork_id in eligible]
             # 공개 작품이 바뀌면 전시 자체의 버전이 그대로여도 순서는 달라집니다.
+            return Response(data, headers={'Cache-Control': 'no-store'})
+        if ex.id == 'fixture-ex-memory' and memory_demo_enabled(ex.id):
+            data['exhibitionOrder'] = list(public_works(ex.id).values_list('pk', flat=True))
             return Response(data, headers={'Cache-Control': 'no-store'})
         return with_etag(data)
     return Response([exhibition_dto(e) for e in Exhibition.objects.filter(status='running')])
@@ -84,6 +96,21 @@ def artworks(request, artwork_id=None):
         if work is None:
             raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
         data = artwork_dto(work)
+        narrations = {}
+        for kind in ('description', 'guide'):
+            if clip := recording(work, kind, data):
+                narrations[kind] = clip[1]
+        if narrations:
+            data['narrationVersions'] = narrations
+        if request.query_params.get('docent') == 'true':
+            evidence = work.approved_docent_collection
+            data['docentEvidenceRevision'] = evidence['revision'] if evidence else 0
+            if settings.ARTI_DOCENT_TRANSCRIPTS_ENABLED:
+                data['docentTranscriptStorageAvailable'] = True
+            if visit_context_enabled(work.exhibition_id):
+                data['visitorMemoryEnabled'] = True
+                data['visitRecapEnabled'] = memory_demo_enabled(work.exhibition_id)
+            return Response(data, headers={'Cache-Control': 'no-store'})
         visit_id = request.query_params.get('visitId')
         if visit_id is not None and request.query_params.get('exhibitionId') == work.exhibition_id:
             visit_id = uuid_value(visit_id, visit=True)
@@ -97,7 +124,27 @@ def artworks(request, artwork_id=None):
     ex_id = request.query_params.get('exhibitionId')
     if ex_id is not None:
         public_exhibition(ex_id)
-    return Response([artwork_dto(w) for w in public_works(ex_id)])
+    catalog = []
+    for work in public_works(ex_id):
+        data = artwork_dto(work)
+        if memory_demo_enabled(work.exhibition_id):
+            data['visitRecapEnabled'] = True
+        catalog.append(data)
+    return Response(catalog)
+
+
+@api_view(['GET'])
+def artwork_narration(request, artwork_id, kind):
+    work = public_works().filter(pk=artwork_id).first()
+    if work is not None:
+        clip = recording(work, kind, artwork_dto(work))
+        if clip and request.query_params.get('v') == clip[1]:
+            try:
+                return FileResponse(clip[0].open('rb'), content_type='audio/mpeg',
+                                    headers={'Cache-Control': 'private, no-store'})
+            except FileNotFoundError:
+                pass
+    raise ContractError(404, 'NOT_FOUND', '이 작품의 음성 안내를 찾을 수 없어요.')
 
 
 @api_view(['GET'])
@@ -241,15 +288,19 @@ def media(request, filename):
         _, survey_works, _ = current_pool()
         public_image = any(w.image_file == filename for w in survey_works)
     public_plan = Exhibition.objects.filter(status='running', floor_plan__file=filename).exists()
+    poster_status = Exhibition.objects.filter(poster_file=filename).values_list('status', flat=True).first()
     # Public paths authenticate user tokens only. Admin preview has its own path/header scope.
     admin_preview = request.path.startswith('/api/admin/') and request.user and request.user.role == 'admin'
-    if not (public_image or public_plan or admin_preview):
+    if not (public_image or public_plan or poster_status == 'running' or admin_preview):
         raise ContractError(404, 'NOT_FOUND', '파일을 찾을 수 없어요.')
     root = settings.MEDIA_ROOT.resolve()
     path = (root/filename).resolve()
     if path.parent != root or not path.is_file():
         raise ContractError(404, 'NOT_FOUND', '파일을 찾을 수 없어요.')
-    return FileResponse(path.open('rb'))
+    response = FileResponse(path.open('rb'))
+    if poster_status is not None:
+        response['Cache-Control'] = 'no-store'
+    return response
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, type NavigateFunction } from 'react-router-dom';
 import { useVisit } from '../store/VisitContext';
 import type { VisitState } from '../store/visitReducer';
 
@@ -27,6 +27,41 @@ export function hasAppHistory(): boolean {
 export function exhibitionHomeFrom(redirect: string | null | undefined): string {
   const match = redirect?.match(/^\/exhibitions\/[^/?#]+/);
   return match ? match[0] : '/';
+}
+
+/**
+ * 관람을 시작한 전시 첫 화면(U-01)의 기록 위치.
+ * [관람 완료]·[나가기] 때 그 자리로 거슬러 돌아가, 지난 관람 화면(작품·경로·추천·시간·취향)이
+ * 뒤로가기 기록에 남아 전부 취향 화면으로 넘어가던 문제(뒤로가기를 눌러도 취향 첫 쌍만 반복)를 막는다.
+ * 웹페이지는 기록을 지울 수 없어서, 거슬러 돌아가 지난 화면을 "앞으로" 쪽으로 보내는 방법을 쓴다.
+ */
+const VISIT_START_KEY = 'arti.visitStartEntry';
+/**
+ * 적어 둔 위치는 같은 페이지가 열려 있는 동안만 쓴다. 카카오 로그인처럼 다른 사이트를 다녀오면 기록 번호가 새로 시작돼 믿을 수 없고,
+ * 새로고침도 구분하지 않고 같이 쓰지 않는다(그때는 기존처럼 그 자리를 첫 화면으로 덮어쓴다).
+ */
+const PAGE_ID = Math.random().toString(36).slice(2);
+type VisitStartEntry = { page: string; index: number; path: string };
+
+/** U-01에서 관람을 시작·이어 갈 때 지금 기록 위치를 적어 둔다. */
+export function markVisitStart(): void {
+  const entry: VisitStartEntry = { page: PAGE_ID, index: appHistoryIndex(), path: window.location.pathname };
+  try { window.sessionStorage.setItem(VISIT_START_KEY, JSON.stringify(entry)); } catch { /* 저장소를 못 쓰면 기존 방식으로 나간다 */ }
+}
+
+/**
+ * 관람을 끝내고 전시 첫 화면(home)으로 나간다.
+ * 적어 둔 U-01이 이 페이지의 뒤쪽 기록에 있으면 거기까지 거슬러 돌아가고, 아니면 지금 자리를 첫 화면으로 덮어쓴다(기존 방식).
+ */
+export function leaveVisitTo(navigate: NavigateFunction, home: string): void {
+  let entry: VisitStartEntry | null = null;
+  try {
+    entry = JSON.parse(window.sessionStorage.getItem(VISIT_START_KEY) ?? 'null');
+    window.sessionStorage.removeItem(VISIT_START_KEY);
+  } catch { entry = null; }
+  const steps = entry ? appHistoryIndex() - entry.index : 0;
+  if (entry && entry.page === PAGE_ID && entry.path === home && steps > 0) navigate(-steps);
+  else navigate(home, { replace: true });
 }
 
 type VisitEntry = { visitId: string; generation: number; index: number };

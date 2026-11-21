@@ -15,6 +15,7 @@ export type {VisitState} from './visitReducer';
 const VISIT_KEY = 'arti.visit'; const USER_KEY = 'arti.user';
 import { load, save } from '../lib/storage';
 import { clearPrivateCaches } from '../lib/visitScope';
+import { clearExpiredVisitMemory } from '../lib/visitMemory';
 
 interface Ctx {
   state: VisitState;
@@ -57,6 +58,7 @@ export function VisitProvider({ children }: { children: ReactNode }) {
   }, [state.user?.id]);
   // 상태가 바뀔 때마다 저장소에 반영 (새로고침해도 관람 흐름 유지)
   useEffect(() => {
+    clearExpiredVisitMemory(state);
     const { user, ...visit } = state;
     save(VISIT_KEY, { ...visit, ownerId: user?.id ?? null }, 'session');
     save(USER_KEY, user);

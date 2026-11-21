@@ -139,6 +139,12 @@ jobs:
           - suite: kakao-auth
             name: Account Chrome (mock Kakao)
             database: arti_kakao_browser
+          - suite: docent-visit-memory
+            name: Docent Chrome (visit memory)
+            database: arti_docent_visit_memory
+          - suite: docent-listening
+            name: Docent Chrome (listening mode)
+            database: arti_docent_listening
     services:
       postgres:
         image: postgres:17-alpine
@@ -175,6 +181,7 @@ jobs:
       VITE_API_PROXY: http://127.0.0.1:8000
       ARTI_REVIEW_BASE: http://127.0.0.1:5239
       ARTI_BROWSER_SUITE: ${{ matrix.suite }}
+      VITE_ARTI_SYNTHETIC_NARRATION: ${{ matrix.suite == 'docent-listening' && '1' || '0' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -236,11 +243,14 @@ jobs:
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs
       - name: Run loopback Chrome regression
-        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","narrow-visit"]'), matrix.suite)
+        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","narrow-visit","docent-visit-memory","docent-listening"]'), matrix.suite)
         shell: bash
         env:
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
           ARTI_DOCENT_ENTRY_TESTS: ${{ matrix.suite == 'guide-summary' && '1' || '0' }}
+          ARTI_DOCENT_MEMORY_TESTS: ${{ matrix.suite == 'docent-visit-memory' && '1' || '0' }}
+          ARTI_DOCENT_LISTENING_TESTS: ${{ matrix.suite == 'docent-listening' && '1' || '0' }}
+          ARTI_EXHIBITION_ORDER_DEMO_ENABLED: ${{ contains(fromJSON('["docent-visit-memory","docent-listening"]'), matrix.suite) && 'true' || 'false' }}
         run: |
           ready_header=x-arti-docent-mock
           case "$ARTI_BROWSER_SUITE" in
@@ -260,6 +270,15 @@ jobs:
             narrow-visit)
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
               browser_test=frontend/tests/narrowVisit.browser.mjs
+              ;;
+            docent-visit-memory)
+              server=(python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')")
+              browser_test=frontend/tests/docentVisitMemory.browser.cjs
+              ;;
+            docent-listening)
+              server=(python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')")
+              browser_test=frontend/tests/docentListening.browser.cjs
+              ready_header=x-arti-docent-listening-mock
               ;;
             *)
               server=(python backend-django/manage.py shell -c "from arti.tests.docent_browser_server import serve; serve('127.0.0.1')")

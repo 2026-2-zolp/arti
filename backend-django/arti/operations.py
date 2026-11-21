@@ -9,20 +9,23 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from .authentication import IsAdmin
-from .models import OperationEvent, OperationTextModelUsage
-from .model_usage import collect_text_usage
+from .models import OperationEvent, OperationTextModelUsage, OperationVoiceModelUsage
+from .model_usage import collect_model_usage
 from .providers import configuration_status, draft_configuration_status
 from .llm import DRAFT_TASKS, luna_image_route
 
 logger = logging.getLogger(__name__)
 
 ADMIN_ACTIONS = {
+    'api/admin/ai-settings': 'ai_settings_save',
     'api/admin/exhibitions': 'exhibition_save',
     'api/admin/exhibitions/<str:ex_id>': 'exhibition_save',
     'api/admin/artworks': 'artwork_save',
     'api/admin/artworks/<str:artwork_id>': 'artwork_save',
     'api/admin/artworks/<str:artwork_id>/image': 'artwork_image',
+    'api/admin/artworks/<str:artwork_id>/docent-collection': 'docent_source_review',
     'api/admin/exhibitions/<str:ex_id>/floor-plan': 'floor_plan',
+    'api/admin/exhibitions/<str:ex_id>/poster': 'exhibition_poster',
     'api/admin/exhibitions/<str:ex_id>/navigation': 'navigation_layout',
     'api/admin/artworks/<str:artwork_id>/analyze': 'artwork_analysis',
     'api/admin/artworks/<str:artwork_id>/discard-ai': 'discard_proposal',
@@ -30,6 +33,7 @@ ADMIN_ACTIONS = {
 }
 VISITOR_ACTIONS = {
     'api/artworks/<str:artwork_id>/ask': 'docent_question',
+    'api/artworks/<str:artwork_id>/answer-audio': 'docent_audio',
     'api/artworks/<str:artwork_id>/explanation': 'docent_explanation',
     'api/visits/interpret': 'receipt_interpretation',
 }
@@ -64,14 +68,15 @@ class OperationEventMiddleware:
     def __call__(self, request):
         if request.method not in ('POST', 'PUT', 'DELETE'):
             return self.get_response(request)
-        with collect_text_usage() as usage:
+        with collect_model_usage() as usage:
             response = self.get_response(request)
 
         route = getattr(request.resolver_match, 'route', None)
         action = ADMIN_ACTIONS.get(route)
         if action and getattr(getattr(request, 'user', None), 'role', None) != 'admin':
             return response
-        if request.method == 'POST' and (usage.attempts or response.status_code in (200, 429, 500, 502, 503, 504)):
+        if request.method == 'POST' and (usage.attempts or usage.voice is not None
+                                         or response.status_code in (200, 429, 500, 502, 503, 504)):
             action = action or VISITOR_ACTIONS.get(route)
         if action and response.status_code != 405:
             try:
@@ -87,9 +92,17 @@ class OperationEventMiddleware:
                             OperationTextModelUsage(event=event, task=task, model=model,
                                                     attempts=count.attempts, measured=count.measured,
                                                     input_tokens=count.input_tokens, output_tokens=count.output_tokens,
-                                                    cache_measured=count.cache_measured, cached_input_tokens=count.cached_input_tokens)
+                                                    cache_measured=count.cache_measured, cached_input_tokens=count.cached_input_tokens,
+                                                    priced=count.priced, estimated_cost_usd=count.estimated_cost_usd)
                             for (task, model), count in usage.by_task_model.items()
                         ])
+                    if usage.voice is not None:
+                        voice = usage.voice
+                        OperationVoiceModelUsage.objects.create(
+                            event=event, intent=voice.intent, model=voice.model, input_tokens=voice.input_tokens,
+                            output_tokens=voice.output_tokens, cached_input_tokens=voice.cached_input_tokens,
+                            output_audio_tokens=voice.output_audio_tokens, estimated_cost_usd=voice.estimated_cost_usd,
+                        )
             except DatabaseError:
                 # 원래 요청은 완료됐습니다. 기록 장애를 쓰기 실패로 돌려보내지 않습니다.
                 logger.warning('Operation log unavailable requestId=%s', request.request_id)
@@ -100,7 +113,8 @@ def text_model_usage_groups(events):
     groups = (OperationTextModelUsage.objects.filter(event__in=events).values('task', 'model')
               .annotate(total_attempts=Sum('attempts'), total_measured=Sum('measured'),
                         total_input=Sum('input_tokens'), total_output=Sum('output_tokens'),
-                        total_cache_measured=Sum('cache_measured'), total_cached=Sum('cached_input_tokens'))
+                        total_cache_measured=Sum('cache_measured'), total_cached=Sum('cached_input_tokens'),
+                        total_priced=Sum('priced'), total_cost=Sum('estimated_cost_usd'))
               .order_by('task', 'model'))
     return [{
         'task': row['task'], 'model': row['model'], 'attempts': row['total_attempts'],
@@ -109,7 +123,25 @@ def text_model_usage_groups(events):
         'outputTokens': row['total_output'] if row['total_measured'] else None,
         'cachedInputTokens': row['total_cached'] if row['total_cache_measured'] else None,
         'cacheMissing': row['total_attempts'] - row['total_cache_measured'],
+        **({'priced': row['total_priced'], 'estimatedCostUsd': format(row['total_cost'], '.9f')}
+           if row['total_priced'] else {}),
     } for row in groups]
+
+
+def voice_model_usage_groups(events):
+    groups = (
+        OperationVoiceModelUsage.objects.filter(event__in=events).values('intent', 'model')
+        .annotate(attempts=Count('pk'), measured=Count('pk', filter=Q(input_tokens__isnull=False, output_tokens__isnull=False)),
+                  priced=Count('estimated_cost_usd'), inputTokens=Sum('input_tokens'), outputTokens=Sum('output_tokens'),
+                  cachedInputTokens=Sum('cached_input_tokens'), outputAudioTokens=Sum('output_audio_tokens'),
+                  estimatedCost=Sum('estimated_cost_usd'))
+        .order_by('intent', 'model')
+    )
+    rows = []
+    for group in groups:
+        cost = group.pop('estimatedCost')
+        rows.append({**group, 'estimatedCostUsd': format(cost, '.9f') if cost is not None else None})
+    return rows
 
 
 @api_view(['GET'])
@@ -142,7 +174,10 @@ def dashboard(request):
         'textModelUsage': {'attempts': attempts, 'missing': attempts - measured,
                            'inputTokens': input_tokens if measured else None,
                            'outputTokens': output_tokens if measured else None},
-        **({} if summary_only else {'textModelUsageByTaskModel': text_model_usage_groups(events)}),
+        **({} if summary_only else {
+            'textModelUsageByTaskModel': text_model_usage_groups(events),
+            'voiceModelUsageByIntent': voice_model_usage_groups(events),
+        }),
         'recent': [
             {'requestId': str(event.request_id), 'occurredAt': event.occurred_at.isoformat(),
              'action': event.action, 'status': event.status,

@@ -6,11 +6,12 @@ import { withRedirect } from '../../store/ExhibitionRoute';
 import { useVisit } from '../../store/VisitContext';
 
 const MESSAGES = {
-  unlinked: '연결된 ARTI 계정이 없어요. 이메일로 로그인하고 마이페이지에서 카카오 계정을 연결해 주세요.',
+  unlinked: '연결된 ARTI 계정이 없어요. 이메일로 로그인하고 마이페이지의 계정 설정에서 연결해 주세요.',
   conflict: '이 카카오 계정은 이미 다른 ARTI 계정에 연결되어 있어요.',
   cancelled: '카카오 인증을 취소했어요.',
   failed: '카카오 인증을 확인하지 못했어요. 처음부터 다시 시도해 주세요.',
 };
+const ACCOUNT_SETTINGS = '/mypage?view=settings';
 
 export default function KakaoComplete() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function KakaoComplete() {
         dispatch({ type: 'login', user: result.user });
         navigate(result.returnTo, { replace: true });
       } else if (result.status === 'linked') {
-        navigate(result.returnTo, { replace: true });
+        navigate(ACCOUNT_SETTINGS, { replace: true });
       } else {
         setReturnTo(result.returnTo);
         setMessage(MESSAGES[result.status]);
@@ -48,8 +49,8 @@ export default function KakaoComplete() {
       {message || !callbackState ? (
         <div className="stack gap-16">
           <p role="status">{message || '카카오 로그인 요청을 다시 시작해 주세요.'}</p>
-          <Link className="btn outline block" to={state.user ? '/mypage' : withRedirect('/login', returnTo)} replace>
-            {state.user ? '마이페이지로 돌아가기' : '로그인 화면으로 돌아가기'}
+          <Link className="btn outline block" to={state.user ? ACCOUNT_SETTINGS : withRedirect('/login', returnTo)} replace>
+            {state.user ? '계정 설정으로 돌아가기' : '로그인 화면으로 돌아가기'}
           </Link>
         </div>
       ) : (

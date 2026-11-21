@@ -3,6 +3,8 @@ const paths = {
   back: 'M15 5l-7 7 7 7',
   chevron: 'M9 5l7 7-7 7',
   arrow: 'M5 12h14M13 6l6 6-6 6',
+  arrowDown: 'M12 5v14M6 13l6 6 6-6',
+  arrowUp: 'M12 19V5M6 11l6-6 6 6',
   map: 'M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15',
   speaker: 'M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12',
   stop: 'M7 7h10v10H7z',

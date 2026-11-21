@@ -292,7 +292,9 @@ networks:
     Invoke-ProbeDocker compose @source stop web | Out-Null
     $hashCommand = 'cd /app/media && sha256sum fixture-public.png fixture-private.png'
     $before = Invoke-ProbeDocker compose @source exec -T api sh -ec $hashCommand
-    Invoke-ProbeDocker compose @source exec -T db pg_dump -U arti -d arti -Fc -f /tmp/preflight.dump | Out-Null
+    $excludeTranscriptData = @( '--exclude-table-data=public.arti_docenttranscript',
+        '--exclude-table-data=public.arti_docenttranscriptconsent')
+    Invoke-ProbeDocker compose @source exec -T db pg_dump -U arti -d arti -Fc @excludeTranscriptData -f /tmp/preflight.dump | Out-Null
     Invoke-ProbeDocker compose @source exec -T api tar -C /app/media -cf /tmp/preflight-media.tar fixture-public.png fixture-private.png | Out-Null
     Invoke-ProbeDocker compose @source cp db:/tmp/preflight.dump "$scratch/arti.dump" | Out-Null
     Invoke-ProbeDocker compose @source cp api:/tmp/preflight-media.tar "$scratch/media.tar" | Out-Null

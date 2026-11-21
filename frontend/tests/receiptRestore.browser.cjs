@@ -53,8 +53,11 @@ async function createReceipt(browser, config, base) {
     await page.getByLabel('이메일', { exact: true }).fill(config.ownerEmail);
     await page.getByLabel('비밀번호', { exact: true }).fill(config.password);
     await page.getByLabel('비밀번호 확인', { exact: true }).fill(config.password);
-    await page.getByRole('checkbox', { name: /서비스 이용약관에 동의/ }).check();
-    const signup = await readResponse(page, '/api/auth/signup', 'POST', () => button(page, '회원가입').click());
+    const signup = await readResponse(page, '/api/auth/signup', 'POST', () => button(page, '이용약관에 동의하고 가입').click());
+    const agreement = signup.request().postDataJSON();
+    assert.equal(agreement.termsAccepted, true);
+    assert.ok(agreement.termsVersion);
+    assert.equal(agreement.docentTranscriptAccepted, undefined);
     const { user } = await body(signup);
     assert.equal(user.email, config.ownerEmail);
 

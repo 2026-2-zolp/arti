@@ -30,6 +30,7 @@ export function fitNavigationDraft(layout: NavigationLayoutInput, first: MapPoin
   };
   if (rectangles.map(resize).some(rect => rect.w <= 0 || rect.h <= 0)) return null;
   return {
+    ...layout,
     walkable: layout.walkable.map(resize),
     walls: layout.walls.map(resize),
     pillars: layout.pillars.map(resize),

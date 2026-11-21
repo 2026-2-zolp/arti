@@ -30,8 +30,10 @@ class Exhibition(models.Model):
     entrance_x = models.FloatField(default=0)
     entrance_y = models.FloatField(default=0)
     floor_plan = models.JSONField(null=True, default=None, blank=True)
+    poster_file = models.CharField(max_length=64, null=True, blank=True)
     floor_plan_revision = models.PositiveIntegerField(default=1)
     navigation_layout = models.JSONField(null=True, default=None, blank=True)
+    direct_visit_order = models.JSONField(default=list, db_default=[], blank=True)
     version = models.PositiveIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -77,6 +79,7 @@ class Artwork(models.Model):
     guide_intro = models.TextField(blank=True)
     source = models.CharField(max_length=500, blank=True)
     reference_url = models.CharField(max_length=2000, blank=True)
+    docent_collection = models.JSONField(default=dict, blank=True)
     review_status = models.CharField(max_length=12, default='pending')
     analysis = models.JSONField(null=True, default=None, blank=True)
     summary = models.TextField(blank=True)
@@ -92,6 +95,11 @@ class Artwork(models.Model):
     summary_revision = models.PositiveIntegerField(default=1)
     guide_revision = models.PositiveIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def approved_docent_collection(self):
+        evidence = self.docent_collection.get('approved')
+        return evidence if evidence and evidence['sourceVersion'] == self.source_version else None
 
     class Meta:
         ordering = ['id']
@@ -171,6 +179,9 @@ class Account(models.Model):
     taste_profile = models.JSONField(null=True, default=None, blank=True)
     taste_profile_version = models.PositiveIntegerField(default=1)
     taste_write_receipt = models.JSONField(blank=True, default=None, null=True)
+    docent_cross_visit_enabled = models.BooleanField(default=True, db_default=True)
+    docent_memory_revision = models.PositiveBigIntegerField(default=0, db_default=0)
+    docent_memory_reset_at = models.DateTimeField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(default=timezone.now)
 
     @property
@@ -186,6 +197,26 @@ class SignupTermsAcceptance(models.Model):
     account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
     version = models.CharField(max_length=64)
     accepted_at = models.DateTimeField(default=timezone.now)
+
+
+class DocentTranscriptConsent(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    version = models.CharField(max_length=64)
+    consented_at = models.DateTimeField(default=timezone.now)
+    revision = models.PositiveBigIntegerField(default=0)
+
+
+class DocentTranscript(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    artwork = models.ForeignKey(Artwork, on_delete=models.CASCADE)
+    visit_id = models.UUIDField()
+    turns = models.JSONField(default=list)
+    deleted = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['account', 'artwork', 'visit_id'], name='docent_transcript_owner_work_visit_unique',
+        )]
 
 
 # 원문 대신 해시한 세션 토큰과 만료를 저장합니다.
@@ -239,6 +270,7 @@ class Visit(models.Model):
     exhibition = models.ForeignKey(Exhibition, on_delete=models.PROTECT)
     canonical_payload = models.JSONField(default=dict, blank=True)
     artwork_snapshots = models.JSONField(default=list, blank=True)
+    docent_memory = models.JSONField(default=dict, db_default={}, blank=True)
     interpretation = models.TextField(null=True, default=None)
     interpretation_request_version = models.PositiveBigIntegerField(default=0, db_default=0)
     interpretation_saved_version = models.PositiveBigIntegerField(default=0, db_default=0)
@@ -271,9 +303,22 @@ class OperationTextModelUsage(models.Model):
     output_tokens = models.PositiveBigIntegerField()
     cache_measured = models.PositiveIntegerField()
     cached_input_tokens = models.PositiveBigIntegerField()
+    priced = models.PositiveIntegerField(default=0)
+    estimated_cost_usd = models.DecimalField(max_digits=17, decimal_places=9, default=0)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['event', 'task', 'model'], name='operation_text_usage_group_unique')]
+
+
+class OperationVoiceModelUsage(models.Model):
+    event = models.OneToOneField(OperationEvent, on_delete=models.CASCADE)
+    intent = models.CharField(max_length=7)
+    model = models.CharField(max_length=200)
+    input_tokens = models.PositiveBigIntegerField(null=True)
+    output_tokens = models.PositiveBigIntegerField(null=True)
+    cached_input_tokens = models.PositiveBigIntegerField(null=True)
+    output_audio_tokens = models.PositiveBigIntegerField(null=True)
+    estimated_cost_usd = models.DecimalField(max_digits=17, decimal_places=9, null=True)
 
 
 # 관람별 작품 반응·이유·체류 시간을 저장합니다.
@@ -288,3 +333,13 @@ class VisitReaction(models.Model):
         constraints = [models.UniqueConstraint(fields=['visit', 'artwork'], name='reaction_visit_art_unique'),
                        models.CheckConstraint(condition=Q(reaction__in=['like', 'dislike']), name='reaction_value_valid'),
                        models.CheckConstraint(condition=Q(dwell_seconds__lte=86400), name='reaction_dwell_bounds')]
+
+
+class AdminOpenAISettings(models.Model):
+    enabled = models.BooleanField(default=False)
+    model = models.CharField(max_length=200)
+    encrypted_key = models.BinaryField(default=bytes, editable=False)
+    revision = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=Q(pk=1), name='admin_openai_settings_singleton')]

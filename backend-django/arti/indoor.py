@@ -14,7 +14,9 @@ def invalid():
 def normalize_layout(value, revision):
     if value is None:
         return None
-    if not isinstance(value, dict) or set(value) != {*RECT_FIELDS, 'waypoints'}:
+    geometry = {*RECT_FIELDS, 'waypoints'}
+    if (not isinstance(value, dict) or not geometry <= value.keys() <= (geometry | {'example'})
+            or type(value.get('example', False)) is not bool):
         invalid()
     for field in (*RECT_FIELDS, 'waypoints'):
         points = value[field]

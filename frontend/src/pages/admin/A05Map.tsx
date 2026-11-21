@@ -118,8 +118,10 @@ export default function A05Map() {
     try {
       applyExhibition(await api.saveExhibition(next));
       setMsg({ type: 'ok', text: ok });
+      return true;
     } catch (e) {
       fail(e);
+      return false;
     }
   };
 
@@ -127,7 +129,7 @@ export default function A05Map() {
     <>
       <PageHead
         title="위치·지도 관리"
-        desc="도면에 작품 위치와 입구를 지정합니다. 이 위치는 관람 순서와 지도에 사용돼요. 출입문과 실제 통로는 도면에서 확인해 주세요."
+        desc="전시 도면에 작품과 입구를 배치하고, 관람자가 이동할 통로와 관람 순서를 설정합니다."
         actions={
           <select
             value={exId}
@@ -161,15 +163,8 @@ export default function A05Map() {
             }}
             onError={fail}
           />
-          {ex.floorPlanRevision !== undefined && (
-            <details onToggle={event => setEditingNavigation(event.currentTarget.open)}>
-              <summary>이동 구조 등록</summary>
-              {editingNavigation && <NavigationEditor key={`${ex.id}:${ex.floorPlanRevision}`}
-                exhibition={ex} artworks={artworks} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
-            </details>
-          )}
-
-          <section className="a-card pad">
+          <section className="a-card pad" aria-labelledby="map-placement-title">
+            <h2 id="map-placement-title">입구와 작품 배치</h2>
             <FloorMap
               forAdmin
               exhibition={ex}
@@ -234,6 +229,16 @@ export default function A05Map() {
               </p>
             )}
           </section>
+          {ex.floorPlanRevision !== undefined && (
+            <details className="a-card a-map-disclosure" onToggle={event => setEditingNavigation(event.currentTarget.open)}>
+              <summary>이동 구조 등록</summary>
+              <div className="a-map-disclosure-body">
+                <p className="muted small">벽·가벽과 기둥, 출입문, 통로를 표시하고 저장 전에 경로를 확인할 수 있어요.</p>
+                {editingNavigation && <NavigationEditor key={`${ex.id}:${ex.floorPlanRevision}`}
+                  exhibition={ex} artworks={artworks} onSaved={applyExhibition} onConflict={() => void reloadAfterConflict()} />}
+              </div>
+            </details>
+          )}
         </div>
 
         <aside className="stack gap-24">
@@ -259,6 +264,8 @@ export default function A05Map() {
             )}
           </div>
 
+          <DirectVisitEditor key={ex.id} ex={ex} artworks={artworks}
+            onSave={order => saveExhibition({ ...ex, directVisitOrder: order }, '전시 관람 순서를 저장했어요.')} />
           <RoomsEditor
             key={ex.id}
             ex={ex}
@@ -269,6 +276,70 @@ export default function A05Map() {
       </div>
     </>
   );
+}
+
+function DirectVisitEditor({ ex, artworks, onSave }: {
+  ex: Exhibition; artworks: Artwork[]; onSave: (order: string[]) => Promise<boolean>;
+}) {
+  const saved = ex.directVisitOrder ?? [];
+  const [order, setOrder] = useState(saved);
+  const [saving, setSaving] = useState(false);
+  const [saveResult, setSaveResult] = useState<boolean | null>(null);
+  const worksById = new Map(artworks.map(work => [work.id, work]));
+  const changed = order.length !== saved.length || order.some((id, index) => saved[index] !== id);
+  const eligibleCount = saved.filter(id => worksById.get(id)?.reviewStatus === 'approved').length;
+
+  function move(index: number, offset: number) {
+    const next = [...order];
+    [next[index], next[index + offset]] = [next[index + offset], next[index]];
+    setOrder(next);
+    setSaveResult(null);
+  }
+
+  return <details className="a-card a-map-disclosure">
+    <summary>전시 순서로 바로 보기</summary>
+    <div className="a-map-disclosure-body">
+      <p className="small"><strong>저장한 검수 완료 작품 {eligibleCount}점</strong></p>
+      <p className="muted small">관람자에게는 검수 완료 작품만 저장한 순서로 보여요. 보여 줄 작품이 없으면 바로 보기 버튼이 숨겨져요.</p>
+      <fieldset className="a-map-order" disabled={saving}>
+        <select aria-label="관람 순서에 추가할 작품" value="" onChange={event => {
+          if (event.target.value) {
+            setOrder([...order, event.target.value]);
+            setSaveResult(null);
+          }
+        }}>
+          <option value="">작품 추가</option>
+          {artworks.filter(work => !order.includes(work.id)).map(work => <option key={work.id} value={work.id}>{work.title}</option>)}
+        </select>
+        <ol aria-label="관람 순서">
+          {order.map((id, index) => {
+            const work = worksById.get(id);
+            const title = work?.title ?? '이 전시에서 빠진 작품';
+            return <li key={id}>
+              <span className="a-pos-num" aria-hidden="true">{index + 1}</span>
+              <span className="a-map-order-title">{title}{work?.reviewStatus !== 'approved' && <small>관람 제외</small>}</span>
+              <span className="a-map-order-actions">
+                <button type="button" className="a-btn sm" aria-label={`${title} 위로`} disabled={!index} onClick={() => move(index, -1)}>↑</button>
+                <button type="button" className="a-btn sm" aria-label={`${title} 아래로`} disabled={index === order.length - 1} onClick={() => move(index, 1)}>↓</button>
+                <button type="button" className="a-btn sm" aria-label={`${title} 빼기`} onClick={() => {
+                  setOrder(order.filter(item => item !== id));
+                  setSaveResult(null);
+                }}>×</button>
+              </span>
+            </li>;
+          })}
+        </ol>
+        <button className="a-btn primary" type="button" disabled={!changed} onClick={async () => {
+          setSaving(true);
+          setSaveResult(null);
+          try { setSaveResult(await onSave(order)); } finally { setSaving(false); }
+        }}>관람 순서 저장</button>
+      </fieldset>
+      {saveResult !== null && <p className={saveResult ? 'ok-text' : 'error-text'}>
+        {saveResult ? '관람 순서를 저장했어요.' : '저장하지 못했어요. 배치 지도 아래의 안내를 확인해 주세요.'}
+      </p>}
+    </div>
+  </details>;
 }
 
 /** 이미지 파일의 원본 픽셀 크기 (지도 비율 계산용) */

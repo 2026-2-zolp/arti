@@ -22,7 +22,6 @@ export function SignupDocument({ title, sections, version }: Props) {
           <button type="button" className="text-btn" autoFocus onClick={() => dialog.current?.close()}>닫기</button>
         </div>
         <div className="signup-document-body">
-          <p className="muted small">검토용 초안 · 운영 주체, 연락처, 보유기간은 팀 확인 중입니다.</p>
           {version && <p className="muted small">버전 {version}</p>}
           {sections.map((section) => (
             <section key={section.title}>

@@ -70,6 +70,7 @@ export function FloorMap({
   const { src: planSrc } = useProtectedImage(showPlan && plan ? uploadedImageUrl(plan.file, forAdmin) : undefined);
   const ratio = indoor?.aspect ?? (plan ? plan.width / plan.height : aspect);
   const H = 100 / ratio;
+  const interactiveMarkers = !!onMarkerClick && !onMarkerMove && !forAdmin;
   const sy = (y: number) => (y * H) / 100;
   const toPts = (ps: MapPoint[]) => ps.map((p) => `${p.x},${sy(p.y)}`).join(' ');
   const routePath = route?.map((point, i) => {
@@ -133,7 +134,7 @@ export function FloorMap({
       onPointerMove={moveDrag}
       onPointerUp={endDrag}
       onPointerCancel={() => setDrag(null)}
-      role="img"
+      role={interactiveMarkers ? 'group' : 'img'}
       aria-label={`${exhibition.title} 평면도`}
     >
       {showPlan && <image href={planSrc} x={0} y={0} width={100} height={H} preserveAspectRatio="none" />}
@@ -198,12 +199,21 @@ export function FloorMap({
             key={m.id}
             className={`fm-marker ${m.state} ${onMarkerMove ? 'draggable' : ''}`}
             transform={`translate(${point.x} ${sy(point.y)})`}
+            role={interactiveMarkers ? 'button' : undefined}
+            tabIndex={interactiveMarkers ? 0 : undefined}
+            aria-label={interactiveMarkers ? `${m.label}번 작품${m.title ? ` ${m.title}` : ''} 정보 보기` : undefined}
             onPointerDown={onMarkerMove ? (e) => startDrag(e, 'marker', m.id, m.point) : undefined}
             onClick={(e) => {
               if (onMarkerMove || !onMarkerClick) return; // 끌기 가능한 지도는 endDrag에서 처리
               e.stopPropagation();
               onMarkerClick(m.id);
             }}
+            onKeyDown={interactiveMarkers ? event => {
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              event.preventDefault();
+              event.stopPropagation();
+              if (!event.repeat) onMarkerClick?.(m.id);
+            } : undefined}
           >
             {m.title && <title>{m.title}</title>}
             {m.state === 'current' && <circle className="fm-pulse" r={5.5} />}

@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 from threading import Event
 from time import monotonic
 from unittest.mock import patch
+from uuid import uuid4
 
 from django.core.management import call_command
 from django.test import TestCase, override_settings
@@ -203,6 +204,94 @@ class DocentHarnessTests(TestCase):
         self.assertNotIn('다른 합성 작품', reply['answer'])
         self.assertEqual(reply['sourceRefs'], [])
 
+    def test_insufficient_evidence_uses_only_the_current_confirmed_matching_hint(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        question, hint = work.guided_looking[0], work.guided_hints[0]
+        Artwork.objects.filter(pk=work.id).update(show_image=False)
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.id).update(
+            show_image=work.show_image, guide_status=work.guide_status,
+        ))
+        path = f'/api/artworks/{work.id}/ask'
+        entry = {'kind': 'guide', 'tab': 'guided', 'contentVersion': work.content_version, 'questionIndex': 0}
+        mocked = provider_reply('다른 작품의 위치를 단정합니다.', insufficientEvidence=True, sourceRefs=MIXED_REFS)
+        with endpoint(body=mocked) as calls:
+            reply = self.api.post(path, {'question': question, 'entryContext': entry}, format='json')
+            self.assertEqual(reply.status_code, 200)
+            data = reply.json()
+            self.assertEqual(data['mode'], 'fallback')
+            self.assertTrue(data['answer'].endswith(hint))
+            self.assertNotIn('다른 작품의 위치', data['answer'])
+            self.assertNotIn('audioGrant', data)
+            self.assertEqual(data['sourceRefs'], [{
+                'artworkId': work.id, 'sourceVersion': work.source_version, 'kind': 'guide', 'revision': work.guide_revision,
+            }])
+
+            unrelated = self.api.post(path, {'question': '작가가 왜 이 작품을 그렸나요?', 'entryContext': entry}, format='json')
+            self.assertEqual(unrelated.json()['mode'], 'refusal')
+            self.assertNotIn(hint, unrelated.json()['answer'])
+            self.assertEqual(unrelated.json()['sourceRefs'], [])
+
+            Artwork.objects.filter(pk=work.id).update(guide_status='suggested')
+            pending = self.api.post(path, {'question': question}, format='json')
+            self.assertEqual(pending.json()['mode'], 'refusal')
+            self.assertNotIn(hint, pending.json()['answer'])
+            self.assertEqual(pending.json()['sourceRefs'], [])
+            self.assertEqual(len(calls), 3)
+
+    def test_guide_change_during_inference_does_not_serve_old_hint(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.id).update(
+            content_version=work.content_version, guided_hints=work.guided_hints, guide_revision=work.guide_revision,
+        ))
+
+        def update_then_decline(*_args, **_kwargs):
+            Artwork.objects.filter(pk=work.id).update(
+                content_version=work.content_version + 1, guide_revision=work.guide_revision + 1,
+                guided_hints=['새로 승인한 힌트'],
+            )
+            return {'answer': '자료를 확인할 수 없어요.', 'insufficientEvidence': True}
+
+        with patch('arti.docent.providers.generate', side_effect=update_then_decline):
+            response = self.api.post(f'/api/artworks/{work.id}/ask', {'question': work.guided_looking[0]}, format='json')
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()['code'], 'CONTENT_CHANGED')
+        self.assertNotIn('sourceRefs', response.json())
+        self.assertNotIn('answer', response.json())
+
+    def test_insufficient_visual_evidence_offers_only_general_observation_on_a_public_image(self):
+        path = '/api/artworks/fixture-art01/ask'
+        body = provider_reply('다른 작품에 있는 세부 사항입니다.', insufficientEvidence=True, sourceRefs=MIXED_REFS)
+        with endpoint(body=body) as calls:
+            for index, (question, tip) in enumerate([
+                ('어떤 색이 쓰였나요?', '색이나 밝기'),
+                ('윤곽이 어떤 모양인가요?', '윤곽을 따라'),
+                ('인물은 어느 위치에 있나요?', '가운데와 가장자리'),
+                ('빛을 짧게 말고 자세히 설명해 주세요.', '색이나 밝기'),
+                ('앞 작품과 지금 작품의 빛을 비교해 주세요.', '색이나 밝기'),
+            ]):
+                with self.subTest(question=question):
+                    reply = self.api.post(path, {'question': question}, format='json', REMOTE_ADDR=f'192.0.2.{51 + index}')
+                    self.assertEqual(reply.status_code, 200)
+                    self.assertEqual(reply.json()['mode'], 'fallback')
+                    self.assertIn(tip, reply.json()['answer'])
+                    self.assertNotIn('다른 작품', reply.json()['answer'])
+                    self.assertEqual(reply.json()['sourceRefs'], [])
+            self.assertEqual(len(calls), 5)
+            for question in ('작가는 왜 이 색을 썼나요?', '어디에 소장되어 있나요?', '작가는 왜 빛을 강조해서 그렸나요?'):
+                with self.subTest(question=question):
+                    reply = self.api.post(path, {'question': question}, format='json', REMOTE_ADDR='192.0.2.55')
+                    self.assertEqual(reply.json()['mode'], 'refusal')
+                    self.assertNotIn('도판', reply.json()['answer'])
+                    self.assertEqual(reply.json()['sourceRefs'], [])
+            work = Artwork.objects.get(pk='fixture-art01')
+            Artwork.objects.filter(pk=work.id).update(show_image=False)
+            self.addCleanup(lambda: Artwork.objects.filter(pk=work.id).update(show_image=work.show_image))
+            reply = self.api.post(path, {'question': '빛을 짧게 말고 자세히 설명해 주세요.'},
+                                  format='json', REMOTE_ADDR='192.0.2.56')
+            self.assertEqual(reply.json()['mode'], 'refusal')
+            self.assertNotIn('도판', reply.json()['answer'])
+            self.assertEqual(reply.json()['sourceRefs'], [])
+
     def test_missing_work_evidence_skips_provider(self):
         case = next(case for case in self.cases if case['id'] == 'B01')
         w = Artwork.objects.get(pk=case['workId'])
@@ -221,6 +310,9 @@ class DocentHarnessTests(TestCase):
                     self.assertEqual(response.status_code, 200, response.content)
                     self.assertEqual(response.json()['mode'], 'refusal')
                     self.assertEqual(response.json()['sourceRefs'], [])
+            response, _ = self.ask({**case, 'entryContext': None, 'question': '어떤 색이 쓰였나요?'}, ip='192.0.2.7')
+            self.assertEqual(response.json()['mode'], 'fallback')
+            self.assertEqual(response.json()['sourceRefs'], [])
             self.assertEqual(len(calls), 0)
 
             # A visitor who selected a confirmed guide question still has a source for that entry.
@@ -242,6 +334,100 @@ class DocentHarnessTests(TestCase):
         self.assertEqual(response.status_code, 502, response.content)
         self.assertEqual(response.json()['code'], 'PROVIDER_ERROR')
         self.assertNotIn('answer', response.json())
+
+    def test_matching_approved_follow_up_uses_only_its_current_hint(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        initial, target = work.guided_looking[0], '노란 원의 경계는 어떻게 보이나요?'
+        hint = '노란 원의 둥근 경계를 따라가 보세요.'
+        case = {'workId': work.id, 'question': target, 'history': [], 'entryContext': {
+            'kind': 'guide', 'tab': 'guided', 'contentVersion': work.content_version, 'questionIndex': 0,
+        }}
+        Artwork.objects.filter(pk=work.pk).update(guided_looking=[initial, target], guided_hints=[work.guided_hints[0], hint])
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.pk).update(
+            guided_looking=work.guided_looking, guided_hints=work.guided_hints, guide_status=work.guide_status,
+        ))
+
+        with endpoint(body=SUCCESS) as calls:
+            response, _ = self.ask(case, ip='192.0.2.31')
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(response.json()['sourceRefs'], [{
+                'artworkId': work.id, 'sourceVersion': work.source_version, 'kind': 'guide',
+                'revision': work.guide_revision,
+            }])
+            request = json.loads(calls[0]['body']['messages'][1]['content'])
+            self.assertEqual(request['entry'], {'kind': 'guide', 'question': initial})
+            self.assertEqual(request['guideEvidence'], {'question': target, 'hint': hint})
+            self.assertNotIn(work.guided_hints[0], json.dumps(request, ensure_ascii=False))
+
+            Artwork.objects.filter(pk=work.pk).update(guide_status='suggested')
+            response, _ = self.ask({**case, 'entryContext': None}, ip='192.0.2.31')
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertNotIn('guideEvidence', json.loads(calls[1]['body']['messages'][1]['content']))
+            self.assertEqual([ref['kind'] for ref in response.json()['sourceRefs']], ['original'])
+
+    def test_earlier_remarks_reach_provider_only_with_current_evidence(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        remarks = {'contentVersion': work.content_version, 'observations': ['노란 원을 등불이라고 적었어요.']}
+        body = {'question': '이 대화를 시작할 때 제가 붙인 말은 뭐였나요?', 'history': [],
+                'visitId': str(uuid4()), 'docentEvidenceRevision': 0, 'earlierConversation': remarks}
+        path = f'/api/artworks/{work.pk}/ask'
+        with endpoint(body=SUCCESS) as calls:
+            response = self.api.post(path, body, format='json', REMOTE_ADDR='192.0.2.78')
+            self.assertEqual(response.status_code, 200, response.content)
+            prompt = json.loads(calls[0]['body']['messages'][1]['content'])
+            self.assertEqual(prompt['earlierUserRemarks'], remarks['observations'])
+            self.assertEqual({ref['artworkId'] for ref in response.json()['sourceRefs']}, {work.pk})
+            for change, expected in [({'contentVersion': work.content_version + 1}, 409),
+                                     ({'observations': ['원'] * 3}, 400), ({'observations': ['']}, 400)]:
+                invalid = {**body, 'earlierConversation': {**remarks, **change}}
+                self.assertEqual(self.api.post(path, invalid, format='json', REMOTE_ADDR='192.0.2.78').status_code, expected)
+            self.assertEqual(len(calls), 1)
+
+    def test_unspecified_past_reference_asks_once_without_a_provider_call(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        path = f'/api/artworks/{work.pk}/ask'
+        body = {'history': [
+            {'role': 'user', 'text': '선은 어디로 이어지나요?'},
+            {'role': 'assistant', 'text': '선의 경계를 따라 살펴보세요.'},
+            {'role': 'user', 'text': '어느 색을 보면 좋을까요?'},
+            {'role': 'assistant', 'text': '노란 부분부터 살펴보세요.'},
+        ]}
+        with endpoint(body=SUCCESS) as calls:
+            response = self.api.post(path, {**body, 'question': '그때 그거요. 뭐였죠?'}, format='json')
+            self.assertEqual(response.status_code, 200, response.content)
+            data = response.json()
+            self.assertIn('어느 부분', data['answer'])
+            self.assertEqual(data['mode'], 'refusal')
+            self.assertEqual(data['sourceRefs'], [])
+            self.assertNotIn('audioGrant', data)
+            self.assertEqual(len(calls), 0)
+            recent = self.api.post(path, {**body, 'question': '그 색은 어디에 보여요?'}, format='json')
+            self.assertEqual(recent.status_code, 200, recent.content)
+            self.assertEqual(len(calls), 1)
+
+    def test_dialogue_order_sends_the_selected_remark_without_competing_history(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        path = f'/api/artworks/{work.pk}/ask'
+        reference = {'contentVersion': work.content_version, 'reference': 'dialogue_order',
+                     'observations': ['노란 원의 가장자리를 먼저 봤다고 말했어요.']}
+        body = {'question': '맨 처음 거요. 어디였죠?', 'visitId': str(uuid4()), 'docentEvidenceRevision': 0,
+                'history': [{'role': 'user', 'text': '나중에 어느 얼굴을 볼까요?'},
+                            {'role': 'assistant', 'text': '세 얼굴 중 먼저 보는 위치를 살펴보세요.'}]}
+        with endpoint(body=SUCCESS) as calls:
+            response = self.api.post(path, {**body, 'earlierConversation': reference}, format='json')
+            self.assertEqual(response.status_code, 200, response.content)
+            prompt = json.loads(calls[0]['body']['messages'][1]['content'])
+            self.assertEqual(prompt['referencedUserTurn'], reference['observations'][0])
+            self.assertEqual(prompt['history'], [])
+            self.assertNotIn('earlierUserRemarks', prompt)
+            for change in ({'reference': 'other'}, {'observations': ['하나', '둘']}):
+                invalid = {**reference, **change}
+                response = self.api.post(path, {**body, 'earlierConversation': invalid}, format='json')
+                self.assertEqual(response.status_code, 400)
+            unresolved = {**reference, 'observations': []}
+            clarification = self.api.post(path, {**body, 'earlierConversation': unresolved}, format='json')
+            self.assertIn('어느 부분', clarification.json()['answer'])
+            self.assertEqual(len(calls), 1)
 
     def test_excerpt_rebuilds_context_from_the_current_approved_text(self):
         case = next(case for case in self.cases if case['id'] == 'D01-first')
