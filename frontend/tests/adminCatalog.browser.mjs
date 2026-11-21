@@ -112,9 +112,17 @@ async function verifyArtwork({ page, request, headers }) {
   const image = await preview.locator('img').getAttribute('src');
   assert.match(image, /^blob:/);
   const zoom = page.getByRole('dialog', { name: `${protectedWork.title} 크게 보기` });
-  const close = button(zoom, '전체 화면 닫기');
+  const close = button(zoom, '크게 보기 닫기');
   await preview.press('Enter');
   await close.waitFor();
+  await zoom.evaluate(async dialog => {
+    await Promise.all(dialog.getAnimations().map(animation => animation.finished));
+  });
+  const box = await zoom.boundingBox();
+  const viewport = page.viewportSize();
+  assert(box && viewport && box.width < viewport.width && box.height < viewport.height);
+  assert(Math.abs(box.x + box.width / 2 - viewport.width / 2) < 2);
+  assert(Math.abs(box.y + box.height / 2 - viewport.height / 2) < 2);
   assert(await focused(close));
   assert.equal(await zoom.getByRole('img', { name: protectedWork.title }).getAttribute('src'), image);
   await zoom.locator('.zoom-stage').hover();
@@ -162,7 +170,8 @@ async function verifyArtwork({ page, request, headers }) {
   await button(confirmation, '삭제').click();
   assert.equal((await deleted).status(), 204);
   await page.waitForURL(url => url.pathname === '/admin/artworks' && url.searchParams.get('exhibition') === exhibitionId);
-  await page.getByRole('link', { name: protectedWork.title, exact: true }).waitFor();
+  await page.getByRole('heading', { name: '작품 관리', exact: true }).waitFor();
+  assert.equal((await request.get(protectedPath, { headers })).status(), 200);
   assert.equal(await page.getByRole('link', { name: updated.title, exact: true }).count(), 0);
   assert.equal((await request.get(path, { headers })).status(), 404);
   assert.deepEqual(requests, [`"${created.version}"`, `"${updated.version}"`]);
