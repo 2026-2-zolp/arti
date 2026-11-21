@@ -542,6 +542,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         )}
         {chatReady && visibleMessages.map((m, i) => {
           const isAnswer = m.role === 'ai' && m.mode === 'llm';
+          const isGuideHint = m.mode === 'fallback' && m.sourceRefs?.some(ref => ref.kind === 'guide');
           const clip = isAnswer ? narrationClip(narration?.answers.find(item => item.text === m.text)) : undefined;
           const { audioGrant } = m;
           const loadClip = audioGrant && state.visitId
@@ -566,7 +567,8 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                   }));
                 } : undefined}>
                 <div className={`bubble ${isAttempt ? 'docent-attempt' : m.role}`}>
-                  {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
+                  {m.role === 'ai' && <small>{isGuideHint ? '등록된 관찰 힌트'
+                    : m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
                   {m.mode === 'fallback' && imageSrc && (
                     <div><button type="button" className="link-btn" onClick={() => setShowArtwork(true)}>도판 크게 보기</button></div>
                   )}
@@ -584,7 +586,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                       : <Icon name={active ? 'stop' : 'speaker'} size={18} />}
                   </button>
                   <span className="docent-listen-status" role="status" aria-atomic="true">
-                    {preparing ? '음성을 만들고 있어요' : ''}
+                    {preparing ? '음성을 만들고 있어요' : active && audioGrant ? 'AI 음성' : ''}
                   </span>
                 </div>}
               </div>

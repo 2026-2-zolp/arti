@@ -204,6 +204,60 @@ class DocentHarnessTests(TestCase):
         self.assertNotIn('다른 합성 작품', reply['answer'])
         self.assertEqual(reply['sourceRefs'], [])
 
+    def test_insufficient_evidence_uses_only_the_current_confirmed_matching_hint(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        question, hint = work.guided_looking[0], work.guided_hints[0]
+        Artwork.objects.filter(pk=work.id).update(show_image=False)
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.id).update(
+            show_image=work.show_image, guide_status=work.guide_status,
+        ))
+        path = f'/api/artworks/{work.id}/ask'
+        entry = {'kind': 'guide', 'tab': 'guided', 'contentVersion': work.content_version, 'questionIndex': 0}
+        mocked = provider_reply('다른 작품의 위치를 단정합니다.', insufficientEvidence=True, sourceRefs=MIXED_REFS)
+        with endpoint(body=mocked) as calls:
+            reply = self.api.post(path, {'question': question, 'entryContext': entry}, format='json')
+            self.assertEqual(reply.status_code, 200)
+            data = reply.json()
+            self.assertEqual(data['mode'], 'fallback')
+            self.assertTrue(data['answer'].endswith(hint))
+            self.assertNotIn('다른 작품의 위치', data['answer'])
+            self.assertNotIn('audioGrant', data)
+            self.assertEqual(data['sourceRefs'], [{
+                'artworkId': work.id, 'sourceVersion': work.source_version, 'kind': 'guide', 'revision': work.guide_revision,
+            }])
+
+            unrelated = self.api.post(path, {'question': '작가가 왜 이 작품을 그렸나요?', 'entryContext': entry}, format='json')
+            self.assertEqual(unrelated.json()['mode'], 'refusal')
+            self.assertNotIn(hint, unrelated.json()['answer'])
+            self.assertEqual(unrelated.json()['sourceRefs'], [])
+
+            Artwork.objects.filter(pk=work.id).update(guide_status='suggested')
+            pending = self.api.post(path, {'question': question}, format='json')
+            self.assertEqual(pending.json()['mode'], 'refusal')
+            self.assertNotIn(hint, pending.json()['answer'])
+            self.assertEqual(pending.json()['sourceRefs'], [])
+            self.assertEqual(len(calls), 3)
+
+    def test_guide_change_during_inference_does_not_serve_old_hint(self):
+        work = Artwork.objects.get(pk='fixture-art01')
+        self.addCleanup(lambda: Artwork.objects.filter(pk=work.id).update(
+            content_version=work.content_version, guided_hints=work.guided_hints, guide_revision=work.guide_revision,
+        ))
+
+        def update_then_decline(*_args, **_kwargs):
+            Artwork.objects.filter(pk=work.id).update(
+                content_version=work.content_version + 1, guide_revision=work.guide_revision + 1,
+                guided_hints=['새로 승인한 힌트'],
+            )
+            return {'answer': '자료를 확인할 수 없어요.', 'insufficientEvidence': True}
+
+        with patch('arti.docent.providers.generate', side_effect=update_then_decline):
+            response = self.api.post(f'/api/artworks/{work.id}/ask', {'question': work.guided_looking[0]}, format='json')
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()['code'], 'CONTENT_CHANGED')
+        self.assertNotIn('sourceRefs', response.json())
+        self.assertNotIn('answer', response.json())
+
     def test_insufficient_visual_evidence_offers_only_general_observation_on_a_public_image(self):
         path = '/api/artworks/fixture-art01/ask'
         body = provider_reply('다른 작품에 있는 세부 사항입니다.', insufficientEvidence=True, sourceRefs=MIXED_REFS)

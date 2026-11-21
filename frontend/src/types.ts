@@ -105,6 +105,7 @@ export interface NavigationLayoutInput {
 export type NavigationLayout = NavigationLayoutInput & { floorPlanRevision: number; aspect: number };
 
 export interface Artwork {
+  narrationVersions?: Partial<Record<'description' | 'guide', string>>;
   docentListeningAvailable?: boolean;
   visitRecapEnabled?: boolean;
   docentTranscriptStorageAvailable?: boolean;

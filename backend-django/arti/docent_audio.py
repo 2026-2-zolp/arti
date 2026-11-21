@@ -1,4 +1,4 @@
-"""Sign answers for optional, stateless Korean narration in local reviews."""
+"""Sign answers for optional Korean narration in explicitly enabled exhibitions."""
 
 import base64
 import hashlib
@@ -27,14 +27,20 @@ SAMPLE_RATE = 24000
 trial_logger = logging.getLogger('arti.docent_audio.trial')
 
 
+def enabled_for(work):
+    return (work.exhibition_id in settings.ARTI_DOCENT_AUDIO_EXHIBITIONS
+            and (settings.ARTI_ENV == 'production'
+                 or (settings.ARTI_ENV == 'test' and settings.ALLOW_TEST_FIXTURES)))
+
+
 def available(work):
-    return (settings.ARTI_ENV == 'test' and settings.ALLOW_TEST_FIXTURES
-            and work.exhibition_id in settings.ARTI_DOCENT_AUDIO_EXHIBITIONS
-            and bool(voice_key()))
+    return enabled_for(work) and bool(voice_key())
 
 
 def listening_available(work):
-    return work.exhibition_id in settings.ARTI_DOCENT_LISTENING_EXHIBITIONS and available(work)
+    return (settings.ARTI_ENV == 'test'
+            and work.exhibition_id in settings.ARTI_DOCENT_LISTENING_EXHIBITIONS
+            and available(work))
 
 
 def scope_digest(work, session, visit_id, reply):

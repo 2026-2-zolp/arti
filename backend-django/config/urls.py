@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/taste-profiles/resolve', views.resolve_taste),
     path('api/exhibitions/<str:ex_id>/taste-pool', views.taste_pool),
     path('api/artworks', views.artworks), path('api/artworks/<str:artwork_id>', views.artworks),
+    path('api/artworks/<str:artwork_id>/narration/<str:kind>', views.artwork_narration),
     path('api/recommendations', views.recommendations),
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
     path('api/admin/operations', operations.dashboard),

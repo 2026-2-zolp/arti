@@ -35,6 +35,9 @@ export class ApiError extends Error {
 }
 
 const BASE = (import.meta.env?.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? '/api';
+
+export const artworkNarrationUrl = (artworkId: string, kind: 'description' | 'guide', version: string) =>
+  `${BASE}/artworks/${encodeURIComponent(artworkId)}/narration/${kind}?v=${encodeURIComponent(version)}`;
 // W04: explicit target selection, never retry/fall back to another API automatically.
 const ADMIN_READ = apiTarget(import.meta.env?.VITE_API_TARGET) === 'django' ? '/admin' : '';
 const USER_TOKEN = 'arti.token';

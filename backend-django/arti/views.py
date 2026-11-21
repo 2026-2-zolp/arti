@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from .authentication import IsAdmin
+from .artwork_narration import recording
 from .constants import TAGS
 from .docent_memory import memory_demo_enabled, visit_context_enabled
 from .http import ContractError
@@ -95,6 +96,12 @@ def artworks(request, artwork_id=None):
         if work is None:
             raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
         data = artwork_dto(work)
+        narrations = {}
+        for kind in ('description', 'guide'):
+            if clip := recording(work, kind, data):
+                narrations[kind] = clip[1]
+        if narrations:
+            data['narrationVersions'] = narrations
         if request.query_params.get('docent') == 'true':
             evidence = work.approved_docent_collection
             data['docentEvidenceRevision'] = evidence['revision'] if evidence else 0
@@ -124,6 +131,20 @@ def artworks(request, artwork_id=None):
             data['visitRecapEnabled'] = True
         catalog.append(data)
     return Response(catalog)
+
+
+@api_view(['GET'])
+def artwork_narration(request, artwork_id, kind):
+    work = public_works().filter(pk=artwork_id).first()
+    if work is not None:
+        clip = recording(work, kind, artwork_dto(work))
+        if clip and request.query_params.get('v') == clip[1]:
+            try:
+                return FileResponse(clip[0].open('rb'), content_type='audio/mpeg',
+                                    headers={'Cache-Control': 'private, no-store'})
+            except FileNotFoundError:
+                pass
+    raise ContractError(404, 'NOT_FOUND', '이 작품의 음성 안내를 찾을 수 없어요.')
 
 
 @api_view(['GET'])

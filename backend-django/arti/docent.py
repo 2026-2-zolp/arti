@@ -68,8 +68,16 @@ def require_current_public_work(work, *, check_collection=False):
         raise content_changed()
 
 
-def insufficient_evidence(request, question, artwork):
+def insufficient_evidence(request, question, artwork, *, approved_guide=None):
     answer = '등록된 작품 자료에서 확인할 수 없어요.'
+    if approved_guide is not None:
+        hint, source = approved_guide
+        return Response({
+            'answer': f'{answer} 작품에서 이 부분을 살펴보세요. {hint}',
+            'mode': 'fallback',
+            'sourceRefs': [source],
+            'requestId': request.request_id,
+        })
     tip = None
     if (artwork['imageFile'] or artwork['imageUrl']) and not FACT_OR_INTERPRETATION.search(question):
         tip = next((text for pattern, text in IMAGE_LOOKING_TIPS if pattern.search(question)), None)
@@ -178,6 +186,7 @@ def ask(request,artwork_id):
         evidence_context['dialogue_reference'] = observations[0].strip()
     elif earlier is not None:
         evidence_context['earlier_observations'] = [text.strip() for text in observations]
+    approved_guide = None
     if data['guideStatus'] == 'confirmed':
         matching_hint = next((hint.strip() for approved_question, hint in zip(data['guidedLooking'], data['guidedHints'])
                               if approved_question.strip() == question and hint.strip()), None)
@@ -185,6 +194,7 @@ def ask(request,artwork_id):
             evidence_context['guide_evidence'] = {'question': question, 'hint': matching_hint}
             guide_ref = {'artworkId': w.id, 'sourceVersion': w.source_version, 'kind': 'guide',
                          'revision': data['guideRevision']}
+            approved_guide = (matching_hint, guide_ref)
             if guide_ref not in refs:
                 refs.append(guide_ref)
     if not refs and not collection:
@@ -210,8 +220,10 @@ def ask(request,artwork_id):
             w, request.user, memory, exhibition_works, question, context, include_previous=False).get('earlierInExhibition'):
         raise ContractError(409, 'VISIT_CONTEXT_CHANGED', '앞 작품의 자료가 바뀌었어요. 질문을 다시 보내 주세요.')
     used_collection = result.get('collectionEvidenceUsed', False)
-    if result.get('insufficientEvidence') or (used_collection and not collection) or (not refs and not used_collection):
+    if (used_collection and not collection) or (not refs and not used_collection):
         return insufficient_evidence(request, question, data)
+    if result.get('insufficientEvidence'):
+        return insufficient_evidence(request, question, data, approved_guide=approved_guide)
     if collection and 'collectionEvidenceUsed' not in result:
         raise ContractError(502, 'PROVIDER_ERROR', '답변의 소장처 근거를 확인할 수 없어요.', retryable=True)
     if used_collection:

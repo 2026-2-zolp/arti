@@ -1,6 +1,9 @@
 import base64
+import hashlib
 import io
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import wave
 from unittest.mock import ANY, patch
 from uuid import uuid4
@@ -42,6 +45,45 @@ class DocentAudioContractTests(TestCase):
 
     def payload(self):
         return {'answer': REPLY, 'audioGrant': self.ask()['audioGrant'], 'visitId': self.visit_id}
+
+    @override_settings(ARTI_ENV='production', ALLOW_TEST_FIXTURES=False,
+                       ARTI_DOCENT_LISTENING_EXHIBITIONS={'fixture-ex01'})
+    def test_production_uses_opt_in_play_only(self):
+        payload = self.payload()
+        self.assertNotIn('docentListeningAvailable', self.client.get(f'/api/artworks/{WORK}').json())
+        with patch('arti.docent_audio.synthesize', return_value=b'RIFFVOICE') as render:
+            self.assertEqual(self.client.post(AUDIO, {**payload, 'intent': 'prepare'}, format='json').status_code, 404)
+            render.assert_not_called()
+            self.assertEqual(self.client.post(AUDIO, payload, format='json').status_code, 200)
+            render.assert_called_once()
+        with override_settings(ARTI_DOCENT_AUDIO_EXHIBITIONS=set()):
+            self.assertNotIn('audioGrant', self.ask())
+            self.assertEqual(self.client.post(AUDIO, payload, format='json').status_code, 404)
+
+    @override_settings(ARTI_ENV='production', ALLOW_TEST_FIXTURES=False, OPENAI_API_KEY='')
+    def test_prerecorded_audio_requires_matching_public_text(self):
+        work = Artwork.objects.get(pk=WORK)
+        digest = hashlib.sha256(work.description.strip().encode()).hexdigest()
+        request = f'/api/artworks/{WORK}/narration/description?v={digest}'
+        with TemporaryDirectory() as directory, override_settings(MEDIA_ROOT=Path(directory)):
+            media = Path(directory) / 'narration'
+            media.mkdir()
+            file = f'{WORK}-description-0123456789abcdef.mp3'
+            (media / file).write_bytes(b'mock-mp3')
+            entry = {'artworkId': WORK, 'kind': 'description', 'voice': 'marin',
+                     'textSha256': digest, 'providerTranscriptMatched': True, 'file': file}
+            (media / f'{WORK}-description.json').write_text(json.dumps(entry), encoding='utf-8')
+            self.assertEqual(self.client.get(f'/api/artworks/{WORK}').json()['narrationVersions'], {'description': digest})
+            response = self.client.get(request)
+            self.assertEqual(response.headers['Content-Type'], 'audio/mpeg')
+            self.assertEqual(b''.join(response.streaming_content), b'mock-mp3')
+            self.assertEqual(self.client.get(request.replace(digest, 'other')).status_code, 404)
+            with override_settings(ARTI_DOCENT_AUDIO_EXHIBITIONS=set()):
+                self.assertEqual(self.client.get(request).status_code, 404)
+            Artwork.objects.filter(pk=WORK).update(description='문안이 바뀌었어요.')
+            self.assertEqual(self.client.get(request).status_code, 404)
+            Artwork.objects.filter(pk=WORK).update(description=work.description, review_status='source_check')
+            self.assertEqual(self.client.get(request).status_code, 404)
 
     def test_only_current_answer_and_visit_can_start_synthesis(self):
         with patch('arti.docent_audio.synthesize', return_value=b'RIFFVOICE') as render:
@@ -135,7 +177,7 @@ class DocentAudioContractTests(TestCase):
         self.assertNotIn(REPLY, response.content.decode())
         self.assertNotIn(payload['audioGrant'], response.content.decode())
 
-    @override_settings(ARTI_ENV='production')
+    @override_settings(ARTI_ENV='production', ARTI_DOCENT_AUDIO_EXHIBITIONS=set())
     def test_production_does_not_issue_grants_or_expose_rendering(self):
         self.assertNotIn('audioGrant', self.ask())
         with patch('arti.docent_audio.synthesize') as render:
