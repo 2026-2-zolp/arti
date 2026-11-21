@@ -183,7 +183,7 @@ export default function U09Route() {
     const exampleNote = '검수용 예시 배치예요. 실제 이동은 전시실 안내를 따라가 주세요.';
     routeNote = activeLeg ? exampleNote : `${exampleNote} ${routeNote}`;
   }
-  const spainRouteNote = activeLeg ? '확인된 다음 작품까지의 구간이에요.'
+  const spainRouteNote = activeLeg ? '다음 작품까지의 이동 경로예요.'
     : '이동 경로는 현장 안내를 따라가 주세요.';
   const showMap = isSpain ? verifiedSpainMap && (!!activeLeg || mapOpen) : !isExhibitionOrder || !isNextGuide;
   const thumbnail = artworkImageSrc(target);
