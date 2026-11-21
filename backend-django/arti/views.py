@@ -1,6 +1,7 @@
 # 공개 전시·작품·추천 조회와 인증·미디어 API를 제공합니다.
 import hashlib
 import secrets
+from contextlib import nullcontext
 from datetime import timedelta
 from pathlib import Path
 from django.conf import settings
@@ -92,17 +93,32 @@ def exhibitions(request, ex_id=None):
 @api_view(['GET'])
 def artworks(request, artwork_id=None):
     if artwork_id:
-        work = public_works().filter(pk=artwork_id).first()
-        if work is None:
-            raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
-        data = artwork_dto(work)
+        docent = request.query_params.get('docent') == 'true'
+        visit_id = None if docent else request.query_params.get('visitId')
+        exhibition_id = request.query_params.get('exhibitionId')
+        signs_receipt = request.user and visit_id is not None and exhibition_id is not None
+        with (taste_transaction() if signs_receipt else nullcontext()):
+            query = public_works().filter(pk=artwork_id)
+            if signs_receipt:
+                # A withdrawal must follow issuance so its protection deadline covers this signature.
+                query = query.select_for_update(of=('self',), no_key=True)
+            work = query.first()
+            if work is None:
+                raise ContractError(404, 'NOT_FOUND', '작품 정보를 찾을 수 없어요.')
+            data = artwork_dto(work)
+            if visit_id is not None and exhibition_id == work.exhibition_id:
+                visit_id = uuid_value(visit_id, visit=True)
+                exhibition = {'id': work.exhibition_id, 'title': work.exhibition.title, 'venue': work.exhibition.venue}
+                data['receiptExhibition'] = exhibition
+                if signs_receipt:
+                    data['artworkReceiptEvidence'] = issue_artwork_evidence(request.user, visit_id, exhibition, data)
         narrations = {}
         for kind in ('description', 'guide'):
             if clip := recording(work, kind, data):
                 narrations[kind] = clip[1]
         if narrations:
             data['narrationVersions'] = narrations
-        if request.query_params.get('docent') == 'true':
+        if docent:
             evidence = work.approved_docent_collection
             data['docentEvidenceRevision'] = evidence['revision'] if evidence else 0
             if settings.ARTI_DOCENT_TRANSCRIPTS_ENABLED:
@@ -111,13 +127,7 @@ def artworks(request, artwork_id=None):
                 data['visitorMemoryEnabled'] = True
                 data['visitRecapEnabled'] = memory_demo_enabled(work.exhibition_id)
             return Response(data, headers={'Cache-Control': 'no-store'})
-        visit_id = request.query_params.get('visitId')
-        if visit_id is not None and request.query_params.get('exhibitionId') == work.exhibition_id:
-            visit_id = uuid_value(visit_id, visit=True)
-            exhibition = {'id': work.exhibition_id, 'title': work.exhibition.title, 'venue': work.exhibition.venue}
-            data['receiptExhibition'] = exhibition
-            if request.user:
-                data['artworkReceiptEvidence'] = issue_artwork_evidence(request.user, visit_id, exhibition, data)
+        if 'receiptExhibition' in data:
             # 서명과 회원별 응답이 공유 캐시나 브라우저 디스크에 남지 않게 합니다.
             return Response(data, headers={'Cache-Control': 'private, no-store'})
         return with_etag(data)

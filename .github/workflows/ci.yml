@@ -132,6 +132,10 @@ jobs:
             database: arti_admin_concurrent
             admin: admin-edit-a
             second_admin: admin-edit-b
+          - suite: admin-catalog
+            name: Admin Chrome (catalog controls)
+            database: arti_admin_catalog
+            admin: admin-catalog-review
           - suite: saved-v2
             name: Visit Chrome (saved V2)
             database: arti_visit_boundaries_saved_v2
@@ -243,7 +247,7 @@ jobs:
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs
       - name: Run loopback Chrome regression
-        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","narrow-visit","docent-visit-memory","docent-listening"]'), matrix.suite)
+        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","admin-catalog","narrow-visit","docent-visit-memory","docent-listening"]'), matrix.suite)
         shell: bash
         env:
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
@@ -266,6 +270,10 @@ jobs:
             admin-concurrent)
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
               browser_test=frontend/tests/adminConcurrent.browser.mjs
+              ;;
+            admin-catalog)
+              server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
+              browser_test=frontend/tests/adminCatalog.browser.mjs
               ;;
             narrow-visit)
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
@@ -293,7 +301,7 @@ jobs:
 
           for ((attempt = 0; attempt < 30; attempt++)); do
             if mock_header=$(curl --silent --fail --max-time 2 --output /dev/null --write-out "%header{$ready_header}" "$ARTI_REVIEW_BASE/api/ready") &&
-                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent || "$ARTI_BROWSER_SUITE" == narrow-visit ]] || [[ "$mock_header" == 1 ]]; }; then
+                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent || "$ARTI_BROWSER_SUITE" == admin-catalog || "$ARTI_BROWSER_SUITE" == narrow-visit ]] || [[ "$mock_header" == 1 ]]; }; then
               node "$browser_test"
               exit
             fi
@@ -304,6 +312,8 @@ jobs:
             printf '%s\n' 'Receipt Chrome API readiness check failed.' >&2
           elif [[ "$ARTI_BROWSER_SUITE" == admin-concurrent ]]; then
             printf '%s\n' 'Admin Chrome (concurrent editing) API readiness check failed.' >&2
+          elif [[ "$ARTI_BROWSER_SUITE" == admin-catalog ]]; then
+            printf '%s\n' 'Admin Chrome (catalog controls) API readiness check failed.' >&2
           elif [[ "$ARTI_BROWSER_SUITE" == narrow-visit ]]; then
             printf '%s\n' 'Visit Chrome (narrow layout) API readiness check failed.' >&2
           else

@@ -1,10 +1,13 @@
 # 관람 화면에서 확인한 공개 작품의 영수증용 정보만 서명합니다.
+from datetime import timedelta
+
 from django.core import signing
 
 from .taste_evidence import MAX_AGE
 
 SALT = 'arti.receipt-artwork.v1'
 MAX_BYTES = 4096
+RECEIPT_PROTECTION_PERIOD = timedelta(seconds=MAX_AGE)
 
 
 def issue_artwork_evidence(actor, visit_id, exhibition, artwork):

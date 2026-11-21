@@ -100,6 +100,8 @@ def artwork_dto(w, admin=False):
     }
     if admin:
         data['savedTextProposals'] = [kind for kind in RETAINED_TEXT_FIELDS if data[f'{kind}Status'] == 'suggested']
+        if w.receipt_protected_until:
+            data['receiptProtectedUntil'] = w.receipt_protected_until.isoformat()
         return data
     if listening_available(w):
         data['docentListeningAvailable'] = True

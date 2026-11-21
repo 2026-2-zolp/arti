@@ -9,6 +9,7 @@ from django.core.validators import URLValidator
 from django.db import transaction, connection, OperationalError
 from django.db.models import Q
 from django.db.models.deletion import ProtectedError
+from django.utils import timezone
 from contextlib import contextmanager
 from urllib.parse import urlsplit
 from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
@@ -17,6 +18,7 @@ from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
 from .models import Artwork, DocentTranscript, Exhibition, Visit, VisitReaction
+from .receipt_evidence import RECEIPT_PROTECTION_PERIOD
 from .serializers import RETAINED_TEXT_FIELDS, artwork_dto, exhibition_dto
 from .taste_resolution import taste_transaction
 from .views import with_etag
@@ -86,6 +88,8 @@ def delete_artwork(request, artwork_id):
         if (has_receipt or VisitReaction.objects.filter(artwork=work).exists()
                 or DocentTranscript.objects.filter(artwork=work).exists()):
             deletion_blocked('연결된 관람 기록이나 도슨트 대화를 보존해야 해서 작품을 삭제할 수 없어요.')
+        if work.receipt_protected_until and work.receipt_protected_until > timezone.now():
+            deletion_blocked('비공개 전환 전에 관람한 회원의 영수증 저장을 위해 삭제가 보류돼요.')
         try:
             work.delete()
         except ProtectedError:
@@ -129,6 +133,8 @@ def stale(w):
 def finish(w, old, *, discarded_text=None):
     if any(getattr(w, f) != old[f] for f in SOURCE):
         stale(w)
+    if old['review_status'] == 'approved' and w.review_status != 'approved':
+        w.receipt_protected_until = timezone.now() + RECEIPT_PROTECTION_PERIOD
     w.retained_text = {
         kind: snapshot for kind, snapshot in w.retained_text.items()
         if w.review_status == 'approved' and getattr(w, STATES[kind]) == 'suggested'
@@ -153,7 +159,9 @@ def finish(w, old, *, discarded_text=None):
 
 def before(w):
     import copy
-    return {f:copy.deepcopy(getattr(w,f)) for f in SOURCE | {'summary','summary_status','guide_intro','guided_looking','guided_hints','guide_status'}}
+    return {f:copy.deepcopy(getattr(w,f)) for f in SOURCE | {
+        'review_status', 'summary', 'summary_status', 'guide_intro', 'guided_looking', 'guided_hints', 'guide_status',
+    }}
 
 
 @api_view(['GET','POST','PUT','DELETE'])

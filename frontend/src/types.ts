@@ -114,6 +114,7 @@ export interface Artwork {
   version?: number;
   sourceVersion?: number;
   contentVersion?: number;
+  receiptProtectedUntil?: string;
   summaryRevision?: number;
   guideRevision?: number;
   savedTextProposals?: ('summary' | 'guide')[];

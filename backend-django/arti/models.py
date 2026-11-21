@@ -81,6 +81,7 @@ class Artwork(models.Model):
     reference_url = models.CharField(max_length=2000, blank=True)
     docent_collection = models.JSONField(default=dict, blank=True)
     review_status = models.CharField(max_length=12, default='pending')
+    receipt_protected_until = models.DateTimeField(null=True, blank=True)
     analysis = models.JSONField(null=True, default=None, blank=True)
     summary = models.TextField(blank=True)
     summary_keywords = models.JSONField(default=list, blank=True)
