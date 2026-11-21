@@ -2,6 +2,7 @@
 import type {VisitState} from '../store/visitReducer';
 import type {ReceiptArtwork, ReceiptExhibition, TasteTag, VisitRecord} from '../types';
 import {TASTE_LABEL} from '../data/mock';
+import {finishedDocentInterests} from './visitMemory';
 
 // Django와 Express가 허용하는 관람 시간의 최대값입니다.
 export const MAX_VISIT_DURATION_MIN = 24 * 60;
@@ -38,8 +39,10 @@ export function buildRecord(s: VisitState, artworks: ReceiptArtwork[], ex: Recei
   // 화면 이름표(TASTE_LABEL)가 없는 예전 태그(calm·emotion 등)는 뺀다.
   // 빼지 않으면 키워드에 null이 들어가 서버 입력 검사에서 관람기록 전체가 거부됨 (태그 통일 전 임시 처리)
   const tags = [...new Set<TasteTag>([...s.tastes, ...liked])].filter((t) => TASTE_LABEL[t]).slice(0, 4);
+  const interests = finishedDocentInterests(s);
 
   return {
+    docentInterests: interests.length ? interests : undefined,
     visitId: s.visitId, visitMode: s.visitMode, tasteProfile: s.tasteProfile, tastes: s.tastes,
     selectedDuration: s.visitMode === 'exhibition_order' ? null : (s.duration ?? '30m'),
     requestGeneration: s.requestGeneration, reactionReasons: reasons, dwell,

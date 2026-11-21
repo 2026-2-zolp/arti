@@ -5,12 +5,13 @@ import { Lead, MobileShell } from '../../components/MobileShell';
 import { Field, isEmail, isValidPassword } from '../../components/Field';
 import { SignupDocument } from '../../components/SignupDocument';
 import { ApiError, api } from '../../api/client';
-import { SIGNUP_TERMS_VERSION, signupPrivacy, signupTerms } from '../../data/signupDocuments';
+import { DOCENT_TRANSCRIPT_NOTICE_VERSION, SIGNUP_TERMS_VERSION, signupPrivacy, signupTerms } from '../../data/signupDocuments';
+import { useAsync } from '../../lib/useAsync';
 import { useVisit } from '../../store/VisitContext';
 import { safeRedirect } from '../../store/ExhibitionRoute';
 import { exhibitionHomeFrom } from '../../lib/appHistory';
 
-type Errors = Partial<Record<'email' | 'password' | 'confirm' | 'terms' | 'form', string>>;
+type Errors = Partial<Record<'email' | 'password' | 'confirm' | 'form', string>>;
 
 /** 회원 가입 화면 */
 export default function U04Signup() {
@@ -18,9 +19,11 @@ export default function U04Signup() {
   const [params] = useSearchParams();
   const { dispatch } = useVisit();
   const [form, setForm] = useState({ email: '', password: '', confirm: '', nickname: '' });
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [transcriptAccepted, setTranscriptAccepted] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
+  const signupConfig = useAsync(api.signupConfig, []);
+  const canStoreTranscript = signupConfig.data?.docentTranscriptStorageAvailable === true;
 
   // 입력 필드 공통 변경 함수: set("email")처럼 바꿀 항목 이름을 받아 onChange 함수를 만들어 준다
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
@@ -31,7 +34,6 @@ export default function U04Signup() {
     if (!isEmail(form.email)) er.email = '이메일 형식을 확인해 주세요.';
     if (!isValidPassword(form.password)) er.password = '8자 이상, 영문과 숫자를 함께 써 주세요.';
     if (form.confirm !== form.password) er.confirm = '비밀번호가 일치하지 않아요.';
-    if (!termsAccepted) er.terms = '서비스 이용약관에 동의해 주세요.';
     return er;
   };
 
@@ -47,8 +49,11 @@ export default function U04Signup() {
         email: form.email,
         password: form.password,
         nickname: form.nickname,
-        termsAccepted,
+        termsAccepted: true,
         termsVersion: SIGNUP_TERMS_VERSION,
+        ...(canStoreTranscript && transcriptAccepted ? {
+          docentTranscriptAccepted: true, docentTranscriptNoticeVersion: DOCENT_TRANSCRIPT_NOTICE_VERSION,
+        } : {}),
       });
       dispatch({ type: 'login', user });
       dispatch({ type: 'setTastes', tastes: [] });
@@ -56,7 +61,10 @@ export default function U04Signup() {
       const redirect = safeRedirect(params.get('redirect'))?.replace(/\/taste\/saved$/, '/taste');
       navigate(redirect ?? '/', { replace: true });
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'TERMS_VERSION_CHANGED') setTermsAccepted(false);
+      if (err instanceof ApiError && err.code === 'TRANSCRIPT_NOTICE_CHANGED') {
+        setTranscriptAccepted(false);
+        signupConfig.reload();
+      }
       setErrors({ form: err instanceof Error ? err.message : '가입에 실패했어요.' });
     } finally {
       setSubmitting(false);
@@ -90,29 +98,25 @@ export default function U04Signup() {
 
         <fieldset className="terms">
           <legend className="sr-only">가입 안내</legend>
-          <label className="check">
-            <input
-              type="checkbox"
-              required
-              checked={termsAccepted}
-              disabled={submitting}
-              aria-invalid={Boolean(errors.terms)}
-              aria-describedby={errors.terms ? 'signup-terms-error' : undefined}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-            />
-            [필수] 서비스 이용약관에 동의합니다
-          </label>
-          {errors.terms && <span id="signup-terms-error" className="field-error" role="alert">{errors.terms}</span>}
-          <p className="muted small">이메일과 비밀번호는 가입과 로그인에 사용해요. 회원의 관람기록과 직접 저장한 취향은 계정에 남아요.</p>
           <div className="signup-document-links">
             <SignupDocument title="서비스 이용약관" version={SIGNUP_TERMS_VERSION} sections={signupTerms} />
-            <SignupDocument title="개인정보 처리방침" sections={signupPrivacy} />
+            <SignupDocument title="개인정보 처리방침" version={DOCENT_TRANSCRIPT_NOTICE_VERSION} sections={signupPrivacy} />
           </div>
+          {canStoreTranscript && <>
+            <label className="check">
+              <input type="checkbox" checked={transcriptAccepted} disabled={submitting}
+                aria-describedby="signup-transcript-summary" onChange={(event) => setTranscriptAccepted(event.target.checked)} />
+              [선택] 도슨트 대화 원문 저장에 동의합니다
+            </label>
+            <p className="field-hint" id="signup-transcript-summary">
+              질문과 답변은 직접 삭제하거나 탈퇴할 때까지 계정에 남아요. 좋아요한 작품에서 다시 읽을 수 있고, 동의하지 않아도 도슨트를 이용할 수 있어요.
+            </p>
+          </>}
         </fieldset>
 
         {errors.form && <p className="error-text" role="alert">{errors.form}</p>}
         <button className="btn primary block" type="submit" disabled={submitting}>
-          {submitting ? '가입 중…' : '회원가입'}
+          {submitting ? '가입 중…' : '이용약관에 동의하고 가입'}
         </button>
       </form>
     </MobileShell>

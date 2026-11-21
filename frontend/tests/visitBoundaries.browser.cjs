@@ -600,6 +600,9 @@ async function broadTasteTie(browser) {
     const tags = page.locator('[aria-label="취향 태그"]');
     await tags.waitFor();
     assert.equal(await tags.getByRole('button').count(), 8);
+    assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['풍경', '인물']);
+    await button(tags, '풍경').click();
+    await button(tags, '인물').click();
     assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
     await page.getByText('이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.').waitFor();
     assert.equal(await button(page, '이 취향으로 계속').count(), 0);
@@ -611,7 +614,7 @@ async function broadTasteTie(browser) {
     ]);
     await button(tags, '빛').waitFor();
     assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['빛']);
-    console.log('PASS U-05 starts a broad tie with no default, preserves the chosen tag on reload');
+    console.log('PASS U-05 offers stable broad-tie defaults and preserves the manually chosen tag on reload');
   } finally {
     await page.close();
   }
@@ -1001,6 +1004,38 @@ async function openAdmin(browser, context) {
   return page;
 }
 
+async function adminExhibitionOrder(browser) {
+  const page = await openAdmin(browser);
+  const path = '/api/admin/exhibitions/' + exhibitionId;
+  const adminToken = await page.evaluate(() => JSON.parse(localStorage.getItem('arti.adminToken')));
+  const headers = { 'X-Admin-Token': adminToken };
+  const original = await body(await page.request.get(path, { headers }));
+  const publicPath = '/api' + exhibition;
+  const oldOrder = (await body(await page.request.get(publicPath))).exhibitionOrder;
+  try {
+    await page.goto('/admin/map?exhibition=' + exhibitionId);
+    const details = page.locator('details').filter({ has: page.getByText('전시 순서로 바로 보기', { exact: true }) });
+    await details.locator('summary').click();
+    const picker = details.getByRole('combobox', { name: '관람 순서에 추가할 작품' });
+    await picker.selectOption('fixture-art01');
+    await picker.selectOption('fixture-art03');
+    const list = details.getByRole('list', { name: '관람 순서' });
+    await list.getByRole('listitem').nth(1).getByRole('button', { name: /위로$/ }).click();
+    assert.deepEqual((await body(await page.request.get(publicPath))).exhibitionOrder, oldOrder);
+    await button(page, '관람 순서 저장').click();
+    await details.getByText('관람 순서를 저장했어요.', { exact: true }).waitFor();
+    await details.getByText('저장한 검수 완료 작품 2점', { exact: true }).waitFor();
+    assert.deepEqual((await body(await page.request.get(publicPath))).exhibitionOrder, ['fixture-art03', 'fixture-art01']);
+    console.log('PASS admin exhibition order: reorder remains private until save and editor stays open after save');
+  } finally {
+    const current = await body(await page.request.get(path, { headers }));
+    if (JSON.stringify(current.directVisitOrder) !== JSON.stringify(original.directVisitOrder)) {
+      await body(await page.request.put(path, { headers, data: { ...current, directVisitOrder: original.directVisitOrder } }));
+    }
+    await page.close();
+  }
+}
+
 async function checkWalkableSvg(map, variant) {
   await map.locator('polyline.fm-route.active').waitFor({ state: 'attached' });
   const geometry = await map.evaluate(svg => {
@@ -1194,6 +1229,8 @@ async function fitNavigationToReference(browser, admin) {
   };
   await map.locator('image[href]').waitFor();
   await button(editor, '복도로 연결된 두 전시실 불러오기').click();
+  const example = editor.getByRole('checkbox', { name: '검수용 예시 배치' });
+  assert.ok(await example.isChecked());
   await button(editor, '원본 도면에 맞추기').click();
   assert.ok(await save.isDisabled());
   await pick(10, 8);
@@ -1228,6 +1265,7 @@ async function fitNavigationToReference(browser, admin) {
   assert.deepEqual(saved.floorPlan, original.floorPlan);
   assert.equal(saved.navigationLayout.floorPlanRevision, original.floorPlanRevision);
   assert.equal(saved.navigationLayout.waypoints.length, 6);
+  assert.equal(saved.navigationLayout.example, true);
 
   const visitor = await openPage(browser);
   try {
@@ -1236,6 +1274,7 @@ async function fitNavigationToReference(browser, admin) {
     await button(visitor, '다음 작품 안내').click();
     await visitor.getByText('전체 지도와 관람 순서', { exact: true }).click();
     await checkWalkableSvg(visitor.locator('.floor-map'), 'two-rooms');
+    await visitor.locator('.route-note').filter({ hasText: '검수용 예시 배치예요' }).waitFor();
   } finally {
     await visitor.close();
   }
@@ -1796,13 +1835,21 @@ async function operationsLog(browser) {
     } });
     const fullFailureId = fullFailure.headers()['x-request-id'];
     assert.equal((await body(fullFailure, 502)).code, 'PROVIDER_ERROR');
+    fixtureCommand([
+      'from uuid import uuid4',
+      'from arti.models import OperationEvent, OperationVoiceModelUsage',
+      'for status, measured in ((200, True), (504, False)):',
+      '    event = OperationEvent.objects.create(action="docent_audio", status=status, request_id=uuid4())',
+      '    tokens = dict(input_tokens=100, output_tokens=93, cached_input_tokens=64, output_audio_tokens=48, estimated_cost_usd="0.001093440") if measured else {}',
+      '    OperationVoiceModelUsage.objects.create(event=event, intent="prepare", model="synthetic-voice", **tokens)',
+    ]);
     const report = await body(await page.request.get(opsPath, { headers }));
     assert.deepEqual(report.configuration, { docent: 'disabled', analysis: 'disabled' });
     assert.equal(report.draftConfiguration, 'configured');
     assert.ok(report.today.docentRequests >= 1 && report.today.aiErrors >= 1);
     assert.equal(report.today.analysisRequests, before.today.analysisRequests + 2);
     assert.equal(report.today.analysisPartialFailures, before.today.analysisPartialFailures + 1);
-    assert.equal(report.today.aiErrors, before.today.aiErrors + 1);
+    assert.equal(report.today.aiErrors, before.today.aiErrors + 2); // Failed analysis and synthetic voice timeout.
     const usage = {
       attempts: before.textModelUsage.attempts + 3, missing: before.textModelUsage.missing + 2,
       inputTokens: (before.textModelUsage.inputTokens ?? 0) + 120,
@@ -1822,8 +1869,11 @@ async function operationsLog(browser) {
     await page.reload();
     await page.getByRole('alert').filter({ hasText: '전시와 작품 목록을 불러오지 못했어요.' }).waitFor();
     await button(page, '다시 조회').click();
-    await page.getByText(/오늘 도슨트 요청/).waitFor();
-    await page.getByRole('link', { name: '운영 로그', exact: true }).click();
+    const activity = page.getByRole('region', { name: '오늘 AI 운영 현황' });
+    await activity.getByText('도슨트 질문', { exact: true }).waitFor();
+    await activity.getByRole('listitem').filter({ hasText: '텍스트 모델 호출 시도' })
+      .getByText(`${usage.attempts}건`, { exact: true }).waitFor();
+    await activity.getByRole('link', { name: 'AI 관리 자세히 보기' }).click();
     await page.getByText(`텍스트 모델 호출 시도 ${usage.attempts}건 · 입력 ${usage.inputTokens.toLocaleString('ko-KR')} · 출력 ${usage.outputTokens.toLocaleString('ko-KR')} 토큰 · 토큰 미수집 요청 ${usage.missing}건`, { exact: true }).waitFor();
     const summaryGroup = report.textModelUsageByTaskModel.find(row => row.task === 'summary' && row.model === 'synthetic-operations');
     const guideGroup = report.textModelUsageByTaskModel.find(row => row.task === 'guide' && row.model === 'synthetic-operations');
@@ -1832,8 +1882,17 @@ async function operationsLog(browser) {
     const modelTable = page.getByRole('region', { name: '작업·모델별 토큰 사용량' });
     await modelTable.getByRole('row').filter({ hasText: '쉬운 요약' }).getByText(String(summaryGroup.cachedInputTokens), { exact: true }).waitFor();
     await modelTable.getByRole('row').filter({ hasText: '관람가이드' }).getByText(`토큰 ${guideGroup.missing}건 · 캐시 ${guideGroup.cacheMissing}건`, { exact: true }).waitFor();
+    const voiceTable = page.getByRole('region', { name: '음성 모델 사용량' });
+    const voiceRow = voiceTable.getByRole('row').filter({ hasText: 'synthetic-voice' });
+    await voiceRow.getByText('미리 준비', { exact: true }).waitFor();
+    await voiceRow.getByText('1/2건', { exact: true }).waitFor();
+    await voiceRow.getByText('USD 0.001093440 · 1/2건', { exact: true }).waitFor();
+    assert.equal(await page.getByText(requestId, { exact: true }).count(), 0);
+    await page.getByRole('link', { name: '운영 로그', exact: true }).click();
     await page.getByText(requestId, { exact: true }).waitFor();
     await page.getByText(failedId, { exact: true }).waitFor();
+    assert.equal(await page.getByRole('heading', { name: 'OpenAI 연결 설정' }).count(), 0);
+    assert.equal(await page.getByRole('region', { name: '음성 모델 사용량' }).count(), 0);
     fixtureCommand([
       'from uuid import uuid4',
       'from arti.models import OperationEvent',
@@ -1869,16 +1928,11 @@ async function passwordReset(browser) {
   const page = await openPage(browser);
   const other = await openPage(browser);
   try {
-    await page.goto(exhibition);
-    await button(page, '개인정보 처리방침 보기').click();
-    const visitorPolicy = page.getByRole('dialog', { name: '개인정보 처리방침' });
-    await visitorPolicy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
-    await visitorPolicy.getByRole('heading', { name: '카카오 연결' }).waitFor();
-    await button(visitorPolicy, '닫기').click();
-
+    // 전시 첫 화면(U-01)의 개인정보 처리방침 링크는 사용자 결정으로 뺐다. 처리방침은 회원가입 화면에서 확인한다.
     await page.goto('/signup');
+    const signupEmail = `reset-review-${randomUUID()}@example.test`;
     const field = page.getByLabel('이메일', { exact: true });
-    await field.fill('draft-review@example.test');
+    await field.fill(signupEmail);
     await button(page, '서비스 이용약관 보기').click();
     const terms = page.getByRole('dialog', { name: '서비스 이용약관' });
     await terms.getByText('버전 2026-11-18-draft.2').waitFor();
@@ -1886,11 +1940,35 @@ async function passwordReset(browser) {
     await button(terms, '닫기').click();
     await button(page, '개인정보 처리방침 보기').click();
     const policy = page.getByRole('dialog', { name: '개인정보 처리방침' });
+    await policy.getByRole('heading', { name: '비회원과 브라우저 저장' }).waitFor();
+    await policy.getByRole('heading', { name: '카카오 연결' }).waitFor();
     await policy.getByText(/30분 동안 유효/).waitFor();
+    await policy.getByText(/arti\.docent@gmail\.com/).first().waitFor();
+    await policy.getByText(/회원 탈퇴 시까지 보관/).waitFor();
+    await policy.getByRole('heading', { name: '도슨트 대화 저장 선택' }).waitFor();
     await button(policy, '닫기').click();
-    assert.equal(await field.inputValue(), 'draft-review@example.test');
+    assert.equal(await field.inputValue(), signupEmail);
+    const transcriptOption = page.getByRole('checkbox', { name: /도슨트 대화 원문 저장에 동의합니다/ });
+    await transcriptOption.waitFor();
+    await button(page, '이용약관에 동의하고 가입').waitFor();
+    assert.equal(await page.getByRole('checkbox').count(), 1);
+    assert.equal(await transcriptOption.isChecked(), false);
+    assert.equal(await page.getByText(/이메일과 비밀번호는 가입과 로그인에 사용해요/).count(), 0);
 
-    const member = await newMember(page);
+    await page.getByLabel('비밀번호', { exact: true }).fill(password);
+    await page.getByLabel('비밀번호 확인', { exact: true }).fill(password);
+    const [signupResponse] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, '/api/auth/signup', 'POST')),
+      button(page, '이용약관에 동의하고 가입').click(),
+    ]);
+    const signupAgreement = signupResponse.request().postDataJSON();
+    assert.equal(signupAgreement.termsAccepted, true);
+    assert.equal(signupAgreement.termsVersion, '2026-11-18-draft.2');
+    assert.equal(signupAgreement.docentTranscriptAccepted, undefined);
+    const member = await body(signupResponse);
+    assert.equal(member.user.email, signupEmail);
+    await page.waitForURL(base.href);
+    console.log('PASS signup: separate privacy policy, explicit terms assent and transcript disabled by default');
     const secondMember = await newMember(other);
     const savedReceipt = await body(await page.request.post('/api/visits', {
       headers: headersFor(member.token),
@@ -1911,6 +1989,7 @@ async function passwordReset(browser) {
     await button(page, '로그인 도움').click();
     // The login form has the same email label while the recovery screen is loading.
     await page.getByRole('heading', { name: '비밀번호 재설정', exact: true }).waitFor();
+    await page.clock.install();
     const emailInput = page.getByLabel('이메일', { exact: true });
     const mailNotice = page.getByRole('status').filter({ hasText: '등록된 이메일이라면' });
     const requestLink = async () => {
@@ -1936,12 +2015,35 @@ async function passwordReset(browser) {
     assert.deepEqual(requestedEmails, [mistyped, member.user.email]);
     const inbox = await body(await page.request.post('/api/__test__/reset-inbox'));
     assert.equal(inbox.length, 1);
-    const resetPath = inbox[0];
+    const resend = button(page, '메일 다시 보내기');
+    assert.equal(await resend.isDisabled(), true);
+    await page.getByText('요청 후 30초 뒤에 다시 보낼 수 있어요.').waitFor();
+    await page.clock.fastForward(31_000);
+    await page.getByText('요청 후 30초 뒤에 다시 보낼 수 있어요.').waitFor({ state: 'hidden' });
+    assert.equal(await resend.isEnabled(), true);
+    const [resent] = await Promise.all([
+      page.waitForResponse(r => isResponse(r, recoveryPath, 'POST')),
+      resend.click(),
+    ]);
+    assert.equal(resent.status(), 204);
+    await mailNotice.waitFor();
+    assert.equal(await mailNotice.textContent(), originalNotice);
+    assert.deepEqual(requestedEmails, [mistyped, member.user.email, member.user.email]);
+    const resentInbox = await body(await page.request.post('/api/__test__/reset-inbox'));
+    assert.equal(resentInbox.length, 2);
+    const resetPath = resentInbox[1];
+    assert.notEqual(inbox[0], resetPath);
     const newPassword = 'Replacement-42!';
     const fill = async () => {
       await page.getByLabel('새 비밀번호', { exact: true }).fill(newPassword);
       await page.getByLabel('새 비밀번호 확인', { exact: true }).fill(newPassword);
     };
+    await page.goto(inbox[0]);
+    await fill();
+    await button(page, '비밀번호 바꾸기').click();
+    const invalidLinkNotice = page.getByRole('alert').filter({ hasText: '이 링크는 사용할 수 없어요' });
+    await invalidLinkNotice.waitFor();
+    assert.equal((await page.request.get('/api/auth/me', { headers: headersFor(member.token) })).status(), 200);
     await page.goto(resetPath);
     await page.waitForURL(url => url.pathname === '/password/reset' && !url.hash);
     await fill();
@@ -1954,7 +2056,7 @@ async function passwordReset(browser) {
     await page.goto(resetPath);
     await fill();
     await button(page, '비밀번호 바꾸기').click();
-    await page.getByRole('alert').filter({ hasText: '만료됐거나 이미 사용됐어요' }).waitFor();
+    await invalidLinkNotice.waitFor();
     await page.getByRole('link', { name: '로그인으로 돌아가기' }).click();
     await page.getByLabel('이메일', { exact: true }).fill(member.user.email);
     await page.getByLabel('비밀번호', { exact: true }).fill(newPassword);
@@ -1977,7 +2079,31 @@ async function passwordReset(browser) {
     ]);
     assert.equal((await body(opened)).id, savedReceipt.id);
     await page.waitForURL(`**/receipt/${savedReceipt.id}`);
-    console.log('PASS password reset: email correction, identical acknowledgement, one-use link, same receipt and permissions');
+    console.log('PASS password reset: email correction, 30s resend, identical acknowledgement, latest one-use link, same receipt and permissions');
+
+    await page.goto('/mypage');
+    await page.getByRole('link', { name: '계정 설정' }).click();
+    await page.getByText('회원 탈퇴', { exact: true }).click();
+    const currentPassword = page.getByLabel('현재 비밀번호', { exact: true });
+    const withdrawalPath = `/api/users/${member.user.id}/withdrawal`;
+    const withdraw = async (input) => {
+      await currentPassword.fill(input);
+      await button(page, '계정 탈퇴 완료').click();
+      const [response] = await Promise.all([
+        page.waitForResponse(r => isResponse(r, withdrawalPath, 'POST')),
+        page.getByRole('alertdialog').getByRole('button', { name: '회원 탈퇴', exact: true }).click(),
+      ]);
+      return response;
+    };
+    assert.equal((await withdraw(password)).status(), 400);
+    await page.getByRole('alert').filter({ hasText: '현재 비밀번호가 올바르지 않아요' }).waitFor();
+    assert.equal(await currentToken(page), restored.token);
+    assert.equal((await withdraw(newPassword)).status(), 204);
+    await page.waitForURL(base.href);
+    assert.equal(await currentToken(page), null);
+    assert.equal((await page.request.get(receiptPath, { headers: headersFor(restored.token) })).status(), 401);
+    assert.equal((await other.request.get('/api/auth/me', { headers: headersFor(secondMember.token) })).status(), 200);
+    console.log('PASS account withdrawal: verified password, browser sign-out, receipt revoked and other member unaffected');
   } finally {
     await Promise.all([page.close(), other.close()]);
   }
@@ -2000,7 +2126,8 @@ async function passwordReset(browser) {
     if (suite === 'exhibition-order') {
       await exhibitionOrder(browser, false);
       await exhibitionOrder(browser, true);
-      return await exhibitionOrderV2(browser);
+      await exhibitionOrderV2(browser);
+      return await adminExhibitionOrder(browser);
     }
     if (suite !== 'survey-map') {
       await receiptSession(browser, false);

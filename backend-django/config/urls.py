@@ -1,7 +1,8 @@
 # API URL을 Django 처리 함수에 연결합니다.
 from django.urls import path, re_path
+from arti.docent_transcript import delete_liked_conversation, transcript_settings
 from arti import views
-from arti import member, editing, records, docent, kakao_auth, operations, password_reset
+from arti import member, editing, records, docent, kakao_auth, operations, password_reset, openai_settings
 
 handler404 = 'arti.http.not_found'
 urlpatterns = [
@@ -15,12 +16,15 @@ urlpatterns = [
     path('api/recommendations', views.recommendations),
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
     path('api/admin/operations', operations.dashboard),
+    path('api/admin/ai-settings', openai_settings.admin_openai_settings),
     path('api/admin/exhibitions', editing.exhibitions),
     path('api/admin/exhibitions/<str:ex_id>', editing.exhibitions),
     path('api/admin/artworks', editing.artworks),
     path('api/admin/artworks/<str:artwork_id>', editing.artworks),
+    path('api/admin/artworks/<str:artwork_id>/docent-collection', editing.docent_collection),
     path('api/admin/artworks/<str:artwork_id>/image', editing.image),
     path('api/admin/exhibitions/<str:ex_id>/floor-plan', editing.image),
+    path('api/admin/exhibitions/<str:ex_id>/poster', editing.image, {'poster': True}),
     path('api/admin/exhibitions/<str:ex_id>/navigation', editing.navigation_layout),
     path('api/admin/artworks/<str:artwork_id>/analyze', editing.analyze),
     path('api/admin/artworks/<str:artwork_id>/discard-ai', editing.discard_ai),
@@ -29,6 +33,7 @@ urlpatterns = [
     path('api/admin/members/<str:user_id>/visits', records.admin_member_visits),
     path('api/admin/visits/<str:visit_id>', records.admin_visit),
     path('api/auth/signup', member.signup),path('api/auth/login', member.login),
+    path('api/auth/signup-config', member.signup_config),
     path('api/auth/me', member.me),path('api/auth/logout', member.logout),
     path('api/auth/kakao/status', kakao_auth.status),
     path('api/auth/kakao/start', kakao_auth.start),
@@ -38,8 +43,14 @@ urlpatterns = [
     path('api/auth/password-reset/request', password_reset.request_reset),
     path('api/auth/password-reset/confirm', password_reset.confirm_reset),
     path('api/users/<str:user_id>/tastes', member.tastes),path('api/users/<str:user_id>/visits', records.visits),
+    path('api/users/<str:user_id>/docent-memory', member.docent_memory_settings),
+    path('api/users/<str:user_id>/docent-transcript', transcript_settings),
+    path('api/users/<str:user_id>/withdrawal', member.withdraw),
     path('api/visits', records.save_visit),path('api/visits/interpret', records.interpret),path('api/visits/<str:visit_id>', records.visits),
     path('api/artworks/<str:artwork_id>/ask', docent.ask),path('api/artworks/<str:artwork_id>/explanation', docent.explanation),
+    path('api/artworks/<str:artwork_id>/answer-audio', docent.answer_audio),
+    path('api/artworks/<str:artwork_id>/liked-recap', records.liked_artwork_recap),
+    path('api/artworks/<str:artwork_id>/liked-recap/<uuid:visit_id>', delete_liked_conversation),
     path('api/uploads/<str:filename>', views.media), path('api/admin/uploads/<str:filename>', views.media),
     re_path(r'^api/(?:auth|users|visits)(?:/.*)?$', views.unavailable),
     re_path(r'^api/artworks/(?P<artwork_id>[^/]+)/(?:ask|explanation)$', views.unavailable_artwork),

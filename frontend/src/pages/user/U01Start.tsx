@@ -9,12 +9,10 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MobileShell, Spinner } from '../../components/MobileShell';
 import { Icon } from '../../components/Icon';
-import { SignupDocument } from '../../components/SignupDocument';
-import { signupPrivacy } from '../../data/signupDocuments';
-import { api } from '../../api/client';
+import { api, uploadedImageUrl } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { errorDetail } from '../../lib/errorText';
-import { visitEntry } from '../../lib/appHistory';
+import { markVisitStart, visitEntry } from '../../lib/appHistory';
 import { useVisit } from '../../store/VisitContext';
 import { exhibitionPath, useExhibitionPath } from '../../store/ExhibitionRoute';
 import type { Exhibition } from '../../types';
@@ -26,10 +24,11 @@ export default function U01Start() {
 }
 
 /** 두 모드가 같이 쓰는 틀: 헤더(마이페이지) + 소개 문구 + 일러스트 */
-function StartShell({ back = false, footer, exhibitionOrder = false, children }: {
-  back?: false | (() => void); footer?: ReactNode; exhibitionOrder?: boolean; children: ReactNode;
+function StartShell({ back = false, footer, exhibitionOrder = false, posterFile, children }: {
+  back?: false | (() => void); footer?: ReactNode; exhibitionOrder?: boolean; posterFile?: string | null; children: ReactNode;
 }) {
   const { state } = useVisit();
+  const [failedPoster, setFailedPoster] = useState<string>();
   return (
     <MobileShell
       screenId="U-01"
@@ -49,11 +48,11 @@ function StartShell({ back = false, footer, exhibitionOrder = false, children }:
         <p>{exhibitionOrder ? '작품을 보고, 궁금한 점은 해설과 도슨트로 살펴보세요.' : 'AI가 추천하고, 작품을 보는 방법까지 안내합니다.'}</p>
       </div>
 
-      <GalleryIllustration />
+      {posterFile && posterFile !== failedPoster
+        ? <img className="hero-illust exhibition-poster" src={uploadedImageUrl(posterFile)} alt=""
+            onError={() => setFailedPoster(posterFile)} />
+        : <GalleryIllustration />}
       {children}
-      <div className="center">
-        <SignupDocument title="개인정보 처리방침" sections={signupPrivacy} />
-      </div>
     </MobileShell>
   );
 }
@@ -79,20 +78,35 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
     if (canStartInOrder) setResumable(false);
     else {
       dispatch({ type: 'resetVisit' });
+      markVisitStart();
       navigate(to('/entry'));
     }
+  };
+
+  // 관람을 시작·이어 가는 버튼은 이 화면의 기록 위치를 적어 둔다. [관람 완료] 때 여기로 거슬러 돌아온다(appHistory.leaveVisitTo).
+  const startByTaste = () => {
+    markVisitStart();
+    navigate(to('/entry'));
+  };
+  const resume = () => {
+    markVisitStart();
+    navigate(to(state.visitMode === 'exhibition_order' ? '/artwork' : '/route'), {
+      state: state.visitMode === 'exhibition_order' ? { visitEntry: visitEntry(state) } : undefined,
+    });
   };
 
   const startInOrder = () => {
     if (!ex?.exhibitionOrder?.length) return;
     const { id, title, venue } = ex;
     dispatch({ type: 'startExhibitionOrder', exhibition: { id, title, venue }, artworkIds: ex.exhibitionOrder });
+    markVisitStart();
     navigate(to('/artwork'), { state: { visitEntry: visitEntry(state, 0) } });
   };
 
   return (
     <StartShell
       exhibitionOrder={canStartInOrder || state.visitMode === 'exhibition_order'}
+      posterFile={ex?.posterFile}
       back={() => {
         if (entry?.from === '/') navigate(-1);
         else navigate('/', { replace: true });
@@ -100,9 +114,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
       footer={
         resumable ? (
           <div className="stack gap-10">
-            <button className="btn primary block" onClick={() => navigate(to(state.visitMode === 'exhibition_order' ? '/artwork' : '/route'), {
-              state: state.visitMode === 'exhibition_order' ? { visitEntry: visitEntry(state) } : undefined,
-            })}>
+            <button className="btn primary block" onClick={resume}>
               이어서 관람
             </button>
             <button className="btn outline block" onClick={restart}>
@@ -112,15 +124,12 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
         ) : canStartInOrder ? (
           <div className="stack gap-10">
             <button className="btn primary block" disabled={loading || !!error} onClick={startInOrder}>전시 순서로 바로 보기</button>
-            <button className="btn outline block" onClick={() => navigate(to('/entry'))}>내 취향으로 추천</button>
+            <button className="btn outline block" onClick={startByTaste}>내 취향으로 추천</button>
           </div>
         ) : (
-          <>
-            <button className="btn primary block" disabled={!ex} onClick={() => navigate(to('/entry'))}>
-              관람 시작하기
-            </button>
-            <p className="footnote">입구 QR 또는 전시 URL로 접속</p>
-          </>
+          <button className="btn primary block" disabled={!ex} onClick={startByTaste}>
+            관람 시작하기
+          </button>
         )
       }
     >
@@ -159,7 +168,7 @@ function ExhibitionPicker() {
   const running = (data ?? []).filter((ex) => ex.status === 'running');
 
   return (
-    <StartShell footer={<p className="footnote">전시장 입구의 QR로 접속하면 바로 시작할 수 있어요</p>}>
+    <StartShell>
       <span className="eyebrow ex-list-head">진행 중인 전시</span>
       {loading && <Spinner />}
       {/* 이미 전시 목록 화면이라 [전시 목록으로]는 두지 않는다(같은 화면이 다시 열리기만 함). */}

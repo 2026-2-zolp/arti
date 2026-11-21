@@ -5,8 +5,10 @@ import secrets
 from pathlib import Path
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import transaction, connection, OperationalError
 from contextlib import contextmanager
+from urllib.parse import urlsplit
 from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
 from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
@@ -142,6 +144,63 @@ def artworks(request, artwork_id=None):
         return with_etag(artwork_dto(w,True))
 
 
+def collection_review(work):
+    state = work.docent_collection
+    return {'version': state.get('version', 0), 'sourceVersion': work.source_version,
+            'draft': state.get('draft'), 'approved': work.approved_docent_collection,
+            'canApprove': work.review_status == 'approved'}
+
+
+@api_view(['GET', 'PUT', 'POST'])
+@permission_classes([IsAdmin])
+def docent_collection(request, artwork_id):
+    headers = {'Cache-Control': 'no-store'}
+    if request.method == 'GET':
+        work = Artwork.objects.filter(pk=artwork_id).first()
+        if work is None:
+            raise ContractError(404, 'NOT_FOUND', '작품을 찾을 수 없어요.')
+        return Response(collection_review(work), headers=headers)
+
+    data = request.data
+    if (not isinstance(data, dict) or type(data.get('version')) is not int or data['version'] < 0
+            or type(data.get('sourceVersion')) is not int or data['sourceVersion'] < 1):
+        fail('보강 자료와 작품의 현재 버전을 함께 보내 주세요.')
+    with transaction.atomic():
+        work = get_locked(Artwork, artwork_id)
+        state = work.docent_collection
+        if data['version'] != state.get('version', 0) or data['sourceVersion'] != work.source_version:
+            raise ContractError(409, 'VERSION_CONFLICT', '보강 자료나 작품이 먼저 수정됐어요. 최신 자료를 불러와 주세요.')
+        next_version = data['version'] + 1
+        if request.method == 'PUT':
+            limits = {'url': 2000, 'accession': 100, 'excerpt': 1000}
+            if any(not isinstance(data.get(key), str) or len(data[key]) > limit for key, limit in limits.items()):
+                fail('소장처 URL, 소장번호와 근거 문장의 길이를 확인해 주세요.')
+            draft = {key: data[key].strip() for key in limits}
+            if not any(draft.values()):
+                fail('보강할 내용을 입력해 주세요.')
+            if draft['url']:
+                try:
+                    URLValidator(schemes=['https'])(draft['url'])
+                    if urlsplit(draft['url']).username is not None:
+                        raise ValidationError('Credentials are not allowed in a reference URL.')
+                except (ValidationError, ValueError):
+                    fail('소장처의 HTTPS 주소를 입력해 주세요.')
+            state['draft'] = {**draft, 'sourceVersion': work.source_version}
+        else:
+            draft = state.get('draft')
+            if work.review_status != 'approved':
+                fail('작품 자체가 검수 완료 상태일 때 소장처 자료를 승인할 수 있어요.')
+            if not draft or not all(draft[field] for field in ('url', 'accession', 'excerpt')):
+                fail('소장처 URL·소장번호·근거 문장을 모두 적어 초안으로 저장해 주세요.')
+            if draft['sourceVersion'] != work.source_version:
+                raise ContractError(409, 'VERSION_CONFLICT', '작품 원문이 바뀌었어요. 보강 내용을 확인하고 다시 저장해 주세요.')
+            state['approved'] = {**draft, 'revision': next_version}
+            del state['draft']
+        state['version'] = next_version
+        work.save(update_fields=['docent_collection'])
+        return Response(collection_review(work), headers=headers)
+
+
 @api_view(['GET','POST','PUT'])
 @permission_classes([IsAdmin])
 def exhibitions(request, ex_id=None):
@@ -150,8 +209,8 @@ def exhibitions(request, ex_id=None):
         if ex_id:
             ex=qs.filter(pk=ex_id).first()
             if not ex: raise ContractError(404,'NOT_FOUND','전시를 찾을 수 없어요.')
-            return with_etag(exhibition_dto(ex))
-        return Response([exhibition_dto(e) for e in qs])
+            return with_etag(exhibition_dto(ex, admin=True))
+        return Response([exhibition_dto(e, admin=True) for e in qs])
     if (request.method=='PUT')!=bool(ex_id): fail()
     data=request.data
     fields={'title':'title','subtitle':'subtitle','venue':'venue','startDate':'start_date','endDate':'end_date','status':'status','rooms':'rooms'}
@@ -161,6 +220,15 @@ def exhibitions(request, ex_id=None):
     with transaction.atomic():
         ex=get_locked(Exhibition,ex_id) if ex_id else Exhibition()
         if ex_id:version(ex,data.get('version'))
+        if 'directVisitOrder' in data:
+            order = data['directVisitOrder']
+            if (not isinstance(order, list) or len(order) > 200
+                    or any(not isinstance(item, str) or not item or len(item) > 64 for item in order)
+                    or len(set(order)) != len(order)):
+                fail('관람 순서에는 작품을 최대 200점까지 한 번씩 등록해 주세요.')
+            if order and (not ex_id or Artwork.objects.filter(exhibition=ex, pk__in=order).count() != len(order)):
+                fail('이 전시의 작품만 관람 순서에 등록해 주세요.')
+            ex.direct_visit_order = order
         for key,field in fields.items():setattr(ex,field,data[key])
         if not isinstance(ex.rooms,list):fail()
         if ex_id and Artwork.objects.filter(exhibition=ex).exclude(room_id='').exclude(room_id__in=[r.get('id') for r in ex.rooms if isinstance(r,dict)]).exists():
@@ -169,7 +237,7 @@ def exhibitions(request, ex_id=None):
         if ex_id:ex.version+=1
         validate_save(ex)
         # Model clean coerces dates on full_clean.
-        return with_etag(exhibition_dto(ex))
+        return with_etag(exhibition_dto(ex, admin=True))
 
 
 @api_view(['PUT'])
@@ -186,7 +254,7 @@ def navigation_layout(request, ex_id):
         ex.navigation_layout = normalize_layout(data['layout'], ex.floor_plan_revision)
         ex.version += 1
         validate_save(ex)
-        return with_etag(exhibition_dto(ex))
+        return with_etag(exhibition_dto(ex, admin=True))
 
 
 # 이미지 업로드 크기를 제한하며 원시 바이트를 읽습니다.
@@ -208,7 +276,7 @@ def image_bytes(data, content_type):
 @api_view(['POST','DELETE'])
 @permission_classes([IsAdmin])
 @parser_classes([RawImageParser])
-def image(request, artwork_id=None, ex_id=None):
+def image(request, artwork_id=None, ex_id=None, poster=False):
     with transaction.atomic():
         obj=get_locked(Artwork,artwork_id) if artwork_id else get_locked(Exhibition,ex_id)
         match=re.fullmatch(r'"([1-9][0-9]*)"',request.headers.get('If-Match',''))
@@ -219,7 +287,7 @@ def image(request, artwork_id=None, ex_id=None):
         if request.method=='POST':
             data=request.data
             ext=image_bytes(data,request.content_type)
-            if ex_id:
+            if ex_id and not poster:
                 try:width=int(request.query_params['width']);height=int(request.query_params['height'])
                 except (KeyError,ValueError):fail()
                 if not 1<=width<=20000 or not 1<=height<=20000:fail()
@@ -229,6 +297,10 @@ def image(request, artwork_id=None, ex_id=None):
         try:
             if artwork_id:
                 obj.image_file=filename;finish(obj,old)
+            elif poster:
+                obj.poster_file = filename
+                obj.version += 1
+                validate_save(obj)
             else:
                 obj.floor_plan={'file':filename,'width':width,'height':height} if filename else None
                 obj.floor_plan_revision += 1
@@ -241,7 +313,7 @@ def image(request, artwork_id=None, ex_id=None):
             if filename:(Path(settings.MEDIA_ROOT)/filename).unlink(missing_ok=True)
             raise
         # Unlinked old files remain private, permitting deliberate later garbage collection.
-        return with_etag(artwork_dto(obj,True) if artwork_id else exhibition_dto(obj))
+        return with_etag(artwork_dto(obj,True) if artwork_id else exhibition_dto(obj, admin=True))
 
 
 @api_view(['POST'])

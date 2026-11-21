@@ -89,7 +89,7 @@ def request_reset(request):
             lock_key = int.from_bytes(bytes.fromhex(email_key[:16]), 'big', signed=True)
             cursor.execute('SELECT pg_advisory_xact_lock(%s)', [lock_key])
         if PasswordResetDelivery.objects.filter(email_key=email_key, expires_at__gt=now).count() < EMAIL_LIMIT:
-            account = eligible_accounts().filter(login_id=email, email__iexact=email).first()
+            account = eligible_accounts().select_for_update().filter(login_id=email, email__iexact=email).first()
             # 요청은 수신함 존재 여부와 무관하게 같은 흐름을 거칩니다. 메일 발송은 별도 명령에서 합니다.
             PasswordResetDelivery.objects.create(account=account, email_key=email_key, token_id=uuid4(),
                                                  expires_at=now + LINK_TTL, next_attempt_at=now)
@@ -97,7 +97,7 @@ def request_reset(request):
 
 
 def invalid_link():
-    return ContractError(400, 'PASSWORD_RESET_INVALID', '링크가 만료됐거나 이미 사용됐어요. 새 링크를 요청해 주세요.')
+    return ContractError(400, 'PASSWORD_RESET_INVALID', '이 링크는 사용할 수 없어요. 가장 최근 요청의 메일을 열거나 새 링크를 요청해 주세요.')
 
 
 @api_view(['POST'])
@@ -119,9 +119,11 @@ def confirm_reset(request):
     password_hash = make_password(password)
     with transaction.atomic():
         account = eligible_accounts().select_for_update().filter(pk=candidate.account_id).first()
-        active = PasswordResetDelivery.objects.filter(pk=candidate.pk, delivered=True,
-                                                         expires_at__gt=timezone.now()).exists()
-        if not account or not active or keyed_digest('email', account.email.lower()) != candidate.email_key:
+        # 새 링크의 메일 발송이 확인됐을 때만 기존 링크가 더 이상 유효하지 않습니다.
+        active = (PasswordResetDelivery.objects.filter(account_id=candidate.account_id, email_key=candidate.email_key,
+                                                       delivered=True, expires_at__gt=timezone.now())
+                  .order_by('-pk').values_list('pk', flat=True).first())
+        if not account or active != candidate.pk or keyed_digest('email', account.email.lower()) != candidate.email_key:
             raise invalid_link()
         account.password = password_hash
         account.save(update_fields=['password'])
@@ -169,7 +171,11 @@ def deliver_pending(limit=20):
             if not delivery:
                 break
             account = eligible_accounts().filter(pk=delivery.account_id).first() if delivery.account_id else None
-            if account and keyed_digest('email', account.email.lower()) == delivery.email_key:
+            replaced = PasswordResetDelivery.objects.filter(
+                account_id=delivery.account_id, email_key=delivery.email_key,
+                delivered=True, pk__gt=delivery.pk, expires_at__gt=now,
+            ).exists() if account else False
+            if account and not replaced and keyed_digest('email', account.email.lower()) == delivery.email_key:
                 token_id = delivery.token_id.hex
                 token = f'{token_id}.{keyed_digest("link", token_id)}'
                 link = f'{settings.ARTI_PASSWORD_RESET_ORIGIN}/password/reset#{urlencode({"token": token})}'

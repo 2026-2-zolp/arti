@@ -391,7 +391,9 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
     const before = await submit('확정 가이드를 기준으로 먼저 질문합니다.');
     assert.equal(before.answer, guideQuestion);
     assert.deepEqual(before.sourceRefs, [{ artworkId: artwork.id, sourceVersion: published.sourceVersion, kind: 'guide', revision: published.guideRevision }]);
-    await visitor.getByRole('log').getByText(guideQuestion, { exact: false }).waitFor();
+    const docentLog = visitor.getByRole('log');
+    await docentLog.getByRole('region', { name: '고른 관찰 질문' }).getByText(guideQuestion, { exact: true }).waitFor();
+    await docentLog.locator('.docent-message.is-ai .bubble.ai').filter({ hasText: guideQuestion }).waitFor();
 
     await adminAction('관람가이드 다시 생성', 'POST', adminPath + '/analyze');
     await button(admin, '관람가이드 제안 폐기').click();
@@ -417,7 +419,7 @@ async function verifyPublicLifecycle(admin, base, headers, artworkTemplate, imag
     await visitor.getByRole('alert').getByText('이 작품을 더 이상 볼 수 없어요. 작품 화면으로 돌아가 주세요.', { exact: true }).waitFor();
     assert.equal(await input.inputValue(), draft);
     assert.equal(await button(visitor, '보내기').isEnabled(), false);
-    assert.equal(await visitor.getByRole('log').getByText(guideQuestion, { exact: false }).count(), 0);
+    assert.equal(await docentLog.getByText(guideQuestion, { exact: false }).count(), 0);
     await button(visitor, '작품으로 돌아가기').click();
     await button(visitor, '이 작품 건너뛰기').waitFor();
     console.log('PASS public lifecycle: admin navigation, placement, guide confirmation, discard, withdrawal, recommendation and guest docent references');

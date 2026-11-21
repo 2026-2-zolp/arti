@@ -1,18 +1,25 @@
 /** U-11 AI 자유 질문 — 현재 작품에 대한 질의응답 (답변은 등록된 작품 자료 근거) */
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { MobileShell } from '../../components/MobileShell';
 import { FinishedVisitPrompt } from '../../components/FinishedVisitPrompt';
 import { ArtImage, artworkImageSrc } from '../../components/ArtImage';
+import { ArtworkViewer } from '../../components/ArtworkViewer';
 import { Icon } from '../../components/Icon';
-import { api, ApiError } from '../../api/client';
+import { api, ApiError, fetchDocentAudio } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
 import { useVisitHistory } from '../../lib/appHistory';
 import { errorDetail } from '../../lib/errorText';
 import { load, remove, save } from '../../lib/storage';
 import { useVisit } from '../../store/VisitContext';
 import { useExhibitionPath } from '../../store/ExhibitionRoute';
-import { scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
+import { newVisitId, scopeKey, BASIC_LOOKING_TIPS, type ReadingState } from '../../lib/visitScope';
+import { recordDocentInterest, visitorMemory } from '../../lib/visitMemory';
+import { docentFollowUps } from '../../lib/docentFollowUps';
+import { docentHistory } from '../../lib/docentHistory';
+import { narrationClip, useDemoNarration } from '../../lib/demoNarration';
+import { useSpeech } from '../../lib/useSpeech';
+import { visitListening } from '../../lib/visitListening';
 import type { ChatMessage } from '../../types';
 
 const SUGGESTED = ['이 작품은 어디부터 보면 좋을까요?', '작가는 어떤 사람인가요?', '색은 어떤 의미가 있나요?', '왜 유명한 작품인가요?'];
@@ -21,8 +28,8 @@ const RETRY_WINDOW_KEY = 'arti.docent.retryWindow';
 
 type AskFailure = {
   message: string;
-  question?: string;
-  retry?: { question: string; fromInput: boolean };
+  question?: ChatMessage;
+  retry?: { question: string; fromInput: boolean; memory?: ReturnType<typeof visitorMemory> };
 };
 type RetryWindow = { expiresAt: number; seconds: number };
 
@@ -44,9 +51,20 @@ export default function U11AskAI() {
   return <ArtworkChat key={draftKey} draftKey={draftKey} artworkId={rec.artworkId} />;
 }
 
+/** 맨 아래에서 이 거리 안이면 "최신 대화를 보는 중"으로 본다(새 답변 자동 따라가기·아래 화살표 숨김 기준) */
+const NEAR_BOTTOM_PX = 24;
+
+/** 대화 속 관찰 질문 카드의 자리(그 앞까지의 대화 수)와 질문 */
+interface GuideMark { index: number; question: string }
+
+interface MobileKeyboard extends EventTarget {
+  overlaysContent: boolean;
+  readonly boundingRect: DOMRectReadOnly;
+}
+
 function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: string }) {
   const navigate = useNavigate();
-  const { state: entryLocation } = useLocation();
+  const { state: entryLocation, key: locationKey } = useLocation();
   const { state } = useVisit();
   const to = useExhibitionPath();
 
@@ -73,66 +91,234 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     if (input) save(draftKey, input, 'session');
     else remove(draftKey, 'session');
   }, [draftKey, input]);
-  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
+  const [pendingQuestion, setPendingQuestion] = useState<ChatMessage | null>(null);
+  const [arrival, setArrival] = useState<{ questionId?: string; answerId?: string }>({});
   const pending = pendingQuestion !== null;
   const sending = useRef(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const followLatest = useRef(true);
+  const syncViewportRef = useRef<(() => void) | null>(null);
+  const keyboardOpening = useRef(false);
+  const beginKeyboardOpening = () => {
+    keyboardOpening.current = window.matchMedia('(pointer: coarse)').matches;
+    syncViewportRef.current?.();
+  };
+  const clearKeyboardOpening = () => {
+    keyboardOpening.current = false;
+    syncViewportRef.current?.();
+  };
+  const holdComposerUntilClick = (event: MouseEvent<HTMLElement>) => {
+    // Blurring the input can resize and scroll the chat before the tap is complete.
+    if (document.activeElement === inputRef.current) event.preventDefault();
+  };
   const [newOutput, setNewOutput] = useState(false);
-  const { data: w, error, reload } = useAsync(() => api.getArtwork(artworkId), [artworkId]);
+  const [readingAbove, setReadingAbove] = useState(false);
+  const [showArtwork, setShowArtwork] = useState(false);
+  const preparedReply = useRef<string | undefined>(undefined);
+  const { data: w, error, reload } = useAsync(() => api.getDocentArtwork(artworkId), [artworkId]);
+  const narration = useDemoNarration(w);
+  const tts = useSpeech();
+  const imageSrc = w ? artworkImageSrc(w) : undefined;
 
   const key = w?.id === artworkId ? scopeKey(state, artworkId, w.contentVersion ?? 1) : '';
+  const evidenceRevision = w?.docentEvidenceRevision ?? 0;
+  const versionedKey = key && evidenceRevision ? `${key}.evidence.${evidenceRevision}` : key;
+  const chatKey = versionedKey && w?.visitorMemoryEnabled ? `${versionedKey}.memory-v2` : versionedKey;
   const reading = key ? load<ReadingState | null>(key + '.reading', null, 'session') : null;
   const entry = reading?.entry;
   const questionIndex = entry?.questionIndex;
   const selectedQuestion = questionIndex === undefined ? undefined :
     entry?.kind === 'guide' ? w?.guidedLooking[questionIndex] :
     entry?.kind === 'generic_tip' ? BASIC_LOOKING_TIPS[questionIndex] : undefined;
-  const chatReady = !!key && loadedChatKey === key && !artworkIssue;
+  const chatReady = !!chatKey && loadedChatKey === chatKey && !artworkIssue;
+  useLayoutEffect(() => () => {
+    tts.stop();
+    tts.clearClips();
+  }, [tts.stop, tts.clearClips, chatKey, artworkIssue]);
+
+  const prepareReply = (message: ChatMessage | null) => {
+    if (!w?.docentListeningAvailable || !state.visitId || !message?.audioGrant || message.mode !== 'llm'
+        || preparedReply.current === message.id || document.hidden
+        || narration?.answers.some(item => item.text === message.text)) return;
+    const grant = message.audioGrant;
+    preparedReply.current = message.id;
+    tts.prepare(message.id, signal => fetchDocentAudio(artworkId, state.visitId, message.text, grant, signal, 'prepare'));
+  };
+
+  // 관람가이드에서 고른 관찰 질문은 "들어온 시점까지의 대화" 바로 뒤에 놓는다(이전 대화 → 질문 카드 → 새 대화).
+  // 같은 이동(새로고침 포함)에서는 위치를 유지하고, 관람가이드에서 다시 들어오면 그때의 대화 끝으로 옮긴다.
+  // 지난 관찰 질문 중 뒤에 대화(힌트·직접 쓴 답)가 이어진 것은 그 자리에 계속 남긴다. 아무것도 하지 않고 나간 질문은 남기지 않는다.
+  const [guideAnchor, setGuideAnchor] = useState<number | null>(null);
+  const [pastQuestions, setPastQuestions] = useState<GuideMark[]>([]);
+  const questionCardRef = useRef<HTMLElement>(null);
+  const [revealCard, setRevealCard] = useState(0);
+  useEffect(() => {
+    if (!chatReady) { setGuideAnchor(null); setPastQuestions([]); return; }
+    const anchorKey = chatKey + '.guideAnchor';
+    const historyKey = chatKey + '.guideHistory';
+    const chatLength = load<ChatMessage[]>(chatKey + '.chat', [], 'session').length;
+    let history = load<GuideMark[]>(historyKey, [], 'session');
+    const saved = load<(GuideMark & { navKey: string }) | null>(anchorKey, null, 'session');
+    const sameVisit = !!saved && saved.navKey === locationKey;
+    // 다른 이동으로 들어왔으면 직전 질문 카드는 정리한다: 뒤에 대화가 있으면 지난 질문으로 남기고, 없으면 버린다.
+    if (saved && !sameVisit) {
+      if (saved.question && chatLength > saved.index
+          && !history.some((h) => h.index === saved.index && h.question === saved.question)) {
+        history = [...history, { index: saved.index, question: saved.question }];
+        save(historyKey, history, 'session');
+      }
+      remove(anchorKey, 'session');
+    }
+    setPastQuestions(history);
+    if (!selectedQuestion) { setGuideAnchor(null); return; }
+    if (sameVisit && saved) { setGuideAnchor(saved.index); return; }
+    save(anchorKey, { navKey: locationKey, index: chatLength, question: selectedQuestion }, 'session');
+    setGuideAnchor(chatLength);
+    setRevealCard((n) => n + 1);
+  }, [chatReady, selectedQuestion, chatKey, locationKey]);
+  // 질문 카드·지난 질문이 자리 잡은 직후, 화면을 그리기 전에 맨 아래로 붙인다(최신 대화를 보던 중일 때만). 중간에서 멈칫하는 순간을 없앤다.
+  useLayoutEffect(() => {
+    const conversation = shellRef.current?.querySelector('main');
+    if (conversation && followLatest.current) conversation.scrollTop = conversation.scrollHeight;
+  }, [guideAnchor, pastQuestions]);
+  // 글이 [보내기] 버튼 앞 한 줄에 들어가면 버튼과 같은 줄, 넘치거나 줄바꿈하면 버튼 윗줄부터 칸 전체 폭을 쓴다(여러 줄 모양).
+  const [multiline, setMultiline] = useState(false);
+  const inputBoxRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = inputBoxRef.current;
+    const text = inputRef.current;
+    if (!box || !text) return;
+    const measure = () => {
+      const boxStyle = getComputedStyle(box);
+      // 한 줄 모양에서 글이 쓸 수 있는 폭 = 칸 안쪽 폭 - 버튼(36px) - 버튼 앞 간격(8px)
+      const width = box.clientWidth - parseFloat(boxStyle.paddingLeft) - parseFloat(boxStyle.paddingRight) - 36 - 8;
+      const context = document.createElement('canvas').getContext('2d');
+      if (context) context.font = getComputedStyle(text).font;
+      const textWidth = context ? context.measureText(input).width : 0;
+      setMultiline(input.includes('\n') || textWidth > width - 2);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [input]);
+  // 글상자 높이를 글 줄 수에 맞춘다(최대 6줄은 CSS max-height, 넘으면 글상자 안에서 스크롤).
+  useLayoutEffect(() => {
+    const text = inputRef.current;
+    if (!text) return;
+    text.style.height = 'auto';
+    // 빈칸이면 안내 문구 길이와 상관없이 한 줄 높이(CSS min-height)로 둔다
+    if (!input) return;
+    text.style.height = `${text.scrollHeight + text.offsetHeight - text.clientHeight}px`;
+  }, [input, multiline]);
   const canAsk = chatReady && !pending && !retryWindow;
   const retry = failure?.retry;
   const sendError = retryWindow
     ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
     : failure?.message;
-  const attemptedQuestion = !artworkIssue && (pendingQuestion ?? failure?.question);
+  const attemptedQuestion = artworkIssue ? undefined : pendingQuestion ?? failure?.question;
+  const showLatestButton = !artworkIssue && (readingAbove || newOutput);
+  const latestControlState = showLatestButton ? 'latest' : pending && !artworkIssue ? 'waiting' : 'hidden';
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
     const conversation = shell?.querySelector('main');
     if (!shell || !conversation) return;
 
+    // 내용이 늦게 붙으면(질문 카드·그림·글꼴) 브라우저가 스크롤 위치를 스스로 옮기며 scroll 이벤트를 낸다.
+    // 대화 높이가 바뀐 채 생긴 scroll은 사용자가 올린 것이 아니므로, 최신 대화를 보던 중이면 맨 아래에 다시 붙인다.
+    let lastHeight = conversation.scrollHeight;
     const trackReadingPosition = () => {
-      followLatest.current = conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < 24;
+      const heightChanged = conversation.scrollHeight !== lastHeight;
+      lastHeight = conversation.scrollHeight;
+      if (heightChanged && followLatest.current) {
+        conversation.scrollTop = conversation.scrollHeight;
+        return;
+      }
+      followLatest.current = conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < NEAR_BOTTOM_PX;
+      setReadingAbove(!followLatest.current);
       if (followLatest.current) setNewOutput(false);
     };
 
-    // Android Chrome에서 키보드가 열린 동안 보이는 영역에 입력부를 맞춥니다.
+    const touchInput = window.matchMedia('(pointer: coarse)');
+    const keyboard = touchInput.matches && window.isSecureContext
+      ? (navigator as Navigator & { virtualKeyboard?: MobileKeyboard }).virtualKeyboard
+      : undefined;
+    const previousOverlay = keyboard?.overlaysContent;
+    if (keyboard) keyboard.overlaysContent = true;
+    let expandedBottom = Math.max(window.innerHeight, (viewport?.offsetTop ?? 0) + (viewport?.height ?? 0));
+    let width = viewport?.width ?? window.innerWidth;
+    let wasOpen = false;
     const syncViewport = () => {
-      if (!viewport || viewport.scale !== 1) return;
-      shell.style.setProperty('--docent-height', `${viewport.height}px`);
-      shell.style.setProperty('--docent-top', `${viewport.offsetTop}px`);
+      if (viewport && viewport.scale !== 1) return;
+      const top = viewport?.offsetTop ?? 0;
+      const visibleBottom = top + (viewport?.height ?? window.innerHeight);
+      const focused = document.activeElement === inputRef.current;
+      const nextWidth = viewport?.width ?? window.innerWidth;
+      if (Math.abs(nextWidth - width) > 24) {
+        width = nextWidth;
+        expandedBottom = Math.max(window.innerHeight, visibleBottom);
+      }
+      const rect = keyboard?.boundingRect;
+      const nativeTop = rect && rect.height > 0 && rect.bottom > top && rect.top < visibleBottom ? rect.top : null;
+      const resizedForKeyboard = touchInput.matches && (focused || wasOpen)
+        && Math.max(window.innerHeight, expandedBottom) - visibleBottom > 100;
+      const open = nativeTop !== null || resizedForKeyboard;
+      // 초기 예비 여백은 시간 경과가 아닌 키보드 높이 확인 또는 입력창에서 벗어났을 때 해제합니다.
+      if (open) keyboardOpening.current = false;
+      if (!open && !keyboardOpening.current) expandedBottom = Math.max(window.innerHeight, visibleBottom);
+      wasOpen = open;
+      shell.style.setProperty('--docent-top', `${top}px`);
+      shell.style.setProperty('--docent-height', `${Math.max(0, (nativeTop ?? visibleBottom) - top)}px`);
+      shell.dataset.keyboard = open ? 'open' : focused && keyboardOpening.current ? 'opening' : 'closed';
+      shell.dataset.keyboardGeometry = nativeTop !== null ? 'virtual-keyboard' : 'visual-viewport';
       if (followLatest.current) conversation.scrollTop = conversation.scrollHeight;
     };
     syncViewport();
+    syncViewportRef.current = syncViewport;
+    // 들어온 뒤 늦게 붙는 내용(질문 카드·그림·글꼴)으로 대화 높이가 늘어도, 최신 대화를 보는 중이면 맨 아래에 붙어 있게 한다.
+    const keepAtBottom = new ResizeObserver(() => {
+      lastHeight = conversation.scrollHeight;
+      if (followLatest.current) conversation.scrollTop = conversation.scrollHeight;
+    });
+    keepAtBottom.observe(conversation);
+    // 대화 칸 밖(위쪽 작품 정보·오류 안내)도 늦게 생기거나 커질 수 있어, 본문의 모든 칸을 지켜본다.
+    const watchChildren = () => Array.from(conversation.children).forEach((el) => keepAtBottom.observe(el));
+    watchChildren();
+    const newChildren = new MutationObserver(watchChildren);
+    newChildren.observe(conversation, { childList: true });
     conversation.addEventListener('scroll', trackReadingPosition, { passive: true });
     viewport?.addEventListener('resize', syncViewport);
     viewport?.addEventListener('scroll', syncViewport);
+    keyboard?.addEventListener('geometrychange', syncViewport);
+    window.addEventListener('resize', syncViewport);
     return () => {
+      keepAtBottom.disconnect();
+      newChildren.disconnect();
       conversation.removeEventListener('scroll', trackReadingPosition);
       viewport?.removeEventListener('resize', syncViewport);
       viewport?.removeEventListener('scroll', syncViewport);
+      keyboard?.removeEventListener('geometrychange', syncViewport);
+      if (keyboard && previousOverlay !== undefined) keyboard.overlaysContent = previousOverlay;
+      window.removeEventListener('resize', syncViewport);
+      syncViewportRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     generation.current += 1; sending.current = false; setPendingQuestion(null);
+    setArrival({});
     followLatest.current = true;
     setNewOutput(false);
-    setMessages(key ? load<ChatMessage[]>(key + '.chat', [], 'session') : []);
-    setLoadedChatKey(key);
+    setReadingAbove(false);
+    setShowArtwork(false);
+    preparedReply.current = undefined;
+    setMessages(chatKey ? load<ChatMessage[]>(chatKey + '.chat', [], 'session') : []);
+    setLoadedChatKey(chatKey);
     return () => { generation.current += 1; };
-  }, [key]);
+  }, [chatKey]);
   useLayoutEffect(() => {
     if (!messages.length && !pending && !sendError) return;
     const conversation = shellRef.current?.querySelector('main');
@@ -150,19 +336,43 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     conversation.scrollTop = conversation.scrollHeight;
     chatRef.current?.focus({ preventScroll: true });
     setNewOutput(false);
+    setReadingAbove(false);
   };
-  const ask = async (question: string, fromInput = false) => {
+  const ask = async (question: string, fromInput = false, retryMemory?: ReturnType<typeof visitorMemory>) => {
     const q = question.trim();
     if (!q || q.length > 500 || !canAsk || !w || sending.current) return;
+    tts.stop();
+    tts.cancelPrepared();
     sending.current = true;
-    const active = generation.current; setPendingQuestion(q); setFailure(null);
-    const eligible = messages.flatMap((m, i) => m.role === 'user' && messages[i+1]?.role === 'ai' && messages[i+1].mode === 'llm' ? [m, messages[i+1]] : []);
-    const history = eligible.slice(-8).map(m => ({role: m.role === 'ai' ? 'assistant' as const : 'user' as const, text: m.text.slice(0,1000)}));
+    const active = generation.current;
+    const animateArrival = () => followLatest.current && window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    const oldAttempt = failure?.question;
+    const canStoreTranscript = !!state.user && w.docentTranscriptStorageAvailable === true;
+    const sent: ChatMessage = oldAttempt?.text === q ? oldAttempt : {
+      id: canStoreTranscript ? newVisitId() : newId(), role: 'user', text: q,
+    };
+    if (sent !== oldAttempt) setArrival(animateArrival() ? { questionId: sent.id } : {});
+    setPendingQuestion(sent);
+    setFailure(null);
+    const memory = w.visitorMemoryEnabled ? retryMemory ?? visitorMemory(state) : undefined;
+    const { history, earlierObservations, reference } = docentHistory(messages, q);
+    const earlierConversation = (earlierObservations.length || reference) && w.contentVersion !== undefined
+      ? { contentVersion: w.contentVersion, observations: earlierObservations, reference } : undefined;
     try {
-      const result = await api.askAI(artworkId, q, state.visitId, entry, history);
+      const result = await api.askAI(artworkId, q, state.visitId, entry, history, evidenceRevision,
+        memory, earlierConversation, canStoreTranscript ? sent.id : undefined);
       if (generation.current !== active) return;
-      const next: ChatMessage[] = [...messages, {id: newId(), role: 'user', text: q}, {id: newId(), role: 'ai', text: result.answer, mode: result.mode, sourceRefs: result.sourceRefs}];
-      setMessages(next); save(key + '.chat', next, 'session');
+      if (result.interestSignal && w.visitorMemoryEnabled) {
+        recordDocentInterest(state, artworkId, w.contentVersion ?? 1, result.interestSignal, w.visitRecapEnabled === true);
+      }
+      const answer: ChatMessage = {
+        id: newId(), role: 'ai', text: result.answer, mode: result.mode, sourceRefs: result.sourceRefs,
+        usedPreviousVisitMemory: result.usedPreviousVisitMemory, audioGrant: result.audioGrant,
+      };
+      const next = [...messages, sent, answer];
+      if (animateArrival()) setArrival(current => ({ ...current, answerId: answer.id }));
+      setMessages(next); save(chatKey + '.chat', next, 'session');
+      if (visitListening(state) === 'on') prepareReply(answer);
       if (fromInput) setInput((draft) => draft === question ? '' : draft);
     } catch (e) {
       if (generation.current !== active) return;
@@ -174,18 +384,19 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         setFailure({ message: '작품 자료가 변경됐어요. 작품 화면에서 새 내용을 확인해 주세요.' });
         reload();
       } else {
-        const retryable = !(e instanceof ApiError) || e.status === 0 || e.status === 429 || e.status >= 500;
+        const retryable = !(e instanceof ApiError) || e.status === 0 || e.status === 429 ||
+          e.status >= 500 || e.code === 'VISIT_CONTEXT_CHANGED';
         if (e instanceof ApiError && e.status === 429 && e.retryAfterSeconds) {
           const nextWindow = { expiresAt: Date.now() + e.retryAfterSeconds * 1000, seconds: e.retryAfterSeconds };
           save(RETRY_WINDOW_KEY, nextWindow, 'session');
           setRetryWindow(nextWindow);
         }
         setFailure({
-          question: q,
+          question: sent,
           message: e instanceof ApiError && e.status === 429 && e.retryAfterSeconds
             ? 'AI 사용량이 많아 질문을 보내지 못했어요.'
             : e instanceof Error ? e.message : '답변을 가져오지 못했어요.',
-          retry: retryable ? { question, fromInput } : undefined,
+          retry: retryable ? { question, fromInput, memory } : undefined,
         });
       }
     } finally {
@@ -200,7 +411,49 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     e.preventDefault();
     ask(input, true);
   };
-  const guidedStart = !!selectedQuestion && !messages.length;
+  // 관람가이드에서 새로 들어온 순간에는 이전 대화 아래에 놓인 질문 카드가 바로 보이게 스크롤한다.
+  useEffect(() => {
+    if (!revealCard) return;
+    const frame = window.requestAnimationFrame(() => {
+      const card = questionCardRef.current;
+      const conversation = shellRef.current?.querySelector('main');
+      if (!card || !conversation) return;
+      if (!card.nextElementSibling) {
+        // 카드가 대화의 마지막이면 맨 아래까지 내린다(아래 여백까지 보이게).
+        conversation.scrollTop = conversation.scrollHeight;
+      } else {
+        card.scrollIntoView({ block: 'end' });
+      }
+      followLatest.current = conversation.scrollHeight - conversation.clientHeight - conversation.scrollTop < NEAR_BOTTOM_PX;
+      setReadingAbove(!followLatest.current);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [revealCard]);
+  // 자리가 정해지기 전(대화를 불러온 직후 한 순간)에는 카드를 그리지 않는다. 맨 위에 잠깐 그려졌다 옮겨지며 스크롤이 꼬였다.
+  const anchorIndex = !selectedQuestion ? -1 : chatReady && guideAnchor === null ? -1 : Math.min(guideAnchor ?? 0, messages.length);
+  // 질문 카드 뒤로 아직 대화가 없을 때만 "그림에서 본 것을 적어 보세요" 안내를 쓴다.
+  const guidedStart = !!selectedQuestion && messages.length <= Math.max(anchorIndex, 0);
+  const followUps = w && canAsk && !sendError && !guidedStart ? docentFollowUps(w, messages, selectedQuestion) : [];
+  // Keep the question in the same DOM slot while waiting, retrying, and saving the turn.
+  const visibleMessages = attemptedQuestion ? [...messages, attemptedQuestion] : messages;
+  const starters = narration?.openingQuestion ? [narration.openingQuestion, ...SUGGESTED.slice(0, 3)] : SUGGESTED;
+  const questionCard = selectedQuestion && !artworkIssue ? (
+    <section ref={questionCardRef} className="docent-question bubble ai" aria-labelledby="docent-question-heading">
+      <h2 id="docent-question-heading">고른 관찰 질문</h2>
+      <p id="docent-question-text">{selectedQuestion}</p>
+      {chatReady && (
+        <button type="button" className="link-btn" disabled={!canAsk}
+          onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>
+      )}
+    </section>
+  ) : null;
+  // 지난 관찰 질문: 질문 글만 보이고 [힌트 받기]는 없다(지금 고른 질문과 헷갈리지 않게).
+  const pastCard = (h: GuideMark) => (
+    <section key={`guide-${h.index}-${h.question}`} className="docent-question docent-question-past bubble ai" aria-label="지난 관찰 질문">
+      <h2>관찰 질문</h2>
+      <p>{h.question}</p>
+    </section>
+  );
   const backToArtwork = () => {
     if (entryLocation?.fromArtwork) navigate(-1);
     else navigate(to('/artwork'), { replace: true });
@@ -214,19 +467,38 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       back={backToArtwork}
       footer={
         <>
-          {newOutput && !artworkIssue && (
-            <div className="docent-chat-actions">
-              <button type="button" className="link-btn" onClick={showLatest}>최신 대화 보기</button>
+          <div className="docent-latest-control" data-state={latestControlState}>
+            <div className="docent-latest-surface">
+              <button type="button" className={`docent-latest-btn${newOutput ? ' has-new' : ''}`}
+                disabled={!showLatestButton} aria-hidden={!showLatestButton}
+                onClick={showLatest} onMouseDown={holdComposerUntilClick}
+                aria-label="최신 대화 보기" title={newOutput ? '새 답변이 있어요' : '최신 대화 보기'}>
+                <Icon name="arrowDown" size={20} />
+              </button>
+              <div className="docent-thinking" aria-hidden="true">
+                <span /><span /><span />
+              </div>
             </div>
-          )}
+          </div>
           <form className="chat-input" onSubmit={onSubmit}>
-            <input
-              type="text"
-              enterKeyHint="send"
+            {/* 한 줄 입력칸(input) 대신 글상자(textarea)를 쓴다. 크롬이 input에 붙이던 키보드 위 열쇠·카드·위치 아이콘 줄(입력칸·보내기를 가리던 문제)이
+                글상자에는 붙지 않는다. 엔터는 줄바꿈이고, 보내기는 [보내기](↑) 버튼으로만 한다(11-20 사용자 결정). 글이 길어지면 6줄까지 늘어난다.
+                둥근 테두리 칸(chat-input-box) 안에 글상자와 ↑ 버튼을 함께 둔다. 한 줄이면 같은 줄, 넘치거나 줄바꿈하면 글이 버튼 윗줄부터 전체 폭을 쓴다.
+                키보드가 올라온 뒤에는 onFocus에서 화면 높이를 다시 맞춘다 */}
+            <div ref={inputBoxRef} className={`chat-input-box${multiline ? ' is-multiline' : ''}`}>
+            <textarea
+              ref={inputRef}
+              rows={1}
+              name="docent-question"
+              autoComplete="off"
+              autoCorrect="off"
               disabled={Boolean(artworkIssue)}
               maxLength={500}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onFocus={beginKeyboardOpening}
+              onClick={beginKeyboardOpening}
+              onBlur={clearKeyboardOpening}
               placeholder={guidedStart ? '그림에서 본 것을 적어 보세요' : '작품에 대해 궁금한 점을 물어보세요'}
               aria-label="질문 입력"
               aria-describedby={[
@@ -234,16 +506,18 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                 sendError ? 'docent-send-error' : '',
               ].filter(Boolean).join(' ') || undefined}
             />
-            <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기">
-              <Icon name="send" size={20} />
+            <button type="submit" className="send-btn" disabled={!input.trim() || !canAsk} aria-label="보내기"
+              onMouseDown={holdComposerUntilClick}>
+              <Icon name="arrowUp" size={20} />
             </button>
+            </div>
           </form>
         </>
       }
     >
       {w && artworkIssue !== 'unavailable' && (
         <div className="chat-artwork">
-          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={1} fit="contain" />
+          <ArtImage className="chat-thumb" seed={w.id} palette={w.palette} imageUrl={imageSrc} alt={w.title} ratio={1} fit="contain" />
           <div>
             <strong>{w.title}</strong>
             <span className="muted small">
@@ -253,39 +527,84 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
         </div>
       )}
 
+      {chatReady && showArtwork && w && imageSrc && (
+        <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={imageSrc} alt={w.title} onClose={() => setShowArtwork(false)} />
+      )}
       {error && (
         <div className="notice-card is-err notice-center" role="alert">
           <p className="notice-body">작품 정보를 불러오지 못했어요.{errorDetail(error)}</p>
           <button className="btn primary block" onClick={reload}>다시 시도하기</button>
         </div>
       )}
-      {selectedQuestion && !artworkIssue && (
-        <section className="docent-question bubble ai" aria-labelledby="docent-question-heading">
-          <h2 id="docent-question-heading">고른 관찰 질문</h2>
-          <p id="docent-question-text">{selectedQuestion}</p>
-          {chatReady && (
-            <button type="button" className="link-btn" disabled={!canAsk}
-              onClick={() => ask('이 관찰 질문에 답할 수 있도록 작품에서 볼 지점 하나를 힌트로 알려 주세요.')}>힌트 받기</button>
-          )}
-        </section>
-      )}
       <div ref={chatRef} className="chat-log" role="log" aria-label="도슨트 대화" tabIndex={-1}>
         {chatReady && messages.length === 0 && !selectedQuestion && !attemptedQuestion && !sendError && (
           <div className="bubble ai">작품을 보면서 궁금한 점을 편하게 물어보세요. 등록된 작품 자료를 바탕으로 답해 드려요.</div>
         )}
-        {chatReady && messages.map((m) => (
-          <div key={m.id} className={`bubble ${m.role}`}>
-            {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
-          </div>
-        ))}
-        {attemptedQuestion && <div className="bubble docent-attempt">{attemptedQuestion}</div>}
+        {chatReady && visibleMessages.map((m, i) => {
+          const isAnswer = m.role === 'ai' && m.mode === 'llm';
+          const clip = isAnswer ? narrationClip(narration?.answers.find(item => item.text === m.text)) : undefined;
+          const { audioGrant } = m;
+          const loadClip = audioGrant && state.visitId
+            ? (signal: AbortSignal) => fetchDocentAudio(artworkId, state.visitId, m.text, audioGrant, signal, 'play')
+            : undefined;
+          const canListen = isAnswer && (clip || loadClip || tts.supported);
+          const active = tts.activeId === m.id;
+          const preparing = active && tts.preparing;
+          const playbackLabel = preparing ? '음성 준비 중' : active ? '재생 중지' : '답변 듣기';
+          const isFresh = m.id === arrival.questionId || m.id === arrival.answerId;
+          const isAttempt = m.id === attemptedQuestion?.id;
+          return (
+            <Fragment key={m.id}>
+              {pastQuestions.filter((h) => h.index === i).map((h) => pastCard(h))}
+              {i === anchorIndex && questionCard}
+              <div className={`docent-message is-${m.role}${isFresh ? ' is-arriving' : ''}`}
+                onAnimationEnd={isFresh ? event => {
+                  if (event.target !== event.currentTarget) return;
+                  setArrival(current => ({
+                    questionId: current.questionId === m.id ? undefined : current.questionId,
+                    answerId: current.answerId === m.id ? undefined : current.answerId,
+                  }));
+                } : undefined}>
+                <div className={`bubble ${isAttempt ? 'docent-attempt' : m.role}`}>
+                  {m.role === 'ai' && <small>{m.mode === 'fallback' ? '일반 관찰 안내 (AI 생성 아님)' : m.mode === 'refusal' ? '안내' : 'AI 도슨트'}</small>}{m.text}
+                  {m.mode === 'fallback' && imageSrc && (
+                    <div><button type="button" className="link-btn" onClick={() => setShowArtwork(true)}>도판 크게 보기</button></div>
+                  )}
+                  {m.sourceRefs?.map(ref => ref.kind === 'collection' && ref.url.toLowerCase().startsWith('https://') ? (
+                    <div key={ref.revision}>
+                      <a className="link-btn" href={ref.url} target="_blank" rel="noreferrer">소장처 자료 · {ref.accession}</a>
+                    </div>
+                  ) : null)}
+                </div>
+                {canListen && <div className="docent-listen-row">
+                  <button type="button" className="icon-btn docent-listen" aria-label={playbackLabel} title={playbackLabel}
+                    aria-busy={preparing} disabled={preparing} onClick={() => active ? tts.stop() : tts.speak(m.text, clip, m.id, loadClip)}>
+                    {preparing
+                      ? <span className="docent-listen-spinner" aria-hidden="true" />
+                      : <Icon name={active ? 'stop' : 'speaker'} size={18} />}
+                  </button>
+                  <span className="docent-listen-status" role="status" aria-atomic="true">
+                    {preparing ? '음성을 만들고 있어요' : ''}
+                  </span>
+                </div>}
+              </div>
+              {i === messages.length - 1 && followUps.length > 0 && <div className="docent-follow-ups" role="group" aria-label="이어서 볼 질문">
+                {followUps.map(text => <button key={text} type="button" className="chip outline" onClick={() => ask(text)}>{text}</button>)}
+              </div>}
+            </Fragment>
+          );
+        })}
+        {tts.error && <p className="muted small" role="status">{tts.error}</p>}
+        {/* 대화를 다 불러오기 전이거나 질문 카드 뒤에 대화가 없으면 카드는 목록 끝(또는 처음)에 둔다 */}
+        {chatReady && pastQuestions.filter((h) => h.index >= visibleMessages.length).map((h) => pastCard(h))}
+        {(!chatReady || anchorIndex >= visibleMessages.length) && questionCard}
         {pending && <p className="bubble ai muted small" role="status">답변을 작성하고 있어요…</p>}
         {sendError && (
           <div className="bubble docent-error-card" role="alert">
             <p id="docent-send-error" className="error-text">{sendError}</p>
             {retry && (
               <button type="button" className="link-btn" disabled={!canAsk}
-                onClick={() => ask(retry.question, retry.fromInput)}>
+                onClick={() => ask(retry.question, retry.fromInput, retry.memory)}>
                 {retry.fromInput && retry.question !== input ? '이전 질문 다시 시도' : '다시 시도'}
               </button>
             )}
@@ -297,7 +616,7 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
       {chatReady && !selectedQuestion && messages.length === 0 && !pending && !sendError && <div className="suggested">
         <span className="eyebrow">추천 질문</span>
         <div className="chips wrap">
-          {SUGGESTED.map((q) => (
+          {starters.map((q) => (
             <button key={q} className="chip outline" onClick={() => ask(q)} disabled={!canAsk}>
               {q}
             </button>

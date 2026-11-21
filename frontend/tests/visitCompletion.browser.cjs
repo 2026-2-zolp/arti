@@ -451,6 +451,37 @@ async function visitHistory(browser) {
   } finally { await page.close(); }
 }
 
+async function exitResumedVisit(browser) {
+  const { page, button, artwork, requests, errors } = await fixture(browser, 360, false, 1);
+  try {
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await page.goto(base + path, { waitUntil: 'domcontentloaded' });
+    await page.getByText('합성 전시', { exact: true }).waitFor();
+    assert.equal(await button('개인정보 처리방침 보기').count(), 0);
+    await button('이어서 관람').click();
+    await button('2번 작품 감상하기').click();
+    await artwork(2).waitFor();
+    await button('다음 작품 안내').click();
+    await button('3번 작품 감상하기').click();
+    await artwork(3).waitFor();
+    await button('관람 마치기').click();
+    await button('관람 완료').click();
+    await page.waitForURL(url => url.pathname === path);
+    await button('관람 시작하기').waitFor();
+    await page.goBack();
+    await page.waitForURL(url => url.pathname === '/');
+    await page.getByText('진행 중인 전시', { exact: true }).waitFor();
+    assert.equal(await button('개인정보 처리방침 보기').count(), 0);
+    assert.equal(requests.length, 0);
+    await page.goto(base + '/signup', { waitUntil: 'domcontentloaded' });
+    await button('개인정보 처리방침 보기').click();
+    await page.getByRole('dialog', { name: '개인정보 처리방침' }).waitFor();
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+}
+
 async function recoverDocentDraft(browser) {
   const { page, button, artwork, errors } = await fixture(browser, 360, false);
   const question = '가운데 색이 먼저 보이는 이유가 뭔가요?';
@@ -646,6 +677,7 @@ async function completeVisit(browser, member) {
       ['관람 도중 영수증 직접 진입', browser => prematureReceipt(browser, 1)],
       ['추천 결과와 관람 시간의 앱·브라우저 이력', recommendationHistory],
       ['지도와 다음 작품 안내의 뒤로가기·새로고침', visitHistory],
+      ['이어서 관람 종료 뒤 취향 화면 반복 방지와 가입 전문', exitResumedVisit],
       ['회원 오류 복구와 관람 순서', browser => recoverErrors(browser, true)],
       ['비회원 오류 복구와 관람 순서', browser => recoverErrors(browser, false)],
       ['취향 조사·확인, 관람 시간, 마이페이지·과거 영수증 오류 복구', recoverNewErrorCards],

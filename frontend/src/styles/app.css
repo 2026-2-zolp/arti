@@ -182,6 +182,7 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---------- U-01 ---------- */
 .hero-illust { width: 100%; height: auto; display: block; margin: 4px 0 28px; }
+.exhibition-poster { max-height: min(46svh, 24rem); object-fit: contain; background: var(--surface-2); border-radius: 18px; }
 .current-ex { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; }
 .current-ex strong { font-size: 20px; }
 .resume-card { margin-top: 20px; padding: 16px; border-radius: var(--radius); background: var(--accent-soft); display: flex; flex-direction: column; gap: 6px; }
@@ -354,6 +355,7 @@ button.duel-title:disabled { cursor: default; }
 /* 평면도 이미지 위: 마커·입구 글자가 그림에 묻히지 않게 흰 테두리, 끌기 가능한 요소는 손 모양 커서 */
 .floor-map.has-plan .fm-marker circle { stroke: #fff; stroke-width: 0.7; }
 .floor-map.has-plan .fm-marker.upcoming circle, .floor-map.has-plan .fm-marker.plain circle { stroke: var(--accent); }
+.floor-map .fm-marker[role='button']:focus-visible > circle:last-of-type { stroke: var(--ink); stroke-width: 1.15; }
 .floor-map .fm-marker.check circle { fill: #7a4516; stroke: #fff; stroke-width: 0.75; }
 .fm-marker.check { pointer-events: none; }
 .fm-marker.check line { stroke: #7a4516; stroke-width: 0.5; }
@@ -459,11 +461,14 @@ button.duel-title:disabled { cursor: default; }
 }
 .m-shell[data-screen='U-11'] .m-header { position: static; flex: none; }
 .m-shell[data-screen='U-11'] .m-body { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.m-shell[data-screen='U-11'] .m-body:has(.docent-error-card) { padding-bottom: 16px; }
+.m-shell[data-screen='U-11']:has(.docent-latest-control[data-state='waiting']) .m-body { padding-bottom: 42px; }
 .m-shell[data-screen='U-11'] .m-footer {
   position: static;
   flex: none;
-  padding: 10px 24px max(12px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
+  /* 위쪽 여백 0: 대화는 입력칸 테두리에 닿는 곳에서 바로 가려진다(입력부 둘레 칸이 따로 보이지 않게, 11-20 사용자 결정) */
+  padding: 0 24px max(12px, env(safe-area-inset-bottom));
+  border-top: 0; /* 채팅과 입력창 사이 경계선 없음(11-20 사용자 결정) */
   background: var(--bg);
 }
 .chat-artwork { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; background: var(--surface-2); }
@@ -481,15 +486,119 @@ button.duel-title:disabled { cursor: default; }
 .bubble.user, .bubble.docent-attempt { background: var(--ink); color: #fff; border-top-right-radius: 4px; align-self: flex-end; }
 .bubble.docent-error-card { display: flex; flex-direction: column; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; align-self: flex-start; }
 .bubble.docent-error-card .link-btn { min-height: 44px; }
+.liked-artwork-link { color: inherit; text-decoration: none; }
 .chat-log .bubble small { display: block; color: var(--ink-2); }
+.docent-message { display: flex; flex-direction: column; align-self: flex-start; max-width: 92%; }
+.docent-message.is-user { align-self: flex-end; }
+.docent-message .bubble { max-width: 100%; }
+.docent-listen-row { display: flex; align-items: center; min-height: 44px; color: var(--ink-2); }
+.docent-listen { flex: 0 0 44px; width: 44px; height: 44px; align-items: center; justify-content: center; color: inherit; }
+.docent-listen-status { min-width: 0; font-size: .875rem; }
+.docent-listen-spinner { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: currentColor; border-radius: 50%; }
+.docent-follow-ups { display: flex; flex-wrap: wrap; gap: 6px; }
+.docent-follow-ups button { min-height: 44px; max-width: 100%; text-align: left; white-space: normal; }
 .suggested { display: flex; flex-direction: column; gap: 10px; }
-.docent-chat-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 12px; }
-.docent-chat-actions .link-btn { min-height: 44px; }
-.chat-input { display: grid; grid-template-columns: minmax(0, 1fr) 50px; gap: 8px; }
-.chat-input input { min-width: 0; height: 50px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
-.chat-input input:focus { outline: 1px solid var(--ink); outline-offset: -1px; }
-.send-btn { height: 50px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-.send-btn:disabled { background: #c9c6c0; }
+/* 최신 대화 버튼과 대기 표시는 입력창 바로 위에서 같은 공간을 쓴다. */
+.m-shell[data-screen='U-11'] .m-footer { position: relative; }
+/* 대화가 입력창에 닿는 곳: 입력창 위 16px 동안 대화가 배경색으로 서서히 사라지게 해 딱 잘려 보이지 않게 한다(11-20 사용자 결정).
+   맨 아래로 내리면 마지막 말풍선은 본문 아래 여백(24px) 덕분에 이 흐림 구간 위에 놓인다 */
+.m-shell[data-screen='U-11'] .m-footer::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 16px; pointer-events: none;
+  background: linear-gradient(to bottom, rgb(253 252 249 / 0), var(--bg));
+}
+.docent-latest-control {
+  position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); padding: 8px 8px 10px;
+  width: 76px; display: grid; justify-items: center; overflow: hidden; pointer-events: none; z-index: 2;
+}
+.docent-latest-surface {
+  position: relative; width: 40px; height: 40px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+}
+.docent-latest-control[data-state='hidden'] .docent-latest-surface { opacity: 0; transform: translateY(28px); visibility: hidden; }
+.docent-latest-control[data-state='waiting'] .docent-latest-surface { width: 58px; }
+.docent-latest-btn, .docent-thinking {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0;
+}
+.docent-latest-btn { width: 100%; height: 100%; border: 0; border-radius: inherit; padding: 0; background: transparent; color: inherit; }
+.docent-latest-control[data-state='latest'] .docent-latest-btn { opacity: 1; pointer-events: auto; }
+.docent-latest-btn.has-new::after {
+  content: ''; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--surface);
+}
+.docent-thinking { gap: 5px; color: var(--ink-2); }
+.docent-latest-control[data-state='waiting'] .docent-thinking { opacity: 1; }
+.docent-thinking span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .65; }
+.chat-input { display: block; }
+/* 질문 입력칸: 둥근 테두리 칸 안에 글상자와 [보내기](↑) 버튼을 함께 둔다.
+   - 한 줄: 글과 버튼이 같은 줄(칸 높이 50px)
+   - 여러 줄(.is-multiline, 버튼 앞에서 넘치거나 줄바꿈): 글이 버튼 윗줄부터 칸 전체 폭을 쓰고 버튼은 맨 아래 줄 오른쪽
+   - 최대 6줄까지 늘어나고 그 뒤는 글상자 안에서 스크롤. 스크롤 막대는 위쪽 여백(11px) 안쪽에서만 움직인다 */
+.chat-input-box {
+  display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 8px; row-gap: 2px; min-width: 0;
+  padding: 6px 6px 6px 16px; border-radius: 25px; border: 1px solid var(--line); background: var(--surface);
+  box-shadow: var(--shadow); /* 대화 위에 살짝 떠 있는 느낌(다른 카드와 같은 옅은 그림자) */
+}
+.chat-input-box:focus-within { outline: 1px solid var(--ink); outline-offset: -1px; }
+.chat-input textarea {
+  flex: 1 1 0; width: 0; min-width: 0; min-height: 36px; max-height: 146px; padding: 7px 0; border: 0; border-radius: 0;
+  background: transparent; color: inherit; font: inherit; font-size: 16px; line-height: 22px; resize: none; overflow-y: auto; display: block;
+}
+.chat-input textarea:focus { outline: none; }
+/* 빈칸 안내 문구는 좁은 휴대폰(320px)에서도 한 줄로 둔다(안내 문구 때문에 칸이 두 줄로 커지지 않게). 넘치는 끝은 잘린다(글상자는 … 표시가 안 됨) */
+.chat-input textarea:placeholder-shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-input-box.is-multiline { padding-top: 10px; border-radius: 22px; }
+/* 최대 6줄(132px). 가로 화면에서 키보드가 올라와 보이는 높이가 아주 낮을 때는 보이는 높이의 30%까지만 늘어나 대화가 가려지지 않게 한다 */
+.chat-input-box.is-multiline textarea {
+  flex-basis: 100%; width: 100%; min-height: 22px; max-height: min(132px, calc(var(--docent-height, 100dvh) * 0.3)); padding: 0 10px 0 0;
+}
+.m-shell[data-screen='U-11']:has(.docent-error-card) .chat-input-box.is-multiline textarea {
+  max-height: min(132px, max(44px, calc(var(--docent-height, 100dvh) * 0.16)));
+}
+.chat-input-box.is-multiline .send-btn { margin-left: auto; }
+/* [보내기]: 파란 원 + 흰 위쪽 화살표. 보낼 수 없을 때(글 없음·대기 중)는 흐리게 */
+.send-btn {
+  flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: #2563eb; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.send-btn:disabled { opacity: 0.35; }
+@media (prefers-reduced-motion: no-preference) {
+  .docent-listen-spinner { animation: docent-listen-spin 750ms linear infinite; }
+  .send-btn { transition: opacity 180ms ease; }
+  .docent-message.is-arriving { animation: docent-message-in 400ms ease; }
+  .docent-latest-surface { transition: opacity 400ms ease, transform 400ms ease, width 260ms ease, visibility 0s; }
+  .docent-latest-control[data-state='hidden'] .docent-latest-surface { transition-delay: 0s, 0s, 0s, 400ms; }
+  .docent-latest-btn, .docent-thinking { transition: opacity 140ms ease; }
+  .docent-latest-control[data-state='latest'] .docent-latest-btn,
+  .docent-latest-control[data-state='waiting'] .docent-thinking { transition-delay: 60ms; }
+  .docent-latest-control[data-state='hidden'] :is(.docent-latest-btn, .docent-thinking) { transition-duration: 400ms; }
+  .docent-latest-control[data-state='waiting'] .docent-thinking span { animation: docent-dot-bounce 1.2s ease-in-out infinite; }
+  .docent-latest-control[data-state='waiting'] .docent-thinking span:nth-child(2) { animation-delay: .14s; }
+  .docent-latest-control[data-state='waiting'] .docent-thinking span:nth-child(3) { animation-delay: .28s; }
+  @keyframes docent-message-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes docent-listen-spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes docent-dot-bounce {
+    0%, 52%, 100% { transform: translateY(0); opacity: .65; }
+    10% { transform: translateY(1.5px); }
+    24% { transform: translateY(-4px); opacity: 1; }
+    42% { transform: translateY(.5px); }
+  }
+}
+/* 높이 이벤트를 받기 전과 보이는 화면 높이만 알 수 있는 브라우저에서는 도구 줄이 뒤늦게 붙을 공간을 둔다. */
+.m-shell[data-screen='U-11'][data-keyboard='opening'] .m-footer {
+  padding-bottom: max(36px, env(safe-area-inset-bottom));
+}
+.m-shell[data-screen='U-11'][data-keyboard='open'] .m-footer {
+  padding-bottom: max(12px, env(safe-area-inset-bottom), min(40px, calc(var(--docent-height, 100dvh) * 0.12)));
+}
+/* 키보드 위쪽 좌표가 있으면 화면을 그 위치에서 끝내고 기본 하단 여백만 사용한다. */
+.m-shell[data-screen='U-11'][data-keyboard-geometry='virtual-keyboard'] .m-footer {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
 
 /* ---------- U-12 ---------- */
 .receipt { border: 1px solid #e4d9cc; background: #fdf9f3; border-radius: 12px; padding: 22px 24px; position: relative; }
@@ -647,6 +756,7 @@ aside.a-card h2 { overflow-wrap: anywhere; }
 
 .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 18, 20, 0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
 .modal { width: 520px; max-width: 100%; background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
+.poster-modal { max-height: 100%; overflow: auto; }
 .modal h2 { font-size: 22px; margin-bottom: 20px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 

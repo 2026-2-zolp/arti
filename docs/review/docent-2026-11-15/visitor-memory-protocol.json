@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "cases": [
+    {"id": "M01", "group": "same", "question": "이 작품은 어디부터 보면 좋을까요?", "expected": ["earlierInExhibition"]},
+    {"id": "M02", "group": "same", "question": "이 작품의 색감은 어디에서 볼 수 있나요?", "preferred": ["cool", "warm"], "expected": ["earlierInExhibition", "matchingTasteTags"]},
+    {"id": "M03", "group": "same", "question": "이 작품에서 색감을 어떻게 살펴볼까요?", "earlier": false, "preferred": ["cool"], "expected": []},
+    {"id": "M04", "group": "same", "question": "빛을 짧게 말고 자세히 설명해 주세요.", "expected": ["earlierInExhibition"], "currentStyle": "detailed"},
+    {"id": "M05", "group": "different", "question": "이 작품의 명암을 어떻게 볼까요?", "account": "owner", "expected": ["previousVisit"]},
+    {"id": "M06", "group": "different", "question": "이 작품의 붓질은 어디에서 볼 수 있나요?", "account": "owner", "expected": []},
+    {"id": "M07", "group": "different", "question": "이 작품은 어디부터 보면 좋을까요?", "account": "other", "expected": []},
+    {"id": "M08", "group": "evidence", "question": "작가는 왜 빛을 강조해서 그렸나요?", "expected": [], "event": "insufficient"},
+    {"id": "M09", "group": "evidence", "question": "앞 작품과 지금 작품의 빛을 비교해 주세요.", "expected": ["earlierInExhibition"]},
+    {"id": "M10", "group": "evidence", "question": "앞 작품과 비교하면 어떤 점을 볼까요?", "expected": ["earlierInExhibition"], "event": "revision"},
+    {"id": "M11", "group": "failure", "question": "이 작품에서 볼 지점을 알려주세요.", "expected": ["earlierInExhibition"], "event": "retry"},
+    {"id": "M12", "group": "failure", "question": "이 작품은 어디부터 보면 좋을까요?", "account": "other", "expected": [], "event": "owner_mismatch"}
+  ]
+}

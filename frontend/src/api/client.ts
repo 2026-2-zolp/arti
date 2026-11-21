@@ -10,7 +10,7 @@
  * - 관리자: localStorage 'arti.adminToken' → X-Admin-Token: <token>
  */
 import type {
-  Artwork, TasteProfile, EntryContext, DocentAnswer,
+  Artwork, TasteProfile, EntryContext, DocentAnswer, DocentCollectionDraft, DocentCollectionReview, DocentInterest, DocentMemorySettings,
   EmotionScores,
   Exhibition,
   NavigationLayoutInput,
@@ -59,9 +59,24 @@ export type OperationsReport = {
   textModelUsageByTaskModel?: {
     task: string; model: string; attempts: number; missing: number; inputTokens: number | null;
     outputTokens: number | null; cachedInputTokens: number | null; cacheMissing: number;
+    priced?: number; estimatedCostUsd?: string;
+  }[];
+  voiceModelUsageByIntent?: {
+    intent: 'play' | 'prepare'; model: string; attempts: number; measured: number; priced: number;
+    inputTokens: number | null; outputTokens: number | null; cachedInputTokens: number | null;
+    outputAudioTokens: number | null; estimatedCostUsd: string | null;
   }[];
   recent: { action: string; requestId: string; occurredAt: string; status: number;
     analysisFailures?: { field: 'summary' | 'guide' | 'tag' | 'emotion'; code: string }[] }[];
+};
+
+export type AdminOpenAISettings = {
+  editable: boolean;
+  enabled: boolean;
+  model: string;
+  keyStatus: 'saved' | 'environment' | 'missing' | 'unreadable';
+  revision: number;
+  draftUsesSeparateProvider: boolean;
 };
 
 /** 업로드한 이미지 파일(작품 이미지·평면도)의 주소 */
@@ -81,12 +96,32 @@ export async function fetchProtectedImage(url: string, signal: AbortSignal): Pro
   return res.blob();
 }
 
+export async function fetchDocentAudio(
+  artworkId: string, visitId: string, answer: string, audioGrant: string, signal: AbortSignal, intent?: 'prepare' | 'play',
+) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = load<string | null>(USER_TOKEN, null);
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${BASE}/artworks/${enc(artworkId)}/answer-audio`, {
+    method: 'POST', headers, body: JSON.stringify({ visitId, answer, audioGrant, intent }),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(33_000)]),
+  }).catch(() => {
+    throw new ApiError('음성 연결이 끊겼어요. 다시 눌러 주세요.');
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(data?.error ?? '답변 음성을 만들지 못했어요. 다시 눌러 주세요.', res.status);
+  }
+  if (!res.headers.get('Content-Type')?.startsWith('audio/wav')) throw new ApiError(GENERIC_ERROR);
+  return res.blob();
+}
+
 /** body가 Blob(파일)이면 그대로, 아니면 JSON으로 보낸다 */
 const versions = new Map<string, number>();
 async function request<T>(method: string, path: string, body?: unknown, expectedVersion?: number): Promise<T> {
   const headers: Record<string, string> = {};
   const isFile = body instanceof Blob;
-  const entityPath = path.split('?')[0].replace(/\/(image|floor-plan)$/, '');
+  const entityPath = path.split('?')[0].replace(/\/(image|floor-plan|poster)$/, '');
   const version = expectedVersion ?? versions.get(entityPath);
   if ((isFile || method === 'DELETE') && version !== undefined) headers['If-Match'] = `"${version}"`;
   const controller = new AbortController();
@@ -139,11 +174,20 @@ const enc = encodeURIComponent;
 
 export const api = {
   adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
+  adminOpenAISettings: () => request<AdminOpenAISettings>('GET', '/admin/ai-settings'),
+  saveAdminOpenAISettings: (input: Pick<AdminOpenAISettings, 'enabled' | 'model' | 'revision'> & { apiKey?: string }) =>
+    request<AdminOpenAISettings>('PUT', '/admin/ai-settings', input),
   // Admin preview must not consume filtered public catalog data on the Django target.
   listAdminExhibitions: () => request<Exhibition[]>('GET', `${ADMIN_READ}/exhibitions`),
   listAdminArtworks: (exhibitionId?: string) =>
     request<Artwork[]>('GET', `${ADMIN_READ}/artworks${exhibitionId ? `?exhibitionId=${enc(exhibitionId)}` : ''}`),
   getAdminArtwork: (id: string) => request<Artwork>('GET', `${ADMIN_READ}/artworks/${enc(id)}`),
+  getDocentCollection: (id: string) =>
+    request<DocentCollectionReview>('GET', `/admin/artworks/${enc(id)}/docent-collection`),
+  saveDocentCollection: (id: string, draft: DocentCollectionDraft, version: number, sourceVersion: number) =>
+    request<DocentCollectionReview>('PUT', `/admin/artworks/${enc(id)}/docent-collection`, { ...draft, version, sourceVersion }),
+  approveDocentCollection: (id: string, version: number, sourceVersion: number) =>
+    request<DocentCollectionReview>('POST', `/admin/artworks/${enc(id)}/docent-collection`, { version, sourceVersion }),
   // ───────────────────────── 전시 ─────────────────────────
   getExhibition: (id: string) => request<Exhibition>('GET', `/exhibitions/${enc(id)}`),
 
@@ -187,7 +231,12 @@ export const api = {
     return { status: result.status, user: result.user, returnTo: result.returnTo };
   },
 
-  async signup(input: { email: string; password: string; nickname: string; termsAccepted: boolean; termsVersion: string }): Promise<User> {
+  signupConfig: () => request<{ docentTranscriptStorageAvailable: boolean }>('GET', '/auth/signup-config'),
+
+  async signup(input: {
+    email: string; password: string; nickname: string; termsAccepted: boolean; termsVersion: string;
+    docentTranscriptAccepted?: boolean; docentTranscriptNoticeVersion?: string;
+  }): Promise<User> {
     const { user, token } = await request<{ user: User; token: string }>('POST', '/auth/signup', input);
     save(USER_TOKEN, token);
     return user;
@@ -210,6 +259,17 @@ export const api = {
   },
 
   me: () => request<User>('GET', '/auth/me'),
+  async withdrawAccount(userId: string, currentPassword: string): Promise<boolean> {
+    const token = load(USER_TOKEN, null);
+    await request<void>('POST', `/users/${enc(userId)}/withdrawal`, { currentPassword });
+    if (load(USER_TOKEN, null) !== token) return false;
+    remove(USER_TOKEN);
+    remove(USER_INFO);
+    return true;
+  },
+  getDocentMemorySettings: (userId: string) => request<DocentMemorySettings>('GET', `/users/${enc(userId)}/docent-memory`),
+  updateDocentMemorySettings: (userId: string, change: { enabled: boolean } | { reset: true }) =>
+    request<DocentMemorySettings>('PATCH', `/users/${enc(userId)}/docent-memory`, change),
   tastePool: () => request<{
     poolId: string | null; revision: number | null; ready: boolean; poolVersion: string;
     pairs: {leftId: string; rightId: string}[]; artworks: Artwork[];
@@ -245,8 +305,31 @@ export const api = {
   },
 
   /** U-11 AI 자유 질문 (서버에서 작품 자료만 근거로 답변) */
-  askAI: (artworkId: string, question: string, visitId: string, entryContext?: EntryContext, history: {role: 'user' | 'assistant'; text: string}[] = []) =>
-    request<DocentAnswer>('POST', `/artworks/${enc(artworkId)}/ask`, { question, visitId, entryContext, history }),
+  getDocentArtwork: (id: string) =>
+    request<Artwork & { docentEvidenceRevision?: number; visitorMemoryEnabled?: boolean }>('GET', `/artworks/${enc(id)}?docent=true`),
+  askAI: (artworkId: string, question: string, visitId: string, entryContext?: EntryContext,
+    history: {role: 'user' | 'assistant'; text: string}[] = [], docentEvidenceRevision?: number,
+    visitorMemory?: { ownerId: string | null; earlier: DocentInterest[]; preferredTags: TasteTag[] },
+    earlierConversation?: { contentVersion: number; observations: string[]; reference?: 'dialogue_order' },
+    transcriptTurnId?: string) =>
+    request<DocentAnswer>('POST', `/artworks/${enc(artworkId)}/ask`, {
+      question, visitId, entryContext, history, docentEvidenceRevision, visitorMemory, earlierConversation, transcriptTurnId,
+    }),
+  getLikedArtworkRecap: (id: string) =>
+    request<{
+      artwork: Artwork; likedAt: string; recap: { topics: string[]; style: string | null } | null;
+      conversations?: { visitId: string; likedAt: string; turns: { id: string; question: string; answer: string }[] }[];
+    }>('GET', `/artworks/${enc(id)}/liked-recap`),
+  deleteLikedArtworkConversation: (id: string, visitId: string) =>
+    request<void>('DELETE', `/artworks/${enc(id)}/liked-recap/${enc(visitId)}`),
+  getDocentTranscriptSettings: (id: string) =>
+    request<{ available: boolean; storageAvailable: boolean; enabled: boolean; noticeVersion: string; hasConversations: boolean }>(
+      'GET', `/users/${enc(id)}/docent-transcript`,
+    ),
+  setDocentTranscriptConsent: (id: string, input: { enabled: false } | { enabled: true; noticeVersion: string }) =>
+    request<void>('PATCH', `/users/${enc(id)}/docent-transcript`, input),
+  deleteDocentTranscripts: (id: string) =>
+    request<void>('DELETE', `/users/${enc(id)}/docent-transcript`),
 
   /** U-12 아트 영수증의 AI 취향 해석 (오늘 본 작품의 감정 분석 + 반응 + 감상 시간) */
   interpretVisit: (input: { exhibitionId: string; visitId: string; viewedArtworkIds: string[]; reactions: Record<string, Reaction>; dwell: Record<string, number> }) =>
@@ -296,6 +379,11 @@ export const api = {
   uploadArtworkImage: (id: string, file: File) => request<Artwork>('POST', `/admin/artworks/${enc(id)}/image`, file),
 
   deleteArtworkImage: (id: string) => request<Artwork>('DELETE', `/admin/artworks/${enc(id)}/image`),
+
+  uploadExhibitionPoster: (id: string, file: File, version?: number) =>
+    request<Exhibition>('POST', `/admin/exhibitions/${enc(id)}/poster`, file, version),
+  deleteExhibitionPoster: (id: string, version?: number) =>
+    request<Exhibition>('DELETE', `/admin/exhibitions/${enc(id)}/poster`, undefined, version),
 
   /** A-05 미술관 평면도 이미지 업로드 (width·height = 원본 픽셀 크기) */
   uploadFloorPlan: (exhibitionId: string, file: File, width: number, height: number, version?: number) =>

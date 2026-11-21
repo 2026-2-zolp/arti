@@ -25,6 +25,30 @@ class MapManagementTests(Helpers, TestCase):
     def upload(self, version):
         return self.admin.post(self.image_path, self.png, content_type='image/png', HTTP_IF_MATCH=f'"{version}"')
 
+    @override_settings(ARTI_ENV='production', ARTI_EXHIBITION_ORDER_DEMO_ENABLED=False)
+    def test_admin_manages_direct_visit_order_and_public_skips_pending_works(self):
+        url = f'/api/exhibitions/{self.ex.id}'
+        order = ['fixture-art05', 'fixture-art01', 'fixture-art03']
+        original = self.admin.get(self.path).json()
+        self.assertEqual(original['directVisitOrder'], [])
+        self.assertNotIn('exhibitionOrder', self.public.get(url).json())
+        for wrong in [['fixture-art01'] * 2, ['fixture-art13'], ['unknown-id']]:
+            response = self.admin.put(self.path, {**original, 'directVisitOrder': wrong}, format='json')
+            self.assertEqual(response.status_code, 400, response.content)
+        saved = self.admin.put(self.path, {**original, 'directVisitOrder': order}, format='json')
+        self.assertEqual(saved.status_code, 200, saved.content)
+        self.assertEqual(saved.json()['directVisitOrder'], order)
+        public = self.public.get(url)
+        self.assertEqual(public.json()['exhibitionOrder'], order)
+        self.assertNotIn('directVisitOrder', public.json())
+        self.assertEqual(public.headers['Cache-Control'], 'no-store')
+        self.assertEqual(self.admin.put(self.path, original, format='json').status_code, 409)
+        Artwork.objects.filter(pk=order[0]).update(review_status='pending')
+        self.assertEqual(self.public.get(url).json()['exhibitionOrder'], order[1:])
+        cleared = self.admin.put(self.path, {**saved.json(), 'directVisitOrder': []}, format='json')
+        self.assertEqual(cleared.status_code, 200, cleared.content)
+        self.assertNotIn('exhibitionOrder', self.public.get(url).json())
+
     def test_upload_requery_and_media_visibility(self):
         response = self.upload(self.ex.version)
         self.assertEqual(response.status_code, 200, response.content)
@@ -147,10 +171,11 @@ class MapManagementTests(Helpers, TestCase):
         self.assertEqual(self.public.put(self.path + '/navigation', {}, format='json').status_code, 401)
         self.assertEqual(self.admin.put(self.path + '/navigation', ['layout'], format='json').status_code, 400)
         self.assertEqual(self.save_layout(plan, {**layout, 'walls': [{'x': 99, 'y': 1, 'w': 2, 'h': 10}]}).status_code, 400)
-        response = self.save_layout(plan, layout)
+        self.assertEqual(self.save_layout(plan, {**layout, 'example': 'true'}).status_code, 400)
+        response = self.save_layout(plan, {**layout, 'example': True})
         self.assertEqual(response.status_code, 200, response.content)
         saved = response.json()
-        expected = {**layout, 'aspect': 1.5, 'floorPlanRevision': plan['floorPlanRevision']}
+        expected = {**layout, 'example': True, 'aspect': 1.5, 'floorPlanRevision': plan['floorPlanRevision']}
         self.assertEqual(saved['navigationLayout'], expected)
         self.assertEqual(self.public.get('/api/exhibitions/' + self.ex.id).json()['navigationLayout'], expected)
         self.assertEqual(self.save_layout(plan, layout).status_code, 409)
@@ -160,6 +185,9 @@ class MapManagementTests(Helpers, TestCase):
         self.assertEqual(replacement['floorPlanRevision'], saved['floorPlanRevision'] + 1)
         self.assertIsNone(replacement['navigationLayout'])
         self.assertEqual(self.save_layout(replacement, layout, floorPlanRevision=plan['floorPlanRevision']).status_code, 409)
+        legacy = self.save_layout(replacement, layout)
+        self.assertEqual(legacy.status_code, 200, legacy.content)
+        self.assertNotIn('example', legacy.json()['navigationLayout'])
 
     @override_settings(ARTI_TASTE_PROFILE_V2_ENABLED=True)
     def test_corridor_order_preserves_v2_recommendations_at_each_duration(self):

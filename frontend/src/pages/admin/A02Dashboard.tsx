@@ -5,7 +5,7 @@ import { useAsync } from '../../lib/useAsync';
 import { EX_STATUS_LABEL, PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
 import { apiTarget } from '../../lib/apiTarget';
-import { OperationsOverview } from './Operations';
+import { AiOverview } from './AiManagement';
 
 const dashboardDescription = '등록된 전시와 작품, 데이터 검수 상태를 한눈에 확인합니다.';
 
@@ -46,7 +46,7 @@ export default function A02Dashboard() {
         <Stat label="검수 대기" value={waiting} sub="출처 확인 필요" to="/admin/artworks?review=todo" warn={waiting > 0} />
       </div>
 
-      {apiTarget(import.meta.env.VITE_API_TARGET) === 'django' && <OperationsOverview />}
+      {apiTarget(import.meta.env.VITE_API_TARGET) === 'django' && <AiOverview />}
 
       <h2 className="a-section-title">최근 데이터 상태</h2>
       <div className="a-card">

@@ -4,7 +4,7 @@ import {useLocation} from 'react-router-dom';
 import {useVisit} from '../store/VisitContext';
 
 /** 버튼 글자를 바꿀 때만 넘긴다. 기본은 [취소]·[확인하고 계속]. */
-export interface ConfirmLabels { cancel?: string; confirm?: string }
+export interface ConfirmLabels { cancel?: string; confirm?: string; title?: string; tone?: 'danger' }
 type ConfirmFn = (message: string, labels?: ConfirmLabels) => Promise<boolean>;
 const ConfirmationContext = createContext<ConfirmFn | null>(null);
 
@@ -40,11 +40,12 @@ export function ConfirmationProvider({children}: {children: ReactNode}) {
           if (event.key === 'Escape') {event.preventDefault(); settle(false);}
           if (event.key === 'Tab') {event.preventDefault(); (document.activeElement === cancel.current ? proceed : cancel).current?.focus();}
         }}>
-        <h2 id={titleId}>진행하기 전에 확인해 주세요</h2>
+        <h2 id={titleId}>{labels.title ?? '진행하기 전에 확인해 주세요'}</h2>
         <p id={bodyId}>{message}</p>
         <div className="action-row">
           <button ref={cancel} className="btn outline" onClick={() => settle(false)}>{labels.cancel ?? '취소'}</button>
-          <button ref={proceed} className="btn primary" onClick={() => settle(true)}>{labels.confirm ?? '확인하고 계속'}</button>
+          <button ref={proceed} className={labels.tone === 'danger' ? 'btn primary is-danger' : 'btn primary'}
+            onClick={() => settle(true)}>{labels.confirm ?? '확인하고 계속'}</button>
         </div>
       </section>
     </div>}

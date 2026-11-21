@@ -4,11 +4,12 @@ from unittest.mock import patch
 from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
+from arti.docent_transcript import DOCENT_TRANSCRIPT_NOTICE_VERSION
 from arti.member import SIGNUP_TERMS_VERSION
-from arti.models import Account, Session, SignupTermsAcceptance
+from arti.models import Account, DocentTranscriptConsent, Session, SignupTermsAcceptance
 
 
 class SignupContractTests(TestCase):
@@ -82,6 +83,34 @@ class SignupContractTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         previous.refresh_from_db()
         self.assertEqual((previous.version, previous.accepted_at), ('2026-11-14-draft.1', accepted_at))
+
+    @override_settings(ARTI_DOCENT_TRANSCRIPTS_ENABLED=True)
+    def test_transcript_notice_is_an_optional_versioned_choice(self):
+        config = self.client.get('/api/auth/signup-config')
+        self.assertEqual(config.json(), {'docentTranscriptStorageAvailable': True})
+        self.assertEqual(config.headers['Cache-Control'], 'no-store')
+        self.assertEqual(self.signup(email='without-transcript@example.test').status_code, 200)
+        self.assertFalse(DocentTranscriptConsent.objects.exists())
+        for accepted, version, status in ((1, DOCENT_TRANSCRIPT_NOTICE_VERSION, 400), (True, 'old', 409)):
+            rejected = self.signup(docentTranscriptAccepted=accepted, docentTranscriptNoticeVersion=version)
+            self.assertEqual(rejected.status_code, status)
+        self.assertEqual(Account.objects.count(), 1)
+        before = timezone.now()
+        response = self.signup(docentTranscriptAccepted=True,
+                               docentTranscriptNoticeVersion=DOCENT_TRANSCRIPT_NOTICE_VERSION,
+                               consentedAt='2000-01-01T00:00:00Z')
+        self.assertEqual(response.status_code, 200, response.content)
+        consent = DocentTranscriptConsent.objects.get(account_id=response.json()['user']['id'])
+        self.assertEqual(consent.version, DOCENT_TRANSCRIPT_NOTICE_VERSION)
+        self.assertLessEqual(before, consent.consented_at)
+
+    @override_settings(ARTI_DOCENT_TRANSCRIPTS_ENABLED=False)
+    def test_disabled_transcript_storage_cannot_record_choice(self):
+        self.assertEqual(self.client.get('/api/auth/signup-config').json(), {'docentTranscriptStorageAvailable': False})
+        response = self.signup(docentTranscriptAccepted=True,
+                               docentTranscriptNoticeVersion=DOCENT_TRANSCRIPT_NOTICE_VERSION)
+        self.assertEqual((response.status_code, response.json()['code']), (409, 'TRANSCRIPT_NOTICE_CHANGED'))
+        self.assertFalse(Account.objects.exists())
 
     def test_missing_or_blank_nickname_can_signup_and_login(self):
         for index, nickname in enumerate((None, '', '   ')):

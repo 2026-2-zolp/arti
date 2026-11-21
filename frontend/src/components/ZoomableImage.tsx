@@ -27,6 +27,8 @@ export function ZoomableImage({ children }: { children: ReactNode }) {
   const moved = useRef(false);
   const lastTap = useRef<{ time: number; x: number; y: number } | null>(null);
   const frame = useRef(0);
+  // 마지막 두 손가락 가운데 지점. 최대 배율을 넘겨 벌렸다가 손을 떼면 이 지점을 기준으로 되돌린다.
+  const pinchMid = useRef<Point | null>(null);
 
   /** 화면에 transform을 반영한다. 연속 이동은 다음 화면 갱신 때 한 번만 그린다. */
   function apply(animate: boolean) {
@@ -74,7 +76,13 @@ export function ZoomableImage({ children }: { children: ReactNode }) {
     return { scale: nextScale, x: point.x - contentX * nextScale, y: point.y - contentY * nextScale };
   }
 
+  /** 최대 배율을 넘었으면 손가락 사이 지점을 그대로 두고 최대 배율로 줄인다(배율만 줄이면 보던 곳이 옆으로 밀려났다). */
+  function backToMaxScale() {
+    if (view.current.scale > MAX_SCALE && pinchMid.current) view.current = zoomAt(pinchMid.current, MAX_SCALE);
+  }
+
   function settle() {
+    backToMaxScale();
     view.current = clamped(view.current);
     apply(true);
   }
@@ -122,6 +130,7 @@ export function ZoomableImage({ children }: { children: ReactNode }) {
       const scale = raw > MAX_SCALE ? MAX_SCALE + (raw - MAX_SCALE) * 0.3 : raw < 1 ? 1 - (1 - raw) * 0.5 : raw;
       const zoomed = zoomAt(g.mid, scale, g.start);
       view.current = { scale, x: zoomed.x + (mid.x - g.mid.x), y: zoomed.y + (mid.y - g.mid.y) };
+      pinchMid.current = mid;
       moved.current = true;
     } else {
       const p = pts[0];
@@ -143,6 +152,8 @@ export function ZoomableImage({ children }: { children: ReactNode }) {
     const wasSingle = pointers.current.size === 1;
     pointers.current.delete(e.pointerId);
     if (pointers.current.size > 0) {
+      backToMaxScale(); // 최대 배율을 넘긴 채로 끌지 않게 먼저 되돌린다
+      apply(true);
       startGesture(); // 두 손가락 중 하나를 떼면 남은 손가락으로 이어서 끌기
       return;
     }

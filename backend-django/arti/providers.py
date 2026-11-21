@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from .http import ContractError
 from .llm import DRAFT_TASKS, GUIDE_REVIEW_TASK, generate_text, text_connection_settings
+from .openai_settings import text_runtime
 
 
 def configuration_status():
@@ -11,13 +12,14 @@ def configuration_status():
     from .model_service import model_service_base
 
     docent = 'disabled'
-    if settings.ARTI_LLM_PROVIDER == 'openai_compatible':
+    provider = text_runtime('answer').provider
+    if provider == 'openai_compatible':
         try:
             text_connection_settings('answer')
             docent = 'configured'
         except ContractError:
             docent = 'invalid'
-    elif settings.ARTI_LLM_PROVIDER != 'disabled':
+    elif provider != 'disabled':
         docent = 'invalid'
 
     analysis = 'disabled'
@@ -31,7 +33,7 @@ def configuration_status():
 
 
 def draft_configuration_status():
-    if settings.ARTI_DRAFT_PROVIDER == 'default' and settings.ARTI_LLM_PROVIDER == 'disabled':
+    if settings.ARTI_DRAFT_PROVIDER == 'default' and text_runtime('summary').provider == 'disabled':
         return 'disabled'
     try:
         for kind in DRAFT_TASKS:
@@ -62,7 +64,7 @@ def generate(kind, snapshot, **context):
         if kind == 'tag':
             return {'scores': result['tags']} | ({'tagEvidence': result['tagEvidence']} if result.get('tagEvidence') is not None else {})
         return {k: v for k, v in result.items() if k != 'tagEvidence'} | {'analyzedAt': timezone.now().isoformat()}
-    if settings.ARTI_LLM_PROVIDER == 'openai_compatible' or (kind in DRAFT_TASKS and settings.ARTI_DRAFT_PROVIDER != 'default'):
+    if (kind in DRAFT_TASKS and settings.ARTI_DRAFT_PROVIDER != 'default') or text_runtime(kind).provider == 'openai_compatible':
         return generate_text(kind, snapshot, **context)
     raise ContractError(503, 'AI_UNAVAILABLE', 'AI 연결을 준비 중이에요. 잠시 후 다시 시도해 주세요.', retryable=True)
 
@@ -100,5 +102,6 @@ def validate(kind,value):
         elif kind=='emotion':valid=scores(value.get('emotions'),EMOTIONS)
         elif kind in ('interpret','explanation'):valid=text(value.get('text'))
         elif kind=='answer':
-            valid=text(value.get('answer'),1000) and isinstance(value.get('insufficientEvidence', False), bool)
+            valid = (text(value.get('answer'), 1000) and isinstance(value.get('insufficientEvidence', False), bool)
+                     and isinstance(value.get('collectionEvidenceUsed', False), bool))
     if not valid:raise ContractError(502,'PROVIDER_ERROR','AI 응답 형식을 확인할 수 없어요.',retryable=True)

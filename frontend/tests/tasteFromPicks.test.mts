@@ -20,11 +20,18 @@ test('preselects both leaders when exactly two tags tie for first', () => {
   });
 });
 
-test('all eight picked tags remain available when a broad tie leaves no preselection', () => {
-  const tags: TasteTag[] = ['landscape', 'people', 'abstract', 'light', 'vivid', 'cool', 'warm', 'soft'];
-  const { options, defaultTags } = suggest(tags.slice(0, 2), tags.slice(2, 4), tags.slice(4, 6), tags.slice(6));
-  assert.deepEqual(new Set(options), new Set(tags));
-  assert.deepEqual(defaultTags, []);
+test('a broad tie suggests two leaders in fixed display order and keeps all tags available', () => {
+  const picks: TasteTag[][] = [['warm', 'cool'], ['landscape', 'light'], ['people', 'soft'], ['abstract', 'vivid']];
+  const expected = suggest(...picks);
+  assert.deepEqual(new Set(expected.options), new Set(picks.flat()));
+  assert.deepEqual(expected.defaultTags, ['landscape', 'people']);
+  assert.deepEqual(suggest(...[...picks].reverse()), expected);
+  assert.deepEqual(suggest(...picks.map(tags => [...tags].reverse())), expected);
+});
+
+test('a wide tie at the highest frequency skips a lower-frequency tag', () => {
+  assert.deepEqual(suggest(['light', 'soft'], ['warm'], ['people'], ['people', 'light'], ['warm']).defaultTags,
+    ['people', 'light']);
 });
 
 test('no tags are suggested without tagged picks', () => {

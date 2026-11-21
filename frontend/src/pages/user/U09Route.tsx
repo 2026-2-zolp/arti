@@ -176,6 +176,10 @@ export default function U09Route() {
   else if (!hasRouteLines) routeNote = '번호는 감상 순서를 나타내요. 이동할 때는 전시실 안내를 따라가 주세요.';
   else if (!activeLeg) routeNote = '작품 위치 정보가 부족해 이번 구간을 표시할 수 없어요.';
   else if (!isMapFixture && route?.includes(null)) routeNote = '위치가 등록된 연속 구간만 이었어요. 실제 통로와 다를 수 있어요.';
+  if (indoor?.example) {
+    const exampleNote = '검수용 예시 배치예요. 실제 이동은 전시실 안내를 따라가 주세요.';
+    routeNote = activeLeg ? exampleNote : `${exampleNote} ${routeNote}`;
+  }
 
   const go = () => {
     if (returnToArtwork) {
@@ -230,7 +234,7 @@ export default function U09Route() {
         </span>
         <div className="progress-dots" aria-hidden="true">
           {recommendations.map((r, i) => (
-            <span key={r.artworkId} className={i === current ? 'cur' : viewed.includes(r.artworkId) ? 'done' : ''} />
+            <span key={r.artworkId} className={i === current ? 'cur' : i < current && viewed.includes(r.artworkId) ? 'done' : ''} />
           ))}
         </div>
       </div>
@@ -257,7 +261,8 @@ export default function U09Route() {
           {recommendations.map((r, i) => {
             const w = byId.get(r.artworkId);
             // 되돌아온 작품은 이미 본 작품이어도 '현재 작품'으로 먼저 표시한다.
-            const completed = i !== current && viewed.includes(r.artworkId);
+            // 현재 작품보다 앞 순서만 완료(✓)로 표시한다. 뒤로가기로 돌아왔을 때 뒤 순서는 이미 봤어도 번호로 둔다(지도 표시와 같게).
+            const completed = i < current && viewed.includes(r.artworkId);
             return (
               <li key={r.artworkId} aria-current={i === current ? 'step' : undefined} className={completed ? 'done' : i === current ? 'cur' : ''}>
                 <span className="route-num" aria-hidden="true">{completed ? '✓' : i + 1}</span>

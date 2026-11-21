@@ -1,8 +1,10 @@
 /** A-03 전시 관리 — 전시 목록, 등록·수정 모달, 전시 행을 누르면 그 전시의 작품 관리로 이동 */
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api, uploadedImageUrl } from '../../api/client';
+import { useConfirm } from '../../components/Confirmation';
 import { useAsync } from '../../lib/useAsync';
+import { useProtectedImage } from '../../lib/useProtectedImage';
 import type { Exhibition, ExhibitionStatus } from '../../types';
 import { EX_STATUS_LABEL, PageHead } from './AdminLayout';
 
@@ -27,6 +29,7 @@ export default function A03Exhibitions() {
   const navigate = useNavigate();
   const { data, reload } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   const [editing, setEditing] = useState<Exhibition | null>(null);
+  const [posterFor, setPosterFor] = useState<Exhibition | null>(null);
 
   const save = async (ex: Exhibition) => {
     await api.saveExhibition(ex);
@@ -88,6 +91,10 @@ export default function A03Exhibitions() {
                       >
                         수정
                       </button>
+                      <button className="a-btn sm" type="button" aria-label={`${ex.title} 포스터 관리`}
+                        onClick={e => { e.stopPropagation(); setPosterFor(ex); }}>
+                        포스터
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -98,7 +105,62 @@ export default function A03Exhibitions() {
       </div>
 
       {editing && <ExhibitionModal initial={editing} onClose={() => setEditing(null)} onSave={save} />}
+      {posterFor && <ExhibitionPosterModal initial={posterFor} onClose={() => setPosterFor(null)} onSaved={reload} />}
     </>
+  );
+}
+
+function ExhibitionPosterModal({ initial: ex, onClose, onSaved }: { initial: Exhibition; onClose: () => void; onSaved: () => void }) {
+  const confirm = useConfirm();
+  const [file, setFile] = useState<File>();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const { src, failed } = useProtectedImage(ex.posterFile ? uploadedImageUrl(ex.posterFile, true) : undefined);
+
+  const changePoster = async (nextFile?: File) => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      if (!nextFile && !(await confirm('전시 포스터를 삭제할까요?'))) return;
+      if (nextFile) await api.uploadExhibitionPoster(ex.id, nextFile, ex.version);
+      else await api.deleteExhibitionPoster(ex.id, ex.version);
+      onSaved();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '포스터를 저장하지 못했어요.');
+      onSaved();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={busy ? undefined : onClose}>
+      <form className="modal poster-modal" role="dialog" aria-modal="true" aria-labelledby="exhibition-poster-heading"
+        onClick={e => e.stopPropagation()} onKeyDown={e => {
+          if (e.key === 'Escape' && !busy) onClose();
+        }} onSubmit={e => {
+        e.preventDefault();
+        if (file) void changePoster(file);
+      }}>
+        <h2 id="exhibition-poster-heading">{ex.title} 포스터</h2>
+        <p className="muted small">운영 중인 전시의 관람 시작 화면에 표시해요. 사용 허가를 받은 이미지를 올려 주세요.</p>
+        {src && <img className="hero-illust exhibition-poster" src={src} alt="현재 포스터" />}
+        {failed && <p className="muted small">현재 포스터를 불러오지 못했어요.</p>}
+        <label className="a-field">
+          <span>포스터 파일</span>
+          <input type="file" autoFocus accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e => setFile(e.target.files?.[0])} />
+        </label>
+        <p className="muted small">PNG, JPG, WEBP · 최대 10MB</p>
+        {error && <p className="error-text" role="alert">{error}</p>}
+        <div className="modal-actions">
+          {ex.posterFile && <button type="button" className="a-btn" disabled={busy} onClick={() => void changePoster()}>포스터 삭제</button>}
+          <button type="button" className="a-btn" disabled={busy} onClick={onClose}>닫기</button>
+          <button className="a-btn primary" disabled={busy || !file}>포스터 저장</button>
+        </div>
+      </form>
+    </div>
   );
 }
 

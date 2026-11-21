@@ -85,12 +85,15 @@ export interface Exhibition {
   rooms: Room[];
   entrance: MapPoint;      // 입구 위치 (경로 시작점)
   floorPlan: FloorPlan | null; // 없으면 rooms 사각형으로 기본 평면도를 그린다
+  posterFile?: string | null;
   floorPlanRevision?: number;
   navigationLayout?: NavigationLayout | null;
   exhibitionOrder?: string[];
+  directVisitOrder?: string[];
 }
 
 export interface NavigationLayoutInput {
+  example?: boolean;
   walkable: { x: number; y: number; w: number; h: number }[];
   walls: NavigationLayoutInput['walkable'];
   pillars: NavigationLayoutInput['walkable'];
@@ -102,6 +105,9 @@ export interface NavigationLayoutInput {
 export type NavigationLayout = NavigationLayoutInput & { floorPlanRevision: number; aspect: number };
 
 export interface Artwork {
+  docentListeningAvailable?: boolean;
+  visitRecapEnabled?: boolean;
+  docentTranscriptStorageAvailable?: boolean;
   receiptExhibition?: ReceiptExhibition;
   artworkReceiptEvidence?: string;
   version?: number;
@@ -174,6 +180,7 @@ export type ReceiptArtwork = Pick<Artwork, 'id' | 'title' | 'tags'>;
 export type VisitMode = 'exhibition_order';
 
 export interface User {
+  docentMemorySettingsAvailable?: boolean;
   tasteProfile?: TasteProfile | null;
   tasteProfileVersion?: number;
   id: string;
@@ -186,6 +193,7 @@ export interface User {
 
 /** 관람 1회 기록 (아트 영수증 데이터) */
 export interface VisitRecord {
+  docentInterests?: DocentInterest[];
   visitId?: string;
   persisted?: boolean;
   tasteProfile?: TasteProfile;
@@ -216,12 +224,44 @@ export interface VisitRecord {
   emotionProfile?: EmotionScores | null;
 }
 
+export type DocentSourceRef = { artworkId: string; sourceVersion: number; revision: number } & (
+  { kind: 'original' | 'summary' | 'guide' } |
+  { kind: 'collection'; url: string; accession: string }
+);
+
+export interface DocentCollectionDraft {
+  url: string;
+  accession: string;
+  excerpt: string;
+}
+
+export interface DocentCollectionReview {
+  version: number;
+  sourceVersion: number;
+  canApprove: boolean;
+  draft: (DocentCollectionDraft & { sourceVersion: number }) | null;
+  approved: (DocentCollectionDraft & { sourceVersion: number; revision: number }) | null;
+}
+
 export interface ChatMessage {
+  audioGrant?: string;
   mode?: 'llm' | 'fallback' | 'refusal';
-  sourceRefs?: unknown[];
+  sourceRefs?: DocentSourceRef[];
+  usedVisitObservations?: boolean;
+  usedPreviousVisitMemory?: boolean;
   id: string;
   role: 'user' | 'ai';
   text: string;
+}
+
+export interface DocentInterestSignal {
+  topics: ('light' | 'color' | 'composition' | 'technique' | 'background')[];
+  style: 'simple' | 'detailed' | null;
+}
+
+export interface DocentInterest extends DocentInterestSignal {
+  artworkId: string;
+  contentVersion: number;
 }
 
 export interface TasteProfile {
@@ -245,4 +285,19 @@ export interface EntryContext {
   contentVersion: number; questionIndex?: number; tipVersion?: 'basic-v1';
   excerpt?: { start: number; end: number };
 }
-export interface DocentAnswer { answer: string; mode: 'llm' | 'fallback' | 'refusal'; sourceRefs: unknown[]; requestId?: string }
+export interface DocentAnswer {
+  answer: string;
+  audioGrant?: string;
+  mode: 'llm' | 'fallback' | 'refusal';
+  sourceRefs: DocentSourceRef[];
+  requestId?: string;
+  interestSignal?: DocentInterestSignal;
+  usedPreviousVisitMemory?: boolean;
+}
+
+export interface DocentMemorySettings {
+  enabled: boolean;
+  revision: number;
+  resetAt: string | null;
+  retentionDays: number;
+}
