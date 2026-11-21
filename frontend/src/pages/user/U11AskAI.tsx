@@ -220,8 +220,8 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
     ? `AI 사용량이 많아요. 최대 ${retryWindow.seconds}초 뒤 다시 시도할 수 있어요.`
     : failure?.message;
   const attemptedQuestion = artworkIssue ? undefined : pendingQuestion ?? failure?.question;
-  const showLatestButton = !artworkIssue && (readingAbove || newOutput);
-  const latestControlState = showLatestButton ? 'latest' : pending && !artworkIssue ? 'waiting' : 'hidden';
+  const showLatestButton = !artworkIssue && readingAbove;
+  const latestControlState = !showLatestButton ? 'hidden' : pending ? 'waiting' : 'latest';
   useLayoutEffect(() => {
     const shell = shellRef.current;
     const viewport = window.visualViewport;
@@ -481,11 +481,9 @@ function ArtworkChat({ artworkId, draftKey }: { artworkId: string; draftKey: str
                 disabled={!showLatestButton} aria-hidden={!showLatestButton}
                 onClick={showLatest} onMouseDown={holdComposerUntilClick}
                 aria-label="최신 대화 보기" title={newOutput ? '새 답변이 있어요' : '최신 대화 보기'}>
-                <Icon name="arrowDown" size={20} />
+                <span className="docent-latest-arrow" aria-hidden="true"><Icon name="arrowDown" size={20} /></span>
+                <span className="docent-thinking" aria-hidden="true"><span /><span /><span /></span>
               </button>
-              <div className="docent-thinking" aria-hidden="true">
-                <span /><span /><span />
-              </div>
             </div>
           </div>
           <form className="chat-input" onSubmit={onSubmit}>
