@@ -16,7 +16,8 @@ from .http import ContractError
 from .llm import NoRedirect
 from .budget import remaining
 
-TIMEOUT_SECONDS = 30
+# 텍스트 전용 분석은 태그와 감정을 모두 계산합니다. 전체 A-04 예산이 더 먼저 끝나면 그 시각을 따릅니다.
+TIMEOUT_SECONDS = 45
 MAX_IMAGE = 10 * 1024 * 1024
 MAX_RESPONSE = 128 * 1024
 

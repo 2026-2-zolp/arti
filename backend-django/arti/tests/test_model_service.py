@@ -1,5 +1,6 @@
 # Django와 분석 서비스 간 실제 HTTP 계약·실패 격리·이미지 경계를 검증합니다.
 import base64
+import io
 import json
 import tempfile
 from pathlib import Path
@@ -78,6 +79,41 @@ class ModelServiceTests(SimpleTestCase):
             with override_settings(ARTI_MODEL_SERVICE_URL=settings.OPENAI_BASE_URL.removesuffix('/v1')):
                 with self.assertRaises(ContractError):
                     providers.generate('tag', {'description': '원문'})
+
+    @override_settings(ARTI_MODEL_SERVICE_URL='http://localhost:8001')
+    def test_long_text_analysis_uses_its_cap_without_extending_the_shared_deadline(self):
+        from arti import model_service
+
+        caption = ('벽을 따라 놓인 차분한 파란 면과 가운데의 밝은 원을 살펴보세요. ' * 200)[:5000]
+        model_result = result() | {'usedImage': False, 'tagSource': 'text'}
+
+        for now, expected_timeout in ((100.0, 45.0), (130.0, 30.0)):
+            with self.subTest(now=now):
+                clock = [now]
+
+                def analyze_remotely(request, *, timeout):
+                    self.assertEqual(timeout, expected_timeout)
+                    self.assertEqual(json.loads(request.data), {'title': '', 'description': caption})
+                    duration = 38.6
+                    clock[0] += min(duration, timeout)
+                    if duration > timeout:
+                        raise TimeoutError
+                    return io.BytesIO(json.dumps(model_result).encode())
+
+                with patch('arti.budget.monotonic', side_effect=lambda: clock[0]), patch(
+                    'arti.model_service.build_opener'
+                ) as opener:
+                    opener.return_value.open.side_effect = analyze_remotely
+                    if now == 100:
+                        analyzed = model_service.analyze({'description': caption}, deadline=160, use_image=False)
+                        self.assertEqual(analyzed['tags'], model_result['tags'])
+                        self.assertEqual(analyzed['emotions'], model_result['emotions'])
+                    else:
+                        with self.assertRaises(ContractError) as timed_out:
+                            model_service.analyze({'description': caption}, deadline=160, use_image=False)
+                        self.assertEqual(timed_out.exception.status_code, 504)
+                        self.assertEqual(timed_out.exception.contract_code, 'AI_TIMEOUT')
+                    opener.return_value.open.assert_called_once()
 
     @override_settings(ARTI_MODEL_SERVICE_URL='http://localhost:8001')
     def test_truncated_http_transport_is_sanitized(self):
