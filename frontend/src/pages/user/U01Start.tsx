@@ -149,9 +149,10 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
         <div className="current-ex">
           <span className="eyebrow">현재 전시</span>
           <strong>{ex.title}</strong>
-          <span className="muted small">
-            {ex.venue} · {period(ex)}
-          </span>
+          <div className="current-ex-meta muted small">
+            {ex.venue && <span>{ex.venue}</span>}
+            <span className="current-ex-period">{period(ex)}</span>
+          </div>
         </div>
       )}
       {resumable && (
