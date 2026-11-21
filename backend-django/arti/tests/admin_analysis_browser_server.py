@@ -14,7 +14,7 @@ from django.core.servers.basehttp import ThreadedWSGIServer, WSGIRequestHandler
 from django.core.wsgi import get_wsgi_application
 from django.test import override_settings
 
-from arti import providers
+from arti import emotion_jobs, providers
 from arti.http import ContractError
 from arti.tests.test_model_service import result
 from arti.tests.test_provider import endpoint
@@ -32,6 +32,7 @@ def serve():
     release = Event()
     inputs = []
     regeneration = Event()
+    background_emotion = Event()
     release_regeneration = Event()
     text_requests = []
     draft_image_requests = []
@@ -39,6 +40,12 @@ def serve():
     original_generate_text = providers.generate_text
 
     def generate(kind, snapshot, **context):
+        if background_emotion.is_set():
+            if kind == 'summary':
+                return {'summary': '감정 검수용 새 요약입니다.', 'keywords': ['합성']}
+            if kind == 'guide':
+                return {'intro': '감정 검수용 새 가이드입니다.', 'questions': ['어느 곳을 먼저 보나요?'],
+                        'hints': ['가운데를 살펴봐요.']}
         if not regeneration.is_set() or kind not in ('summary', 'guide', 'answer'):
             return original_generate(kind, snapshot, **context)
         if kind == 'answer':
@@ -60,13 +67,16 @@ def serve():
         if kind != 'guide_review':
             return original_generate_text(kind, snapshot, **context)
         candidate = context['guide_candidate']
-        return {'supported': candidate['questions'] == ['새 관찰 질문입니다.']}
+        return {'supported': background_emotion.is_set() or candidate['questions'] == ['새 관찰 질문입니다.']}
 
     def respond(attempt):
         request = requests[attempt - 1]
         payload = request['body']
         text_fields = {'title', 'description'}
-        if request['path'] != '/analyze' or set(payload) not in (text_fields, text_fields | {'imageBase64'}):
+        path = request['path']
+        if path not in ('/analyze', '/analyze-tags', '/analyze-emotion') or set(payload) not in (
+            text_fields, text_fields | {'imageBase64'}
+        ):
             return 400, b'unexpected analysis wire format'
         image = None
         if 'imageBase64' in payload:
@@ -79,7 +89,7 @@ def serve():
             'source': hashlib.sha256(payload['description'].encode()).hexdigest(),
             'image': image,
         })
-        if attempt == 1 and not release.wait(20):
+        if path == '/analyze' and attempt == 1 and not release.wait(20):
             return 504, b'synthetic analysis gate expired'
         mock = result()
         mock.update(usedImage=image is not None, tagSource='image' if image is not None else 'text')
@@ -99,6 +109,10 @@ def serve():
                     regeneration.set()
                 elif phase == 'regeneration=release':
                     release_regeneration.set()
+                elif phase == 'emotion=enable':
+                    background_emotion.set()
+                elif phase == 'emotion=complete':
+                    emotion_jobs.process_next()
                 else:
                     release.set()
             body = json.dumps({'inputs': inputs, 'textRequests': text_requests,
@@ -114,7 +128,9 @@ def serve():
         'arti.providers.generate_text', side_effect=generate_text,
     ), patch(
         'arti.llm.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide'),
-    ), patch('arti.operations.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide')), make_server(
+    ), patch('arti.operations.luna_image_route', side_effect=lambda kind: kind in ('summary', 'guide')), patch(
+        'arti.emotion_jobs.enabled', side_effect=background_emotion.is_set,
+    ), make_server(
         '127.0.0.1', 0, mock_application, ThreadedWSGIServer, WSGIRequestHandler,
     ) as server:
         worker = Thread(target=server.serve_forever, daemon=True)

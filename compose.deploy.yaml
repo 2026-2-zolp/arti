@@ -27,6 +27,9 @@ services:
   reset-mail:
     <<: *runtime
     build: !reset null
+  emotion-worker:
+    <<: *runtime
+    build: !reset null
   web:
     image: ${ARTI_WEB_IMAGE:?Set ARTI_WEB_IMAGE to the release image digest}
     ports:

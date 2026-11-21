@@ -141,6 +141,7 @@ class HuggingFaceScorer:
         self.clip_revision = clip_revision
         self._tag_model_provenance = None
         self._lock = threading.Lock()
+        self._tag_lock = threading.Lock()
         self._clip = None
         self._clip_processor = None
         self._nli = None
@@ -160,6 +161,8 @@ class HuggingFaceScorer:
         with self._lock:
             if self.loaded:
                 return
+            import torch
+            torch.set_num_threads(2)
             from transformers import CLIPModel, CLIPProcessor, pipeline
 
             # 모두 성공한 뒤에만 게시해 부분 초기화를 ready로 오인하지 않습니다.
@@ -173,7 +176,8 @@ class HuggingFaceScorer:
                 options = {'revision': self.clip_revision} if self.clip_revision else {}
                 clip = CLIPModel.from_pretrained(self.clip_name, **options).eval()
                 processor = CLIPProcessor.from_pretrained(self.clip_name, **options)
-            nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1)
+            nli_options = {"model_kwargs": {"torch_dtype": torch.float16}} if config.NLI_DTYPE == "float16" else {}
+            nli = pipeline("zero-shot-classification", model=self.nli_name, device=-1, **nli_options)
             provenance = None
             if cached and snapshot_manifest(root, self.clip_name, self.clip_revision) == before:
                 provenance = loaded_provenance(before)
@@ -202,7 +206,7 @@ class HuggingFaceScorer:
         self.load()
         labels = [e["nli"] for e in EMOTIONS]
         # multi_label=True: 감정마다 독립적인 0~1 확률 (여러 감정이 동시에 높을 수 있다)
-        out = self._nli(text, candidate_labels=labels, hypothesis_template=NLI_HYPOTHESIS, multi_label=True)
+        out = self._nli(text, candidate_labels=labels, hypothesis_template=NLI_HYPOTHESIS, multi_label=True, batch_size=6)
         by_label = dict(zip(out["labels"], out["scores"]))
         return {e["key"]: float(by_label[e["nli"]]) for e in EMOTIONS}
 
@@ -212,10 +216,11 @@ class HuggingFaceScorer:
 
         self.load()
         with torch.no_grad():
-            if self._tag_text is None:
-                prompts = [s for t in TAGS for s in t["pos"] + t["neg"]]
-                feats = self._clip.get_text_features(**self._clip_processor(text=prompts, return_tensors="pt", padding=True))
-                self._tag_text = feats / feats.norm(dim=-1, keepdim=True)
+            with self._tag_lock:
+                if self._tag_text is None:
+                    prompts = [s for t in TAGS for s in t["pos"] + t["neg"]]
+                    feats = self._clip.get_text_features(**self._clip_processor(text=prompts, return_tensors="pt", padding=True))
+                    self._tag_text = feats / feats.norm(dim=-1, keepdim=True)
             img = self._clip.get_image_features(**self._clip_processor(images=image, return_tensors="pt"))
             img = img / img.norm(dim=-1, keepdim=True)
             sims = (img @ self._tag_text.T)[0] * self._clip.logit_scale.exp()  # logits_per_image와 같은 척도
@@ -230,7 +235,7 @@ class HuggingFaceScorer:
     def text_tag_scores(self, text: str) -> Scores:
         self.load()
         labels = [t["nli"] for t in TAGS]
-        res = self._nli(text, candidate_labels=labels, hypothesis_template=TAG_NLI_HYPOTHESIS, multi_label=True)
+        res = self._nli(text, candidate_labels=labels, hypothesis_template=TAG_NLI_HYPOTHESIS, multi_label=True, batch_size=6)
         by_label = dict(zip(res["labels"], res["scores"]))
         return {t["key"]: round(float(by_label[t["nli"]]), 3) for t in TAGS}
 
@@ -255,24 +260,24 @@ def analyze(
     calibration: dict[str, Scores] | None = None,
     tag_thresholds: Scores | None = None,
 ) -> AnalysisResult:
+    img, txt, emotions = score_emotions(scorer, text, image, calibration)
+    tags, tag_source, raw = score_tags(scorer, text, image, tag_thresholds)
+    return AnalysisResult(emotions, img, txt, image_error, tags, tag_source, raw)
+
+
+def score_emotions(scorer, text, image, calibration=None):
     text = text.strip()
     cal = calibration or {}
     img = scale_to_max(normalize_sum(apply_prior(scorer.image_scores(image), cal.get("image")))) if image is not None else None
     txt = scale_to_max(normalize_sum(apply_prior(scorer.text_scores(text), cal.get("text")))) if text else None
-    # 태그: 그림이 있으면 그림으로만 판단 (색·형태는 글보다 그림이 정확), 없으면 해설로
+    return img, txt, combine(img, txt, config.IMAGE_WEIGHT)
+
+
+def score_tags(scorer, text, image, thresholds=None):
     if image is not None:
-        tags, tag_source = scorer.image_tag_scores(image), "image"
-    elif text:
-        tags, tag_source = scorer.text_tag_scores(text), "text"
-    else:
-        tags, tag_source = None, None
-    return AnalysisResult(
-        emotions=combine(img, txt, config.IMAGE_WEIGHT),
-        image_scores=img,
-        text_scores=txt,
-        image_error=image_error,
-        # 기준값은 그림으로 판단한 점수로 정했으므로, 해설로 판단한 태그에는 적용하지 않는다
-        tags=calibrate_tags(tags, tag_thresholds) if tags and tag_source == "image" else tags,
-        tag_source=tag_source,
-        tags_raw=tags,
-    )
+        raw = scorer.image_tag_scores(image)
+        return calibrate_tags(raw, thresholds) if raw else raw, "image", raw
+    if text.strip():
+        raw = scorer.text_tag_scores(text.strip())
+        return raw, "text", raw
+    return None, None, None

@@ -95,10 +95,11 @@ def test_partial_model_initialization_never_ready():
     module=SimpleNamespace(CLIPModel=SimpleNamespace(from_pretrained=lambda _:clip),
                            CLIPProcessor=SimpleNamespace(from_pretrained=lambda _:'processor'),
                            pipeline=lambda *a,**k:(_ for _ in ()).throw(RuntimeError('NLI failed')))
-    with patch.dict(sys.modules,transformers=module),pytest.raises(RuntimeError):scorer.load()
+    torch = SimpleNamespace(set_num_threads=lambda _: None, float16='synthetic-fp16')
+    with patch.dict(sys.modules,transformers=module,torch=torch),pytest.raises(RuntimeError):scorer.load()
     assert not scorer.loaded and scorer._clip is None and scorer._clip_processor is None
     module.pipeline=lambda *a,**k:'nli'
-    with patch.dict(sys.modules,transformers=module):scorer.load()
+    with patch.dict(sys.modules,transformers=module,torch=torch):scorer.load()
     assert scorer.loaded and scorer._clip_processor=='processor'
 
 

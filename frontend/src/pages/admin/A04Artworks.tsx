@@ -8,7 +8,8 @@ import {useConfirm} from '../../components/Confirmation';
  * 작품 해설과 AI 응답 데이터의 신뢰성을 위해 출처·참고자료·검수 상태를 함께 관리한다.
  */
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import {analysisFailure, analysisOutcomes, analysisTime, failedAnalysisFields, mergeAnalysis, type ArtworkAnalysisField} from '../../lib/adminAnalysis';
+import {analysisFailure, analysisOutcomes, analysisTime, failedAnalysisFields, mergeAnalysis, mergeCompletedEmotion,
+  type ArtworkAnalysisField, type EmotionJob} from '../../lib/adminAnalysis';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -809,12 +810,34 @@ function AiPanel({ w, setW, reloadArtwork }: {
   const [useDraftImage, setUseDraftImage] = useState(false);
   const [draftTasks, setDraftTasks] = useState<('summary' | 'guide')[]>([]);
   const [busy, setBusy] = useState<'analysis' | 'save' | null>(null);
+  const [emotionJob, setEmotionJob] = useState<EmotionJob | null>(null);
+  const [jobRevision, refreshJob] = useState(0);
   const inFlight = useRef(false);
   const retryRequest = useRef({ fields: [] as ArtworkAnalysisField[], draftImage: false, tagImage: true });
   const [msg, setMsg] = useState<
     {type: 'ok' | 'err' | 'save-error' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
   >(null);
   const blocked = busy !== null || msg?.type === 'conflict';
+
+  useEffect(() => {
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let waiting = jobRevision > 0;
+    const check = async () => {
+      try {
+        const {job} = await api.artworkEmotionJob(w.id);
+        if (!active) return;
+        setEmotionJob(job);
+        if (job) setW(current => current?.id === w.id ? mergeCompletedEmotion(current, job) : current);
+        waiting = job?.state === 'queued' || job?.state === 'running';
+      } catch (error) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 404)) waiting = false;
+      }
+      if (active && waiting) timer = setTimeout(check, 2000);
+    };
+    if (w.id) void check();
+    return () => { active = false; clearTimeout(timer); };
+  }, [setW, w.id, w.sourceVersion, jobRevision]);
 
   useEffect(() => {
     let active = true;
@@ -836,11 +859,16 @@ function AiPanel({ w, setW, reloadArtwork }: {
     setBusy('analysis');
     setMsg(null);
     try {
-      const r = await api.analyzeArtwork(w.id, tagImage, regenerateFields, draftImage);
+      const r = await api.analyzeArtwork(w.id, tagImage, regenerateFields, draftImage, w.version);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
       setW((cur) => cur && mergeAnalysis(cur,w,r));
       retryRequest.current = { fields: failedAnalysisFields(r), draftImage, tagImage };
-      setMsg({type: 'result', items: analysisOutcomes(r)});
+      const items = analysisOutcomes(r).filter(item => !r.emotionJob || item.label !== '감정 분석');
+      setMsg({type: 'result', items});
+      if (r.emotionJob) {
+        setEmotionJob(r.emotionJob);
+        refreshJob(revision => revision + 1);
+      }
     } catch (e) {
       setMsg({ type: isVersionConflict(e) ? 'conflict' : 'err', text: analysisFailure(e) });
     } finally {
@@ -939,6 +967,24 @@ function AiPanel({ w, setW, reloadArtwork }: {
         )}
       </div>
       <p className="muted small">새 제안을 확정할 때까지 현재 공개된 요약과 관람가이드가 표시돼요.</p>
+      {emotionJob && emotionJob.sourceVersion === w.sourceVersion && (
+        <div role="status" aria-label="백그라운드 감정 분석" className="a-inline small">
+          <strong>감정 분석</strong>
+          {emotionJob.state === 'queued' && <span>분석 대기 중이에요.</span>}
+          {emotionJob.state === 'running' && <span>백그라운드에서 분석 중이에요. 다른 제안은 먼저 검수할 수 있어요.</span>}
+          {emotionJob.state === 'ready' && <span>감정 제안이 준비됐어요.</span>}
+          {emotionJob.state === 'stale' && <span>작품 자료가 바뀌었어요. 최신 자료로 다시 분석해 주세요.</span>}
+          {emotionJob.state === 'failed' && <>
+            <span>{emotionJob.code === 'AI_TIMEOUT' ? '감정 분석 시간이 초과됐어요.' : '감정 분석을 완료하지 못했어요.'}</span>
+            <button className="a-btn sm" type="button" disabled={blocked}
+              onClick={() => run(['emotion'], false, emotionJob.useImage)}>감정만 다시 시도</button>
+          </>}
+          {emotionJob.state === 'ready' && typeof emotionJob.resultVersion === 'number'
+            && (w.version ?? 0) < emotionJob.resultVersion && (
+              <button className="a-btn sm" type="button" onClick={reloadArtwork}>최신 감정 제안 불러오기</button>
+          )}
+        </div>
+      )}
       {msg?.type === 'result' && (
         <div role="status" aria-label="AI 항목별 처리 결과" style={{ marginBottom: 14 }}>
           <ul className="small">
@@ -1154,7 +1200,8 @@ function TagField({
   save: (patch: Partial<Artwork>) => Promise<Artwork>;
 }) {
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
-  const ai = w.analysis?.tags ?? null;
+  const ai = w.tagStatus === 'none' ? null : w.tagScores ?? w.analysis?.tags ?? null;
+  const scoreSource = w.tagScoreSource || w.analysis?.tagSource;
   const suggested = ai ? TAG_KEYS.filter((t) => ai[t] >= TAG_THRESHOLD).sort((a, b) => ai[b] - ai[a]) : [];
 
   const run = async (patch: Partial<Artwork>, ok: string) => {
@@ -1193,7 +1240,7 @@ function TagField({
       {ai ? (
         <div className="tag-ai">
           <span className="muted small">
-            AI 제안({w.analysis?.tagSource === 'image' ? '그림으로 판단' : '그림이 없어 해설로 판단 · 참고용'}):{' '}
+            AI 제안({scoreSource === 'image' ? '그림으로 판단' : scoreSource === 'text' ? '해설로 판단 · 참고용' : '분석 입력 기록 없음'}):{' '}
             {suggested.length ? suggested.map((t) => TASTE_LABEL[t]).join(' · ') : '0.5 이상인 태그 없음'}
           </span>
           {w.tagStatus === 'confirmed' ? (

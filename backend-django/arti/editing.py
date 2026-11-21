@@ -10,19 +10,19 @@ from django.db import transaction, connection, OperationalError
 from django.db.models import Exists, OuterRef, Q
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from urllib.parse import urlsplit
 from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
 from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
-from .models import Artwork, DocentTranscript, Exhibition, SurveyEntry, Visit, VisitReaction
+from .models import Artwork, DocentTranscript, EmotionJob, Exhibition, SurveyEntry, Visit, VisitReaction
 from .receipt_evidence import RECEIPT_PROTECTION_PERIOD
 from .serializers import RETAINED_TEXT_FIELDS, artwork_dto, exhibition_dto
 from .taste_resolution import taste_transaction
 from .views import with_etag
-from . import providers
+from . import emotion_jobs, providers
 from .docent import AIThrottle
 from . import budget
 from .indoor import normalize_layout
@@ -439,6 +439,18 @@ def discard_ai(request, artwork_id):
     return with_etag(artwork_dto(work, True))
 
 
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def artwork_emotion_job(request, artwork_id):
+    if not emotion_jobs.enabled():
+        return Response({'job': None})
+    job = EmotionJob.objects.filter(pk=artwork_id).first()
+    work = Artwork.objects.filter(pk=artwork_id).first()
+    if work is None:
+        raise ContractError(404, 'NOT_FOUND', '작품을 찾을 수 없어요.')
+    return Response({'job': emotion_jobs.job_dto(job, work)}, headers={'Cache-Control': 'no-store'})
+
+
 @api_view(['POST'])
 @permission_classes([IsAdmin])
 @throttle_classes([AIThrottle])
@@ -462,7 +474,10 @@ def analyze(request,artwork_id):
     deadline=budget.monotonic()+budget.ANALYSIS_SECONDS
     snapshot = artwork_dto(w, True)
     results={};updates={};model_cache={};retry_waits=[]
-    with analysis_slot():
+    background = emotion_jobs.enabled()
+    queue_emotion = False
+    slot = nullcontext() if background and regenerate == ['emotion'] else analysis_slot()
+    with slot:
         for kind,field in STATES.items():
             confirmed = getattr(w, field) == 'confirmed'
             if kind not in regenerate and (regenerate or confirmed):
@@ -470,9 +485,14 @@ def analyze(request,artwork_id):
                 continue
             try:
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
+                if background and kind == 'emotion':
+                    emotion_jobs.analysis_identity(w, use_image, snapshot)
+                    queue_emotion = True
+                    results[kind] = {'ok': True, 'source': 'queued', 'made': False}
+                    continue
                 context = {'deadline': deadline}
                 if kind in ('tag', 'emotion') and settings.ARTI_MODEL_SERVICE_URL:
-                    context.update(analysis_cache=model_cache, use_image=use_image)
+                    context.update(analysis_cache=model_cache, use_image=use_image, split_tag=background)
                 if draft_image:
                     context['draft_image_file'] = w.image_file
                 value=providers.generate(kind,snapshot,**context)
@@ -489,7 +509,7 @@ def analyze(request,artwork_id):
                 if getattr(e,'wait',None) is not None:retry_waits.append(e.wait)
     # 전체 예산이 소진되면 앞서 받은 부분 결과도 저장하지 않습니다.
     budget.remaining(deadline, budget.ANALYSIS_SECONDS)
-    if not updates:
+    if not updates and not queue_emotion:
         if any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
             statuses = {'AI_TIMEOUT': 504, 'GUIDE_UNSUPPORTED': 502, 'PROVIDER_ERROR': 502,
@@ -517,13 +537,18 @@ def analyze(request,artwork_id):
             elif kind=='tag':
                 from .tag_scores import bind_evidence
                 current.tag_scores=value['scores']
+                current.tag_score_source=value.get('scoreSource', '')
                 current.tag_score_evidence=bind_evidence(value.get('tagEvidence'),value['scores'],current)
                 current.tag_score_revision+=1
             else:current.analysis=value
             setattr(current,STATES[kind],'suggested')
-        finish(current,old)
+        if updates:
+            finish(current,old)
+        job = emotion_jobs.enqueue(current, use_image) if queue_emotion else None
         budget.remaining(deadline, budget.ANALYSIS_SECONDS)
-    return Response({'artwork':artwork_dto(current,True),**results})
+        job_data = emotion_jobs.job_dto(job, current)
+    return Response({'artwork':artwork_dto(current,True), **results,
+                     **({'emotionJob': job_data} if job_data else {})})
 
 
 @contextmanager

@@ -99,6 +99,7 @@ def artwork_dto(w, admin=False):
         'summaryRevision': w.summary_revision, 'guideRevision': w.guide_revision,
     }
     if admin:
+        data['tagScoreSource'] = w.tag_score_source
         data['savedTextProposals'] = [kind for kind in RETAINED_TEXT_FIELDS if data[f'{kind}Status'] == 'suggested']
         if w.receipt_protected_until:
             data['receiptProtectedUntil'] = w.receipt_protected_until.isoformat()

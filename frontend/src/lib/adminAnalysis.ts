@@ -3,20 +3,37 @@ import type {AiStatus, Artwork} from '../types';
 
 type AnalysisPart = {ok?: boolean; made?: boolean; source?: string; error?: string; code?: string};
 export type ArtworkAnalysisField = 'summary' | 'guide' | 'tag' | 'emotion';
+export type EmotionJob = {
+  id: string;
+  state: 'queued' | 'running' | 'ready' | 'failed' | 'stale';
+  sourceVersion: number;
+  useImage: boolean;
+  code: string;
+  resultVersion: number | null;
+  previousVersion?: number;
+  completed?: Pick<Artwork, 'analysis' | 'emotionStatus' | 'version' | 'contentVersion' | 'updatedAt'>;
+};
 export type ArtworkAnalysisResult = {
   artwork: Artwork;
   summary: AnalysisPart & {ok: boolean};
   guide?: AnalysisPart;
   tag?: AnalysisPart;
   emotion: AnalysisPart & {ok: boolean};
+  emotionJob?: EmotionJob;
 };
+
+export function mergeCompletedEmotion(current: Artwork, job: EmotionJob): Artwork {
+  if (job.state !== 'ready' || !job.completed || current.sourceVersion !== job.sourceVersion
+      || current.version !== job.previousVersion || current.reviewStatus !== 'approved') return current;
+  return { ...current, ...job.completed };
+}
 
 /** 서버가 새로 생성한 필드만 반영하고 요청 중 바뀐 입력과 기존 확정 콘텐츠를 보존합니다. */
 export function mergeAnalysis(current:Artwork, started:Artwork, result:ArtworkAnalysisResult):Artwork {
   if (current.id !== started.id || current.id!==result.artwork.id || (current.version ?? 0)>(result.artwork.version ?? 0)) return current;
   const next={...current};
   const groups: [boolean|undefined,(keyof Artwork)[]][]=[
-    [result.tag?.made ?? result.emotion.made ?? result.emotion.ok,['tagStatus','tagScores']],
+    [result.tag?.made ?? result.emotion.made ?? result.emotion.ok,['tagStatus','tagScores','tagScoreSource']],
     [result.emotion.made ?? result.emotion.ok,['analysis','emotionStatus']],
     [result.summary.made ?? (result.summary.ok && result.summary.source!=='kept'),['summary','summaryKeywords','summaryStatus']],
     [result.guide?.made,['guideIntro','guidedLooking','guidedHints','guideStatus']],

@@ -136,6 +136,7 @@ export interface Artwork {
   tags: TasteTag[];
   /** AI 태그 확정 점수 (tagStatus가 'confirmed'일 때만, 서버가 계산) — 추천에 사용 */
   tagScores: TagScores | null;
+  tagScoreSource?: 'image' | 'text' | '';
   /** AI 태그 검수 상태. 확정 전에는 관리자가 켠 태그(1/0)로만 추천 */
   tagStatus: AiStatus;
   description: string;        // 작품 해설 (출처 확인된 기본 설명)

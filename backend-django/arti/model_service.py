@@ -16,8 +16,9 @@ from .http import ContractError
 from .llm import NoRedirect
 from .budget import remaining
 
-# 텍스트 전용 분석은 태그와 감정을 모두 계산합니다. 전체 A-04 예산이 더 먼저 끝나면 그 시각을 따릅니다.
+# 전경 모델 요청은 A-04 전체 예산이 먼저 끝나면 그 시각을 따릅니다.
 TIMEOUT_SECONDS = 45
+EMOTION_TIMEOUT_SECONDS = 90
 MAX_IMAGE = 10 * 1024 * 1024
 MAX_RESPONSE = 128 * 1024
 
@@ -79,8 +80,7 @@ def model_service_base():
     return base
 
 
-def analyze(snapshot, *, deadline=None, use_image=True):
-    base = model_service_base()
+def analysis_input(snapshot, use_image):
     payload = {'title': snapshot.get('title', ''), 'description': snapshot.get('description', '')}
     name = snapshot.get('imageFile') if use_image else None
     image_sha256 = None
@@ -101,11 +101,20 @@ def analyze(snapshot, *, deadline=None, use_image=True):
     elif use_image and snapshot.get('imageUrl'):
         # 외부 이미지 다운로드/SSRF 정책은 별도이며 조용한 텍스트 대체를 막습니다.
         failure(503, 'AI_UNAVAILABLE')
-    request = Request(base + '/analyze', data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
+    return payload, image_sha256
+
+
+def analyze(snapshot, *, deadline=None, use_image=True, stage=None, prepared=None):
+    base = model_service_base()
+    payload, image_sha256 = prepared if prepared is not None else analysis_input(snapshot, use_image)
+    name = snapshot.get('imageFile') if use_image else None
+    path = {'tag': '/analyze-tags', 'emotion': '/analyze-emotion'}.get(stage, '/analyze')
+    timeout = EMOTION_TIMEOUT_SECONDS if stage == 'emotion' else TIMEOUT_SECONDS
+    request = Request(base + path, data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
     try:
-        with build_opener(NoRedirect()).open(request, timeout=remaining(deadline, TIMEOUT_SECONDS)) as response:
+        with build_opener(NoRedirect()).open(request, timeout=remaining(deadline, timeout)) as response:
             raw = response.read(MAX_RESPONSE + 1)
-        remaining(deadline, TIMEOUT_SECONDS)
+        remaining(deadline, timeout)
         if len(raw) > MAX_RESPONSE:
             failure()
         value = json.loads(raw)
@@ -130,6 +139,8 @@ def analyze(snapshot, *, deadline=None, use_image=True):
     if not isinstance(value, dict):
         failure()
     for field, keys in [('tags', TAGS), ('emotions', EMOTIONS)]:
+        if (field == 'tags' and stage == 'emotion') or (field == 'emotions' and stage == 'tag'):
+            continue
         scores = value.get(field)
         if not isinstance(scores, dict) or set(scores) != set(keys):
             failure()
@@ -139,13 +150,20 @@ def analyze(snapshot, *, deadline=None, use_image=True):
         failure()
     if not use_image and (value['usedImage'] or value.get('tagSource') == 'image'):
         failure()
-    if name and (not value['usedImage'] or value.get('imageError') or value.get('tagSource') != 'image'):
+    if name and (not value['usedImage'] or value.get('imageError')
+                 or (stage != 'emotion' and value.get('tagSource') != 'image')):
         failure()
     if not value['usedImage'] and not value['usedText']:
+        failure()
+    if stage == 'tag' and value.get('tagSource') != ('image' if name else 'text'):
         failure()
     models = value.get('models')
     if not isinstance(models, dict) or any(not isinstance(models.get(k), str) or not models[k] for k in ('image', 'text')):
         failure()
+    if stage == 'emotion':
+        if not value['usedText']:
+            failure()
+        return {k: value[k] for k in ('emotions', 'models', 'usedImage', 'usedText')} | {'imageError': None}
     evidence = validate_tag_evidence(value.get('tagEvidence'), image_sha256, value['tags'], models['image'])
     if evidence is not None and (not value['usedImage'] or value.get('tagSource') != 'image' or value.get('imageError')):
         failure()

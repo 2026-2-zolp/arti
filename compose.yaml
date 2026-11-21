@@ -8,6 +8,11 @@ x-django-environment: &django_environment
   PGDATABASE: arti
   PGUSER: arti
   PGPASSWORD: ${ARTI_DB_PASSWORD:?Set ARTI_DB_PASSWORD}
+x-analysis-environment: &analysis_environment
+  ARTI_MODEL_SERVICE_URL: ${ARTI_MODEL_SERVICE_URL:-}
+  ARTI_BACKGROUND_EMOTION: ${ARTI_BACKGROUND_EMOTION:-false}
+  ARTI_ANALYSIS_REVISION: ${ARTI_ANALYSIS_REVISION:-fp16-2threads-batch6-v1}
+  MEDIA_ROOT: /app/media
 x-reset-mail-environment: &reset_mail_environment
   ARTI_PASSWORD_RESET_ORIGIN: ${ARTI_PASSWORD_RESET_ORIGIN:-}
   ARTI_PASSWORD_RESET_FROM: ${ARTI_PASSWORD_RESET_FROM:-}
@@ -35,13 +40,12 @@ services:
   api:
     build: ./backend-django
     environment: &api_environment
-      <<: [*django_environment, *reset_mail_environment]
+      <<: [*django_environment, *reset_mail_environment, *analysis_environment]
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,api}
       ARTI_ALLOWED_ORIGINS: ${ARTI_ALLOWED_ORIGINS:-}
       ARTI_KAKAO_CLIENT_ID: ${ARTI_KAKAO_CLIENT_ID:-}
       ARTI_KAKAO_CLIENT_SECRET: ${ARTI_KAKAO_CLIENT_SECRET:-}
       ARTI_KAKAO_CALLBACK_URL: ${ARTI_KAKAO_CALLBACK_URL:-}
-      ARTI_MODEL_SERVICE_URL: ${ARTI_MODEL_SERVICE_URL:-}
       ARTI_TASTE_PROFILE_V2_ENABLED: ${ARTI_TASTE_PROFILE_V2_ENABLED:-false}
       ARTI_TASTE_APPROVED_SIGNATURE_SHA256: ${ARTI_TASTE_APPROVED_SIGNATURE_SHA256:-}
       ARTI_LLM_PROVIDER: ${ARTI_LLM_PROVIDER:-disabled}
@@ -71,7 +75,6 @@ services:
       ARTI_LUNA_DRAFT_VISION: ${ARTI_LUNA_DRAFT_VISION:-false}
       ALLOW_TEST_FIXTURES: ${ALLOW_TEST_FIXTURES:-false}
       ARTI_EXHIBITION_ORDER_DEMO_ENABLED: ${ARTI_EXHIBITION_ORDER_DEMO_ENABLED:-false}
-      MEDIA_ROOT: /app/media
     depends_on:
       db:
         condition: service_healthy
@@ -103,6 +106,18 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    restart: unless-stopped
+  emotion-worker:
+    profiles: [background-analysis]
+    build: ./backend-django
+    environment:
+      <<: [*django_environment, *analysis_environment]
+    command: [python, manage.py, analyze_artwork_emotions, --watch]
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - media_data:/app/media:ro
     restart: unless-stopped
   frontend:
     profiles: [ui]

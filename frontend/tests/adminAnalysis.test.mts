@@ -1,7 +1,7 @@
 /** 장애 복구 후 편집 소실·구버전 반영·미기록 시각의 화면 오류를 막습니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mergeAnalysis,analysisFailure,analysisOutcomes,analysisTime,failedAnalysisFields} from '../src/lib/adminAnalysis.ts';
+import {mergeAnalysis,analysisFailure,analysisOutcomes,analysisTime,failedAnalysisFields,mergeCompletedEmotion,type EmotionJob} from '../src/lib/adminAnalysis.ts';
 import type {Artwork} from '../src/types.ts';
 const base={id:'synthetic',version:1,summary:'확정 원문',summaryStatus:'confirmed',guideIntro:'확정 도입',guidedLooking:['확정 질문'],guidedHints:['확정 힌트'],guideStatus:'confirmed',tagStatus:'suggested',emotionStatus:'suggested',tagScores:null,analysis:null} as Artwork;
 const result={artwork:{...base,version:2,analysis:{emotions:{calm:.5}}} as Artwork,tag:{made:true},emotion:{ok:true,made:true},summary:{ok:true,made:false,source:'kept'},guide:{made:false}};
@@ -70,4 +70,16 @@ test('partial timeout identifies only the items to retry', () => {
   assert.deepEqual(failedAnalysisFields(partial), ['tag', 'emotion']);
   assert.equal(analysisOutcomes(partial)[2].text, '분석 응답 시간 초과');
   assert.equal(analysisOutcomes(partial)[0].text, '기존 확정 유지');
+});
+
+test('background emotion merges into the matching draft without adopting a separate edit version', () => {
+  const draft = {...base, reviewStatus: 'approved', sourceVersion: 2, summary: '편집 중인 요약'} as Artwork;
+  const job = {id: 'job', state: 'ready', sourceVersion: 2, previousVersion: 1, resultVersion: 2, useImage: true, code: '',
+    completed: {analysis: result.artwork.analysis, emotionStatus: 'suggested', version: 2}} as EmotionJob;
+  assert.equal(mergeCompletedEmotion(draft, job).summary, draft.summary);
+  assert.equal(mergeCompletedEmotion(draft, job).version, 2);
+  const newer = {...draft, sourceVersion: 3, version: 3};
+  assert.equal(mergeCompletedEmotion(newer, job), newer);
+  const otherEdit = {...draft, version: 3};
+  assert.equal(mergeCompletedEmotion(otherEdit, job), otherEdit);
 });

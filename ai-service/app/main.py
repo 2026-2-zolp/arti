@@ -19,17 +19,18 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from . import config
-from .runtime import ModelRuntime
-from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load_tag_thresholds
+from .runtime import CompletedEmotionCache, ModelRuntime
+from .analyzer import HuggingFaceScorer, Scorer, analyze, load_calibration, load_tag_thresholds, score_emotions, score_tags
 from .emotions import EMOTIONS
 from .tags import TAGS
 from .image_fetch import ImageFetchError, decode_base64_image_with_hash, fetch_image
-from .provenance import build_tag_evidence
+from .provenance import build_tag_evidence, digest
 from .writer import KananaWriter, Writer, write
 
 log = logging.getLogger("arti.ai")
 scorer: Scorer = HuggingFaceScorer()
 runtime = ModelRuntime()
+emotion_cache = CompletedEmotionCache()
 # 라벨 편향 보정값 (app/calibration.json). 파일이 없으면 보정 없이 동작
 calibration = load_calibration() if config.CALIBRATE else {}
 # 태그별 '해당함' 기준값 (app/tag_calibration.json). 파일이 없으면 모든 태그 0.5
@@ -110,7 +111,7 @@ def analyze_artwork(req: AnalyzeRequest):
         return _analyze_artwork(req)
 
 
-def _analyze_artwork(req: AnalyzeRequest):
+def analysis_input(req: AnalyzeRequest):
     image, image_error, image_sha256 = None, None, None
     if req.imageBase64 or req.imageUrl:
         try:
@@ -125,6 +126,16 @@ def _analyze_artwork(req: AnalyzeRequest):
     text = req.description.strip() or (req.title.strip() if image is None else "")
     if not text and image is None:
         raise HTTPException(status_code=400, detail=image_error or "작품 해설이나 이미지가 있어야 분석할 수 있어요.")
+    return text, image, image_error, image_sha256
+
+
+def analysis_models():
+    return {"image": getattr(scorer, 'clip_name', config.CLIP_MODEL),
+            "text": getattr(scorer, 'nli_name', config.NLI_MODEL)}
+
+
+def _analyze_artwork(req: AnalyzeRequest):
+    text, image, image_error, image_sha256 = analysis_input(req)
     try:
         thresholds = dict(tag_thresholds)
         result = analyze(scorer, text, image, image_error, calibration, thresholds)
@@ -138,14 +149,45 @@ def _analyze_artwork(req: AnalyzeRequest):
         usedImage=result.image_scores is not None,
         usedText=result.text_scores is not None,
         imageError=result.image_error,
-        models={"image": getattr(scorer, 'clip_name', config.CLIP_MODEL),
-                "text": getattr(scorer, 'nli_name', config.NLI_MODEL)},
+        models=analysis_models(),
         tags=result.tags,
         tagSource=result.tag_source,
         tagsRaw=result.tags_raw,
         tagEvidence=build_tag_evidence(getattr(scorer, 'tag_model_provenance', None), image_sha256,
                                       result.tags, thresholds) if result.tag_source == 'image' else None,
     )
+
+
+@app.post("/analyze-tags")
+def analyze_tags(req: AnalyzeRequest):
+    # CLIP 결과는 mDeBERTa 감정 처리가 진행 중일 때도 독립적으로 계산한다.
+    with runtime.slot(scorer, image_tags=bool(req.imageBase64 or req.imageUrl)):
+        text, image, image_error, image_sha256 = analysis_input(req)
+        if image_error:
+            raise HTTPException(status_code=400, detail="도판을 읽을 수 없어요.")
+        tags, source, _ = score_tags(scorer, text, image, tag_thresholds)
+        return {"tags": tags, "tagSource": source, "models": analysis_models(),
+                "usedImage": image is not None, "usedText": image is None, "imageError": None,
+                "tagEvidence": build_tag_evidence(getattr(scorer, 'tag_model_provenance', None),
+                                                   image_sha256, tags, tag_thresholds) if image is not None else None}
+
+
+@app.post("/analyze-emotion")
+def analyze_emotion(req: AnalyzeRequest):
+    with runtime.slot(scorer):
+        text, image, image_error, image_hash = analysis_input(req)
+        if image_error:
+            raise HTTPException(status_code=400, detail="도판을 읽을 수 없어요.")
+
+        def compute():
+            img, txt, result = score_emotions(scorer, text, image, calibration)
+            return {"emotions": result, "usedImage": img is not None, "usedText": txt is not None,
+                    "models": analysis_models(), "imageError": None}
+
+        if image is not None and image_hash is None:
+            return compute()
+        key = digest([text, image_hash, analysis_models(), calibration, config.IMAGE_WEIGHT])
+        return emotion_cache.score(key, compute)
 
 
 # 요약·가이드 작성 요청을 검증합니다.
