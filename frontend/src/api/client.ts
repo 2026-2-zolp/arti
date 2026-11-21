@@ -277,7 +277,7 @@ export const api = {
     poolId: string | null; revision: number | null; ready: boolean; poolVersion: string;
     pairs: {leftId: string; rightId: string}[]; artworks: Artwork[];
     supportedTasteProfileVersions?: number[]; tasteTieV2Enabled?: boolean;
-    tieContext?: { policyVersion: string; tieContextVersion: string | null };
+    tieContext?: { policyVersion: string; tieContextVersion: string | null; pickEvidence?: TasteProfile['pickEvidence'] };
   }>('GET', '/taste-pool'),
   resolveTaste: (tasteProfile: TasteProfile, visitId: string, exhibitionId: string) =>
     request<TastePreview>('POST', '/taste-profiles/resolve', { tasteProfile, visitId, exhibitionId }),

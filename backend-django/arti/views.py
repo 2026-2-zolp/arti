@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from .authentication import IsAdmin
 from .artwork_narration import recording
-from .constants import TAGS
+from .constants import PAIR_DIFFERENCE, TAGS
 from .docent_memory import memory_demo_enabled, visit_context_enabled
 from .http import ContractError
 from .models import Account, Artwork, Exhibition, Session
@@ -170,7 +170,8 @@ def taste_pool(request, ex_id=None):
     return Response({'poolId': survey.id if survey else None, 'revision': survey.revision if survey else None,
                      'poolVersion': version, 'ready': is_ready, 'supportedTasteProfileVersions': [1, 2],
                      'tasteTieV2Enabled': enabled,
-                     'tieContext': {'policyVersion': POLICY, 'tieContextVersion': context_version},
+                     'tieContext': {'policyVersion': POLICY, 'tieContextVersion': context_version,
+                                    **({'pickEvidence': PAIR_DIFFERENCE} if enabled else {})},
                      'pairs': [{'leftId': pool[i].id, 'rightId': pool[i+1].id} for i in range(0, 10, 2)] if is_ready else [],
                      'artworks': [artwork_dto(w) for w in pool] if is_ready else []})
 

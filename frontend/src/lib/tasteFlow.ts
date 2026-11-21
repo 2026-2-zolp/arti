@@ -14,7 +14,7 @@ export function authSession() {
 export function sameTaste(left?: TasteProfile | null, right?: TasteProfile | null) {
   if (!left || !right) return left === right;
   const canonical = (p: TasteProfile) => JSON.stringify([
-    p.version, p.source, p.poolVersion, p.tieContextVersion ?? null, p.savedProfileVersion ?? null,
+    p.version, p.source, p.poolVersion, p.tieContextVersion ?? null, p.pickEvidence ?? null, p.savedProfileVersion ?? null,
     [...p.selectedTags].sort(),
     [...p.picks].sort((a, b) => a.pairIndex - b.pairIndex).map(pick => [pick.pairIndex, pick.artworkId]),
     Object.entries(p.counts).filter(([, value]) => value !== 0).sort(([a], [b]) => a.localeCompare(b)),

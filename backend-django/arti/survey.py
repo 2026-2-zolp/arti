@@ -1,7 +1,7 @@
 # 전시 소속과 독립적인 취향 조사풀의 자격·버전·선택 근거를 검증합니다.
 import hashlib
 import json
-from .constants import TAGS
+from .constants import PAIR_DIFFERENCE, TAGS
 from .http import ContractError
 from .models import Artwork, SurveyPool
 
@@ -58,10 +58,15 @@ def selected_counts(profile, tastes, *, pool=None):
         if type(index) is not int or not 0 <= index < 5 or index in seen:
             raise ContractError(400, 'VALIDATION_ERROR', '선택이 중복되거나 누락됐어요.')
         seen.add(index)
-        work = next((w for w in works[index*2:index*2+2] if w.id == pick.get('artworkId')), None)
-        if work is None:
+        pair = works[index * 2:index * 2 + 2]
+        if pair[1].id == pick.get('artworkId'):
+            pair = pair[::-1]
+        chosen, other = pair
+        if chosen.id != pick.get('artworkId'):
             raise ContractError(400, 'VALIDATION_ERROR', '같은 쌍의 작품을 선택해 주세요.')
-        for tag in work.tags:
+        evidence = (set(chosen.tags) - set(other.tags)
+                    if profile.get('pickEvidence') == PAIR_DIFFERENCE else chosen.tags)
+        for tag in evidence:
             counts[tag] += 1
     if not tastes or any(counts.get(t, 0) == 0 for t in tastes):
         raise ContractError(400, 'VALIDATION_ERROR', '고른 작품에서 확인된 취향을 선택해 주세요.')

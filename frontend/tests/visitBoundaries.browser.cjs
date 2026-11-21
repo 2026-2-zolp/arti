@@ -589,10 +589,11 @@ async function completeTasteVisit(page, taste, owner) {
 async function broadTasteTie(browser) {
   const page = await openPage(browser);
   try {
-    const tiedTags = [['warm', 'cool'], ['landscape', 'light'], ['people', 'soft'], ['abstract'], ['vivid']];
+    const tiedTags = [['warm', 'cool'], ['landscape', 'light'], ['soft'], ['abstract'], ['vivid']];
     const pool = await body(await page.request.get('/api/taste-pool'));
     for (const [index, pair] of pool.pairs.entries()) {
-      pool.artworks.find(work => work.id === pair.leftId).tags = tiedTags[index];
+      pool.artworks.find(work => work.id === pair.leftId).tags = ['people', ...tiedTags[index]];
+      pool.artworks.find(work => work.id === pair.rightId).tags = ['people'];
     }
     await page.route('**/api/taste-pool', route => route.fulfill({ json: pool }));
     await page.goto(exhibition + '/taste');
@@ -600,9 +601,10 @@ async function broadTasteTie(browser) {
     const tags = page.locator('[aria-label="취향 태그"]');
     await tags.waitFor();
     assert.equal(await tags.getByRole('button').count(), 8);
-    assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['풍경', '인물']);
-    await button(tags, '풍경').click();
-    await button(tags, '인물').click();
+    const checked = tags.getByRole('button', { pressed: true });
+    assert.deepEqual(await checked.allTextContents(), ['풍경', '추상', '빛', '강렬한 색감', '차가운 색감', '따뜻한 색감', '부드러운 색감']);
+    await button(page, '이 취향으로 계속').waitFor();
+    for (const label of await checked.allTextContents()) await button(tags, label).click();
     await page.getByText('이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.').waitFor();
     assert.equal(await tags.getByRole('button', { pressed: true }).count(), 0);
     assert.equal(await button(page, '이 취향으로 계속').count(), 0);
@@ -614,7 +616,9 @@ async function broadTasteTie(browser) {
     ]);
     await button(tags, '빛').waitFor();
     assert.deepEqual(await tags.getByRole('button', { pressed: true }).allTextContents(), ['빛']);
-    console.log('PASS U-05 offers stable broad-tie defaults and preserves the manually chosen tag on reload');
+    await button(tags, '인물').click();
+    await page.getByText('비교에서 나온 태그 외에 직접 더한 태그가 있어요.', { exact: false }).waitFor();
+    console.log('PASS U-05 applies all picked differences without tapping tags, ignores shared evidence and keeps edits on reload');
   } finally {
     await page.close();
   }
@@ -628,7 +632,7 @@ async function savedV2(browser) {
   const writes = [];
   let originalOrder;
   let surveyChanged = false;
-  let tieWork;
+  const changedWorks = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => {
     if (request.method() === 'PUT' && /^\/api\/users\/[^/]+\/tastes$/.test(new URL(request.url()).pathname)) {
@@ -656,10 +660,13 @@ async function savedV2(browser) {
     originalOrder = seed.pairs.flatMap(pair => [pair.leftId, pair.rightId]);
     assert.equal(new Set(originalOrder).size, 10);
     const first = seed.artworks.find(artwork => artwork.id === seed.pairs[0].leftId);
+    const other = seed.artworks.find(artwork => artwork.id === seed.pairs[0].rightId);
     assert.deepEqual(first.tags, ['landscape']);
-    // Three lefts and two rights now produce a 3:3 tie in the stored snapshot.
+    // Three lefts and two rights produce a 3:3 preference tie when neither
+    // tag of the first selected card is shared by its opponent.
+    changedWorks.push(first, other);
+    setFixtureTags(other.id, ['cool']);
     setFixtureTags(first.id, [...first.tags, 'warm']);
-    tieWork = first;
     const initial = await body(await page.request.get('/api/taste-pool'));
     assert(initial.tieContext?.tieContextVersion);
 
@@ -683,6 +690,7 @@ async function savedV2(browser) {
     const preview = await resolved('확인하고 계정에 저장');
     assert.equal(preview.tasteProfile.version, 2);
     assert.equal(preview.tasteProfile.source, 'picks');
+    assert.equal(preview.tasteProfile.pickEvidence, 'pair-difference-v1');
     assert.equal(preview.tasteProfile.poolVersion, initial.poolVersion);
     assert.equal(preview.tasteProfile.tieContextVersion, initial.tieContext.tieContextVersion);
     assert.deepEqual(preview.tasteProfile.picks.map(pick => pick.artworkId), initial.pairs.map((pair, index) =>
@@ -844,7 +852,7 @@ async function savedV2(browser) {
       if (surveyChanged) reviseSurvey(originalOrder);
     } finally {
       try {
-        if (tieWork) setFixtureTags(tieWork.id, tieWork.tags);
+        for (const work of changedWorks) setFixtureTags(work.id, work.tags);
       } finally {
         await context.close();
       }

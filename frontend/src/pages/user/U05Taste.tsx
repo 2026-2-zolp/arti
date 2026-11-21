@@ -23,8 +23,10 @@ interface Draft {
   version?: 1 | 2;
   poolVersion?: string;
   tieContextVersion?: string;
+  pickEvidence?: TasteProfile['pickEvidence'];
   options?: TasteTag[];
   tags?: TasteTag[];
+  tagsEdited?: boolean;
 }
 
 export default function U05Taste() {
@@ -60,6 +62,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const v2 = pool?.tasteTieV2Enabled === true && pool.supportedTasteProfileVersions?.includes(2) === true;
   const version = draft.version ?? (v2 ? 2 : 1);
   const contextVersion = pool?.tieContext?.tieContextVersion ?? undefined;
+  const pairEvidence = v2 ? pool?.tieContext?.pickEvidence : undefined;
   const missingContext = v2 && !contextVersion;
   const pairs = pool?.pairs ?? [];
   const selected = draft.tags ?? [];
@@ -69,7 +72,8 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     return pair?.leftId === id || pair?.rightId === id;
   });
   const changed = !!pool && !!draft.picks.length && (draft.poolVersion !== pool.poolVersion ||
-    (version === 2) !== v2 || draft.tieContextVersion !== (v2 ? contextVersion : undefined) || !samePairs);
+    (version === 2) !== v2 || draft.tieContextVersion !== (v2 ? contextVersion : undefined) || !samePairs ||
+    (draft.pickEvidence !== undefined && draft.pickEvidence !== pairEvidence));
   const blocked = loading || !!error || !pool?.ready || changed || missingContext;
   const poolVersion = pool?.poolVersion;
   useEffect(() => {
@@ -107,6 +111,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
     version, source: manual ? 'manual' : 'picks', selectedTags: selected,
     counts, poolVersion: manual ? null : draft.poolVersion ?? null,
     tieContextVersion: !manual && version === 2 ? draft.tieContextVersion : undefined,
+    pickEvidence: !manual && version === 2 ? draft.pickEvidence : undefined,
     picks: manual ? [] : draft.picks.map((artworkId, pairIndex) => ({ pairIndex, artworkId })),
   };
 
@@ -145,7 +150,7 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   const stepBack = () => {
     if (picked !== null || !draft.picks.length) return;
     if (entry && entry.depth > 0) navigate(-1);
-    else update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined });
+    else update({ ...draft, picks: draft.picks.slice(0, -1), options: undefined, tags: undefined, tagsEdited: undefined });
   };
   const restart = () => {
     if (entry && entry.depth > 0) {
@@ -157,17 +162,28 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
   function choose(id: string) {
     if (!pool?.ready || blocked || complete || pickTimer.current !== null) return;
     const picks = [...draft.picks, id];
-    const suggested = picks.length === pairs.length ? tastesFromPicks(pool.artworks, picks) : undefined;
+    const suggested = picks.length === pairs.length
+      ? tastesFromPicks(pool.artworks, picks, pairEvidence ? pairs : undefined) : undefined;
     setPicked(id);
     pickTimer.current = window.setTimeout(() => {
       pickTimer.current = null;
       setPicked(null);
       const next = { picks, version, poolVersion: pool.poolVersion, tieContextVersion: v2 ? contextVersion : undefined,
-        options: suggested?.options, tags: suggested?.defaultTags };
+        pickEvidence: pairEvidence, options: suggested?.options, tags: suggested?.defaultTags,
+        tagsEdited: suggested ? false : undefined };
       if (!entry) writeEntry(draft, 0, true);
       persist(next);
       writeEntry(next, (entry?.depth ?? 0) + 1, false);
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420);
+  }
+
+  function acceptUpdatedEvidence() {
+    if (!pool?.ready) return;
+    const suggested = complete
+      ? tastesFromPicks(pool.artworks, draft.picks, pairEvidence ? pairs : undefined) : undefined;
+    update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
+      tieContextVersion: v2 ? contextVersion : undefined, pickEvidence: pairEvidence,
+      options: suggested?.options, tags: draft.tagsEdited === false ? suggested?.defaultTags : draft.tags });
   }
 
   const reviewKey = `${draftKey}.review.${JSON.stringify(profile)}`;
@@ -223,24 +239,25 @@ function TasteDraft({ draftKey }: { draftKey: string }) {
         <div className="stack gap-12">
           <p role="status">조사 근거가 바뀌었어요. 고른 작품은 초안에 남아 있어요.</p>
           {samePairs && (version === 1 || v2)
-            ? <button type="button" className="btn outline" onClick={() => update({ ...draft, version: v2 ? 2 : 1, poolVersion: pool.poolVersion,
-                tieContextVersion: v2 ? contextVersion : undefined,
-                options: complete ? tastesFromPicks(pool.artworks, draft.picks).options : undefined })}>고른 작품을 최신 근거로 확인</button>
+            ? <button type="button" className="btn outline" onClick={acceptUpdatedEvidence}>고른 작품을 최신 근거로 확인</button>
             : <button type="button" className="btn outline" onClick={restart}>작품을 처음부터 다시 고르기</button>}
         </div>
       )}
       {complete && (
         <div className="saved-taste-card stack gap-12">
+          {draft.pickEvidence && !draft.tagsEdited && selected.length > 0 &&
+            <p className="muted small">고른 작품의 차이를 반영했어요. 원하는 태그만 조정할 수 있어요.</p>}
           <div className="chips" aria-label="취향 태그">
             {(Object.keys(TASTE_LABEL) as TasteTag[]).map(tag => (
               <button type="button" key={tag} aria-pressed={selected.includes(tag)}
                 className={`chip ${selected.includes(tag) ? 'accent' : ''}`}
-                onClick={() => update({ ...draft, tags: selected.includes(tag) ? selected.filter(t => t !== tag) : [...selected, tag] })}>
+                onClick={() => update({ ...draft, tagsEdited: true,
+                  tags: selected.includes(tag) ? selected.filter(t => t !== tag) : [...selected, tag] })}>
                 {TASTE_LABEL[tag]}
               </button>
             ))}
           </div>
-          {manual && <p>고른 작품에 없는 태그를 포함했어요. 선택한 태그를 같은 비중으로 추천에 사용합니다.</p>}
+          {manual && <p>비교에서 나온 태그 외에 직접 더한 태그가 있어요. 선택한 태그는 같은 비중으로 반영해요.</p>}
           {!selected.length && <p>이번 관람에 쓰고 싶은 태그를 하나 이상 골라 주세요.</p>}
           {selected.length > 0 && (version === 2 || pool?.ready) && (
             <TasteReview key={reviewKey} storageKey={reviewKey} profile={profile} blocked={blocked} />
