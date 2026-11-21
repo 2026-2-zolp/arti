@@ -314,12 +314,16 @@ export default function U10Artwork() {
       ) : (
         <>
           {/* 작품이 잘리지 않게 전체를 보여 준다(U-05 취향 조사 카드와 같은 방식). 비율이 다른 작품은 틀 안에 여백이 생긴다. */}
-          <div className="art-frame">
-            <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={3 / 2} fit="contain" />
-            <button className="frame-btn" aria-label="전체 화면" onClick={() => setFullscreen(true)}>
-              <Icon name="expand" size={18} />
-            </button>
-          </div>
+          {!w.showImage && w.referenceUrl?.startsWith('https://') ? (
+            <a className="btn outline block" href={w.referenceUrl} target="_blank" rel="noreferrer">출처에서 도판 보기</a>
+          ) : (
+            <div className="art-frame">
+              <ArtImage seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} ratio={3 / 2} fit="contain" />
+              <button className="frame-btn" aria-label="전체 화면" onClick={() => setFullscreen(true)}>
+                <Icon name="expand" size={18} />
+              </button>
+            </div>
+          )}
           {/* 크게 보기: 작품 전체를 보여 주고 확대·축소·이동할 수 있다(U-05 비교 카드와 공통 화면). */}
           {fullscreen && (
             <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w)} alt={w.title} onClose={() => setFullscreen(false)} />

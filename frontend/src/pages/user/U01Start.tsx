@@ -67,6 +67,10 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
   const to = useExhibitionPath();
   const { data: ex, loading, error, reload } = useAsync(() => api.getExhibition(exhibitionId), [exhibitionId]);
   const canStartInOrder = !!ex?.exhibitionOrder?.length;
+  const { data: surveyReady } = useAsync(async () => {
+    if (!canStartInOrder) return false;
+    return (await api.tastePool()).ready;
+  }, [exhibitionId, canStartInOrder]);
 
   // 화면에 들어온 시점 기준으로 판단 (ExhibitionLayout이 전시를 맞춘 뒤라 같은 전시의 관람이다)
   const [resumable, setResumable] = useState(() => state.startedAt !== null);
@@ -124,7 +128,7 @@ function ExhibitionStart({ exhibitionId }: { exhibitionId: string }) {
         ) : canStartInOrder ? (
           <div className="stack gap-10">
             <button className="btn primary block" disabled={loading || !!error} onClick={startInOrder}>전시 순서로 바로 보기</button>
-            <button className="btn outline block" onClick={startByTaste}>내 취향으로 추천</button>
+            {surveyReady && <button className="btn outline block" onClick={startByTaste}>내 취향으로 추천</button>}
           </div>
         ) : (
           <button className="btn primary block" disabled={!ex} onClick={startByTaste}>
