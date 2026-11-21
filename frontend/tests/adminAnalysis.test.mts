@@ -1,7 +1,7 @@
 /** 장애 복구 후 편집 소실·구버전 반영·미기록 시각의 화면 오류를 막습니다. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mergeAnalysis,analysisFailure,analysisOutcomes,analysisTime} from '../src/lib/adminAnalysis.ts';
+import {mergeAnalysis,analysisFailure,analysisOutcomes,analysisTime,failedAnalysisFields} from '../src/lib/adminAnalysis.ts';
 import type {Artwork} from '../src/types.ts';
 const base={id:'synthetic',version:1,summary:'확정 원문',summaryStatus:'confirmed',guideIntro:'확정 도입',guidedLooking:['확정 질문'],guidedHints:['확정 힌트'],guideStatus:'confirmed',tagStatus:'suggested',emotionStatus:'suggested',tagScores:null,analysis:null} as Artwork;
 const result={artwork:{...base,version:2,analysis:{emotions:{calm:.5}}} as Artwork,tag:{made:true},emotion:{ok:true,made:true},summary:{ok:true,made:false,source:'kept'},guide:{made:false}};
@@ -59,4 +59,15 @@ test('legacy responses still identify fallback summaries and confirmed guides', 
     emotion: {ok: true},
   });
   assert.deepEqual(outcomes.map(({status}) => status), ['fallback', 'kept', 'empty', 'created']);
+});
+
+test('partial timeout identifies only the items to retry', () => {
+  const partial = {
+    ...result,
+    tag: {ok: false, code: 'AI_TIMEOUT'},
+    emotion: {ok: false, code: 'AI_TIMEOUT'},
+  };
+  assert.deepEqual(failedAnalysisFields(partial), ['tag', 'emotion']);
+  assert.equal(analysisOutcomes(partial)[2].text, '분석 응답 시간 초과');
+  assert.equal(analysisOutcomes(partial)[0].text, '기존 확정 유지');
 });

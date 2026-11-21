@@ -54,6 +54,20 @@ class SurveyTests(TestCase):
         path.write_text(json.dumps(manifest), encoding='utf-8')
         return path
 
+    def test_admin_list_identifies_only_the_active_survey_works(self):
+        account = Account.objects.create(login_id='survey-admin', role='admin', password='unused')
+        token = 'survey-admin-test-token'
+        Session.objects.create(token_hash=hashlib.sha256(token.encode()).hexdigest(), account=account,
+                               expires_at=timezone.now() + timedelta(minutes=10))
+        admin = APIClient(HTTP_HOST='localhost', HTTP_X_ADMIN_TOKEN=token)
+        url = '/api/admin/artworks'
+        rows = admin.get(url).json()
+        self.assertEqual({row['id'] for row in rows if row['usedInTasteSurvey']},
+                         {f'fixture-art{i:02}' for i in range(1, 11)})
+        SurveyPool.objects.update(active=False)
+        self.assertFalse(any(row['usedInTasteSurvey'] for row in admin.get(url).json()))
+        self.assertNotIn('usedInTasteSurvey', self.client.get('/api/artworks/fixture-art01').json())
+
     def test_two_exhibitions_share_survey_but_recommend_only_own_artworks(self):
         Exhibition.objects.filter(pk='fixture-draft').update(status='running')
         Artwork.objects.filter(pk='fixture-art13').update(position_x=20, position_y=30)

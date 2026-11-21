@@ -8,7 +8,7 @@ import {useConfirm} from '../../components/Confirmation';
  * 작품 해설과 AI 응답 데이터의 신뢰성을 위해 출처·참고자료·검수 상태를 함께 관리한다.
  */
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import {analysisFailure, analysisOutcomes, analysisTime, mergeAnalysis} from '../../lib/adminAnalysis';
+import {analysisFailure, analysisOutcomes, analysisTime, failedAnalysisFields, mergeAnalysis, type ArtworkAnalysisField} from '../../lib/adminAnalysis';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useAsync } from '../../lib/useAsync';
@@ -22,6 +22,7 @@ import { EmotionBars } from '../../components/EmotionBars';
 import type { AiStatus, Artwork, DocentCollectionDraft, DocentCollectionReview, ReviewStatus, TasteTag } from '../../types';
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
+import { ADMIN_PAGE_SIZE, AdminPagination, adminPage } from './AdminPagination';
 
 const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
 /** 체크박스 칸에 마우스를 올렸을 때 안내: 고를 수 있는지, 못 고르면 왜인지 */
@@ -39,6 +40,7 @@ export function ArtworkList() {
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
+  const surveyFilter = params.get('survey') === 'active';
   const { data, reload, error } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
   const [reviewed, setReviewed] = useState<string[]>([]);
   const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
@@ -86,14 +88,23 @@ export function ArtworkList() {
     const next = new URLSearchParams(params);
     if (v) next.set(k, v);
     else next.delete(k);
+    next.delete('page');
     setParams(next, { replace: true });
   };
 
   const rows = (data?.[1] ?? []).filter(
     (w) =>
       (!exFilter || w.exhibitionId === exFilter) &&
+      (!surveyFilter || w.usedInTasteSurvey) &&
       (!reviewFilter || (reviewFilter === 'todo' ? w.reviewStatus !== 'approved' : w.reviewStatus === reviewFilter)),
   );
+  const { page, pages, offset } = adminPage(rows.length, Number(params.get('page')));
+  const changePage = (nextPage: number) => {
+    const next = new URLSearchParams(params);
+    if (nextPage === 1) next.delete('page');
+    else next.set('page', String(nextPage));
+    setParams(next, { replace: true });
+  };
   const roomName = (w: Artwork) =>
     data?.[0].find((e) => e.id === w.exhibitionId)?.rooms.find((r) => r.id === w.roomId)?.name ?? '-';
 
@@ -130,7 +141,12 @@ export function ArtworkList() {
             </option>
           ))}
         </select>
+        <select value={surveyFilter ? 'active' : ''} onChange={e => setFilter('survey', e.target.value)} aria-label="작품 용도 필터">
+          <option value="">전체 작품 용도</option>
+          <option value="active">취향 파악용</option>
+        </select>
         <span className="muted small">{rows.length}건</span>
+        {reviewed.length > 0 && <span className="muted small">{reviewed.length}건 선택</span>}
         {/* 목록 전체에 적용하는 버튼은 표 바로 위(필터 줄 오른쪽)에 둔다. 제목 옆에는 [+ 작품 등록]만. */}
         <div className="a-filters-actions">
           <button className="a-btn" disabled title="전시 일괄 분석은 비활성입니다. 작품별 분석을 이용해 주세요." onClick={analyzeAll}>
@@ -161,7 +177,7 @@ export function ArtworkList() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((w) => (
+            {rows.slice(offset, offset + ADMIN_PAGE_SIZE).map((w) => (
               <tr key={w.id} className="clickable" onClick={() => navigate(`/admin/artworks/${w.id}`)}>
                 {/* 확정할 AI 제안이 없는 작품(모두 확정·분석 전)은 흐린 체크박스로 두어 누를 수 없게 한다. 확정 여부는 AI 배지 색으로 보인다.
                     확정 전 제안 내용은 작품을 눌러 상세 화면에서 확인한다(원본 데이터 미리보기는 뺌). */}
@@ -182,11 +198,12 @@ export function ArtworkList() {
                   <Link to={`/admin/artworks/${w.id}`} onClick={(e) => e.stopPropagation()}>
                     <strong>{w.title}</strong>
                   </Link>
+                  {w.usedInTasteSurvey && <div className="a-badges"><span className="badge a-survey-badge">취향 파악용</span></div>}
                 </td>
                 <td>{w.artist}</td>
                 <td className="a-center">{w.year}</td>
                 <td>{roomName(w)}</td>
-                <td className="a-center">{w.position ? '등록' : <span className="text-warn">미등록</span>}</td>
+                <td className="a-center">{w.position ? '등록' : w.usedInTasteSurvey && !w.roomId ? '—' : <span className="text-warn">미등록</span>}</td>
                 <td className="a-center">
                   <span className={`badge ${w.reviewStatus}`}>{REVIEW_LABEL[w.reviewStatus]}</span>
                 </td>
@@ -201,9 +218,11 @@ export function ArtworkList() {
                 <td className="nowrap">{formatDateTime(w.updatedAt)}</td>
               </tr>
             ))}
+            {data && !rows.length && <tr><td colSpan={10}>조건에 맞는 작품이 없어요.</td></tr>}
           </tbody>
         </table>
       </div>
+      <AdminPagination page={page} pages={pages} total={rows.length} onChange={changePage} />
     </>
   );
 }
@@ -752,7 +771,7 @@ function ImageField({
         <p className="muted small">작품을 먼저 저장하면 이미지 파일을 올릴 수 있어요.</p>
       )}
       {viewingSrc && viewingSrc === src && (
-        <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={viewingSrc} alt={w.title || '작품 이미지'}
+        <ArtworkViewer seed={w.id} palette={w.palette} imageUrl={viewingSrc} alt={w.title || '작품 이미지'} variant="modal"
           onClose={() => { setViewingSrc(undefined); previewButton.current?.focus(); }} />
       )}
       {err && (
@@ -791,7 +810,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
   const [draftTasks, setDraftTasks] = useState<('summary' | 'guide')[]>([]);
   const [busy, setBusy] = useState<'analysis' | 'save' | null>(null);
   const inFlight = useRef(false);
-  const retryRequest = useRef({ fields: [] as ('summary' | 'guide')[], draftImage: false, tagImage: true });
+  const retryRequest = useRef({ fields: [] as ArtworkAnalysisField[], draftImage: false, tagImage: true });
   const [msg, setMsg] = useState<
     {type: 'ok' | 'err' | 'save-error' | 'conflict'; text: string} | {type: 'result'; items: ReturnType<typeof analysisOutcomes>} | null
   >(null);
@@ -806,9 +825,9 @@ function AiPanel({ w, setW, reloadArtwork }: {
   }, []);
 
   const run = async (
-    regenerateFields: ('summary' | 'guide')[] = [],
+    regenerateFields: ArtworkAnalysisField[] = [],
     draftImage = !!w.imageFile && useDraftImage && regenerateFields.length > 0 &&
-      regenerateFields.every((field) => draftTasks.includes(field)),
+      regenerateFields.every((field) => (field === 'summary' || field === 'guide') && draftTasks.includes(field)),
     tagImage = useImage,
   ) => {
     if (inFlight.current || msg?.type === 'conflict') return;
@@ -820,6 +839,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
       const r = await api.analyzeArtwork(w.id, tagImage, regenerateFields, draftImage);
       // 화면에서 수정 중인 다른 입력값은 유지하고 AI 결과 필드만 바꾼다
       setW((cur) => cur && mergeAnalysis(cur,w,r));
+      retryRequest.current = { fields: failedAnalysisFields(r), draftImage, tagImage };
       setMsg({type: 'result', items: analysisOutcomes(r)});
     } catch (e) {
       setMsg({ type: isVersionConflict(e) ? 'conflict' : 'err', text: analysisFailure(e) });
@@ -928,7 +948,7 @@ function AiPanel({ w, setW, reloadArtwork }: {
               </li>
             ))}
           </ul>
-          {msg.items.some(({status}) => status === 'failed') && (
+          {retryRequest.current.fields.length > 0 && (
             <button type="button" disabled={blocked} onClick={retry}>분석 다시 시도</button>
           )}
         </div>

@@ -14,9 +14,10 @@ interface Props {
   imageUrl?: string | string[];
   alt: string;
   onClose: () => void;
+  variant?: 'fullscreen' | 'modal';
 }
 
-export function ArtworkViewer({ seed, palette, imageUrl, alt, onClose }: Props) {
+export function ArtworkViewer({ seed, palette, imageUrl, alt, onClose, variant = 'fullscreen' }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -36,8 +37,11 @@ export function ArtworkViewer({ seed, palette, imageUrl, alt, onClose }: Props) 
   return (
     <dialog
       ref={dialogRef}
-      className="art-frame fullscreen"
+      className={`art-frame ${variant === 'modal' ? 'artwork-preview-modal' : 'fullscreen'}`}
       aria-label={`${alt} 크게 보기`}
+      onClick={(event) => {
+        if (variant === 'modal' && event.target === event.currentTarget) close();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         close();
@@ -52,7 +56,7 @@ export function ArtworkViewer({ seed, palette, imageUrl, alt, onClose }: Props) 
       <ZoomableImage>
         <ArtImage seed={seed} palette={palette} imageUrl={imageUrl} alt={alt} fit="contain" />
       </ZoomableImage>
-      <button ref={closeRef} type="button" className="frame-btn" aria-label="전체 화면 닫기" onClick={close}>
+      <button ref={closeRef} type="button" className="frame-btn" aria-label={variant === 'modal' ? '크게 보기 닫기' : '전체 화면 닫기'} onClick={close}>
         <Icon name="close" size={18} />
       </button>
     </dialog>

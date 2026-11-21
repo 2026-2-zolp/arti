@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction, connection, OperationalError
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from contextlib import contextmanager
@@ -17,7 +17,7 @@ from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 from .authentication import IsAdmin
 from .http import ContractError
-from .models import Artwork, DocentTranscript, Exhibition, Visit, VisitReaction
+from .models import Artwork, DocentTranscript, Exhibition, SurveyEntry, Visit, VisitReaction
 from .receipt_evidence import RECEIPT_PROTECTION_PERIOD
 from .serializers import RETAINED_TEXT_FIELDS, artwork_dto, exhibition_dto
 from .taste_resolution import taste_transaction
@@ -179,7 +179,9 @@ def artworks(request, artwork_id=None):
             if not w: raise ContractError(404,'NOT_FOUND','작품을 찾을 수 없어요.')
             return with_etag(artwork_dto(w, True))
         if 'exhibitionId' in request.query_params: query=query.filter(exhibition_id=request.query_params['exhibitionId'])
-        return Response([artwork_dto(w, True) for w in query])
+        survey = SurveyEntry.objects.filter(artwork_id=OuterRef('pk'), pool__active=True)
+        query = query.annotate(used_in_taste_survey=Exists(survey))
+        return Response([artwork_dto(w, True) | {'usedInTasteSurvey': w.used_in_taste_survey} for w in query])
     if (request.method == 'PUT') != bool(artwork_id): fail()
     data=request.data
     required={'exhibitionId','title','artist','year','roomId','position','palette','imageUrl','showImage','tags','description',
