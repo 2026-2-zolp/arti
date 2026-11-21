@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import TestCase, override_settings
 
 from arti.http import ContractError
-from arti.models import Artwork, Exhibition, Visit, VisitReaction
+from arti.models import Account, Artwork, Exhibition, Visit, VisitReaction
 from arti.tests.test_integration import Helpers
 
 
@@ -52,6 +52,26 @@ class ReceiptOperationsTests(Helpers, TestCase):
             response = client.get('/api/admin/members')
             self.assertIn(response.status_code, (401, 403))
             self.assertIsInstance(response.json(), dict)
+
+    def test_admin_member_filters_apply_before_pagination(self):
+        self.saved_visit()
+        Account.objects.filter(pk=self.actors[1].pk).update(status='dormant')
+        Account.objects.bulk_create([
+            Account(role='user', login_id=f'other-{number}@example.test', email=f'other-{number}@example.test')
+            for number in range(12)
+        ])
+        path = '/api/admin/members'
+        active = {'status': 'active', 'limit': 10, 'q': 'example.test'}
+        first = self.admin.get(path, active).json()
+        second = self.admin.get(path, {**active, 'offset': 10}).json()
+        self.assertEqual((first['total'], len(first['items']), len(second['items'])), (13, 10, 3))
+        self.assertTrue({row['id'] for row in first['items']}.isdisjoint(row['id'] for row in second['items']))
+        with_history = self.admin.get(path, {**active, 'visits': 'with'}).json()
+        self.assertEqual(with_history['total'], 1)
+        self.assertEqual(with_history['items'][0]['id'], self.actors[0].id)
+        dormant = self.admin.get(path, {'status': 'dormant', 'visits': 'without', 'limit': 10}).json()
+        self.assertEqual([row['id'] for row in dormant['items']], [self.actors[1].id])
+        self.assertEqual(self.admin.get(path, {'visits': 'unknown', 'limit': 10}).status_code, 400)
 
     def test_admin_member_history_is_scoped_and_works_for_closed_exhibitions(self):
         visit_id, _ = self.saved_visit()
