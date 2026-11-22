@@ -111,6 +111,9 @@ export function ArtworkList() {
             {alreadyRunning ? '분석 작업 보기' : exFilter ? '전시 일괄 분석' : '전체 전시 일괄 분석'}
           </button>
         )}
+        {analysis?.historyHidden && (
+          <button type="button" className="a-btn" onClick={analysis.show}>분석 내역 보기</button>
+        )}
       </div>
       {batchScope && analysis && (
         <AnalysisTargetsDialog scope={batchScope} onClose={() => setBatchScope(null)}

@@ -148,9 +148,16 @@ try {
   const draft = panel(page).getByRole('region', { name: '비공개 검증 전시', exact: true });
   await draft.getByRole('progressbar', { name: '비공개 검증 전시 처리 작품' }).waitFor();
   assert.equal(await button(panel(page), '진행 중인 분석 취소').isVisible(), true);
+  assert.equal(await button(panel(page), '분석 패널 닫기').count(), 0);
+  await button(draft, '비공개 검증 전시 분석 취소').click();
+  await button(confirm, '분석 계속').waitFor();
+  await page.waitForFunction(() => document.activeElement?.textContent === '분석 계속');
+  await button(confirm, '분석 계속').press('Enter');
+  await confirm.waitFor({ state: 'hidden' });
+  await draft.getByRole('img', { name: '대기', exact: true }).waitFor();
   await button(draft, '비공개 검증 전시 분석 취소').click();
   const cancelDraft = responseFor(page, 'POST', new RegExp(`^${queuePath}/${secondBatch.id}/cancel$`));
-  await button(confirm, '확인하고 계속').click();
+  await button(confirm, '분석 중단').click();
   assert.equal((await cancelDraft).status(), 200);
   await draft.getByRole('img', { name: '취소됨', exact: true }).waitFor();
   await page.setViewportSize({ width: 1100, height: 850 });
@@ -187,6 +194,8 @@ try {
     await failed(page, index).waitFor();
   }
   await retryAll(page).waitFor();
+  await toggle(page).getByText('완료 1점 · 실패 3점 · 취소 1점', { exact: true }).waitFor();
+  await button(panel(page), '분석 패널 닫기').waitFor();
   const retryPath = new RegExp(`^${queuePath}/${batchId}/retry$`);
   const individual = responseFor(page, 'POST', retryPath);
   await button(row(page, 1), `${titles[1]} 재시도`).click();
@@ -210,9 +219,19 @@ try {
   await finished(page, 3).waitFor();
   assert.equal(await finished(page, 3).textContent(), '○');
   assert.equal(await retryAll(page).count(), 0);
+  await toggle(page).getByText('완료 4점 · 실패 0점 · 취소 1점', { exact: true }).waitFor();
   assert.equal((await publicWork(0)).summary, approved);
   assert.equal((await publicWork(1)).summary, approved);
-  console.log('PASS batch: all-exhibition modal, field exclusions, per-exhibition progress/cancel, reload, early review, failed-only retries and confirmed copy');
+  await button(panel(page), '분석 패널 닫기').click();
+  await panel(page).waitFor({ state: 'hidden' });
+  await page.goto('/admin/artworks');
+  await page.reload();
+  await button(page, '분석 내역 보기').waitFor();
+  assert.equal(await panel(page).count(), 0);
+  await button(page, '분석 내역 보기').click();
+  await row(page, 3).waitFor();
+  await toggle(page).getByText('완료 4점 · 실패 0점 · 취소 1점', { exact: true }).waitFor();
+  console.log('PASS batch: scoped analysis, clear stop/continue, separate totals, panel dismissal/reopen, failed-only retries and confirmed copy');
 } finally {
   await browser.close();
 }

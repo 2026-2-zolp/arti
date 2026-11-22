@@ -6,6 +6,7 @@ import { apiTarget } from '../../lib/apiTarget';
 import { analysisFieldLabels, type AnalysisQueue, type AnalysisQueueItem, type AnalysisScope, type AnalysisSelection } from '../../lib/adminAnalysis';
 import { formatDateTime } from '../../lib/adminDate';
 import { useConfirm } from '../../components/Confirmation';
+import { load, remove, save } from '../../lib/storage';
 
 const stateLabels: Record<AnalysisQueueItem['state'], string> = {
   queued: '대기', running: '분석 중', emotion: '감정 분석 대기·진행 중', completed: '완료', failed: '실패', canceled: '취소됨',
@@ -18,9 +19,11 @@ const failureLabel = (code: string) => {
 };
 
 const EMPTY: AnalysisQueue = { enabled: false, batches: [] };
+const DISMISSED_HISTORY_KEY = 'arti.admin.analysis-dismissed.v1';
 type QueueControls = {
   queue: AnalysisQueue;
   busy: boolean;
+  historyHidden: boolean;
   show: () => void;
   start: (scope: AnalysisScope, selections: AnalysisSelection[]) => Promise<void>;
 };
@@ -28,18 +31,20 @@ const QueueContext = createContext<QueueControls | null>(null);
 export const useAnalysisQueue = () => useContext(QueueContext);
 
 function progressFor(items: AnalysisQueueItem[]) {
+  const completed = items.filter(item => item.state === 'completed').length;
   const failed = items.filter(item => item.state === 'failed').length;
   const canceled = items.filter(item => item.state === 'canceled').length;
-  const processed = items.filter(item => item.state === 'completed').length + failed + canceled;
+  const processed = completed + failed + canceled;
   const total = items.length;
-  const text = `${processed}/${total}점 처리${failed ? ` · 실패 ${failed}점` : ''}${canceled ? ` · 취소 ${canceled}점` : ''}`;
+  const remaining = total - processed;
+  const text = `완료 ${completed}점 · 실패 ${failed}점 · 취소 ${canceled}점${remaining ? ` · 남음 ${remaining}점` : ''}`;
   return { failed, processed, total, text };
 }
 
 function ProgressRing({ progress, label }: { progress: ReturnType<typeof progressFor>; label: string }) {
   const sweep = progress.total ? progress.processed / progress.total * 360 : 0;
   return <span className="a-analysis-queue-ring" role="progressbar" aria-label={label}
-    aria-valuenow={progress.processed} aria-valuemax={progress.total || 1}
+    aria-valuenow={progress.processed} aria-valuemax={progress.total || 1} aria-valuetext={progress.text}
     style={{ background: `conic-gradient(var(--accent) ${sweep}deg, var(--a-line) 0deg)` }} />;
 }
 
@@ -47,6 +52,7 @@ export function AnalysisQueueProvider({ children }: { children: ReactNode }) {
   const confirm = useConfirm();
   const [queue, setQueue] = useState(EMPTY);
   const [open, setOpen] = useState(false);
+  const [dismissedHistory, setDismissedHistory] = useState(() => load<string | null>(DISMISSED_HISTORY_KEY, null, 'session'));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -101,12 +107,12 @@ export function AnalysisQueueProvider({ children }: { children: ReactNode }) {
     }
     sending.current = true;
     change.current += 1;
-    if (!fromDialog) setOpen(true);
+    if (!fromDialog) show();
     setPending(true);
     setError('');
     try {
       setQueue(await send());
-      setOpen(true);
+      show();
       setDisconnected(false);
     } catch (cause) {
       if (fromDialog) throw cause;
@@ -119,33 +125,54 @@ export function AnalysisQueueProvider({ children }: { children: ReactNode }) {
   }
 
   async function cancelAnalysis(send: () => Promise<AnalysisQueue>, message: string) {
-    if (await confirm(message)) await apply(send);
+    if (await confirm(message, { title: '분석을 중단할까요?', cancel: '분석 계속', confirm: '분석 중단', tone: 'danger' })) {
+      await apply(send);
+    }
   }
 
   const latest = queue.batches[0];
   const latestRun = latest?.runId ? queue.batches.filter(batch => batch.runId === latest.runId) : latest ? [latest] : [];
   const overall = progressFor(latestRun.flatMap(batch => batch.items));
   const active = latestRun.some(batch => batch.active);
+  const historyId = latest ? `${latest.runId ?? latest.id}/${overall.text}` : null;
+  const historyHidden = !!historyId && historyId === dismissedHistory && !active && !pending && !error;
+
+  function show() {
+    remove(DISMISSED_HISTORY_KEY, 'session');
+    setDismissedHistory(null);
+    setOpen(true);
+  }
+
+  function dismiss() {
+    save(DISMISSED_HISTORY_KEY, historyId, 'session');
+    setDismissedHistory(historyId);
+    setError('');
+    setOpen(false);
+  }
+
   function cancelLatest(batch: NonNullable<typeof latest>) {
     return cancelAnalysis(() => batch.runId ? api.cancelAnalysisRun(batch.runId) : api.cancelAnalysisBatch(batch.id),
-      batch.runId ? '이 전체 전시 분석을 취소할까요? 저장된 제안은 유지돼요.' : '이 전시 분석을 취소할까요? 저장된 제안은 유지돼요.');
+      batch.runId ? '이번 전체 전시 작업의 남은 분석이 멈춰요. 저장된 제안은 유지돼요.'
+        : '이 전시 작업의 남은 분석이 멈춰요. 저장된 제안은 유지돼요.');
   }
 
   return (
     <QueueContext.Provider value={{
-      queue, busy: pending, show: () => setOpen(true),
+      queue, busy: pending, historyHidden, show,
       start: (scope, selections) => apply(() => api.startAnalysisBatch(scope, selections), true),
     }}>
       {children}
-      {latest || pending || error ? (
+      {!historyHidden && (latest || pending || error) ? (
         <section className="a-analysis-queue" aria-label="분석 작업">
           <header className="a-analysis-queue-header">
             <button type="button" className="a-analysis-queue-toggle" aria-expanded={open} aria-controls={content}
               aria-label={overall.total ? `분석 작업 ${overall.text}` : '분석 작업'}
               onClick={() => setOpen(value => !value)}>
-              <ProgressRing progress={overall} label="분석 처리 작품" />
-              <span>분석 작업</span>
-              {!!overall.total && <small>{overall.text}</small>}
+              <ProgressRing progress={overall} label="분석 상태별 작품 수" />
+              <span className="a-analysis-queue-caption">
+                <span>분석 작업</span>
+                {!!overall.total && <small>{overall.text}</small>}
+              </span>
               <Icon name="chevron" size={16} />
             </button>
             {latest && active && (
@@ -162,6 +189,12 @@ export function AnalysisQueueProvider({ children }: { children: ReactNode }) {
                 <Icon name="retry" size={18} />
               </button>
             )}
+            {latest && !active && (
+              <button type="button" className="a-analysis-item-retry" aria-label="분석 패널 닫기"
+                title="분석 패널 닫기" disabled={pending} onClick={dismiss}>
+                <Icon name="close" size={18} />
+              </button>
+            )}
           </header>
           <div id={content} className="a-analysis-queue-content" hidden={!open}>
             {pending && <p role="status">작업을 등록하고 있어요.</p>}
@@ -174,12 +207,13 @@ export function AnalysisQueueProvider({ children }: { children: ReactNode }) {
                   <ProgressRing progress={progress} label={`${batch.exhibitionTitle} 처리 작품`} />
                   <div>
                     <h3>{batch.exhibitionTitle}</h3>
-                    <small>{progress.text} · {formatDateTime(batch.createdAt)}</small>
+                    <small>{progress.text}</small>
+                    <small>{formatDateTime(batch.createdAt)}</small>
                   </div>
                   {batch.active ? (
                     <button type="button" className="a-analysis-item-retry a-analysis-cancel"
                       aria-label={`${batch.exhibitionTitle} 분석 취소`} title="이 전시 분석 취소" disabled={pending}
-                      onClick={() => void cancelAnalysis(() => api.cancelAnalysisBatch(batch.id), '이 전시 분석을 취소할까요? 저장된 제안은 유지돼요.')}>
+                      onClick={() => void cancelAnalysis(() => api.cancelAnalysisBatch(batch.id), '이 전시 작업의 남은 분석이 멈춰요. 저장된 제안은 유지돼요.')}>
                       <Icon name="close" size={18} />
                     </button>
                   ) : progress.failed > 0 && (
