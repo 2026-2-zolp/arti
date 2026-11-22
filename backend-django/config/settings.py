@@ -110,6 +110,7 @@ ARTI_LUNA_DRAFT_VISION = os.environ.get('ARTI_LUNA_DRAFT_VISION', 'false').lower
 # 내부 CLIP·mDeBERTa 서비스 주소. 빈 값이면 비활성, GPT와 독립입니다.
 ARTI_MODEL_SERVICE_URL = os.environ.get('ARTI_MODEL_SERVICE_URL', '')
 ARTI_BACKGROUND_EMOTION = os.environ.get('ARTI_BACKGROUND_EMOTION', '').lower() in ('1', 'true', 'yes')
+ARTI_BACKGROUND_BATCH_ANALYSIS = os.environ.get('ARTI_BACKGROUND_BATCH_ANALYSIS', '').lower() in ('1', 'true', 'yes')
 ARTI_ANALYSIS_REVISION = os.environ.get('ARTI_ANALYSIS_REVISION', 'fp16-2threads-batch6-v1').strip()
 ARTI_TASTE_PROFILE_V2_ENABLED = os.environ.get('ARTI_TASTE_PROFILE_V2_ENABLED', 'false').lower() == 'true'
 ARTI_TASTE_APPROVED_SIGNATURE_SHA256 = os.environ.get('ARTI_TASTE_APPROVED_SIGNATURE_SHA256', '')

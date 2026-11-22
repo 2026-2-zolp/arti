@@ -3,6 +3,24 @@ import type {AiStatus, Artwork} from '../types';
 
 type AnalysisPart = {ok?: boolean; made?: boolean; source?: string; error?: string; code?: string};
 export type ArtworkAnalysisField = 'summary' | 'guide' | 'tag' | 'emotion';
+export type AnalysisQueueItem = {
+  artworkId: string;
+  title: string;
+  state: 'queued' | 'running' | 'emotion' | 'completed' | 'failed';
+  reviewReady: boolean;
+  failures: Partial<Record<ArtworkAnalysisField | 'analysis', string>>;
+};
+export type AnalysisQueue = {
+  enabled: boolean;
+  batches: {
+    id: string;
+    exhibitionId: string;
+    exhibitionTitle: string;
+    createdAt: string;
+    active: boolean;
+    items: AnalysisQueueItem[];
+  }[];
+};
 export type EmotionJob = {
   id: string;
   state: 'queued' | 'running' | 'ready' | 'failed' | 'stale';

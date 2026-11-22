@@ -3,6 +3,7 @@ from django.urls import path, re_path
 from arti.docent_transcript import delete_liked_conversation, transcript_settings
 from arti import views
 from arti import member, editing, records, docent, kakao_auth, operations, password_reset, openai_settings
+from arti import batch_analysis
 
 handler404 = 'arti.http.not_found'
 urlpatterns = [
@@ -18,6 +19,8 @@ urlpatterns = [
     path('api/admin/login', views.admin_login), path('api/admin/logout', views.admin_logout),
     path('api/admin/operations', operations.dashboard),
     path('api/admin/operations/events', operations.events),
+    path('api/admin/analysis-batches', batch_analysis.batches),
+    path('api/admin/analysis-batches/<str:batch_id>/retry', batch_analysis.retry),
     path('api/admin/ai-settings', openai_settings.admin_openai_settings),
     path('api/admin/exhibitions', editing.exhibitions),
     path('api/admin/exhibitions/<str:ex_id>', editing.exhibitions),
