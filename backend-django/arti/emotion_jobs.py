@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from . import budget, model_service, providers
 from .http import ContractError
-from .models import Artwork, EmotionJob
+from .models import Artwork, ArtworkAnalysisItem, EmotionJob
 from .serializers import artwork_dto
 
 LEASE_SECONDS = 120
@@ -33,17 +33,32 @@ def analysis_identity(work, use_image, dt=None):
     return fingerprint, prepared
 
 
-def enqueue(work, use_image):
+def canceled_batch(job, *, lock=False):
+    if job.batch_item_id is None:
+        return False
+    items = ArtworkAnalysisItem.objects
+    if lock:
+        items = items.select_for_update()
+    return items.filter(pk=job.batch_item_id).values_list('state', flat=True).first() == 'canceled'
+
+
+def enqueue(work, use_image, batch_item_id=None):
     # The caller holds the artwork lock. Every transaction taking both locks uses the same order.
     fingerprint, _ = analysis_identity(work, use_image)
     job = EmotionJob.objects.select_for_update().filter(pk=work.pk).first()
-    if job and job.fingerprint == fingerprint and job.state in (*ACTIVE, 'ready'):
-        return job
+    if job and job.fingerprint == fingerprint:
+        if job.state == 'ready':
+            return job
+        if job.state in ACTIVE and not canceled_batch(job, lock=True):
+            if batch_item_id is None and job.batch_item_id is not None:
+                job.batch_item_id = None
+                job.save(update_fields=['batch_item'])
+            return job
     job, _ = EmotionJob.objects.update_or_create(artwork=work, defaults={
         'job_id': uuid4(), 'source_version': work.source_version,
         'fingerprint': fingerprint, 'emotion_before': emotion_digest(work), 'use_image': use_image,
         'state': 'queued', 'due_at': timezone.now(), 'attempts': 0, 'claim_id': None,
-        'error_code': '', 'previous_version': None, 'result_version': None,
+        'error_code': '', 'previous_version': None, 'result_version': None, 'batch_item_id': batch_item_id,
     })
     return job
 
@@ -111,7 +126,7 @@ def complete(job, value=None, error=None):
         if current is None:
             return
         current.claim_id = None
-        if job_input(current, work) is None:
+        if canceled_batch(current, lock=True) or job_input(current, work) is None:
             current.state = 'stale'
         elif error is not None:
             current.error_code = error.contract_code
@@ -142,7 +157,7 @@ def process_next():
         return False
     work = Artwork.objects.filter(pk=job.pk).first()
     inputs = job_input(job, work)
-    if inputs is None:
+    if inputs is None or canceled_batch(job):
         complete(job)
         return True
     snapshot, prepared = inputs

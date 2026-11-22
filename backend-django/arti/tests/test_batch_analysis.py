@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from arti import batch_analysis, emotion_jobs
 from arti.http import ContractError
-from arti.models import Artwork, ArtworkAnalysisBatch, ArtworkAnalysisItem
+from arti.models import Artwork, ArtworkAnalysisBatch, ArtworkAnalysisItem, EmotionJob
 from arti.tests.test_integration import Helpers
 from arti.tests.test_model_service import result
 
@@ -151,3 +151,90 @@ class ArtworkBatchTests(Helpers, TestCase):
         with patch('arti.providers.generate', side_effect=proposal):
             self.assertTrue(batch_analysis.process_next())
         self.assertEqual(self.states()[1]['state'], 'completed')
+
+    def test_global_targets_and_selection_across_exhibitions(self):
+        other = 'fixture-art13'
+        preview = f'{self.path}/targets?scope=all'
+        self.assertEqual(self.public.get(preview).status_code, 401)
+        self.assertEqual(self.admin.get(f'{self.path}/targets').status_code, 400)
+        groups = {group['exhibitionId']: group['items'] for group in self.admin.get(preview).json()['exhibitions']}
+        self.assertEqual(set(groups), {'fixture-draft', self.exhibition})
+        self.assertEqual([work['artworkId'] for work in groups[self.exhibition]], [self.first, self.second])
+        self.assertNotIn('summary', groups[self.exhibition][0]['fields'])
+        self.assertFalse(ArtworkAnalysisBatch.objects.exists())
+        self.assertEqual(self.admin.post(self.path, {'scope': 'all', 'selections': []}, format='json').status_code, 400)
+        selections = [{'artworkId': self.first, 'fields': ['summary', 'guide']},
+                      {'artworkId': other, 'fields': ['tag']}]
+        payload = {'scope': 'all', 'useImage': False, 'selections': selections}
+        start = self.admin.post(self.path, payload, format='json')
+        self.assertEqual(start.status_code, 202)
+        batches = start.json()['batches']
+        self.assertEqual(len(batches), 2)
+        self.assertEqual(len({batch['runId'] for batch in batches}), 1)
+        self.assertTrue(batches[0]['runId'])
+        self.assertEqual(self.admin.post(self.path, payload, format='json').status_code, 202)
+        self.assertEqual(ArtworkAnalysisBatch.objects.count(), 2)
+        self.assertEqual(self.admin.get(preview).json()['exhibitions'], [])
+        self.assertEqual(dict(ArtworkAnalysisItem.objects.values_list('artwork_id', 'fields')),
+                         {self.first: ['guide'], other: ['tag']})
+        with patch('arti.providers.generate', side_effect=ContractError(504, 'AI_TIMEOUT', '모의 실패')):
+            self.assertTrue(batch_analysis.process_next())
+        with patch('arti.providers.generate', side_effect=proposal):
+            self.assertTrue(batch_analysis.process_next())
+        retry = self.admin.post(f"/api/admin/analysis-runs/{batches[0]['runId']}/retry", {}, format='json')
+        self.assertEqual(retry.status_code, 202)
+        with patch('arti.providers.generate', side_effect=proposal) as generated:
+            self.assertTrue(batch_analysis.process_next())
+            self.assertEqual([(call.args[1]['id'], call.args[0]) for call in generated.call_args_list],
+                             [(other, 'tag')])
+        self.assertEqual(set(ArtworkAnalysisItem.objects.values_list('state', flat=True)), {'completed'})
+        work = Artwork.objects.get(pk=self.first)
+        self.assertEqual((work.summary_status, work.summary), ('confirmed', '기존에 확정한 합성 요약'))
+
+    def test_cancel_global_during_foreground_model_call_stops_remaining_fields(self):
+        selections = [{'artworkId': work_id, 'fields': ['guide', 'tag']} for work_id in (self.first, 'fixture-art13')]
+        response = self.admin.post(self.path, {'scope': 'all', 'selections': selections}, format='json')
+        run = response.json()['batches'][0]['runId']
+        path = f'/api/admin/analysis-runs/{run}/cancel'
+        before = dict(Artwork.objects.filter(pk__in=(self.first, 'fixture-art13')).values_list('pk', 'version'))
+
+        def cancel_during_model(kind, work, **options):
+            self.assertEqual(self.public.post(path, {}, format='json').status_code, 401)
+            self.assertEqual(self.admin.post(path, {}, format='json').status_code, 200)
+            return proposal(kind, work, **options)
+
+        with patch('arti.providers.generate', side_effect=cancel_during_model) as generated:
+            self.assertTrue(batch_analysis.process_next())
+            self.assertEqual(generated.call_count, 1)
+        self.assertFalse(batch_analysis.process_next())
+        self.assertEqual(self.admin.post(path, {}, format='json').status_code, 200)
+        self.assertEqual(set(ArtworkAnalysisItem.objects.values_list('state', flat=True)), {'canceled'})
+        self.assertEqual(dict(Artwork.objects.filter(pk__in=before).values_list('pk', 'version')), before)
+
+    @override_settings(ARTI_BACKGROUND_EMOTION=True, ARTI_MODEL_SERVICE_URL='http://127.0.0.1:8')
+    def test_cancel_blocks_an_owned_emotion_result_but_preserves_manual_queue(self):
+        with self.settings(ARTI_BACKGROUND_BATCH_ANALYSIS=True):
+            initial = self.enroll()
+        batch = initial.json()['batches'][0]['id']
+        cancel = f'{self.path}/{batch}/cancel'
+        with patch('arti.providers.generate', side_effect=proposal):
+            self.assertTrue(batch_analysis.process_next())
+            self.assertTrue(batch_analysis.process_next())
+        second = Artwork.objects.get(pk=self.second)
+        emotion_jobs.enqueue(second, False)
+        self.assertIsNone(EmotionJob.objects.get(pk=self.second).batch_item_id)
+        first = Artwork.objects.get(pk=self.first)
+
+        def cancel_during_emotion(*args, **kwargs):
+            self.assertEqual(self.admin.post(cancel, {}, format='json').status_code, 200)
+            return result()
+
+        with patch('arti.model_service.analyze', side_effect=cancel_during_emotion):
+            self.assertTrue(emotion_jobs.process_next())
+        self.assertEqual(EmotionJob.objects.get(pk=self.first).state, 'stale')
+        self.assertEqual(Artwork.objects.get(pk=self.first).version, first.version)
+        with patch('arti.model_service.analyze', return_value=result()):
+            self.assertTrue(emotion_jobs.process_next())
+        self.assertEqual(EmotionJob.objects.get(pk=self.second).state, 'ready')
+        self.assertEqual([item['state'] for item in self.states()], ['canceled', 'canceled'])
+        self.assertTrue(all(item['reviewReady'] for item in self.states()))

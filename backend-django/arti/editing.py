@@ -474,7 +474,8 @@ def analyze(request,artwork_id):
     return Response(run_artwork_analysis(w, use_image, regenerate, draft_image=draft_image))
 
 
-def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=None):
+def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=None, batch_item_id=None,
+                         assert_active=None):
     """Generate and persist proposals. A queued caller records its outcome in the same transaction."""
     def deliver(result):
         if record is not None:
@@ -493,6 +494,8 @@ def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=
             if (record is not None and confirmed) or (kind not in regenerate and (regenerate or confirmed)):
                 results[kind] = {'ok': True, 'source': 'kept' if confirmed else 'skipped', 'made': False}
                 continue
+            if assert_active is not None:
+                assert_active()
             try:
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 if background and kind == 'emotion':
@@ -509,6 +512,8 @@ def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=
                 budget.remaining(deadline, budget.ANALYSIS_SECONDS)
                 providers.validate(kind,value)
                 if kind == 'guide' and settings.ARTI_DRAFT_GUIDE_REVIEW:
+                    if assert_active is not None:
+                        assert_active()
                     providers.review_guide(snapshot, value, **context)
                 updates[kind]=value
                 results[kind]={'ok':True,'source':'provider','made':True}
@@ -554,7 +559,7 @@ def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=
             setattr(current,STATES[kind],'suggested')
         if updates:
             finish(current,old)
-        job = emotion_jobs.enqueue(current, use_image) if queue_emotion else None
+        job = emotion_jobs.enqueue(current, use_image, batch_item_id) if queue_emotion else None
         budget.remaining(deadline, budget.ANALYSIS_SECONDS)
         job_data = emotion_jobs.job_dto(job, current)
         return deliver({'artwork':artwork_dto(current,True), **results,

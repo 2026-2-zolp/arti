@@ -143,6 +143,7 @@ class Artwork(models.Model):
 # 전시와 독립적인 조사 작품군과 명시적 선정 순서를 저장합니다.
 class EmotionJob(models.Model):
     artwork = models.OneToOneField(Artwork, primary_key=True, on_delete=models.CASCADE)
+    batch_item = models.ForeignKey('ArtworkAnalysisItem', null=True, on_delete=models.SET_NULL)
     job_id = models.UUIDField()
     source_version = models.PositiveIntegerField()
     fingerprint = models.CharField(max_length=64)
@@ -165,6 +166,7 @@ class ArtworkAnalysisBatch(models.Model):
     exhibition_id = models.CharField(max_length=64, db_index=True)
     exhibition_title = models.CharField(max_length=100)
     use_image = models.BooleanField(default=True)
+    run_id = models.UUIDField(null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
