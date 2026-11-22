@@ -4,6 +4,7 @@ import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { apiTarget } from '../../lib/apiTarget';
 import { load, remove } from '../../lib/storage';
+import { AnalysisQueueProvider } from './AnalysisQueue';
 import './adminWorkspace.css';
 
 export const ADMIN_KEY = 'arti.admin';
@@ -35,28 +36,30 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="admin">
-      <header className="admin-top">
-        <div className="admin-brand">
-          <strong>ARTI</strong>
-        </div>
-        <div className="admin-account">
-          <button className="text-btn" onClick={logout}>
-            로그아웃
-          </button>
-        </div>
-      </header>
-      <nav className="admin-side" aria-label="관리자 메뉴">
-        {MENU.map((m) => (
-          <NavLink key={m.to} to={m.to} end={m.end} className={({ isActive }) => (isActive ? 'active' : '')}>
-            {m.label}
-          </NavLink>
-        ))}
-      </nav>
-      <main className="admin-main">
-        <Outlet />
-      </main>
-    </div>
+    <AnalysisQueueProvider>
+      <div className="admin">
+        <header className="admin-top">
+          <div className="admin-brand">
+            <strong>ARTI</strong>
+          </div>
+          <div className="admin-account">
+            <button className="text-btn" onClick={logout}>
+              로그아웃
+            </button>
+          </div>
+        </header>
+        <nav className="admin-side" aria-label="관리자 메뉴">
+          {MENU.map((m) => (
+            <NavLink key={m.to} to={m.to} end={m.end} className={({ isActive }) => (isActive ? 'active' : '')}>
+              {m.label}
+            </NavLink>
+          ))}
+        </nav>
+        <main className="admin-main">
+          <Outlet />
+        </main>
+      </div>
+    </AnalysisQueueProvider>
   );
 }
 

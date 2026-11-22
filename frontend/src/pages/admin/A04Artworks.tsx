@@ -24,17 +24,33 @@ import type { AiStatus, Artwork, DocentCollectionDraft, DocentCollectionReview, 
 import { PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
 import { ADMIN_PAGE_SIZE, AdminPagination, adminPage } from './AdminPagination';
+import { useAnalysisQueue } from './AnalysisQueue';
 
 const isVersionConflict = (error: unknown) => error instanceof ApiError && error.status === 409 && error.code === 'VERSION_CONFLICT';
 
 /** 작품 목록과 검수 상태를 조회합니다. */
 export function ArtworkList() {
+  const confirm = useConfirm();
+  const analysis = useAnalysisQueue();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
   const surveyFilter = params.get('survey') === 'active';
   const { data, reload, error } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
+  const exhibition = data?.[0].find(ex => ex.id === exFilter);
+  const alreadyRunning = analysis?.queue.batches.some(batch => batch.exhibitionId === exFilter && batch.active);
+
+  async function startAnalysis() {
+    if (!analysis || !exhibition) return;
+    if (alreadyRunning) {
+      analysis.show();
+      return;
+    }
+    if (await confirm(`「${exhibition.title}」의 검수 완료 작품에서 미확정 항목을 분석할까요?`)) {
+      await analysis.start(exhibition.id);
+    }
+  }
 
   const setFilter = (k: string, v: string) => {
     const next = new URLSearchParams(params);
@@ -97,6 +113,11 @@ export function ArtworkList() {
           <option value="active">취향 파악용</option>
         </select>
         <span className="muted small">{rows.length}건</span>
+        {exhibition && analysis?.queue.enabled && (
+          <button type="button" className="a-btn" disabled={analysis.busy} onClick={() => void startAnalysis()}>
+            {alreadyRunning ? '분석 작업 보기' : '전시 일괄 분석'}
+          </button>
+        )}
       </div>
       <div className="a-card">
         <table className="a-table">

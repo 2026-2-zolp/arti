@@ -471,16 +471,26 @@ def analyze(request,artwork_id):
         from .llm import DRAFT_TASKS, luna_image_route
         if not regenerate or not w.image_file or not all(kind in DRAFT_TASKS and luna_image_route(kind) for kind in regenerate):
             fail('업로드 도판은 Luna 요약·가이드 요청에서 사용할 수 있어요.')
+    return Response(run_artwork_analysis(w, use_image, regenerate, draft_image=draft_image))
+
+
+def run_artwork_analysis(w, use_image, regenerate, *, draft_image=False, record=None):
+    """Generate and persist proposals. A queued caller records its outcome in the same transaction."""
+    def deliver(result):
+        if record is not None:
+            record(result)
+        return result
+
     deadline=budget.monotonic()+budget.ANALYSIS_SECONDS
     snapshot = artwork_dto(w, True)
     results={};updates={};model_cache={};retry_waits=[]
     background = emotion_jobs.enabled()
     queue_emotion = False
-    slot = nullcontext() if background and regenerate == ['emotion'] else analysis_slot()
+    slot = nullcontext() if background and tuple(regenerate) == ('emotion',) else analysis_slot()
     with slot:
         for kind,field in STATES.items():
             confirmed = getattr(w, field) == 'confirmed'
-            if kind not in regenerate and (regenerate or confirmed):
+            if (record is not None and confirmed) or (kind not in regenerate and (regenerate or confirmed)):
                 results[kind] = {'ok': True, 'source': 'kept' if confirmed else 'skipped', 'made': False}
                 continue
             try:
@@ -510,7 +520,7 @@ def analyze(request,artwork_id):
     # 전체 예산이 소진되면 앞서 받은 부분 결과도 저장하지 않습니다.
     budget.remaining(deadline, budget.ANALYSIS_SECONDS)
     if not updates and not queue_emotion:
-        if any(not r['ok'] for r in results.values()):
+        if record is None and any(not r['ok'] for r in results.values()):
             codes={r.get('code') for r in results.values() if not r['ok']}
             statuses = {'AI_TIMEOUT': 504, 'GUIDE_UNSUPPORTED': 502, 'PROVIDER_ERROR': 502,
                         'RATE_LIMITED': 429, 'AI_UNAVAILABLE': 503}
@@ -519,7 +529,7 @@ def analyze(request,artwork_id):
             error = ContractError(statuses[code], code, message, retryable=True)
             if code=='RATE_LIMITED':error.wait=min(30,max(1,int(max(retry_waits or [30]))))
             raise error
-        return Response({'artwork':artwork_dto(w,True),**results})
+        return deliver({'artwork':artwork_dto(w,True),**results})
     with analysis_write():
         current=get_locked(Artwork,w.id);version(current,w.version);old=before(current)
         public_before = artwork_dto(current)
@@ -547,8 +557,8 @@ def analyze(request,artwork_id):
         job = emotion_jobs.enqueue(current, use_image) if queue_emotion else None
         budget.remaining(deadline, budget.ANALYSIS_SECONDS)
         job_data = emotion_jobs.job_dto(job, current)
-    return Response({'artwork':artwork_dto(current,True), **results,
-                     **({'emotionJob': job_data} if job_data else {})})
+        return deliver({'artwork':artwork_dto(current,True), **results,
+                        **({'emotionJob': job_data} if job_data else {})})
 
 
 @contextmanager

@@ -30,6 +30,9 @@ services:
   emotion-worker:
     <<: *runtime
     build: !reset null
+  artwork-batch-worker:
+    <<: *runtime
+    build: !reset null
   web:
     image: ${ARTI_WEB_IMAGE:?Set ARTI_WEB_IMAGE to the release image digest}
     ports:

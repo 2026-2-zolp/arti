@@ -160,6 +160,34 @@ class EmotionJob(models.Model):
         indexes = [models.Index(fields=['state', 'due_at'], name='arti_emotion_due')]
 
 
+class ArtworkAnalysisBatch(models.Model):
+    id = models.CharField(primary_key=True, max_length=64, default=external_id)
+    exhibition_id = models.CharField(max_length=64, db_index=True)
+    exhibition_title = models.CharField(max_length=100)
+    use_image = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ArtworkAnalysisItem(models.Model):
+    batch = models.ForeignKey(ArtworkAnalysisBatch, on_delete=models.CASCADE, related_name='items')
+    artwork_id = models.CharField(max_length=64)
+    title = models.CharField(max_length=200)
+    source_version = models.PositiveIntegerField()
+    fields = models.JSONField(default=list)
+    state = models.CharField(max_length=12, default='queued')
+    review_ready = models.BooleanField(default=False)
+    failures = models.JSONField(default=dict)
+    due_at = models.DateTimeField(default=timezone.now)
+    claim_id = models.UUIDField(null=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    emotion_job_id = models.UUIDField(null=True)
+
+    class Meta:
+        ordering = ['id']
+        constraints = [models.UniqueConstraint(fields=['batch', 'artwork_id'], name='arti_batch_unique_work')]
+        indexes = [models.Index(fields=['state', 'due_at'], name='arti_batch_due')]
+
+
 class SurveyPool(models.Model):
     id = models.CharField(primary_key=True, max_length=64, default=external_id)
     name = models.CharField(max_length=100)

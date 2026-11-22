@@ -25,7 +25,7 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
 import { limitReceiptDuration } from '../lib/receiptPayload';
-import type { ArtworkAnalysisField, ArtworkAnalysisResult, EmotionJob } from '../lib/adminAnalysis';
+import type { AnalysisQueue, ArtworkAnalysisField, ArtworkAnalysisResult, EmotionJob } from '../lib/adminAnalysis';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -176,6 +176,10 @@ async function request<T>(method: string, path: string, body?: unknown, expected
 const enc = encodeURIComponent;
 
 export const api = {
+  analysisQueue: () => request<AnalysisQueue>('GET', '/admin/analysis-batches'),
+  startAnalysisBatch: (exhibitionId: string) => request<AnalysisQueue>('POST', '/admin/analysis-batches', { exhibitionId }),
+  retryAnalysisBatch: (batchId: string, artworkId?: string) =>
+    request<AnalysisQueue>('POST', `/admin/analysis-batches/${enc(batchId)}/retry`, { artworkId }),
   adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
   adminOperationEvents: (query: URLSearchParams) => request<{
     rows: OperationsReport['recent']; page: number; pages: number; total: number;
