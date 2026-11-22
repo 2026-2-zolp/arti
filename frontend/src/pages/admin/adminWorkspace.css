@@ -97,7 +97,8 @@
   text-align: left;
   font-weight: 700;
 }
-.a-analysis-queue-toggle small { margin-inline-start: auto; font-weight: 500; }
+.a-analysis-queue-caption { display: grid; min-width: 0; gap: 3px; }
+.a-analysis-queue-caption small { color: var(--ink-2); font-weight: 500; }
 .a-analysis-queue-toggle svg { flex-shrink: 0; margin-inline-start: auto; transform: rotate(-90deg); }
 .a-analysis-queue-toggle[aria-expanded='true'] svg { transform: rotate(90deg); }
 .a-analysis-queue-ring, .a-analysis-item {
@@ -128,6 +129,7 @@
 .a-analysis-batch-heading > div { flex: 1; min-width: 0; }
 .a-analysis-batch h3 { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
 .a-analysis-batch small { color: var(--ink-2); }
+.a-analysis-batch-heading small { display: block; }
 .a-analysis-batch ul { list-style: none; margin: 6px 0 0; padding: 0; }
 .a-analysis-batch li {
   display: flex;
