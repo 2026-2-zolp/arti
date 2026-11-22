@@ -50,9 +50,8 @@ function SettingsFields({ config, onSaved }: { config: AdminOpenAISettings; onSa
         <input type="password" autoComplete="new-password" spellCheck={false} placeholder="sk-…" maxLength={503}
           ref={keyField} disabled={saving || !secure} />
       </label>
-      <p className="muted small">{!secure ? 'HTTPS에서 프로젝트 키를 등록할 수 있어요.'
-        : !config.editable ? '서버 암호화 설정이 준비되면 키를 등록·교체할 수 있어요.'
-          : '새 키를 입력할 때만 저장된 키를 교체해요. 저장만으로 모델을 호출하지 않아요.'}</p>
+      {!secure && <p className="muted small">HTTPS에서 프로젝트 키를 등록할 수 있어요.</p>}
+      {canSave && <p className="muted small">새 키를 입력할 때만 저장된 키를 교체해요. 저장만으로 모델을 호출하지 않아요.</p>}
       {error && <p role="alert">{error}</p>}
       <button type="submit" className="a-btn primary" disabled={saving || !canSave}>{saving ? '저장 중…' : 'AI 설정 저장'}</button>
     </form>
