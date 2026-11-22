@@ -25,7 +25,9 @@ import { load, remove, save } from '../lib/storage';
 import { apiTarget } from '../lib/apiTarget';
 import { GENERIC_ERROR } from '../lib/errorText';
 import { limitReceiptDuration } from '../lib/receiptPayload';
-import type { AnalysisQueue, ArtworkAnalysisField, ArtworkAnalysisResult, EmotionJob } from '../lib/adminAnalysis';
+import type {
+  AnalysisQueue, AnalysisScope, AnalysisSelection, AnalysisTargets, ArtworkAnalysisField, ArtworkAnalysisResult, EmotionJob,
+} from '../lib/adminAnalysis';
 import type { TasteMutation, TastePreview } from '../lib/tasteFlow';
 
 export class ApiError extends Error {
@@ -177,9 +179,18 @@ const enc = encodeURIComponent;
 
 export const api = {
   analysisQueue: () => request<AnalysisQueue>('GET', '/admin/analysis-batches'),
-  startAnalysisBatch: (exhibitionId: string) => request<AnalysisQueue>('POST', '/admin/analysis-batches', { exhibitionId }),
+  analysisTargets: (scope: AnalysisScope) =>
+    request<AnalysisTargets>('GET', `/admin/analysis-batches/targets?${new URLSearchParams(scope)}`),
+  startAnalysisBatch: (scope: AnalysisScope, selections: AnalysisSelection[]) =>
+    request<AnalysisQueue>('POST', '/admin/analysis-batches', { ...scope, selections }),
   retryAnalysisBatch: (batchId: string, artworkId?: string) =>
     request<AnalysisQueue>('POST', `/admin/analysis-batches/${enc(batchId)}/retry`, { artworkId }),
+  cancelAnalysisBatch: (batchId: string) =>
+    request<AnalysisQueue>('POST', `/admin/analysis-batches/${enc(batchId)}/cancel`, {}),
+  cancelAnalysisRun: (runId: string) =>
+    request<AnalysisQueue>('POST', `/admin/analysis-runs/${enc(runId)}/cancel`, {}),
+  retryAnalysisRun: (runId: string) =>
+    request<AnalysisQueue>('POST', `/admin/analysis-runs/${enc(runId)}/retry`, {}),
   adminOperations: (view?: 'summary' | 'errors') => request<OperationsReport>('GET', '/admin/operations' + (view ? `?${view}=1` : '')),
   adminOperationEvents: (query: URLSearchParams) => request<{
     rows: OperationsReport['recent']; page: number; pages: number; total: number;

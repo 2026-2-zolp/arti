@@ -120,6 +120,10 @@ jobs:
             name: Admin Chrome (analysis conflict)
             database: arti_admin_analysis
             admin: admin-analysis-admin
+          - suite: admin-batch
+            name: Admin Chrome (all-exhibition analysis)
+            database: arti_batch_global_ci
+            admin: admin-edit-a
           - suite: operations
             name: Admin Chrome (operations log)
             database: arti_visit_boundaries_operations_ci
@@ -247,9 +251,12 @@ jobs:
         if: matrix.suite == 'kakao-auth'
         run: node frontend/tests/kakaoAuth.browser.mjs
       - name: Run loopback Chrome regression
-        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","admin-catalog","narrow-visit","docent-visit-memory","docent-listening"]'), matrix.suite)
+        if: contains(fromJSON('["retry","artwork-change","guide-summary","receipt-visibility","receipt-interpretation","admin-concurrent","admin-catalog","admin-batch","narrow-visit","docent-visit-memory","docent-listening"]'), matrix.suite)
         shell: bash
         env:
+          ARTI_BACKGROUND_BATCH_ANALYSIS: ${{ matrix.suite == 'admin-batch' && 'true' || 'false' }}
+          ARTI_BACKGROUND_EMOTION: ${{ matrix.suite == 'admin-batch' && 'true' || 'false' }}
+          ARTI_MODEL_SERVICE_URL: ${{ matrix.suite == 'admin-batch' && 'http://127.0.0.1:8' || '' }}
           ARTI_DOCENT_RACE_TESTS: ${{ matrix.suite == 'artwork-change' && '1' || '0' }}
           ARTI_DOCENT_ENTRY_TESTS: ${{ matrix.suite == 'guide-summary' && '1' || '0' }}
           ARTI_DOCENT_MEMORY_TESTS: ${{ matrix.suite == 'docent-visit-memory' && '1' || '0' }}
@@ -274,6 +281,10 @@ jobs:
             admin-catalog)
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
               browser_test=frontend/tests/adminCatalog.browser.mjs
+              ;;
+            admin-batch)
+              server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
+              browser_test=frontend/tests/adminBatchAnalysis.browser.mjs
               ;;
             narrow-visit)
               server=(python backend-django/manage.py runserver 127.0.0.1:8000 --noreload)
@@ -301,7 +312,7 @@ jobs:
 
           for ((attempt = 0; attempt < 30; attempt++)); do
             if mock_header=$(curl --silent --fail --max-time 2 --output /dev/null --write-out "%header{$ready_header}" "$ARTI_REVIEW_BASE/api/ready") &&
-                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent || "$ARTI_BROWSER_SUITE" == admin-catalog || "$ARTI_BROWSER_SUITE" == narrow-visit ]] || [[ "$mock_header" == 1 ]]; }; then
+                { [[ "$ARTI_BROWSER_SUITE" == receipt-visibility || "$ARTI_BROWSER_SUITE" == admin-concurrent || "$ARTI_BROWSER_SUITE" == admin-catalog || "$ARTI_BROWSER_SUITE" == admin-batch || "$ARTI_BROWSER_SUITE" == narrow-visit ]] || [[ "$mock_header" == 1 ]]; }; then
               node "$browser_test"
               exit
             fi
@@ -314,6 +325,8 @@ jobs:
             printf '%s\n' 'Admin Chrome (concurrent editing) API readiness check failed.' >&2
           elif [[ "$ARTI_BROWSER_SUITE" == admin-catalog ]]; then
             printf '%s\n' 'Admin Chrome (catalog controls) API readiness check failed.' >&2
+          elif [[ "$ARTI_BROWSER_SUITE" == admin-batch ]]; then
+            printf '%s\n' 'Admin Chrome (all-exhibition analysis) API readiness check failed.' >&2
           elif [[ "$ARTI_BROWSER_SUITE" == narrow-visit ]]; then
             printf '%s\n' 'Visit Chrome (narrow layout) API readiness check failed.' >&2
           else

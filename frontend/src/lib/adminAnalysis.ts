@@ -3,10 +3,20 @@ import type {AiStatus, Artwork} from '../types';
 
 type AnalysisPart = {ok?: boolean; made?: boolean; source?: string; error?: string; code?: string};
 export type ArtworkAnalysisField = 'summary' | 'guide' | 'tag' | 'emotion';
+export const analysisFieldLabels = { summary: '요약', guide: '가이드', tag: '태그', emotion: '감정', analysis: '분석' };
+export type AnalysisSelection = { artworkId: string; fields: ArtworkAnalysisField[] };
+export type AnalysisScope = { exhibitionId: string } | { scope: 'all' };
+export type AnalysisTargets = {
+  exhibitions: {
+    exhibitionId: string;
+    exhibitionTitle: string;
+    items: (AnalysisSelection & { title: string })[];
+  }[];
+};
 export type AnalysisQueueItem = {
   artworkId: string;
   title: string;
-  state: 'queued' | 'running' | 'emotion' | 'completed' | 'failed';
+  state: 'queued' | 'running' | 'emotion' | 'completed' | 'failed' | 'canceled';
   reviewReady: boolean;
   failures: Partial<Record<ArtworkAnalysisField | 'analysis', string>>;
 };
@@ -16,6 +26,7 @@ export type AnalysisQueue = {
     id: string;
     exhibitionId: string;
     exhibitionTitle: string;
+    runId: string | null;
     createdAt: string;
     active: boolean;
     items: AnalysisQueueItem[];

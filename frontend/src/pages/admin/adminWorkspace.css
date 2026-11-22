@@ -124,6 +124,8 @@
 }
 .a-analysis-queue-content > p { margin: 0 0 8px; font-size: 13px; }
 .a-analysis-batch + .a-analysis-batch { margin-top: 14px; }
+.a-analysis-batch-heading { display: flex; align-items: center; gap: 8px; }
+.a-analysis-batch-heading > div { flex: 1; min-width: 0; }
 .a-analysis-batch h3 { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
 .a-analysis-batch small { color: var(--ink-2); }
 .a-analysis-batch ul { list-style: none; margin: 6px 0 0; padding: 0; }
@@ -141,6 +143,7 @@
 .a-analysis-emotion { border-top-color: var(--accent); border-right-color: var(--accent); }
 .a-analysis-completed { color: #31634b; background: #e5f1e9; }
 .a-analysis-failed { color: #a12a29; background: #f9e8e6; }
+.a-analysis-canceled { color: var(--ink-2); background: var(--a-bg); }
 .a-analysis-item-title { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
 .a-analysis-item-title a { text-decoration: underline; }
 .a-analysis-item-title small { display: block; font-size: 12px; }
@@ -154,5 +157,32 @@
   border-radius: 10px;
   background: #fff;
 }
+.a-analysis-cancel:hover, .a-analysis-cancel:focus-visible { color: #a12a29; border-color: currentColor; }
+.a-member-dialog.a-analysis-targets-dialog { width: min(600px, calc(100% - 24px)); }
+.a-analysis-targets-body { min-height: 0; padding: 0 20px 12px; overflow-y: auto; }
+.a-analysis-targets-body h3 { margin: 18px 0 8px; font-size: 16px; }
+.a-analysis-targets-body fieldset {
+  min-width: 0;
+  margin: 0 0 8px;
+  border: 1px solid var(--a-line);
+  border-radius: 10px;
+  padding: 4px 10px;
+}
+.a-analysis-targets-body legend { overflow-wrap: anywhere; }
+.a-analysis-targets-body legend label { cursor: pointer; }
+.a-analysis-targets-body legend input { margin-inline-end: 6px; }
+.a-analysis-target-fields { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.a-analysis-target-fields label { display: flex; align-items: center; gap: 5px; min-height: 36px; cursor: pointer; }
+.a-analysis-targets-dialog footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px;
+  border-block-start: 1px solid var(--a-line);
+}
+.a-analysis-targets-dialog footer p { width: 100%; margin: 0; }
+.a-analysis-targets-dialog footer span { margin-inline-end: auto; }
 @keyframes a-analysis-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .a-analysis-running { animation: none; } }

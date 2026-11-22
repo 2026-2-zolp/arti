@@ -1,11 +1,12 @@
 """Run one durable artwork analysis at a time outside the admin request."""
 import logging
+from collections.abc import Mapping
 from datetime import timedelta
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import Throttled
@@ -39,9 +40,15 @@ def snapshot():
     batches = ArtworkAnalysisBatch.objects.annotate(active=Exists(ArtworkAnalysisItem.objects.filter(
         batch_id=OuterRef('pk'), state__in=ACTIVE,
     ))).order_by('-created_at', '-pk').prefetch_related('items')
-    current = [*batches.filter(active=True), *batches.filter(active=False)[:5]]
+    active = list(batches.filter(active=True))
+    recent = list(batches.filter(active=False)[:5])
+    related_runs = {batch.run_id for batch in (*active, *recent) if batch.run_id}
+    current = active + list(batches.filter(active=False).filter(
+        Q(pk__in=[batch.pk for batch in recent]) | Q(run_id__in=related_runs),
+    ))
     return {'enabled': True, 'batches': [{
         'id': batch.pk, 'exhibitionId': batch.exhibition_id, 'exhibitionTitle': batch.exhibition_title,
+        'runId': str(batch.run_id) if batch.run_id else None,
         'createdAt': batch.created_at.isoformat(), 'active': batch.active,
         'items': [{
             'artworkId': item.artwork_id, 'title': item.title, 'state': item.state,
@@ -54,21 +61,85 @@ def eligible(work):
     return work.review_status == 'approved' and bool(work.description.strip())
 
 
+def candidate_works(exhibitions):
+    return Artwork.objects.filter(exhibition_id__in=exhibitions, review_status='approved').only(
+        'id', 'exhibition_id', 'title', 'description', 'source_version', *STATES.values(),
+    ).order_by('exhibition_id', 'id')
+
+
+def missing_fields(work):
+    return [kind for kind, field in STATES.items() if getattr(work, field) != 'confirmed']
+
+
+def analysis_targets(exhibitions):
+    if not exhibitions:
+        return []
+    groups = {ex.pk: {'exhibitionId': ex.pk, 'exhibitionTitle': ex.title, 'items': []} for ex in exhibitions}
+    for work in candidate_works(groups):
+        fields = missing_fields(work)
+        if eligible(work) and fields:
+            groups[work.exhibition_id]['items'].append({'artworkId': work.pk, 'title': work.title, 'fields': fields})
+    return [group for group in groups.values() if group['items']]
+
+
+def scope(data):
+    if not isinstance(data, Mapping):
+        raise ContractError(400, 'VALIDATION_ERROR', '분석할 전시 범위를 확인해 주세요.')
+    exhibition_id, all_exhibitions = data.get('exhibitionId'), data.get('scope')
+    if all_exhibitions == 'all' and exhibition_id is None:
+        return None
+    if all_exhibitions is None and isinstance(exhibition_id, str) and 0 < len(exhibition_id) <= 64:
+        return exhibition_id
+    raise ContractError(400, 'VALIDATION_ERROR', '분석할 전시 범위를 확인해 주세요.')
+
+
+def selected_fields(data, exhibition_id):
+    selections = data.get('selections')
+    # Older clients can still enroll an individual exhibition.
+    if selections is None and exhibition_id is not None:
+        return None
+    if not isinstance(selections, list) or not selections:
+        raise ContractError(400, 'VALIDATION_ERROR', '분석할 항목을 선택해 주세요.')
+    selected = {}
+    for entry in selections:
+        artwork_id, fields = (entry.get('artworkId'), entry.get('fields')) if isinstance(entry, dict) else (None, None)
+        if (not isinstance(artwork_id, str) or not 0 < len(artwork_id) <= 64 or artwork_id in selected
+                or not isinstance(fields, list) or not fields
+                or any(not isinstance(field, str) or field not in STATES for field in fields)):
+            raise ContractError(400, 'VALIDATION_ERROR', '선택한 작품과 분석 항목을 확인해 주세요.')
+        selected[artwork_id] = set(fields)
+    return selected
+
+
 @transaction.atomic
-def enroll(exhibition_id, use_image):
-    exhibition = get_locked(Exhibition, exhibition_id)
-    if active_batches(exhibition_id).exists():
+def enroll(exhibition_id, use_image, selected):
+    exhibitions = ([get_locked(Exhibition, exhibition_id)] if exhibition_id else
+                   list(Exhibition.objects.select_for_update().order_by('pk')))
+    busy = set(active_batches(exhibition_id).values_list('exhibition_id', flat=True))
+    available = {ex.pk: ex for ex in exhibitions if ex.pk not in busy}
+    targets = {}
+    works = candidate_works(available)
+    if selected is not None:
+        works = works.filter(pk__in=selected)
+    for work in works:
+        if not eligible(work):
+            continue
+        fields = [field for field in missing_fields(work) if selected is None or field in selected[work.pk]]
+        if fields:
+            targets.setdefault(work.exhibition_id, []).append((work, fields))
+    if not targets and busy and (selected is None or candidate_works(busy).filter(pk__in=selected).exists()):
         return
-    targets = [work for work in exhibition.artworks.filter(review_status='approved') if
-               eligible(work) and any(getattr(work, field) != 'confirmed' for field in STATES.values())]
     if not targets:
         raise ContractError(400, 'NO_ANALYSIS_TARGETS', '분석할 미확정 항목이 있는 검수 완료 작품이 없어요.')
-    batch = ArtworkAnalysisBatch.objects.create(exhibition_id=exhibition.pk, exhibition_title=exhibition.title,
-                                                use_image=use_image)
-    ArtworkAnalysisItem.objects.bulk_create([
-        ArtworkAnalysisItem(batch=batch, artwork_id=work.pk, title=work.title, source_version=work.source_version)
-        for work in targets
-    ])
+    run_id = uuid4() if exhibition_id is None else None
+    items = []
+    for target_id, rows in targets.items():
+        batch = ArtworkAnalysisBatch.objects.create(exhibition_id=target_id,
+                                                    exhibition_title=available[target_id].title,
+                                                    use_image=use_image, run_id=run_id)
+        items.extend(ArtworkAnalysisItem(batch=batch, artwork_id=work.pk, title=work.title,
+                                        source_version=work.source_version, fields=fields) for work, fields in rows)
+    ArtworkAnalysisItem.objects.bulk_create(items)
 
 
 @transaction.atomic
@@ -92,7 +163,8 @@ def retry_failed(batch_id, work_id):
         if work is None or not eligible(work):
             continue
         same_source = work.source_version == item.source_version
-        item.fields = [kind for kind in STATES if kind in item.failures] if same_source else []
+        if same_source and 'analysis' not in item.failures:
+            item.fields = [kind for kind in STATES if kind in item.failures]
         item.review_ready = item.review_ready and same_source
         item.source_version = work.source_version
         item.title = work.title
@@ -112,10 +184,11 @@ def batches(request):
     if request.method == 'POST':
         if not enabled():
             raise ContractError(503, 'FEATURE_DISABLED', '일괄 분석을 사용할 수 없어요.')
-        exhibition_id, use_image = request.data.get('exhibitionId'), request.data.get('useImage', True)
-        if not isinstance(exhibition_id, str) or not exhibition_id or len(exhibition_id) > 64 or type(use_image) is not bool:
-            raise ContractError(400, 'VALIDATION_ERROR', '전시와 도판 분석 여부를 확인해 주세요.')
-        enroll(exhibition_id, use_image)
+        exhibition_id = scope(request.data)
+        use_image = request.data.get('useImage', True)
+        if type(use_image) is not bool:
+            raise ContractError(400, 'VALIDATION_ERROR', '도판 분석 여부를 확인해 주세요.')
+        enroll(exhibition_id, use_image, selected_fields(request.data, exhibition_id))
     return Response(snapshot(), status=202 if request.method == 'POST' else 200,
                     headers={'Cache-Control': 'no-store'})
 
@@ -130,6 +203,55 @@ def retry(request, batch_id):
         raise ContractError(400, 'VALIDATION_ERROR', '작품을 확인해 주세요.')
     retry_failed(batch_id, work_id)
     return Response(snapshot(), status=202, headers={'Cache-Control': 'no-store'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAdmin])
+def retry_run(request, run_id):
+    if not enabled():
+        raise ContractError(503, 'FEATURE_DISABLED', '일괄 분석을 사용할 수 없어요.')
+    batches = ArtworkAnalysisBatch.objects.filter(run_id=run_id)
+    if not batches.exists():
+        raise ContractError(404, 'NOT_FOUND', '분석 작업을 찾을 수 없어요.')
+    failed = batches.filter(Exists(ArtworkAnalysisItem.objects.filter(batch_id=OuterRef('pk'), state='failed')))
+    registered, conflict = False, None
+    for batch_id in failed.values_list('pk', flat=True):
+        try:
+            retry_failed(batch_id, None)
+            registered = True
+        except ContractError as error:
+            if error.status_code not in (404, 409):
+                raise
+            conflict = error
+    if conflict and not registered:
+        raise conflict
+    return Response(snapshot(), status=202, headers={'Cache-Control': 'no-store'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def targets(request):
+    if not enabled():
+        raise ContractError(503, 'FEATURE_DISABLED', '일괄 분석을 사용할 수 없어요.')
+    exhibition_id = scope(request.query_params)
+    exhibitions = Exhibition.objects.exclude(pk__in=active_batches().values('exhibition_id')).order_by('pk')
+    if exhibition_id is not None:
+        exhibitions = exhibitions.filter(pk=exhibition_id)
+    return Response({'exhibitions': analysis_targets(list(exhibitions))}, headers={'Cache-Control': 'no-store'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAdmin])
+def cancel(request, batch_id=None, run_id=None):
+    if not enabled():
+        raise ContractError(503, 'FEATURE_DISABLED', '일괄 분석을 사용할 수 없어요.')
+    batches = ArtworkAnalysisBatch.objects.filter(run_id=run_id) if run_id else ArtworkAnalysisBatch.objects.filter(pk=batch_id)
+    if not batches.exists():
+        raise ContractError(404, 'NOT_FOUND', '분석 작업을 찾을 수 없어요.')
+    ArtworkAnalysisItem.objects.filter(batch__in=batches, state__in=ACTIVE).update(
+        state='canceled', claim_id=None, failures={},
+    )
+    return Response(snapshot(), headers={'Cache-Control': 'no-store'})
 
 
 @transaction.atomic
@@ -152,12 +274,21 @@ def lease(item):
                                               due_at__gt=timezone.now())
 
 
+def lease_lost():
+    return ContractError(409, 'ANALYSIS_LEASE_LOST', '분석 작업이 취소됐거나 다른 워커에서 처리하고 있어요.')
+
+
+def assert_active(item):
+    if not lease(item).exists():
+        raise lease_lost()
+
+
 @transaction.atomic
 def record(item, result):
     current = lease(item).select_for_update().first()
     if current is None:
         # Roll back any proposals written by a worker that lost this item's lease.
-        raise ContractError(409, 'ANALYSIS_LEASE_LOST', '이 분석 작업은 다른 워커에서 처리하고 있어요.')
+        raise lease_lost()
     current.review_ready = current.review_ready or any(result[kind]['made'] for kind in STATES)
     current.failures = {kind: result[kind].get('code', 'PROVIDER_ERROR') for kind in STATES if not result[kind]['ok']}
     current.state = 'failed' if current.failures else 'completed'
@@ -211,7 +342,8 @@ def process_next():
         work = Artwork.objects.filter(pk=item.artwork_id, exhibition_id=batch.exhibition_id).first()
         if work is None or not eligible(work) or work.source_version != item.source_version:
             raise ContractError(409, 'VERSION_CONFLICT', '원문이나 검수 상태가 변경됐어요.')
-        run_artwork_analysis(work, batch.use_image, item.fields, record=lambda result: record(item, result))
+        run_artwork_analysis(work, batch.use_image, item.fields, record=lambda result: record(item, result),
+                             batch_item_id=item.pk, assert_active=lambda: assert_active(item))
     except Throttled:
         if item.attempts < MAX_ATTEMPTS:
             lease(item).update(state='queued', claim_id=None, due_at=timezone.now() + timedelta(seconds=4))

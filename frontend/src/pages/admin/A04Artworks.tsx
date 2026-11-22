@@ -25,40 +25,26 @@ import { PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
 import { ADMIN_PAGE_SIZE, AdminPagination, adminPage } from './AdminPagination';
 import { useAnalysisQueue } from './AnalysisQueue';
+import { AnalysisTargetsDialog } from './AnalysisTargetsDialog';
+import type { AnalysisScope } from '../../lib/adminAnalysis';
 
 const isVersionConflict = (error: unknown) => error instanceof ApiError && error.status === 409 && error.code === 'VERSION_CONFLICT';
 
 /** 작품 목록과 검수 상태를 조회합니다. */
 export function ArtworkList() {
-  const confirm = useConfirm();
   const analysis = useAnalysisQueue();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const [batchTargetId, setBatchTargetId] = useState<string | null>(null);
+  const [batchScope, setBatchScope] = useState<AnalysisScope | null>(null);
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
   const surveyFilter = params.get('survey') === 'active';
   const { data, reload, error } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
-  const exhibition = data?.[0].find(ex => ex.id === (exFilter || batchTargetId));
-  const alreadyRunning = analysis?.queue.batches.some(batch => batch.exhibitionId === exhibition?.id && batch.active);
-  const choosingBatchTarget = batchTargetId !== null && !exFilter;
-
-  async function startAnalysis() {
-    if (!analysis || !exhibition) return;
-    if (alreadyRunning) {
-      setBatchTargetId(null);
-      analysis.show();
-      return;
-    }
-    if (await confirm(`「${exhibition.title}」의 검수 완료 작품에서 미확정 항목을 분석할까요?`)) {
-      setBatchTargetId(null);
-      await analysis.start(exhibition.id);
-    }
-  }
+  const exhibition = data?.[0].find(ex => ex.id === exFilter);
+  const alreadyRunning = exFilter && analysis?.queue.batches.some(batch => batch.exhibitionId === exFilter && batch.active);
 
   const setFilter = (k: string, v: string) => {
     const next = new URLSearchParams(params);
-    if (k === 'exhibition') setBatchTargetId(null);
     if (v) next.set(k, v);
     else next.delete(k);
     next.delete('page');
@@ -120,22 +106,15 @@ export function ArtworkList() {
         <span className="muted small">{rows.length}건</span>
         {analysis?.queue.enabled && !!data?.[0].length && (
           <button type="button" className="a-btn" disabled={analysis.busy || (!!exFilter && !exhibition)}
-            aria-expanded={exFilter ? undefined : choosingBatchTarget}
-            onClick={() => exFilter ? void startAnalysis() : setBatchTargetId(id => id === null ? '' : null)}>
-            {exFilter && alreadyRunning ? '분석 작업 보기' : '전시 일괄 분석'}
+            aria-haspopup={alreadyRunning ? undefined : 'dialog'}
+            onClick={() => alreadyRunning ? analysis.show() : setBatchScope(exFilter ? { exhibitionId: exFilter } : { scope: 'all' })}>
+            {alreadyRunning ? '분석 작업 보기' : exFilter ? '전시 일괄 분석' : '전체 전시 일괄 분석'}
           </button>
         )}
       </div>
-      {choosingBatchTarget && analysis?.queue.enabled && (
-        <div className="a-filters" role="group" aria-label="일괄 분석 대상">
-          <select aria-label="분석할 전시" value={batchTargetId} onChange={e => setBatchTargetId(e.target.value)}>
-            <option value="">분석할 전시 선택</option>
-            {data?.[0].map(ex => <option key={ex.id} value={ex.id}>{ex.title}</option>)}
-          </select>
-          <button type="button" className="a-btn" disabled={!exhibition || analysis.busy} onClick={() => void startAnalysis()}>
-            {alreadyRunning ? '분석 작업 보기' : '분석 계속'}
-          </button>
-        </div>
+      {batchScope && analysis && (
+        <AnalysisTargetsDialog scope={batchScope} onClose={() => setBatchScope(null)}
+          onStart={selections => analysis.start(batchScope, selections)} />
       )}
       <div className="a-card">
         <table className="a-table">
