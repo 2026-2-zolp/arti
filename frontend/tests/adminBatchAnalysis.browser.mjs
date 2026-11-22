@@ -91,12 +91,26 @@ try {
   await page.getByLabel('비밀번호').fill(password);
   await button(page, '로그인').click();
   await page.waitForURL('**/admin');
-  await page.goto('/admin/artworks?exhibition=fixture-ex01');
+  await page.goto('/admin/artworks');
+  const filter = page.getByLabel('전시 필터', { exact: true });
+  await filter.selectOption('fixture-ex01');
+  await button(page, '전시 일괄 분석').click();
+  const dialog = page.getByRole('alertdialog');
+  await dialog.getByText(/의 검수 완료 작품에서 미확정 항목을 분석할까요/).waitFor();
+  await button(dialog, '취소').click();
+  await filter.selectOption('');
+
   const start = responseFor(page, 'POST', new RegExp(`^${queuePath}$`));
   await button(page, '전시 일괄 분석').click();
-  await button(page.getByRole('alertdialog'), '확인하고 계속').click();
+  const picker = page.getByRole('group', { name: '일괄 분석 대상' });
+  assert.equal(await button(picker, '분석 계속').isDisabled(), true);
+  await picker.getByLabel('분석할 전시').selectOption('fixture-ex01');
+  await button(picker, '분석 계속').click();
+  await button(dialog, '확인하고 계속').click();
   const enrolled = await start;
   assert.equal(enrolled.status(), 202);
+  assert.deepEqual(enrolled.request().postDataJSON(), { exhibitionId: 'fixture-ex01' });
+  assert.equal(await filter.inputValue(), '');
   const [{ id: batchId, items }] = (await enrolled.json()).batches;
   assert.deepEqual(items.map(item => item.artworkId), ids);
   const panel = target => target.getByRole('region', { name: '분석 작업' });
