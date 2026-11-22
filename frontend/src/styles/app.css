@@ -762,15 +762,13 @@ a.history-card { text-decoration: none; }
 .a-btn.save { height: 50px; min-width: 140px; }
 
 .a-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
-.a-filters-actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; }
 .a-pagination { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
 .a-log-filters { align-items: flex-end; }
 .a-log-filters .a-field > :is(input, select) { width: auto; min-height: 42px; }
 .a-log-filters input[type='number'] { width: 86px; }
 .a-log-errors { min-height: 42px; display: inline-flex; align-items: center; gap: 6px; }
 .a-survey-badge { background: var(--surface-2); color: var(--ink-2); }
-/* 맨 앞 체크박스 칸과 그림 칸: 좌우 여백을 다른 칸(20px)의 반으로 */
-.a-table th.a-check-col, .a-table td.a-check-col,
+/* 그림 칸의 좌우 여백은 일반 칸의 절반 */
 .a-table th.a-thumb-col, .a-table td.a-thumb-col { padding-left: 10px; padding-right: 10px; }
 .a-note { color: var(--muted); margin: 0 0 16px; }
 .a-filters select, .a-search { height: 42px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--a-line); background: #fff; }

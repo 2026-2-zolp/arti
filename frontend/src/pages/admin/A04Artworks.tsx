@@ -25,67 +25,18 @@ import { PageHead, REVIEW_LABEL } from './AdminLayout';
 import { formatDateTime } from '../../lib/adminDate';
 import { ADMIN_PAGE_SIZE, AdminPagination, adminPage } from './AdminPagination';
 
-const hasSuggestions = (w: Artwork) => [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus].includes('suggested');
-/** 체크박스 칸에 마우스를 올렸을 때 안내: 고를 수 있는지, 못 고르면 왜인지 */
-const checkHint = (w: Artwork) => {
-  if (hasSuggestions(w)) return '일괄 확정할 작품 선택';
-  const statuses = [w.summaryStatus, w.guideStatus, w.tagStatus, w.emotionStatus];
-  return statuses.every((s) => s === 'confirmed') ? 'AI 결과가 모두 확정됐어요' : '아직 AI 분석 전인 항목이 있어요';
-};
 const isVersionConflict = (error: unknown) => error instanceof ApiError && error.status === 409 && error.code === 'VERSION_CONFLICT';
 
 /** 작품 목록과 검수 상태를 조회합니다. */
 export function ArtworkList() {
-  const confirmAction = useConfirm();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const exFilter = params.get('exhibition') ?? '';
   const reviewFilter = params.get('review') ?? '';
   const surveyFilter = params.get('survey') === 'active';
   const { data, reload, error } = useAsync(() => Promise.all([api.listAdminExhibitions(), api.listAdminArtworks()]), []);
-  const [reviewed, setReviewed] = useState<string[]>([]);
-  const [busy, setBusy] = useState<'analyze' | 'confirm' | null>(null);
-  const [aiMsg, setAiMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
-  // 일괄 작업 대상 전시: 필터로 고른 전시, 없으면 운영 중인 전시
-  const targetEx = data?.[0].find((e) => e.id === exFilter) ?? data?.[0].find((e) => e.status === 'running');
-
-  const analyzeAll = async () => {
-    if (!targetEx) return;
-    setBusy('analyze');
-    setAiMsg(null);
-    try {
-      const r = await api.analyzeExhibition(targetEx.id);
-      setAiMsg(
-        r.errors.length
-          ? { type: 'err', text: `${r.analyzed}/${r.total}점 분석 완료 · 실패: ${r.errors.join(' / ')}` }
-          : { type: 'ok', text: `「${targetEx.title}」 작품 ${r.analyzed}점을 분석했어요. 결과를 확인한 뒤 확정해 주세요.` },
-      );
-      reload();
-    } catch (e) {
-      setAiMsg({ type: 'err', text: e instanceof Error ? e.message : '분석에 실패했어요.' });
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const confirmAll = async () => {
-    if (!targetEx || !(await confirmAction(`「${targetEx.title}」에서 체크한 작품의 검토한 AI 제안만 확정할까요?`))) return;
-    setBusy('confirm');
-    try {
-      const items = (data?.[1] ?? []).filter(w => reviewed.includes(w.id) && w.exhibitionId === targetEx.id).map(w => ({id: w.id, version: w.version ?? 0, fields: (['summary','guide','tag','emotion'] as const).filter(f => w[`${f}Status`] === 'suggested')})).filter(i => i.fields.length);
-      const r = await api.confirmExhibitionAi(targetEx.id, items); setReviewed([]);
-      setAiMsg({ type: 'ok', text: `작품 ${r.confirmed}점의 AI 결과를 확정했어요. 이제 추천·작품 화면에 반영됩니다.` });
-      reload();
-    } catch (e) {
-      setReviewed([]);
-      setAiMsg({type: 'err', text: `${e instanceof Error ? e.message : '확정에 실패했어요.'} 최신 자료를 다시 조회하고 내용을 재검토해 주세요.`});
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const setFilter = (k: string, v: string) => {
-    setReviewed([]);
     const next = new URLSearchParams(params);
     if (v) next.set(k, v);
     else next.delete(k);
@@ -123,7 +74,6 @@ export function ArtworkList() {
         }
       />
       {error && <p className="error-text" role="alert">{error}<button onClick={reload}>다시 조회</button></p>}
-      {aiMsg && <p className={aiMsg.type === 'ok' ? 'ok-text' : 'error-text'} style={{ marginBottom: 14 }}>{aiMsg.text}{aiMsg.type === 'err' && <button onClick={() => {setReviewed([]); reload();}}>최신 자료 다시 조회</button>}</p>}
       <div className="a-filters">
         <select value={exFilter} onChange={(e) => setFilter('exhibition', e.target.value)} aria-label="전시 필터">
           <option value="">전체 전시</option>
@@ -147,25 +97,11 @@ export function ArtworkList() {
           <option value="active">취향 파악용</option>
         </select>
         <span className="muted small">{rows.length}건</span>
-        {reviewed.length > 0 && <span className="muted small">{reviewed.length}건 선택</span>}
-        {/* 목록 전체에 적용하는 버튼은 표 바로 위(필터 줄 오른쪽)에 둔다. 제목 옆에는 [+ 작품 등록]만. */}
-        <div className="a-filters-actions">
-          <button className="a-btn" disabled title="전시 일괄 분석은 비활성입니다. 작품별 분석을 이용해 주세요." onClick={analyzeAll}>
-            전시 일괄 분석 준비 중 (개별 작품 이용)
-          </button>
-          <button className="a-btn" disabled={!targetEx || !(data?.[1] ?? []).some(w => w.exhibitionId === targetEx.id && reviewed.includes(w.id) && hasSuggestions(w)) || busy !== null} onClick={confirmAll}>
-            체크한 검토 항목 확정
-          </button>
-        </div>
       </div>
       <div className="a-card">
         <table className="a-table">
           <thead>
             <tr>
-              {/* 체크박스는 맨 앞 좁은 칸: AI 제안이 있는 작품에만 보이고, 체크한 작품을 [체크한 검토 항목 확정]으로 한꺼번에 확정한다 */}
-              <th className="a-check-col a-center" title="일괄 확정할 작품 선택">
-                <span className="sr-only">일괄 확정할 작품 선택</span>
-              </th>
               <th className="a-thumb-col" style={{ width: 64 }} />
               <th>작품명</th>
               <th>작가</th>
@@ -180,18 +116,6 @@ export function ArtworkList() {
           <tbody>
             {rows.slice(offset, offset + ADMIN_PAGE_SIZE).map((w) => (
               <tr key={w.id} className="clickable" onClick={() => navigate(`/admin/artworks/${w.id}`)}>
-                {/* 확정할 AI 제안이 없는 작품(모두 확정·분석 전)은 흐린 체크박스로 두어 누를 수 없게 한다. 확정 여부는 AI 배지 색으로 보인다.
-                    확정 전 제안 내용은 작품을 눌러 상세 화면에서 확인한다(원본 데이터 미리보기는 뺌). */}
-                {/* 안내는 체크박스가 아니라 칸 전체에 둔다(흐린 체크박스에는 브라우저가 말풍선을 띄우지 않음) */}
-                <td className="a-check-col a-center" title={checkHint(w)} onClick={e => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    disabled={!hasSuggestions(w)}
-                    checked={reviewed.includes(w.id)}
-                    onChange={e => setReviewed(old => e.target.checked ? [...old, w.id] : old.filter(id => id !== w.id))}
-                    aria-label={`${w.title} 제안 내용 검토 완료`}
-                  />
-                </td>
                 <td className="a-thumb-col">
                   <ArtImage className="a-thumb" seed={w.id} palette={w.palette} imageUrl={artworkImageSrc(w, true)} alt="" ratio={1} />
                 </td>
@@ -219,7 +143,7 @@ export function ArtworkList() {
                 <td className="nowrap">{formatDateTime(w.updatedAt)}</td>
               </tr>
             ))}
-            {data && !rows.length && <tr><td colSpan={10}>조건에 맞는 작품이 없어요.</td></tr>}
+            {data && !rows.length && <tr><td colSpan={9}>조건에 맞는 작품이 없어요.</td></tr>}
           </tbody>
         </table>
       </div>

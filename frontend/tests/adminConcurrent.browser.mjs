@@ -202,6 +202,10 @@ async function verifyBulkConfirmation(a, b) {
   const ids = ['fixture-art02', 'fixture-art03'];
   const artworkPath = id => `/api/admin/artworks/${id}`;
   const read = async id => json(await b.request.get(artworkPath(id), { headers: b.headers }));
+  const confirm = async (works, status) => json(await a.request.post(`${exhibitPath}/confirm-ai`, {
+    headers: a.headers,
+    data: { items: works.map(({ id, version }) => ({ id, version, fields: ['summary'] })) },
+  }), status);
   const proposed = [];
   for (const id of ids) {
     const work = await read(id);
@@ -215,28 +219,14 @@ async function verifyBulkConfirmation(a, b) {
   }
 
   await a.page.goto('/admin/artworks?exhibition=fixture-ex01');
-  const checks = proposed.map(work => a.page.getByRole('checkbox', {
-    name: `${work.title} 제안 내용 검토 완료`, exact: true,
-  }));
-  const openConfirmation = async () => {
-    for (const check of checks) await check.check();
-    await button(a.page, '체크한 검토 항목 확정').click();
-    await a.page.getByRole('alertdialog').waitFor();
-  };
-  const confirm = async (works, status) => {
-    const pending = expectedResponse(a.page, 'POST', `${exhibitPath}/confirm-ai`);
-    await button(a.page.getByRole('alertdialog'), '확인하고 계속').click();
-    const response = await pending;
-    const items = response.request().postDataJSON().items;
-    assert.equal(items.length, works.length);
-    assert.deepEqual(
-      new Map(items.map(item => [item.id, item])),
-      new Map(works.map(({ id, version }) => [id, { id, version, fields: ['summary'] }])),
-    );
-    return json(response, status);
-  };
+  const workLink = a.page.getByRole('link', { name: proposed[0].title, exact: true });
+  await workLink.waitFor();
+  assert.equal(await a.page.getByRole('button', {name: /전시 일괄 분석|체크한 검토 항목 확정/}).count(), 0);
+  assert.equal(await a.page.getByRole('table').getByRole('checkbox').count(), 0);
+  await workLink.click();
+  await a.page.getByRole('button', { name: /^AI (다시 분석|분석 실행)$/ }).waitFor();
+  assert.equal(await button(a.page, '요약 확정 (수정 내용 포함 저장)').isEnabled(), true);
 
-  await openConfirmation();
   await b.page.goto(`/admin/artworks/${ids[1]}`);
   const newestSummary = '두 번째 관리자가 저장한 최신 요약';
   await b.page.getByPlaceholder('「AI 분석 실행」으로 공식 해설을 요약하거나 직접 입력하세요.').fill(newestSummary);
@@ -248,16 +238,9 @@ async function verifyBulkConfirmation(a, b) {
   assert.equal(latest.summaryStatus, 'suggested');
 
   assert.equal((await confirm(proposed, 409)).code, 'VERSION_CONFLICT');
-  await a.page.getByText(/최신 자료를 다시 조회하고 내용을 재검토해 주세요/).waitFor();
-  for (const check of checks) assert.equal(await check.isChecked(), false);
   assert.deepEqual(await Promise.all(ids.map(read)), [proposed[0], latest]);
 
-  const reloaded = expectedResponse(a.page, 'GET', '/api/admin/artworks');
-  await button(a.page, '최신 자료 다시 조회').click();
-  const refreshed = await json(await reloaded);
-  assert.equal(refreshed.find(work => work.id === latest.id).summary, newestSummary);
-  await openConfirmation();
-  const current = [proposed[0], latest];
+  const current = await Promise.all(ids.map(read));
   assert.equal((await confirm(current, 200)).confirmed, ids.length);
   for (const work of current) {
     const confirmed = await read(work.id);
@@ -265,7 +248,19 @@ async function verifyBulkConfirmation(a, b) {
     assert.equal(confirmed.summaryStatus, 'confirmed');
     assert.equal(confirmed.summary, work.summary);
   }
-  console.log('PASS admin bulk confirmation: 409, 0 partial writes; reload and retry confirm both latest summaries');
+  console.log('PASS admin artwork UI: detail analysis and confirmation remain accessible; bulk API: stale 409, no partial writes, fresh retry succeeds');
+}
+
+async function verifyOpenAISettingsCopy(page) {
+  const settings = expectedResponse(page, 'GET', '/api/admin/ai-settings');
+  await page.goto('/admin/ai');
+  assert.equal((await json(await settings)).editable, false);
+  const panel = page.getByRole('region', { name: 'OpenAI 연결 설정' });
+  await button(panel, 'AI 설정 저장').waitFor();
+  assert.equal(await panel.getByText(/서버 암호화 설정이 준비되면/).count(), 0);
+  assert.equal(await panel.getByLabel('프로젝트 API 키 등록·교체').isVisible(), true);
+  assert.equal(await button(panel, 'AI 설정 저장').isDisabled(), true);
+  console.log('PASS admin AI settings: configuration help hidden, existing save guard preserved');
 }
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -285,6 +280,7 @@ try {
   const map = await verifyPlacement(a, b, { name: 'synthetic-floor-plan.png', mimeType: 'image/png', buffer: await image.body() });
   await verifyVisitor(browser, map);
   await verifyBulkConfirmation(a, b);
+  await verifyOpenAISettingsCopy(a.page);
 } finally {
   await browser.close();
 }
